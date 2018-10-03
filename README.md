@@ -2,6 +2,9 @@
 
 An id3 & mp3 library written in Typescript for NodeJS
 
+[![NPM](https://nodei.co/npm/jamp3.png?downloads=true&downloadRank=true&stars=true)](https://nodei.co/npm/jamp3/)
+
+[![dependencies](https://img.shields.io/david/ffalt/jamp3.svg)](https://www.npmjs.com/package/jamp3) 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/9053f3b64ab847a39a1a4be470759bb7)](https://app.codacy.com/app/ffalt/jamp3?utm_source=github.com&utm_medium=referral&utm_content=ffalt/jamp3&utm_campaign=Badge_Grade_Dashboard)
 [![Known Vulnerabilities](https://snyk.io/test/github/ffalt/jamp3/badge.svg)](https://snyk.io/test/github/ffalt/jamp3)
 [![build status](https://travis-ci.org/ffalt/jamp3.svg?branch=master)](https://travis-ci.org/ffalt/jamp3)
@@ -14,12 +17,12 @@ An id3 & mp3 library written in Typescript for NodeJS
 into project:
 
 ```bash
-npm i https://github.com/ffalt/jamp3.git
+npm i jamp3
 ```
 
-global:
+or global:
 ```bash
-npm -g i https://github.com/ffalt/jamp3.git
+npm -g i jamp3
 ```
 
 ## Usage as Library
