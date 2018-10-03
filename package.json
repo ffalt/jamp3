@@ -1,0 +1,74 @@
+{
+  "name": "jamp3",
+  "version": "0.1.0",
+  "description": "mp3, id3v1, id3v2 - reader & writer",
+  "bin": {
+    "mp3-analyse": "./bin/analyseMP3.js",
+    "id3v2-dump": "./bin/dumpID3v2.js",
+    "id3v1-dump": "./bin/dumpID3v1.js"
+  },
+  "scripts": {
+    "build": "tsc -m commonjs --outDir dist",
+    "test": "mocha --require ts-node/register --recursive test/test.ts test/**/test.ts",
+    "lint": "tslint --project tsconfig.json \"src/**/*.ts\"",
+    "coverage": "nyc npm run test"
+  },
+  "dependencies": {
+    "commander": "^2.18.0",
+    "debug": "^3.1.0",
+    "iconv-lite": "^0.4.24",
+    "memory-stream": "^0.0.3"
+  },
+  "devDependencies": {
+    "@types/chai": "4.1.4",
+    "@types/debug": "0.0.30",
+    "@types/mocha": "5.2.5",
+    "@types/node": "10.9.4",
+    "@types/tmp": "0.0.33",
+    "chai": "4.1.2",
+    "chai-exclude": "1.0.9",
+    "istanbul": "0.4.5",
+    "mocha": "5.2.0",
+    "node-memwatch": "1.0.1",
+    "nyc": "13.0.1",
+    "tmp": "0.0.33",
+    "ts-node": "7.0.1",
+    "tslint": "5.11.0",
+    "typescript": "3.0.3"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "bin",
+    "dist",
+    "src",
+    "LICENSE-MIT"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ffalt/jamp3.git"
+  },
+  "nyc": {
+    "temp-directory": "./reports/.nyc_output",
+    "report-dir": "./reports/coverage",
+    "include": [
+      "src/*.ts",
+      "src/**/*.ts"
+    ],
+    "extension": [
+      ".ts"
+    ],
+    "require": [
+      "ts-node/register"
+    ],
+    "reporter": [
+      "text-summary",
+      "html"
+    ],
+    "sourceMap": true,
+    "instrument": true
+  },
+  "engines": {
+    "node": "~6.9.2"
+  }
+}
