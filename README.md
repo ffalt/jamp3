@@ -1,4 +1,4 @@
-# MP3.ts
+# jamp3
 
 An id3 & mp3 library written in Typescript for NodeJS
 
