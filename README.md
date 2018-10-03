@@ -12,6 +12,22 @@ An id3 & mp3 library written in Typescript for NodeJS
 [![license](https://img.shields.io/github/license/ffalt/jamp3.svg)](http://opensource.org/licenses/MIT)
 [![Greenkeeper badge](https://badges.greenkeeper.io/ffalt/jamp3.svg)](https://greenkeeper.io/)
 
+**Table of Contents**
+- [Installation](#installation)
+- [Usage as Library](#usage-as-library)
+  - [ID3v1](#id3v1)
+  - [ID3v2](#id3v2)
+  - [ID3v1, ID3v2, MPEG](#id3v1-id3v2-mpeg)
+- [Command Line Tools](#command-line-tools)
+  - [mp3-analyse](#mp3-analyse)
+  - [id3v2-dump](#id3v2-dump)
+  - [id3v1-dump](#id3v1-dump)
+- [Development Commands](#development-commands)
+  - [Build](#build)
+  - [Test](#test)
+  - [Coverage](#coverage)
+  - [Lint](#lint)
+
 ## Installation
 
 into project:
@@ -316,7 +332,7 @@ Example result:
 }
 ```
 
-### IID3v1, ID3v2, MPEG
+### ID3v1, ID3v2, MPEG
 
 Example usage:
 
