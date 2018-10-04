@@ -624,7 +624,6 @@ Options:
 
 ```
 
-
 ### id3v1-dump
 
 ```bash
