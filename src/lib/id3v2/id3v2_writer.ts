@@ -61,8 +61,8 @@ export class Id3v2RawWriter {
 		let framesSize = 0;
 		const frameHeadSize =
 			ID3v2_FRAME_HEADER_LENGTHS.MARKER[this.head.ver] + ID3v2_FRAME_HEADER_LENGTHS.SIZE[this.head.ver] + ID3v2_FRAME_HEADER_LENGTHS.FLAGS[this.head.ver];
-		for (let i = 0, len = frames.length; i < len; i++) {
-			framesSize = framesSize + frames[i].size + frameHeadSize;
+		for (const frame of frames) {
+			framesSize = framesSize + frame.size + frameHeadSize;
 		}
 
 		this.stream.writeAscii('ID3'); // ID3v2/file identifier
