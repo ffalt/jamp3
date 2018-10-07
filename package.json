@@ -25,7 +25,7 @@
     "@types/chai": "^4.1.6",
     "@types/debug": "^0.0.31",
     "@types/mocha": "^5.2.5",
-    "@types/node": "^10.11.3",
+    "@types/node": "^10.11.4",
     "@types/tmp": "^0.0.33",
     "chai": "^4.2.0",
     "chai-exclude": "^1.0.9",
