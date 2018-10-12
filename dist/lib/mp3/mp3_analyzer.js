@@ -10,7 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const index_1 = require("../../index");
 const id3v2_frames_1 = require("../id3v2/id3v2_frames");
-class MP3Analyser {
+class MP3Analyzer {
     read(filename, options) {
         return __awaiter(this, void 0, void 0, function* () {
             const mp3 = new index_1.MP3();
@@ -101,5 +101,5 @@ class MP3Analyser {
         });
     }
 }
-exports.MP3Analyser = MP3Analyser;
-//# sourceMappingURL=mp3_analyser.js.map
+exports.MP3Analyzer = MP3Analyzer;
+//# sourceMappingURL=mp3_analyzer.js.map

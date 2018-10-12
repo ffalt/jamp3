@@ -22,7 +22,7 @@ commander_1.default
     .option('-i, --input <fileOrDir>', 'mp3 file or folder')
     .option('-r, --recursive', 'dump the folder recursive')
     .option('-f, --full', 'full tag output (simple otherwise)')
-    .option('-d, --dest <file>', 'destination analyse result file')
+    .option('-d, --dest <file>', 'destination analyze result file')
     .parse(process.argv);
 const id3v2 = new __1.ID3v2();
 const result = [];

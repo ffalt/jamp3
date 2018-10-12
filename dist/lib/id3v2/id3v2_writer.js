@@ -22,8 +22,8 @@ class Id3v2RawWriter {
         return __awaiter(this, void 0, void 0, function* () {
             let framesSize = 0;
             const frameHeadSize = id3v2_consts_1.ID3v2_FRAME_HEADER_LENGTHS.MARKER[this.head.ver] + id3v2_consts_1.ID3v2_FRAME_HEADER_LENGTHS.SIZE[this.head.ver] + id3v2_consts_1.ID3v2_FRAME_HEADER_LENGTHS.FLAGS[this.head.ver];
-            for (let i = 0, len = frames.length; i < len; i++) {
-                framesSize = framesSize + frames[i].size + frameHeadSize;
+            for (const frame of frames) {
+                framesSize = framesSize + frame.size + frameHeadSize;
             }
             this.stream.writeAscii('ID3');
             this.stream.writeByte(this.head.ver);

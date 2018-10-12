@@ -19,7 +19,7 @@ An id3 & mp3 library written in Typescript for NodeJS
     -   [ID3v2](#id3v2)
     -   [ID3v1, ID3v2, MPEG](#id3v1-id3v2-mpeg)
 -   [Command Line Tools](#command-line-tools)
-    -   [mp3-analyse](#mp3-analyse)
+    -   [mp3-analyze](#mp3-analyze)
     -   [id3v2-dump](#id3v2-dump)
     -   [id3v1-dump](#id3v1-dump)
 -   [Development Commands](#development-commands)
@@ -375,11 +375,11 @@ async function read(options) {
 If you install this package global 'npm install -g' following tools are available in your command line.
 If you install into your project the following tools are available in '{your project}/node_modules/.bin/'
 
-### mp3-analyse
+### mp3-analyze
 
 ```bash
-> mp3-analyse -h
-Usage: mp3-analyse [options] <fileOrDir>
+> mp3-analyze -h
+Usage: mp3-analyze [options] <fileOrDir>
 
 Options:
 
@@ -387,15 +387,15 @@ Options:
   -i, --input <fileOrDir>  mp3 file or folder
   -r, --recursive          scan the folder recursive
   -w, --warnings           show results only for files with warnings
-  -f, --format <format>    format of analyse result (plain|json) (default: plain)
-  -d, --dest <file>        destination analyse result file
+  -f, --format <format>    format of analyze result (plain|json) (default: plain)
+  -d, --dest <file>        destination analyze result file
   -h, --help               output usage information
 
-> mp3-analyse SampleVBR.mp3
+> mp3-analyze SampleVBR.mp3
 SampleVBR.mp3
 1212 Frames, Duration 31.66ms, VBR 58930, MPEG 1 (ISO/IEC 11172-3) MPEG audio layer 3, Channels 2 (joint), Xing
 
-> mp3-analyse -f json lame_cbr.mp3
+> mp3-analyze -f json lame_cbr.mp3
 {
 	"filename": "lame_cbr.mp3",
 	"mode": "CBR",
@@ -435,7 +435,7 @@ Options:
   -i, --input <fileOrDir>  mp3 file or folder
   -r, --recursive          dump the folder recursive
   -f, --full               full tag output (simple otherwise)
-  -d, --dest <file>        destination analyse result file
+  -d, --dest <file>        destination analyze result file
   -h, --help               output usage information
 
 > id3v2-dump v2.4.mp3
@@ -635,7 +635,7 @@ Options:
   -v, --version            output the version number
   -i, --input <fileOrDir>  mp3 file or folder
   -r, --recursive          dump the folder recursive
-  -d, --dest <file>        destination analyse result file
+  -d, --dest <file>        destination analyze result file
   -h, --help               output usage information
 
 > id3v1-dump v1tag.mp3

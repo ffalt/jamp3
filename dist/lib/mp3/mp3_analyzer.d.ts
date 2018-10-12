@@ -3,7 +3,7 @@ export interface IMP3Warning {
     expected: number | string | boolean;
     actual: number | string | boolean;
 }
-export interface IMP3AnalyserOptions {
+export interface IMP3AnalyzerOptions {
     xing: boolean;
     mpeg: boolean;
     id3v2: boolean;
@@ -23,6 +23,6 @@ export interface IMP3Report {
     id3v1: boolean;
     msgs: Array<IMP3Warning>;
 }
-export declare class MP3Analyser {
-    read(filename: string, options: IMP3AnalyserOptions): Promise<IMP3Report>;
+export declare class MP3Analyzer {
+    read(filename: string, options: IMP3AnalyzerOptions): Promise<IMP3Report>;
 }

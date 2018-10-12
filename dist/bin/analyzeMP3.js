@@ -11,7 +11,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const mp3_analyser_1 = require("../lib/mp3/mp3_analyser");
+const mp3_analyzer_1 = require("../lib/mp3/mp3_analyzer");
 const utils_1 = require("../lib/common/utils");
 const commander_1 = __importDefault(require("commander"));
 const pack = require('../../package.json');
@@ -21,8 +21,8 @@ commander_1.default
     .option('-i, --input <fileOrDir>', 'mp3 file or folder')
     .option('-r, --recursive', 'scan the folder recursive')
     .option('-w, --warnings', 'show results only for files with warnings')
-    .option('-f, --format <format>', 'format of analyse result (plain|json)', /^(plain|json)$/i, 'plain')
-    .option('-d, --dest <file>', 'destination analyse result file')
+    .option('-f, --format <format>', 'format of analyze result (plain|json)', /^(plain|json)$/i, 'plain')
+    .option('-d, --dest <file>', 'destination analyze result file')
     .parse(process.argv);
 const result = [];
 const options = { mpeg: true, xing: true, id3v2: true, id3v1: true };
@@ -64,7 +64,7 @@ function toPlain(report) {
 }
 function onFile(filename) {
     return __awaiter(this, void 0, void 0, function* () {
-        const probe = new mp3_analyser_1.MP3Analyser();
+        const probe = new mp3_analyzer_1.MP3Analyzer();
         const info = yield probe.read(filename, options);
         if (!commander_1.default.warnings || info.msgs.length > 0) {
             if (commander_1.default.dest) {
@@ -110,4 +110,4 @@ function run() {
 run().catch(e => {
     console.error(e);
 });
-//# sourceMappingURL=analyseMP3.js.map
+//# sourceMappingURL=analyzeMP3.js.map

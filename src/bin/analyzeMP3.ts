@@ -1,4 +1,4 @@
-import {IMP3AnalyserOptions, IMP3Report, MP3Analyser} from '../lib/mp3/mp3_analyser';
+import {IMP3AnalyzerOptions, IMP3Report, MP3Analyzer} from '../lib/mp3/mp3_analyzer';
 import {collectFiles, fileWrite, fsStat} from '../lib/common/utils';
 import program from 'commander';
 const pack = require('../../package.json');
@@ -9,12 +9,12 @@ program
 	.option('-i, --input <fileOrDir>', 'mp3 file or folder')
 	.option('-r, --recursive', 'scan the folder recursive')
 	.option('-w, --warnings', 'show results only for files with warnings')
-	.option('-f, --format <format>', 'format of analyse result (plain|json)', /^(plain|json)$/i, 'plain')
-	.option('-d, --dest <file>', 'destination analyse result file')
+	.option('-f, --format <format>', 'format of analyze result (plain|json)', /^(plain|json)$/i, 'plain')
+	.option('-d, --dest <file>', 'destination analyze result file')
 	.parse(process.argv);
 
 const result: Array<IMP3Report> = [];
-const options: IMP3AnalyserOptions = {mpeg: true, xing: true, id3v2: true, id3v1: true};
+const options: IMP3AnalyzerOptions = {mpeg: true, xing: true, id3v2: true, id3v1: true};
 
 function toPlain(report: IMP3Report): string {
 	const sl: Array<string> = [report.filename];
@@ -54,7 +54,7 @@ function toPlain(report: IMP3Report): string {
 }
 
 async function onFile(filename: string): Promise<void> {
-	const probe = new MP3Analyser();
+	const probe = new MP3Analyzer();
 	const info = await probe.read(filename, options);
 	if (!program.warnings || info.msgs.length > 0) {
 		if (program.dest) {
