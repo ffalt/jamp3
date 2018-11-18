@@ -12,6 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const __1 = require("..");
+const fs_extra_1 = __importDefault(require("fs-extra"));
 const utils_1 = require("../lib/common/utils");
 const pretty_json_1 = require("../lib/common/pretty-json");
 const commander_1 = __importDefault(require("commander"));
@@ -58,7 +59,7 @@ function run() {
         if (!input || input.length === 0) {
             return Promise.reject(Error('must specify a filename/directory'));
         }
-        const stat = yield utils_1.fsStat(input);
+        const stat = yield fs_extra_1.default.stat(input);
         if (stat.isDirectory()) {
             yield utils_1.collectFiles(input, ['.mp3'], commander_1.default.recursive, onFile);
         }
@@ -66,7 +67,7 @@ function run() {
             yield onFile(input);
         }
         if (commander_1.default.dest) {
-            yield utils_1.fileWrite(commander_1.default.dest, pretty_json_1.toPrettyJsonWithBin(result));
+            yield fs_extra_1.default.writeFile(commander_1.default.dest, pretty_json_1.toPrettyJsonWithBin(result));
         }
     });
 }

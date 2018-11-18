@@ -7,7 +7,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
+const fs_extra_1 = __importDefault(require("fs-extra"));
 const id3v2_reader_1 = require("./id3v2_reader");
 const id3v2_writer_1 = require("./id3v2_writer");
 const id3v2_frames_1 = require("./id3v2_frames");
@@ -84,9 +88,9 @@ class ID3v2 {
                 return Promise.reject(e);
             }
             yield state_stream.close();
-            yield utils_1.fileRename(filename, filename + '.bak');
-            yield utils_1.fileRename(filename + '.temp.mp3', filename);
-            yield utils_1.fileDelete(filename + '.bak');
+            yield fs_extra_1.default.rename(filename, filename + '.bak');
+            yield fs_extra_1.default.rename(filename + '.temp.mp3', filename);
+            yield fs_extra_1.default.remove(filename + '.bak');
         });
     }
     write(filename, tag, version, rev) {
@@ -102,7 +106,7 @@ class ID3v2 {
                 extended: tag.head.extended
             };
             const raw_frames = yield id3v2_frames_1.writeToRawFrames(tag.frames, head);
-            const exists = yield utils_1.fileExists(filename);
+            const exists = yield fs_extra_1.default.pathExists(filename);
             if (!exists) {
                 yield this.writeTag(filename, raw_frames, head);
             }

@@ -14,6 +14,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const mp3_analyzer_1 = require("../lib/mp3/mp3_analyzer");
 const utils_1 = require("../lib/common/utils");
 const commander_1 = __importDefault(require("commander"));
+const fs_extra_1 = __importDefault(require("fs-extra"));
 const pack = require('../../package.json');
 commander_1.default
     .version(pack.version, '-v, --version')
@@ -90,7 +91,7 @@ function run() {
         if (!input || input.length === 0) {
             return Promise.reject(Error('must specify a filename/directory'));
         }
-        const stat = yield utils_1.fsStat(input);
+        const stat = yield fs_extra_1.default.stat(input);
         if (stat.isDirectory()) {
             yield utils_1.collectFiles(input, ['.mp3'], commander_1.default.recursive, onFile);
         }
@@ -99,10 +100,10 @@ function run() {
         }
         if (commander_1.default.dest) {
             if (commander_1.default.format === 'plain') {
-                yield utils_1.fileWrite(commander_1.default.dest, result.map(r => toPlain(r)).join('\n'));
+                yield fs_extra_1.default.writeFile(commander_1.default.dest, result.map(r => toPlain(r)).join('\n'));
             }
             else {
-                yield utils_1.fileWrite(commander_1.default.dest, JSON.stringify(result, null, '\t'));
+                yield fs_extra_1.default.writeFile(commander_1.default.dest, JSON.stringify(result, null, '\t'));
             }
         }
     });

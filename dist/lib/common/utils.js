@@ -13,6 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
+const fs_extra_1 = __importDefault(require("fs-extra"));
 function isBitSetAt(byte, bit) {
     return (byte & 1 << bit) !== 0;
 }
@@ -97,11 +98,6 @@ function isBit(field, nr) {
     return !!(field & nr);
 }
 exports.isBit = isBit;
-function trimNull(s) {
-    s = s.trim();
-    return s.slice(0, s.indexOf('\u0000'));
-}
-exports.trimNull = trimNull;
 function removeZeroString(s) {
     for (let j = 0; j < s.length; j++) {
         if (s.charCodeAt(j) === 0) {
@@ -143,10 +139,10 @@ function fileRangeToBuffer(filename, start, end) {
 exports.fileRangeToBuffer = fileRangeToBuffer;
 function collectFiles(dir, ext, recursive, onFileCB) {
     return __awaiter(this, void 0, void 0, function* () {
-        const files1 = yield dirRead(dir);
+        const files1 = yield fs_extra_1.default.readdir(dir);
         for (const f of files1) {
             const sub = path_1.default.join(dir, f);
-            const stat = yield fsStat(sub);
+            const stat = yield fs_extra_1.default.stat(sub);
             if (stat.isDirectory()) {
                 if (recursive) {
                     yield collectFiles(sub, ext, recursive, onFileCB);
@@ -159,111 +155,4 @@ function collectFiles(dir, ext, recursive, onFileCB) {
     });
 }
 exports.collectFiles = collectFiles;
-function fileWrite(pathName, data) {
-    return __awaiter(this, void 0, void 0, function* () {
-        return new Promise((resolve, reject) => {
-            fs_1.default.writeFile(pathName, data, (err) => {
-                if (err) {
-                    reject(err);
-                }
-                else {
-                    resolve();
-                }
-            });
-        });
-    });
-}
-exports.fileWrite = fileWrite;
-function fsStat(pathName) {
-    return __awaiter(this, void 0, void 0, function* () {
-        return new Promise((resolve, reject) => {
-            fs_1.default.stat(pathName, (err, stat) => {
-                if (err) {
-                    reject(err);
-                }
-                else {
-                    resolve(stat);
-                }
-            });
-        });
-    });
-}
-exports.fsStat = fsStat;
-function fileDelete(pathName) {
-    return __awaiter(this, void 0, void 0, function* () {
-        return new Promise((resolve, reject) => {
-            fs_1.default.unlink(pathName, (err) => {
-                if (err) {
-                    reject(err);
-                }
-                else {
-                    resolve();
-                }
-            });
-        });
-    });
-}
-exports.fileDelete = fileDelete;
-function fileReadJson(pathName) {
-    return __awaiter(this, void 0, void 0, function* () {
-        return new Promise((resolve, reject) => {
-            fs_1.default.readFile(pathName, (err, data) => {
-                if (err) {
-                    reject(err);
-                }
-                else {
-                    resolve(JSON.parse(data.toString()));
-                }
-            });
-        });
-    });
-}
-exports.fileReadJson = fileReadJson;
-function fileRename(pathName, dest) {
-    return __awaiter(this, void 0, void 0, function* () {
-        return new Promise((resolve, reject) => {
-            fs_1.default.rename(pathName, dest, (err) => {
-                if (err) {
-                    reject(err);
-                }
-                else {
-                    resolve();
-                }
-            });
-        });
-    });
-}
-exports.fileRename = fileRename;
-function dirRead(pathName) {
-    return __awaiter(this, void 0, void 0, function* () {
-        return new Promise((resolve, reject) => {
-            fs_1.default.readdir(pathName, (err, data) => {
-                if (err) {
-                    reject(err);
-                }
-                else {
-                    resolve(data);
-                }
-            });
-        });
-    });
-}
-exports.dirRead = dirRead;
-function fileExists(pathName) {
-    return __awaiter(this, void 0, void 0, function* () {
-        try {
-            const stat = yield fsStat(pathName);
-            return stat.isFile();
-        }
-        catch (e) {
-            if (e && e.code === 'ENOENT') {
-                return false;
-            }
-            else {
-                return Promise.reject(e);
-            }
-        }
-    });
-}
-exports.fileExists = fileExists;
 //# sourceMappingURL=utils.js.map

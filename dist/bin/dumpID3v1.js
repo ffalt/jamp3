@@ -15,6 +15,7 @@ const __1 = require("..");
 const utils_1 = require("../lib/common/utils");
 const commander_1 = __importDefault(require("commander"));
 const pack = require('../../package.json');
+const fs_extra_1 = __importDefault(require("fs-extra"));
 commander_1.default
     .version(pack.version, '-v, --version')
     .usage('[options]')
@@ -53,7 +54,7 @@ function run() {
         if (!input || input.length === 0) {
             return Promise.reject(Error('must specify a filename/directory'));
         }
-        const stat = yield utils_1.fsStat(input);
+        const stat = yield fs_extra_1.default.stat(input);
         if (stat.isDirectory()) {
             yield utils_1.collectFiles(input, ['.mp3'], commander_1.default.recursive, onFile);
         }
@@ -61,7 +62,7 @@ function run() {
             yield onFile(input);
         }
         if (commander_1.default.dest) {
-            yield utils_1.fileWrite(commander_1.default.dest, JSON.stringify(result));
+            yield fs_extra_1.default.writeJSON(commander_1.default.dest, result);
         }
     });
 }

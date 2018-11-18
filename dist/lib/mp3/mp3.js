@@ -7,12 +7,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const mp3_reader_1 = require("./mp3_reader");
 const id3v2_1 = require("../id3v2/id3v2");
 const mp3_frames_1 = require("./mp3_frames");
 const mp3_frame_1 = require("./mp3_frame");
-const utils_1 = require("../common/utils");
+const fs_extra_1 = __importDefault(require("fs-extra"));
 function isHeadFrame(frame) {
     return !!frame.mode;
 }
@@ -149,7 +152,7 @@ class MP3 {
     read(opts) {
         return __awaiter(this, void 0, void 0, function* () {
             const reader = new mp3_reader_1.MP3Reader();
-            const stat = yield utils_1.fsStat(opts.filename);
+            const stat = yield fs_extra_1.default.stat(opts.filename);
             opts.fileSize = stat.size;
             const layout = yield reader.read(opts);
             return yield this.prepareResult(opts, layout);
