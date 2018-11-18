@@ -1,7 +1,6 @@
 import {expect, should, use} from 'chai';
 import {describe, it} from 'mocha';
 import chaiExclude = require('chai-exclude');
-import fs from 'fs';
 import path from 'path';
 import Debug from 'debug';
 import {compareID3v2Spec} from '../id3v2/id3v2spec';
@@ -13,7 +12,7 @@ import {ID3v1TestDirectories, ID3v1TestPath} from '../id3v1/id3v1config';
 import {collectTestFiles} from '../common/common';
 import {expandRawHeader} from '../../src/lib/mp3/mp3_frame';
 import {filterBestMPEGChain} from '../../src/lib/mp3/mp3_frames';
-import {fileExists} from '../../src/lib/common/utils';
+import fse from 'fs-extra';
 
 export const IMP3TestPath = path.join(__dirname, '..', 'data', 'testfiles', 'mp3');
 export const IMP3TestDirectories = [
@@ -123,7 +122,7 @@ interface ITestSpec {
 }
 
 async function loadFramesCompareProbe(filename: string, result: IMP3.Result): Promise<void> {
-	const compare: ITestSpec = JSON.parse(fs.readFileSync(filename + '.frames.json').toString());
+	const compare: ITestSpec = await fse.readJSON(filename + '.frames.json');
 	const comparecols = compare.cols || [];
 	const compareframes: Array<ITestSpecFrame> = (compare.frames || []).map(row => {
 		const o: any = {};
@@ -205,7 +204,7 @@ async function loadFramesCompare(filename: string): Promise<void> {
 	if (!result || !result.frames) {
 		return;
 	}
-	const exists = await fileExists(filename + '.frames.json');
+	const exists = await fse.pathExists(filename + '.frames.json');
 	if (exists) {
 		await loadFramesCompareProbe(filename, result);
 	}
@@ -213,13 +212,13 @@ async function loadFramesCompare(filename: string): Promise<void> {
 
 async function loadMPEGCompare(filename: string): Promise<void> {
 	debug('mp3test', 'loading', filename);
-	const compare: ITestSpec = JSON.parse(fs.readFileSync(filename + '.frames.json').toString());
+	const compare: ITestSpec = await fse.readJSON(filename + '.frames.json');
 	const data = await mp3.read({filename, mpeg: true, mpegQuick: true, id3v2: true});
 	should().exist(data);
 	if (!data) {
 		return;
 	}
-	const stat = fs.statSync(filename);
+	const stat = await fse.stat(filename);
 	expect(data.size).to.equal(stat.size, 'file sizes not equal');
 	if (compare.stream && data.mpeg) {
 		expect(data.mpeg.sampleRate).to.equal(parseInt(compare.stream.sample_rate, 10), 'sampleRate not equal');
@@ -258,17 +257,17 @@ async function loadMPEGCompare(filename: string): Promise<void> {
 	}
 }
 
-const roots: Array<{ root: string, files: Array<string> }> = [];
-tests.forEach(test => {
-	roots.push({root: test.dir, files: collectTestFiles(test.dirs, test.dir, testSingleFile)});
-});
-describe('MP3', () => {
+describe('MP3', async () => {
+	const roots: Array<{ root: string, files: Array<string> }> = [];
+	for (const test of tests) {
+		roots.push({root: test.dir, files: await collectTestFiles(test.dirs, test.dir, testSingleFile)});
+	}
 	roots.forEach(root => {
 		describe(root.root, () => {
 			root.files.forEach(filename => {
 				describe(filename.slice(root.root.length), () => {
 					it('should load & compare to spec', async () => {
-						const exists = await fileExists(filename + '.spec.json');
+						const exists = await fse.pathExists(filename + '.spec.json');
 						if (exists) {
 							await loadForSpec(filename);
 						}

@@ -1,6 +1,7 @@
 import {IMP3AnalyzerOptions, IMP3Report, MP3Analyzer} from '../lib/mp3/mp3_analyzer';
-import {collectFiles, fileWrite, fsStat} from '../lib/common/utils';
+import {collectFiles} from '../lib/common/utils';
 import program from 'commander';
+import fse from 'fs-extra';
 const pack = require('../../package.json');
 
 program
@@ -80,7 +81,7 @@ async function run(): Promise<void> {
 	if (!input || input.length === 0) {
 		return Promise.reject(Error('must specify a filename/directory'));
 	}
-	const stat = await fsStat(input);
+	const stat = await fse.stat(input);
 	if (stat.isDirectory()) {
 		await collectFiles(input, ['.mp3'], program.recursive, onFile);
 	} else {
@@ -88,9 +89,9 @@ async function run(): Promise<void> {
 	}
 	if (program.dest) {
 		if (program.format === 'plain') {
-			await fileWrite(program.dest, result.map(r => toPlain(r)).join('\n'));
+			await fse.writeFile(program.dest, result.map(r => toPlain(r)).join('\n'));
 		} else {
-			await fileWrite(program.dest, JSON.stringify(result, null, '\t'));
+			await fse.writeFile(program.dest, JSON.stringify(result, null, '\t'));
 		}
 	}
 }

@@ -1,7 +1,8 @@
 import {ID3v1} from '..';
-import {collectFiles, fileWrite, fsStat} from '../lib/common/utils';
+import {collectFiles} from '../lib/common/utils';
 import program from 'commander';
 const pack = require('../../package.json');
+import fse from 'fs-extra';
 
 program
 	.version(pack.version, '-v, --version')
@@ -50,14 +51,14 @@ async function run(): Promise<void> {
 	if (!input || input.length === 0) {
 		return Promise.reject(Error('must specify a filename/directory'));
 	}
-	const stat = await fsStat(input);
+	const stat = await fse.stat(input);
 	if (stat.isDirectory()) {
 		await collectFiles(input, ['.mp3'], program.recursive, onFile);
 	} else {
 		await onFile(input);
 	}
 	if (program.dest) {
-		await fileWrite(program.dest, JSON.stringify(result));
+		await fse.writeJSON(program.dest, result);
 	}
 }
 

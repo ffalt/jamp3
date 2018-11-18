@@ -5,7 +5,7 @@ import {IID3V2} from '../id3v2/id3v2__types';
 import {IID3V1} from '../id3v1/id3v1__types';
 import {filterBestMPEGChain} from './mp3_frames';
 import {expandRawHeader} from './mp3_frame';
-import {fsStat} from '../common/utils';
+import fse from 'fs-extra';
 
 export function isHeadFrame(frame: IMP3.Frame): boolean {
 	return !!frame.mode;
@@ -140,7 +140,7 @@ export class MP3 {
 
 	async read(opts: IMP3.ReadOptions): Promise<IMP3.Result> {
 		const reader = new MP3Reader();
-		const stat = await fsStat(opts.filename);
+		const stat = await fse.stat(opts.filename);
 		opts.fileSize = stat.size;
 		const layout = await reader.read(opts);
 		return await this.prepareResult(opts, layout);

@@ -1,4 +1,5 @@
 import {expect, should, use} from 'chai';
+import fse from 'fs-extra';
 import tmp from 'tmp';
 import 'mocha';
 import {ID3v2} from '../../src/lib/id3v2/id3v2';
@@ -7,7 +8,6 @@ import chaiExclude = require('chai-exclude');
 import {BufferUtils} from '../../src/lib/common/buffer';
 import {ensureID3v2FrameVersionDef, matchFrame} from '../../src/lib/id3v2/id3v2_frames';
 import Debug from 'debug';
-import {fileDelete} from '../../src/lib/common/utils';
 
 const debug = Debug('id3v2-compare');
 
@@ -43,7 +43,7 @@ export async function compareID3v2Tags(a: IID3V2.Tag, b: IID3V2.Tag): Promise<vo
 
 export async function compareID3v2Save(filename: string, tag: IID3V2.Tag): Promise<void> {
 	const file = tmp.fileSync();
-	await fileDelete(file.name);
+	await fse.remove(file.name);
 	debug('writing', file.name);
 	try {
 		const id3 = new ID3v2();

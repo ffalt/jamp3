@@ -2,11 +2,11 @@ import {expect, should, use} from 'chai';
 import {describe, it} from 'mocha';
 import {ID3v1} from '../../src/lib/id3v1/id3v1';
 import chaiExclude = require('chai-exclude');
+import fse from 'fs-extra';
 import Debug from 'debug';
 import {compareID3v1Save, compareID3v1Spec} from './id3v1compare';
 import {ID3v1TestDirectories, ID3v1TestPath} from './id3v1config';
 import {collectTestFiles} from '../common/common';
-import {fileExists} from '../../src/lib/common/utils';
 
 const debug = Debug('id3v1-test');
 
@@ -35,15 +35,15 @@ async function loadSaveCompare(filename: string): Promise<void> {
 	await compareID3v1Save(filename, tag);
 }
 
-describe('ID3v1', () => {
-	const files: Array<string> = collectTestFiles(ID3v1TestDirectories, ID3v1TestPath, testSingleFile);
+describe('ID3v1', async () => {
+	const files: Array<string> = await collectTestFiles(ID3v1TestDirectories, ID3v1TestPath, testSingleFile);
 	for (const filename of files) {
 		describe(filename.slice(ID3v1TestPath.length), () => {
 			it('should load & save & compare', async () => {
 				await loadSaveCompare(filename);
 			});
 			it('should load & compare to spec', async () => {
-				const exists = await fileExists(filename + '.spec.json');
+				const exists = await fse.pathExists(filename + '.spec.json');
 				if (exists) {
 					await loadSaveSpec(filename);
 				}

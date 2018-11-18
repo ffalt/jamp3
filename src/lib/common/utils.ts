@@ -4,6 +4,7 @@
 
 import fs from 'fs';
 import path from 'path';
+import fse from 'fs-extra';
 
 export function isBitSetAt(byte: number, bit: number) {
 	return (byte & 1 << bit) !== 0;
@@ -93,11 +94,6 @@ export function isBit(field: number, nr: number): boolean {
 	return !!(field & nr);
 }
 
-export function trimNull(s: string): string {
-	s = s.trim();
-	return s.slice(0, s.indexOf('\u0000'));
-}
-
 export function removeZeroString(s: string): string {
 	for (let j = 0; j < s.length; j++) {
 		if (s.charCodeAt(j) === 0) {
@@ -113,7 +109,6 @@ export function neededStoreBytes(num: number, min: number) {
 	result = Math.max(result, min);
 	return result;
 }
-
 
 export async function fileRangeToBuffer(filename: string, start: number, end: number): Promise<Buffer> {
 	const chunks: Array<Buffer> = [];
@@ -136,101 +131,16 @@ export async function fileRangeToBuffer(filename: string, start: number, end: nu
 }
 
 export async function collectFiles(dir: string, ext: Array<string>, recursive: boolean, onFileCB: (filename: string) => Promise<void>): Promise<void> {
-	const files1 = await dirRead(dir);
+	const files1 = await fse.readdir(dir);
 	for (const f of files1) {
 		const sub = path.join(dir, f);
-		const stat = await fsStat(sub);
+		const stat = await fse.stat(sub);
 		if (stat.isDirectory()) {
 			if (recursive) {
 				await collectFiles(sub, ext, recursive, onFileCB);
 			}
 		} else if ((ext.indexOf(path.extname(f).toLowerCase()) >= 0)) {
 			await onFileCB(sub);
-		}
-	}
-}
-
-export async function fileWrite(pathName: string, data: string): Promise<void> {
-	return new Promise<void>((resolve, reject) => {
-		fs.writeFile(pathName, data, (err) => {
-			if (err) {
-				reject(err);
-			} else {
-				resolve();
-			}
-		});
-	});
-}
-
-export async function fsStat(pathName: string): Promise<fs.Stats> {
-	return new Promise<fs.Stats>((resolve, reject) => {
-		fs.stat(pathName, (err, stat) => {
-			if (err) {
-				reject(err);
-			} else {
-				resolve(stat);
-			}
-		});
-	});
-}
-
-export async function fileDelete(pathName: string): Promise<void> {
-	return new Promise<void>((resolve, reject) => {
-		fs.unlink(pathName, (err) => {
-			if (err) {
-				reject(err);
-			} else {
-				resolve();
-			}
-		});
-	});
-}
-
-export async function fileReadJson(pathName: string): Promise<any> {
-	return new Promise<any>((resolve, reject) => {
-		fs.readFile(pathName, (err, data) => {
-			if (err) {
-				reject(err);
-			} else {
-				resolve(JSON.parse(data.toString()));
-			}
-		});
-	});
-}
-
-export async function fileRename(pathName: string, dest: string): Promise<void> {
-	return new Promise<void>((resolve, reject) => {
-		fs.rename(pathName, dest, (err) => {
-			if (err) {
-				reject(err);
-			} else {
-				resolve();
-			}
-		});
-	});
-}
-
-export async function dirRead(pathName: string): Promise<Array<string>> {
-	return new Promise<Array<string>>((resolve, reject) => {
-		fs.readdir(pathName, (err, data) => {
-			if (err) {
-				reject(err);
-			} else {
-				resolve(data);
-			}
-		});
-	});
-}
-
-export async function fileExists(pathName: string): Promise<boolean> {
-	try {
-		const stat = await fsStat(pathName);
-		return stat.isFile();
-	} catch (e) {
-		if (e && e.code === 'ENOENT') {
-			return false;
-		} else {
-			return Promise.reject(e);
 		}
 	}
 }

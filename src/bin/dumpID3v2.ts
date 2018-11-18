@@ -1,5 +1,6 @@
 import {ID3v2, simplifyTag} from '..';
-import {collectFiles, fileWrite, fsStat} from '../lib/common/utils';
+import fse from 'fs-extra';
+import {collectFiles} from '../lib/common/utils';
 import {toPrettyJsonWithBin} from '../lib/common/pretty-json';
 import program from 'commander';
 const pack = require('../../package.json');
@@ -54,14 +55,14 @@ async function run(): Promise<void> {
 	if (!input || input.length === 0) {
 		return Promise.reject(Error('must specify a filename/directory'));
 	}
-	const stat = await fsStat(input);
+	const stat = await fse.stat(input);
 	if (stat.isDirectory()) {
 		await collectFiles(input, ['.mp3'], program.recursive, onFile);
 	} else {
 		await onFile(input);
 	}
 	if (program.dest) {
-		await fileWrite(program.dest, toPrettyJsonWithBin(result));
+		await fse.writeFile(program.dest, toPrettyJsonWithBin(result));
 	}
 }
 

@@ -3,7 +3,7 @@ import 'mocha';
 import {IID3V2} from '../../src';
 import chaiExclude = require('chai-exclude');
 import {toNonBinJson} from '../common/common';
-import {fileReadJson} from '../../src/lib/common/utils';
+import fse from 'fs-extra';
 
 use(chaiExclude);
 
@@ -145,7 +145,7 @@ function compareeID3v2SpecFrames(filename: string, specframes: Array<any>, frame
 }
 
 export async function compareID3v2Spec(filename: string, tag: IID3V2.Tag | undefined): Promise<void> {
-	const spec = await fileReadJson(filename + '.spec.json');
+	const spec = await fse.readJSON(filename + '.spec.json');
 	if (!spec.id3v2) {
 		if (tag) {
 			expect(tag.head.valid).to.equal(false, 'Spec needs tag to be invalid ' + toNonBinJson(tag));

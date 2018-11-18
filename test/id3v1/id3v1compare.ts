@@ -1,11 +1,11 @@
 import {expect, should, use} from 'chai';
+import fse from 'fs-extra';
 import tmp from 'tmp';
 import 'mocha';
 import {ID3v1} from '../../src/lib/id3v1/id3v1';
 import {IID3V1} from '../../src/lib/id3v1/id3v1__types';
 import chaiExclude = require('chai-exclude');
 import Debug from 'debug';
-import {fileDelete, fileReadJson} from '../../src/lib/common/utils';
 
 const debug = Debug('id3v1-test');
 
@@ -18,7 +18,7 @@ async function compareTags(a: IID3V1.Tag, b: IID3V1.Tag): Promise<void> {
 }
 
 export async function compareID3v1Spec(filename: string, tag: IID3V1.Tag | undefined): Promise<void> {
-	const spec = await fileReadJson(filename + '.spec.json');
+	const spec = await fse.readJSON(filename + '.spec.json');
 	if (!spec || !spec.id3v1) {
 		should().not.exist(tag, 'Missing ID3v1 spec ' + JSON.stringify({id3v1: tag}));
 		return;
@@ -39,7 +39,7 @@ export async function compareID3v1Spec(filename: string, tag: IID3V1.Tag | undef
 
 export async function compareID3v1Save(filename: string, tag: IID3V1.Tag): Promise<void> {
 	const file = tmp.fileSync();
-	await fileDelete(file.name);
+	await fse.remove(file.name);
 	debug('writing', file.name);
 	try {
 		const id3 = new ID3v1();

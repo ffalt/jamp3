@@ -1,9 +1,10 @@
+import fse from 'fs-extra';
 import {ID3v2Reader} from './id3v2_reader';
 import {ID3v2Writer} from './id3v2_writer';
 import {readID3v2Frame, writeToRawFrames} from './id3v2_frames';
 import {FileWriterStream} from '../common/streams';
 import {IID3V2} from './id3v2__types';
-import {fileDelete, fileExists, fileRename, fileRangeToBuffer} from '../common/utils';
+import {fileRangeToBuffer} from '../common/utils';
 
 export async function buildID3v2(tag: IID3V2.RawTag): Promise<IID3V2.Tag> {
 	const frames: Array<IID3V2.Frame> = [];
@@ -74,9 +75,9 @@ export class ID3v2 {
 			return Promise.reject(e);
 		}
 		await state_stream.close();
-		await fileRename(filename, filename + '.bak');
-		await fileRename(filename + '.temp.mp3', filename);
-		await fileDelete(filename + '.bak');
+		await fse.rename(filename, filename + '.bak');
+		await fse.rename(filename + '.temp.mp3', filename);
+		await fse.remove(filename + '.bak');
 	}
 
 	async write(filename: string, tag: IID3V2.Tag, version: number, rev: number): Promise<void> {
@@ -92,7 +93,7 @@ export class ID3v2 {
 			extended: tag.head.extended
 		};
 		const raw_frames = await writeToRawFrames(tag.frames, head);
-		const exists = await fileExists(filename);
+		const exists = await fse.pathExists(filename);
 		if (!exists) {
 			await this.writeTag(filename, raw_frames, head);
 		} else {
