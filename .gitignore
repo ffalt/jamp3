@@ -2,3 +2,4 @@ node_modules
 local
 reports
 .nyc_output
+dist
