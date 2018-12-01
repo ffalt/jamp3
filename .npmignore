@@ -15,6 +15,7 @@
 .gitignore
 tslint.json
 tsconfig.json
+deplokay.json
 
 coverage
 local
