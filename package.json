@@ -24,28 +24,28 @@
     "coverage": "nyc npm run test"
   },
   "dependencies": {
-    "commander": "^2.18.0",
-    "debug": "^4.0.1",
+    "commander": "^2.19.0",
+    "debug": "^4.1.0",
     "fs-extra": "^7.0.1",
     "iconv-lite": "^0.4.24",
     "memory-stream": "^0.0.3"
   },
   "devDependencies": {
-    "@types/chai": "^4.1.6",
+    "@types/chai": "^4.1.7",
     "@types/debug": "^0.0.31",
     "@types/fs-extra": "^5.0.4",
     "@types/mocha": "^5.2.5",
-    "@types/node": "^10.11.4",
+    "@types/node": "^10.12.11",
     "@types/tmp": "^0.0.33",
     "chai": "^4.2.0",
-    "chai-exclude": "^1.0.9",
+    "chai-exclude": "^1.0.12",
     "istanbul": "^0.4.5",
     "mocha": "^5.2.0",
-    "nyc": "^13.0.1",
+    "nyc": "^13.1.0",
     "tmp": "^0.0.33",
     "ts-node": "^7.0.1",
     "tslint": "^5.11.0",
-    "typescript": "^3.1.1"
+    "typescript": "^3.2.1"
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
