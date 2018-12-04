@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/deplokay/config-schema.json",
-  "id": "deplokay/master",
+  "id": "jamp3-release",
   "mode": "npm",
   "source": {
     "local": {
