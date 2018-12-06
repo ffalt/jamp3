@@ -44,7 +44,7 @@ export class MP3Analyzer {
 			bitRate: data.mpeg.bitRate,
 			channelMode: data.mpeg.mode && data.mpeg.mode.length > 0 ? data.mpeg.mode : undefined,
 			channels: data.mpeg.channels,
-			durationMS: data.mpeg.durationRead,
+			durationMS: data.mpeg.durationRead * 1000,
 			format: data.mpeg.version && data.mpeg.version.length > 0 ? ('MPEG ' + data.mpeg.version + ' ' + data.mpeg.layer).trim() : 'unknown',
 			header: head ? head.mode : undefined,
 			frames: data.mpeg.frameCount,
