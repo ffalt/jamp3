@@ -402,7 +402,7 @@ SampleVBR.mp3
 	"bitRate": 64000,
 	"channelMode": "single",
 	"channels": 1,
-	"durationMS": 0.496,
+	"durationMS": 496,
 	"format": "MPEG 1 (ISO/IEC 11172-3) MPEG audio layer 3",
 	"header": "Info",
 	"frames": 19,
