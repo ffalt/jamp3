@@ -60,7 +60,7 @@ async function loadSaveCompare(filename: string): Promise<void> {
 	if (result.id3v1) {
 		await compareID3v1Save(filename, result.id3v1);
 	}
-	if (result.id3v2 && result.id3v2.head.valid) {
+	if (result.id3v2 && result.id3v2.head && result.id3v2.head.valid) {
 		await compareID3v2Save(filename, result.id3v2);
 	}
 }

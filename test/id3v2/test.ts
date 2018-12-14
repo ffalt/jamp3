@@ -21,7 +21,7 @@ const testSingleFile: string | undefined = undefined;
 async function loadSaveSpec(filename: string): Promise<void> {
 	debug('loadSaveSpec', 'loading', filename);
 	let tag = await id3.read(filename);
-	if (tag && !tag.head.valid) {
+	if (tag && tag.head && !tag.head.valid) {
 		console.log('invalid id3v2 tag found', filename);
 		tag = undefined;
 	}
@@ -29,13 +29,14 @@ async function loadSaveSpec(filename: string): Promise<void> {
 	if (!tag) {
 		return;
 	}
+	should().exist(tag.head);
 	await compareID3v2Spec(filename, tag);
 }
 
 async function loadSaveCompare(filename: string): Promise<void> {
 	debug('id3v2test', 'loading', filename);
 	let tag = await id3.read(filename);
-	if (tag && !tag.head.valid) {
+	if (tag && tag.head && !tag.head.valid) {
 		console.log('invalid id3v2 tag found', filename);
 		tag = undefined;
 	}
@@ -43,6 +44,7 @@ async function loadSaveCompare(filename: string): Promise<void> {
 	if (!tag) {
 		return;
 	}
+	should().exist(tag.head);
 	await compareID3v2Save(filename, tag);
 }
 

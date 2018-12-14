@@ -87,10 +87,10 @@ export class ID3v2 {
 			rev: rev,
 			size: 0,
 			valid: true,
-			syncSaveSize: tag.head.syncSaveSize,
-			flags: tag.head.flags,
-			flagBits: tag.head.flagBits,
-			extended: tag.head.extended
+			syncSaveSize: tag.head ? tag.head.syncSaveSize : undefined,
+			flags: tag.head ? tag.head.flags : undefined,
+			flagBits: tag.head ? tag.head.flagBits : undefined,
+			extended:  tag.head ? tag.head.extended : undefined
 		};
 		const raw_frames = await writeToRawFrames(tag.frames, head);
 		const exists = await fse.pathExists(filename);

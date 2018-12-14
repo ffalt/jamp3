@@ -3,10 +3,15 @@ import {DataReader, WriterStream} from '../common/streams';
 import {isBitSetAt, neededStoreBytes, removeZeroString} from '../common/utils';
 import {readSubFrames, writeSubFrames} from './id3v2_frames';
 import {ID3v2_ValuePicTypes, IID3V2} from './id3v2__types';
+import {ID3v2} from './id3v2';
 
 const ascii = Encodings['ascii'];
 const binary = Encodings['binary'];
 const utf8 = Encodings['utf-8'];
+
+function getWriteTextEncoding(frame: IID3V2.Frame, head: IID3V2.TagHeader): IEncoding {
+	return frame.head ? Encodings[frame.head.encoding || 'utf-8'] || utf8 : utf8;
+}
 
 export interface IFrameImpl {
 	parse: (reader: DataReader, frame: IID3V2.RawFrame, head: IID3V2.TagHeader) => Promise<{ value: IID3V2.FrameValue.Base, encoding?: IEncoding, subframes?: Array<IID3V2.Frame> }>;
@@ -53,9 +58,9 @@ export const FrameLangDescText: IFrameImpl = {
 		const value: IID3V2.FrameValue.LangDescText = {id, language, text};
 		return {value, encoding: enc};
 	},
-	write: async (frame, stream) => {
+	write: async (frame, stream, head) => {
 		const value = <IID3V2.FrameValue.LangDescText>frame.value;
-		const enc = Encodings[frame.head.encoding || 'utf-8'] || utf8;
+		const enc = getWriteTextEncoding(frame, head);
 		stream.writeEncoding(enc);
 		stream.writeAsciiString(value.language || '', 3);
 		stream.writeStringTerminated(value.id || '', enc);
@@ -234,7 +239,7 @@ export const FramePic: IFrameImpl = {
 	},
 	write: async (frame, stream, head) => {
 		const value = <IID3V2.FrameValue.Pic>frame.value;
-		const enc = Encodings[frame.head.encoding || 'utf-8'] || utf8;
+		const enc = getWriteTextEncoding(frame, head);
 		stream.writeEncoding(enc);
 		if (head.ver === 2) {
 			if (value.url) {
@@ -276,9 +281,9 @@ export const FrameText: IFrameImpl = {
 		const value: IID3V2.FrameValue.Text = {text};
 		return {value, encoding: enc};
 	},
-	write: async (frame, stream) => {
+	write: async (frame, stream, head) => {
 		const value = <IID3V2.FrameValue.Text>frame.value;
-		const enc = Encodings[frame.head.encoding || 'utf-8'] || utf8;
+		const enc = getWriteTextEncoding(frame, head);
 		stream.writeEncoding(enc);
 		stream.writeString(value.text, enc);
 	},
@@ -310,9 +315,9 @@ export const FrameTextConcatList: IFrameImpl = {
 		const value: IID3V2.FrameValue.Text = {text};
 		return {value, encoding: enc};
 	},
-	write: async (frame, stream) => {
+	write: async (frame, stream, head) => {
 		const value = <IID3V2.FrameValue.Text>frame.value;
-		const enc = Encodings[frame.head.encoding || 'utf-8'] || utf8;
+		const enc = getWriteTextEncoding(frame, head);
 		stream.writeEncoding(enc);
 		stream.writeString(value.text, enc);
 	},
@@ -341,9 +346,9 @@ export const FrameTextList: IFrameImpl = {
 		const value: IID3V2.FrameValue.TextList = {list};
 		return {value, encoding: enc};
 	},
-	write: async (frame, stream) => {
+	write: async (frame, stream, head) => {
 		const value = <IID3V2.FrameValue.TextList>frame.value;
-		const enc = Encodings[frame.head.encoding || 'utf-8'] || utf8;
+		const enc = getWriteTextEncoding(frame, head);
 		stream.writeEncoding(enc);
 		value.list.forEach((entry, index) => {
 			stream.writeString(entry, enc);
@@ -394,9 +399,9 @@ export const FrameIdText: IFrameImpl = {
 		const value: IID3V2.FrameValue.IdText = {id, text};
 		return {value, encoding: enc};
 	},
-	write: async (frame, stream) => {
+	write: async (frame, stream, head) => {
 		const value = <IID3V2.FrameValue.IdText>frame.value;
-		const enc = Encodings[frame.head.encoding || 'utf-8'] || utf8;
+		const enc = getWriteTextEncoding(frame, head);
 		stream.writeEncoding(enc);
 		stream.writeStringTerminated(value.id, enc);
 		stream.writeString(value.text, enc);
@@ -765,9 +770,9 @@ export const FramePartOfCompilation: IFrameImpl = {
 		const value: IID3V2.FrameValue.Bool = {bool: i === '1'};
 		return {value, encoding: enc};
 	},
-	write: async (frame, stream) => {
+	write: async (frame, stream, head) => {
 		const value = <IID3V2.FrameValue.Bool>frame.value;
-		const enc = Encodings[frame.head.encoding || 'ascii'] || ascii;
+		const enc = getWriteTextEncoding(frame, head);
 		stream.writeEncoding(enc);
 		stream.writeStringTerminated(value.bool ? '1' : '0', enc);
 	},
@@ -1062,9 +1067,9 @@ export const FrameSYLT: IFrameImpl = {
 		const value: IID3V2.FrameValue.SynchronisedLyrics = {language, timestampFormat, contentType, id, events};
 		return {value, encoding: enc};
 	},
-	write: async (frame, stream) => {
+	write: async (frame, stream, head) => {
 		const value = <IID3V2.FrameValue.SynchronisedLyrics>frame.value;
-		const enc = Encodings[frame.head.encoding || 'utf-8'] || utf8;
+		const enc = getWriteTextEncoding(frame, head);
 		stream.writeEncoding(enc);
 		stream.writeAsciiString(value.language, 3);
 		stream.writeByte(value.timestampFormat);
@@ -1102,9 +1107,9 @@ export const FrameGEOB: IFrameImpl = {
 		const value: IID3V2.FrameValue.GEOB = {mimeType, filename, contentDescription, bin};
 		return {value, encoding: enc};
 	},
-	write: async (frame, stream) => {
+	write: async (frame, stream, head) => {
 		const value = <IID3V2.FrameValue.GEOB>frame.value;
-		const enc = Encodings[frame.head.encoding || 'utf-8'] || utf8;
+		const enc = getWriteTextEncoding(frame, head);
 		stream.writeEncoding(enc);
 		stream.writeStringTerminated(value.mimeType, ascii);
 		stream.writeStringTerminated(value.filename, enc);

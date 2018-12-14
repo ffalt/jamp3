@@ -8,15 +8,20 @@ import fse from 'fs-extra';
 use(chaiExclude);
 
 function compareID3v2SpecFrame(filename: string, framespec: any, frame: IID3V2.Frame) {
+	const frameHead = frame.head;
+	should().exist(frameHead);
+	if (!frameHead) {
+		return;
+	}
 	if (framespec.formatFlags) {
 		Object.keys(framespec.formatFlags).forEach(flag => {
-			expect(frame.head.formatFlags[flag]).to.equal(framespec.formatFlags[flag], 'Flag values not equal for frame ' + framespec.id + ' flag ' + flag + ' frame: ' + JSON.stringify(frame));
+			expect(frameHead.formatFlags[flag]).to.equal(framespec.formatFlags[flag], 'Flag values not equal for frame ' + framespec.id + ' flag ' + flag + ' frame: ' + JSON.stringify(frame));
 		});
 	}
-	Object.keys(frame.head.formatFlags).forEach(flag => {
-		if (frame.head.formatFlags[flag]) {
+	Object.keys(frameHead.formatFlags).forEach(flag => {
+		if (frameHead.formatFlags[flag]) {
 			should().exist(framespec.formatFlags, 'SpecError: Flag values must be specified for frame ' + framespec.id + ' flag ' + flag);
-			expect(frame.head.formatFlags[flag]).to.equal(framespec.formatFlags[flag], 'SpecError: All Flag values must be correctly specified for frame ' + framespec.id + ' flag ' + flag);
+			expect(frameHead.formatFlags[flag]).to.equal(framespec.formatFlags[flag], 'SpecError: All Flag values must be correctly specified for frame ' + framespec.id + ' flag ' + flag);
 		}
 	});
 	if (framespec.binSize !== undefined) {
@@ -28,7 +33,7 @@ function compareID3v2SpecFrame(filename: string, framespec: any, frame: IID3V2.F
 		should().exist(frame.invalid);
 	}
 	if (framespec.size !== undefined) {
-		expect(frame.head.size).to.equal(framespec.size, 'Invalid size for frame ' + framespec.id + toNonBinJson(frame));
+		expect(frameHead.size).to.equal(framespec.size, 'Invalid size for frame ' + framespec.id + toNonBinJson(frame));
 	}
 	if (framespec.groupId !== undefined) {
 		expect(frame.groupId).to.equal(framespec.groupId, 'Invalid groupId for frame ' + framespec.id);
@@ -148,7 +153,9 @@ export async function compareID3v2Spec(filename: string, tag: IID3V2.Tag | undef
 	const spec = await fse.readJSON(filename + '.spec.json');
 	if (!spec.id3v2) {
 		if (tag) {
-			expect(tag.head.valid).to.equal(false, 'Spec needs tag to be invalid ' + toNonBinJson(tag));
+			if (tag.head) {
+				expect(tag.head.valid).to.equal(false, 'Spec needs tag to be invalid ' + toNonBinJson(tag));
+			}
 		}
 		return;
 	}
@@ -156,7 +163,10 @@ export async function compareID3v2Spec(filename: string, tag: IID3V2.Tag | undef
 	if (!tag) {
 		return;
 	}
-	expect(tag.head.ver).to.equal(spec.id3v2.ver, 'wrong id3v2 version');
+	should().exist(tag.head);
+	if (tag.head) {
+		expect(tag.head.ver).to.equal(spec.id3v2.ver, 'wrong id3v2 version');
+	}
 	compareeID3v2SpecFrames(filename, spec.id3v2.frames, tag.frames);
 	expect(tag.frames.length).to.equal(spec.id3v2.frames ? spec.id3v2.frames.length : 0, 'Invalid frame count ' + toNonBinJson(tag.frames));
 }

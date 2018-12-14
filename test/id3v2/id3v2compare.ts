@@ -16,11 +16,15 @@ use(chaiExclude);
 export async function compareID3v2Tags(a: IID3V2.Tag, b: IID3V2.Tag): Promise<void> {
 	expect(b.frames.length).to.equal(a.frames.length, 'Not the same frame count: ' + b.frames.map(f => f.id) + ' vs. ' + a.frames.map(f => f.id));
 	expect(b.head).excluding(['syncSaveSize', 'size']).to.deep.equal(a.head);
+	if (!a.head) {
+		return Promise.reject('invalid tag header');
+	}
+	const ver = a.head.ver;
 	a.frames.forEach((af, index) => {
 		const bf = b.frames[index];
 		// update tag id if original file included mixed 2.2 and 2.3/4 frames in one tag (id3v2-writer auto corrects this)
 		const orgID = af.id;
-		const id = ensureID3v2FrameVersionDef(af.id, a.head.ver) || af.id;
+		const id = ensureID3v2FrameVersionDef(af.id, ver) || af.id;
 		expect(bf.id).to.equal(id);
 		expect(bf.head).excludingEvery(['size']).to.deep.equal(af.head);
 		expect(bf.groupId).to.equal(af.groupId);
@@ -47,7 +51,9 @@ export async function compareID3v2Save(filename: string, tag: IID3V2.Tag): Promi
 	debug('writing', file.name);
 	try {
 		const id3 = new ID3v2();
-		await id3.write(file.name, tag, tag.head.ver, tag.head.rev);
+		const ver = tag.head ? tag.head.ver : 4;
+		const rev = tag.head ? tag.head.rev : 0;
+		await id3.write(file.name, tag, ver, rev);
 	} catch (e) {
 		file.removeCallback();
 		return Promise.reject(e);
