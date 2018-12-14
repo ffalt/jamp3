@@ -100,10 +100,10 @@ class ID3v2 {
                 rev: rev,
                 size: 0,
                 valid: true,
-                syncSaveSize: tag.head.syncSaveSize,
-                flags: tag.head.flags,
-                flagBits: tag.head.flagBits,
-                extended: tag.head.extended
+                syncSaveSize: tag.head ? tag.head.syncSaveSize : undefined,
+                flags: tag.head ? tag.head.flags : undefined,
+                flagBits: tag.head ? tag.head.flagBits : undefined,
+                extended: tag.head ? tag.head.extended : undefined
             };
             const raw_frames = yield id3v2_frames_1.writeToRawFrames(tag.frames, head);
             const exists = yield fs_extra_1.default.pathExists(filename);

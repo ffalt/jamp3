@@ -190,7 +190,7 @@ export namespace IID3V2 {
 	export interface Frame {
 		id: string;
 		title?: string;
-		head: FrameHeader;
+		head?: FrameHeader;
 		value: FrameValue.Base;
 		subframes?: Array<Frame>;
 		invalid?: string;
@@ -234,7 +234,7 @@ export namespace IID3V2 {
 	}
 
 	export interface Tag extends ITag {
-		head: TagHeader;
+		head?: TagHeader;
 		frames: Array<Frame>;
 	}
 

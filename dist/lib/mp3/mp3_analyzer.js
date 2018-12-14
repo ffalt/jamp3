@@ -92,7 +92,7 @@ class MP3Analyzer {
                 const id3v2 = data.id3v2;
                 id3v2.frames.forEach(frame => {
                     const def = id3v2_frames_1.findId3v2FrameDef(frame.id);
-                    if (def && def.versions.indexOf(id3v2.head.ver) < 0) {
+                    if (def && id3v2.head && def.versions.indexOf(id3v2.head.ver) < 0) {
                         info.msgs.push({ msg: 'ID3v2: invalid version for frame ' + frame.id, expected: def.versions.join(','), actual: id3v2.head.ver });
                     }
                 });

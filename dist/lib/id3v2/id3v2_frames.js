@@ -1179,7 +1179,11 @@ function processRawFrame(frame, head) {
 }
 function writeToRawFrame(frame, head) {
     return __awaiter(this, void 0, void 0, function* () {
-        frame.head = frame.head || {};
+        const frameHead = frame.head || {
+            size: 0,
+            statusFlags: {},
+            formatFlags: {}
+        };
         let id = frame.id;
         let data;
         if (frame.invalid) {
@@ -1207,7 +1211,7 @@ function writeToRawFrame(frame, head) {
                 yield orgDef.impl.write(frame, stream, head);
             }
             data = stream.toBuffer();
-            if ((frame.head.formatFlags) && (frame.head.formatFlags.compressed)) {
+            if ((frameHead.formatFlags) && (frameHead.formatFlags.compressed)) {
                 const sizebytes = id3v2_consts_1.ID3v2_FRAME_HEADER_LENGTHS.SIZE[head.ver];
                 const uncompressedStream = new streams_1.MemoryWriterStream();
                 if (sizebytes === 4) {
@@ -1218,13 +1222,13 @@ function writeToRawFrame(frame, head) {
                 }
                 data = buffer_1.BufferUtils.concatBuffer(uncompressedStream.toBuffer(), zlib.deflateSync(data));
             }
-            else if ((frame.head.formatFlags) && (frame.head.formatFlags.data_length_indicator)) {
+            else if ((frameHead.formatFlags) && (frameHead.formatFlags.data_length_indicator)) {
                 const dataLengthStream = new streams_1.MemoryWriterStream();
                 dataLengthStream.writeSyncSafeInt(data.length);
                 data = buffer_1.BufferUtils.concatBuffer(dataLengthStream.toBuffer(), data);
             }
         }
-        if (frame.head.formatFlags.grouping) {
+        if (frameHead.formatFlags.grouping) {
             if (frame.groupId === undefined) {
                 return Promise.reject(Error('Missing frame groupId but flag is set'));
             }
@@ -1232,7 +1236,7 @@ function writeToRawFrame(frame, head) {
             buf[0] = frame.groupId;
             data = buffer_1.BufferUtils.concatBuffer(buf, data);
         }
-        return { id: id, start: 0, end: 0, size: data.length, data: data, statusFlags: frame.head.statusFlags, formatFlags: frame.head.formatFlags };
+        return { id: id, start: 0, end: 0, size: data.length, data: data, statusFlags: frameHead.statusFlags, formatFlags: frameHead.formatFlags };
     });
 }
 function isKnownFrameId(id) {
@@ -1357,7 +1361,9 @@ function readID3v2Frame(rawFrame, head) {
             yield processRawFrame(rawFrame, head);
             const reader = new streams_1.DataReader(rawFrame.data);
             result = yield f.impl.parse(reader, rawFrame, head);
-            frame.head.encoding = result.encoding ? result.encoding.name : undefined;
+            if (frame.head) {
+                frame.head.encoding = result.encoding ? result.encoding.name : undefined;
+            }
             frame.value = result.value || { bin: rawFrame.data };
             if (result.subframes) {
                 frame.subframes = result.subframes;

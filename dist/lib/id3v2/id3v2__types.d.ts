@@ -156,7 +156,7 @@ export declare namespace IID3V2 {
     interface Frame {
         id: string;
         title?: string;
-        head: FrameHeader;
+        head?: FrameHeader;
         value: FrameValue.Base;
         subframes?: Array<Frame>;
         invalid?: string;
@@ -195,7 +195,7 @@ export declare namespace IID3V2 {
         crc32?: number;
     }
     interface Tag extends ITag {
-        head: TagHeader;
+        head?: TagHeader;
         frames: Array<Frame>;
     }
     interface RawTag extends ITag {
