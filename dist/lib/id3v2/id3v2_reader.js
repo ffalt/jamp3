@@ -189,6 +189,9 @@ class ID3v2Reader {
                 if (reader.unread() > 0 && id3v2_frames_1.isValidFrameBinId(idbin)) {
                     const pos = reader.position;
                     const frame = { id: utils_1.removeZeroString(idbin.toString('ascii').trim()), size: 0, start: tag.start, end: tag.end, data: buffer_1.BufferUtils.zeroBuffer(0), statusFlags: {}, formatFlags: {} };
+                    if (reader.unread() < sizebytes) {
+                        return reader.rest();
+                    }
                     frame.size = reader.readUInt(sizebytes);
                     if (id3v2_consts_1.ID3v2_FRAME_HEADER.SYNCSAVEINT.indexOf(tag.head.ver) >= 0) {
                         frame.size = utils_1.unsynchsafe(frame.size);

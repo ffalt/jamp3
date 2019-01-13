@@ -72,8 +72,12 @@ class ID3v2 {
         return __awaiter(this, void 0, void 0, function* () {
             const reader = new id3v2_reader_1.ID3v2Reader();
             const state_tag = yield reader.read(filename);
+            let exists = yield fs_extra_1.default.pathExists(filename + '.tempmp3');
+            if (exists) {
+                yield fs_extra_1.default.remove(filename + '.tempmp3');
+            }
             const state_stream = new streams_1.FileWriterStream();
-            yield state_stream.open(filename + '.temp.mp3');
+            yield state_stream.open(filename + '.tempmp3');
             try {
                 const writer = new id3v2_writer_1.ID3v2Writer();
                 yield writer.write(state_stream, frames, head);
@@ -88,8 +92,12 @@ class ID3v2 {
                 return Promise.reject(e);
             }
             yield state_stream.close();
+            exists = yield fs_extra_1.default.pathExists(filename + '.bak');
+            if (exists) {
+                yield fs_extra_1.default.remove(filename + '.bak');
+            }
             yield fs_extra_1.default.rename(filename, filename + '.bak');
-            yield fs_extra_1.default.rename(filename + '.temp.mp3', filename);
+            yield fs_extra_1.default.rename(filename + '.tempmp3', filename);
             yield fs_extra_1.default.remove(filename + '.bak');
         });
     }

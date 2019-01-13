@@ -235,6 +235,9 @@ export class ID3v2Reader {
 				// }
 				// debug('readFrames', 'valid id, reading frame', id);
 				const frame: IID3V2.RawFrame = {id: removeZeroString(idbin.toString('ascii').trim()), size: 0, start: tag.start, end: tag.end, data: BufferUtils.zeroBuffer(0), statusFlags: {}, formatFlags: {}};
+				if (reader.unread() < sizebytes) {
+					return reader.rest();
+				}
 				frame.size = reader.readUInt(sizebytes);
 				if (ID3v2_FRAME_HEADER.SYNCSAVEINT.indexOf(tag.head.ver) >= 0) {
 					frame.size = unsynchsafe(frame.size);

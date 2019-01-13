@@ -58,9 +58,13 @@ export class ID3v2 {
 		const reader = new ID3v2Reader();
 		// debug('reading old tag for position', filename);
 		const state_tag = await reader.read(filename);
-		// debug('writing new tag to temp file', filename + '.temp.mp3');
+		// debug('writing new tag to temp file', filename + '.tempmp3');
+		let exists = await fse.pathExists(filename + '.tempmp3');
+		if (exists) {
+			await fse.remove(filename + '.tempmp3');
+		}
 		const state_stream = new FileWriterStream();
-		await state_stream.open(filename + '.temp.mp3');
+		await state_stream.open(filename + '.tempmp3');
 		try {
 			const writer = new ID3v2Writer();
 			await writer.write(state_stream, frames, head);
@@ -75,8 +79,12 @@ export class ID3v2 {
 			return Promise.reject(e);
 		}
 		await state_stream.close();
+		exists = await fse.pathExists(filename + '.bak');
+		if (exists) {
+			await fse.remove(filename + '.bak');
+		}
 		await fse.rename(filename, filename + '.bak');
-		await fse.rename(filename + '.temp.mp3', filename);
+		await fse.rename(filename + '.tempmp3', filename);
 		await fse.remove(filename + '.bak');
 	}
 
@@ -90,7 +98,7 @@ export class ID3v2 {
 			syncSaveSize: tag.head ? tag.head.syncSaveSize : undefined,
 			flags: tag.head ? tag.head.flags : undefined,
 			flagBits: tag.head ? tag.head.flagBits : undefined,
-			extended:  tag.head ? tag.head.extended : undefined
+			extended: tag.head ? tag.head.extended : undefined
 		};
 		const raw_frames = await writeToRawFrames(tag.frames, head);
 		const exists = await fse.pathExists(filename);
