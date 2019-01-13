@@ -694,6 +694,14 @@ export const FrameDefs: { [id: string]: IFrameDef } = {
 		versions: [3, 4],
 		impl: FrameText
 	},
+	'TSST': {
+		/*
+		  The 'Set subtitle' frame is intended for the subtitle of the part of a set this track belongs to.
+        */
+		title: 'Set subtitle',
+		versions: [3, 4],
+		impl: FrameText
+	},
 	// -Involved persons frames
 	'TPE1': {
 		/*
