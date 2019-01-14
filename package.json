@@ -83,6 +83,6 @@
     "instrument": true
   },
   "engines": {
-    "node": "~6.9.2"
+    "node": "~6.16.0"
   }
 }
