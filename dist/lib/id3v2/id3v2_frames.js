@@ -587,6 +587,11 @@ exports.FrameDefs = {
         versions: [3, 4],
         impl: id3v2_frame_1.FrameText
     },
+    'TSST': {
+        title: 'Set subtitle',
+        versions: [3, 4],
+        impl: id3v2_frame_1.FrameText
+    },
     'TPE1': {
         title: 'Artist',
         versions: [3, 4],

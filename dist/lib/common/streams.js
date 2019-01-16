@@ -59,6 +59,9 @@ class ReaderStream {
                 if (!this.readableStream) {
                     return reject(Error('Could not open file ' + filename));
                 }
+                this.readableStream.on('error', (err) => {
+                    return reject(err);
+                });
                 this.readableStream.on('end', () => {
                     this.end = true;
                     this.streamEnd = true;
@@ -364,6 +367,9 @@ class FileWriterStream extends WriterStream {
         return __awaiter(this, void 0, void 0, function* () {
             const readstream = fs_1.default.createReadStream(filename, { start: position });
             return new Promise((resolve, reject) => {
+                readstream.on('error', (err) => {
+                    return reject(err);
+                });
                 readstream.on('end', (err) => {
                     if (err) {
                         reject(err);
