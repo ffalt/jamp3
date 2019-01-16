@@ -55,6 +55,9 @@ export class ReaderStream {
 			if (!this.readableStream) {
 				return reject(Error('Could not open file ' + filename));
 			}
+			this.readableStream.on('error', (err) => {
+				return reject(err);
+			});
 			this.readableStream.on('end', () => {
 				this.end = true;
 				this.streamEnd = true;
@@ -385,6 +388,9 @@ export class FileWriterStream extends WriterStream {
 	async copyFrom(filename: string, position: number): Promise<void> {
 		const readstream = fs.createReadStream(filename, {start: position});
 		return new Promise<void>((resolve, reject) => {
+			readstream.on('error', (err) => {
+				return reject(err);
+			});
 			readstream.on('end', (err) => {
 				if (err) {
 					reject(err);
