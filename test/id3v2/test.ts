@@ -16,6 +16,7 @@ use(chaiExclude);
 const id3 = new ID3v2();
 
 const testSingleFile: string | undefined = undefined;
+
 // const testSingleFile = '22TCP';
 
 async function loadSaveSpec(filename: string): Promise<void> {
@@ -49,6 +50,14 @@ async function loadSaveCompare(filename: string): Promise<void> {
 }
 
 describe('ID3v2', async () => {
+	it('should reject the promise not send an unhandled stream error', (done) => {
+		id3.read('notexistingfilename').then(() => {
+			throw new Error('should not return success');
+		}).catch(e => {
+			should().exist(e);
+			done();
+		});
+	});
 	const files: Array<string> = await collectTestFiles(ID3v2TestDirectories, ID3v2TestPath, testSingleFile);
 	files.forEach(file => {
 		describe(file.slice(ID3v2TestPath.length), () => {
