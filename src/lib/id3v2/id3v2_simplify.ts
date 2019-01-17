@@ -160,6 +160,7 @@ const slugMap: { [key: string]: string; } = {
 	'TSIZ': 'size',
 	'TPRO': 'produced_notice',
 	'TDTG': 'tagging_time',
+	'TDEN': 'encoding_time',
 	'TSOA': 'album_sort_order',
 	'TSOT': 'title_sort_order',
 	'WCOM': 'commercial_information',

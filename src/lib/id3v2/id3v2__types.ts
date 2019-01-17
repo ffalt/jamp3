@@ -356,6 +356,7 @@ export namespace IID3V2 {
 		subtitle?: string; // TIT3, TT3
 		synchronised_lyrics?: string; // SLT, SYLT
 		synchronised_tempo_codes?: string; // STC, SYTC
+		encoding_time?: string; // TDEN
 		tagging_time?: string; // TDTG
 		terms_of_use?: string; // USER
 		time?: string; // TIME, TIM

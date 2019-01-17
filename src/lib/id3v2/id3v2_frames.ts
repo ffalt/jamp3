@@ -994,6 +994,14 @@ export const FrameDefs: { [id: string]: IFrameDef } = {
 		versions: [3, 4],
 		impl: FrameText
 	},
+	'TDEN': {
+		/*
+		  The 'Encoding time' frame contains a timestamp describing when the audio was encoded.
+		*/
+		title: 'Encoding Time',
+		versions: [3, 4],
+		impl: FrameText
+	},
 	'TSSE': {
 		/*
 		 The 'Software/Hardware and settings used for encoding' frame includes the used audio encoder and its settings when the file was encoded. Hardware refers to hardware encoders, not the computer on which a program was run.
