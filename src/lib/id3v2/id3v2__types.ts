@@ -282,7 +282,8 @@ export namespace IID3V2 {
 		copyright_message?: string; // TCR
 		copyright_msg?: string; // TCOP
 		date?: string; // TDA,TDAT,TDRC
-		disc?: number; // TPOS
+		disc?: number; // TPOS (x/...)
+		disc_total?: number; // TPOS (.../x)
 		encoded_by?: string; // TEN,TENC
 		encoder?: string; // TSSE
 		encoding_software?: string; // TSS
@@ -362,7 +363,8 @@ export namespace IID3V2 {
 		time?: string; // TIME, TIM
 		title?: string; // TT2, TIT2
 		title_sort_order?: string; // TSOT, TST, XSOT
-		track?: number; // TRCK, TRK
+		track?: number; // TRCK, TRK (x/...)
+		track_total?: number; // TRCK, TRK (.../x)
 		unique_file_identifier?: string; // UFI, UFID
 		unsychronized_lyric?: string; // ULT
 		unsync_lyric?: string; // USLT
