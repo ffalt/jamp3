@@ -240,6 +240,7 @@ export declare namespace IID3V2 {
         copyright_msg?: string;
         date?: string;
         disc?: number;
+        disc_total?: number;
         encoded_by?: string;
         encoder?: string;
         encoding_software?: string;
@@ -320,6 +321,7 @@ export declare namespace IID3V2 {
         title?: string;
         title_sort_order?: string;
         track?: number;
+        track_total?: number;
         unique_file_identifier?: string;
         unsychronized_lyric?: string;
         unsync_lyric?: string;
