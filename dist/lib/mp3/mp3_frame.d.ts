@@ -1,4 +1,3 @@
-/// <reference types="node" />
 import { IMP3 } from './mp3__types';
 export declare function expandRawHeader(header: IMP3.FrameRawHeader): IMP3.FrameHeader;
 export declare class MPEGFrameReader {

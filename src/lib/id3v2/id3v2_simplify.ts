@@ -160,6 +160,7 @@ const slugMap: { [key: string]: string; } = {
 	'TSIZ': 'size',
 	'TPRO': 'produced_notice',
 	'TDTG': 'tagging_time',
+	'TDEN': 'encoding_time',
 	'TSOA': 'album_sort_order',
 	'TSOT': 'title_sort_order',
 	'WCOM': 'commercial_information',
@@ -283,16 +284,29 @@ export function simplifyTag(tag: IID3V2.Tag): IID3V2.TagSimplified {
 		if (simple) {
 			const count = (slugcounter[simple.slug] || 0) + 1;
 			slugcounter[simple.slug] = count;
-			if (['track', 'year', 'disc'].indexOf(simple.slug) >= 0) {
-				if (simple.text.indexOf('/') >= 0) {
-					simple.text = simple.text.slice(0, simple.text.indexOf('/'));
+			const name = simple.slug + (count > 1 ? '|' + count : '');
+			if (['track', 'disc'].indexOf(simple.slug) >= 0) {
+				const val = simple.text.split('/');
+				if (val.length > 0) {
+					const i = Number(val[0]);
+					if (!isNaN(i)) {
+						(<any>result)[name] = i;
+					}
 				}
-				const i = parseInt(simple.text, 10);
+				if (val.length > 1) {
+					const i = Number(val[1]);
+					if (!isNaN(i)) {
+						const totalName = simple.slug + '_total' + (count > 1 ? '|' + count : '');
+						(<any>result)[totalName] = i;
+					}
+				}
+			} else if (['year'].indexOf(simple.slug) >= 0) {
+				const i = Number(simple.text);
 				if (!isNaN(i)) {
-					(<any>result)[simple.slug + (count > 1 ? '|' + count : '')] = i;
+					(<any>result)[name] = i;
 				}
 			} else {
-				(<any>result)[simple.slug + (count > 1 ? '|' + count : '')] = simple.text;
+				(<any>result)[name] = simple.text;
 			}
 		}
 	});

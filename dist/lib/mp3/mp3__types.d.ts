@@ -1,4 +1,3 @@
-/// <reference types="node" />
 import { IID3V2 } from '../id3v2/id3v2__types';
 import { IID3V1 } from '../id3v1/id3v1__types';
 import { ITag } from '../common/types';

@@ -1,4 +1,3 @@
-/// <reference types="node" />
 export interface IEncoding {
     name: string;
     byte: number;

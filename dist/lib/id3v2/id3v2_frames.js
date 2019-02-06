@@ -707,6 +707,11 @@ exports.FrameDefs = {
         versions: [3, 4],
         impl: id3v2_frame_1.FrameText
     },
+    'TDEN': {
+        title: 'Encoding Time',
+        versions: [3, 4],
+        impl: id3v2_frame_1.FrameText
+    },
     'TSSE': {
         versions: [3, 4],
         title: 'Encoding Software/Hardware',

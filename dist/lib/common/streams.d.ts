@@ -1,4 +1,3 @@
-/// <reference types="node" />
 import fs from 'fs';
 import { IEncoding } from './encodings';
 export declare class ReaderStream {

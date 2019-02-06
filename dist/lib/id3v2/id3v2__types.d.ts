@@ -1,4 +1,3 @@
-/// <reference types="node" />
 import { ITag } from '../common/types';
 export declare namespace IID3V2 {
     namespace FrameValue {
@@ -314,6 +313,7 @@ export declare namespace IID3V2 {
         subtitle?: string;
         synchronised_lyrics?: string;
         synchronised_tempo_codes?: string;
+        encoding_time?: string;
         tagging_time?: string;
         terms_of_use?: string;
         time?: string;
