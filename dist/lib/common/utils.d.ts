@@ -1,3 +1,4 @@
+/// <reference types="node" />
 export declare function isBitSetAt(byte: number, bit: number): boolean;
 export declare function flags(names: Array<string>, values: Array<number>): {
     [name: string]: boolean;

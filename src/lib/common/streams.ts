@@ -235,7 +235,7 @@ export class WriterStream {
 
 	writeByte(byte: number) {
 		const buf = BufferUtils.zeroBuffer(1);
-		buf.writeUInt8(byte, 0, true);
+		buf.writeUInt8(byte, 0);
 		this.wstream.write(buf);
 	}
 
@@ -292,7 +292,7 @@ export class WriterStream {
 
 	writeUInt4Byte(int: number) {
 		const buf = BufferUtils.zeroBuffer(4);
-		buf.writeUIntBE(int, 0, 4, true);
+		buf.writeUIntBE(int, 0, 4);
 		this.wstream.write(buf);
 	}
 
@@ -468,19 +468,19 @@ export class DataReader {
 	}
 
 	readUInt2Byte(): number {
-		const result = this.data.readUIntBE(this.position, 2, true);
+		const result = this.data.readUIntBE(this.position, 2);
 		this.position += 2;
 		return result;
 	}
 
 	readSInt2Byte(): number {
-		const result = this.data.readIntBE(this.position, 2, true);
+		const result = this.data.readIntBE(this.position, 2);
 		this.position += 2;
 		return result;
 	}
 
 	readUInt4Byte(): number {
-		const result = this.data.readUInt32BE(this.position, true);
+		const result = this.data.readUInt32BE(this.position);
 		this.position += 4;
 		return result;
 	}

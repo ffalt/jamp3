@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import { ITag } from '../common/types';
 export declare namespace IID3V2 {
     namespace FrameValue {

@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import { ReaderStream } from '../common/streams';
 import { IID3V1 } from './id3v1__types';
 export declare class ID3v1Reader {

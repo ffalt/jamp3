@@ -1,3 +1,4 @@
+/// <reference types="node" />
 export declare class Markers {
     static MARKERS: {
         [name: string]: Array<number>;

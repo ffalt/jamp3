@@ -126,7 +126,7 @@ class ID3v2Reader {
         const head = {
             ver: buffer[offset + 3],
             rev: buffer[offset + 4],
-            size: buffer.readInt32BE(offset + 6, true),
+            size: buffer.readInt32BE(offset + 6),
             valid: false
         };
         if (id3v2_consts_1.ID3v2_HEADER.SYNCSAVEINT.indexOf(head.ver) >= 0) {

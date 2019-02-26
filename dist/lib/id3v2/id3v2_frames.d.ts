@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import { WriterStream } from '../common/streams';
 import { IFrameImpl } from './id3v2_frame';
 import { IID3V2 } from './id3v2__types';

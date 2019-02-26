@@ -1,3 +1,4 @@
+/// <reference types="node" />
 export declare class BufferUtils {
     static scanBufferText(buffer: Buffer, search: Array<number> | Buffer, start: number): number;
     static concatBuffer(buffer: Buffer, appendbuffer: Buffer): Buffer;
