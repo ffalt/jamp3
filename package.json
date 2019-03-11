@@ -37,7 +37,7 @@
     "@types/debug": "4.1.2",
     "@types/fs-extra": "5.0.5",
     "@types/mocha": "5.2.6",
-    "@types/node": "11.11.0",
+    "@types/node": "11.11.1",
     "@types/tmp": "0.0.34",
     "chai": "4.2.0",
     "chai-exclude": "1.0.12",
