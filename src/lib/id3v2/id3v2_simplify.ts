@@ -1,5 +1,6 @@
 import {IID3V2} from './id3v2__types';
 import {FrameDefs, matchFrame} from './id3v2_frames';
+import {FrameText} from './id3v2_frame';
 
 const TXXXMap: { [key: string]: string; } = {
 	'ASIN': 'asin',
@@ -46,6 +47,8 @@ const slugMap: { [key: string]: string; } = {
 	'TIPL': 'involved_people',
 	'TCOM': 'composer',
 	'TSOC': 'composer_sort',
+	'MVNM': 'movement',
+	'MVIN': 'movement_nr',
 	'TMCL': 'musicians_credits',
 	'TLAN': 'language',
 	'TLEN': 'length',

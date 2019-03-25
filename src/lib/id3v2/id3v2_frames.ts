@@ -1798,6 +1798,22 @@ export const FrameDefs: { [id: string]: IFrameDef } = {
 		versions: [3, 4],
 		impl: FrameText
 	},
+	'MVNM': {
+		/*
+		 Movement
+		 */
+		title: 'Movement',
+		versions: [3, 4],
+		impl: FrameText
+	},
+	'MVIN': {
+		/*
+		 Movement Nr
+		 */
+		title: 'Movement Number/Total',
+		versions: [3, 4],
+		impl: FrameText
+	},
 	'PCST': {
 		/*
 		 Itunes - Indicates a podcast.

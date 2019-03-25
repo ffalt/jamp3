@@ -284,6 +284,9 @@ export namespace IID3V2 {
 		date?: string; // TDA,TDAT,TDRC
 		disc?: number; // TPOS (x/...)
 		disc_total?: number; // TPOS (.../x)
+		movement?: string; // MVNM
+		movement_nr?: number; // MVIN (x/...)
+		movement_nr_total?: number; // MVIN (.../x)
 		encoded_by?: string; // TEN,TENC
 		encoder?: string; // TSSE
 		encoding_software?: string; // TSS
