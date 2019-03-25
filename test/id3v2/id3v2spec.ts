@@ -1,7 +1,7 @@
 import {expect, should, use} from 'chai';
 import 'mocha';
 import {IID3V2} from '../../src';
-import chaiExclude = require('chai-exclude');
+import chaiExclude from 'chai-exclude';
 import {toNonBinJson} from '../common/common';
 import fse from 'fs-extra';
 

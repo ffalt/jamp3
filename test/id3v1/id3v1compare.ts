@@ -4,7 +4,7 @@ import tmp from 'tmp';
 import 'mocha';
 import {ID3v1} from '../../src/lib/id3v1/id3v1';
 import {IID3V1} from '../../src/lib/id3v1/id3v1__types';
-import chaiExclude = require('chai-exclude');
+import chaiExclude from 'chai-exclude';
 import Debug from 'debug';
 
 const debug = Debug('id3v1-test');

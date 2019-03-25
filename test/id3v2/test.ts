@@ -2,7 +2,7 @@ import {expect, should, use} from 'chai';
 import 'mocha';
 import fse from 'fs-extra';
 import {ID3v2} from '../../src/lib/id3v2/id3v2';
-import chaiExclude = require('chai-exclude');
+import chaiExclude from 'chai-exclude';
 import Debug from 'debug';
 import {compareID3v2Spec} from './id3v2spec';
 import {compareID3v2Save} from './id3v2compare';

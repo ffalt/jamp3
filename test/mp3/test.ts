@@ -1,6 +1,6 @@
 import {expect, should, use} from 'chai';
 import {describe, it} from 'mocha';
-import chaiExclude = require('chai-exclude');
+import chaiExclude from 'chai-exclude';
 import path from 'path';
 import Debug from 'debug';
 import {compareID3v2Spec} from '../id3v2/id3v2spec';

@@ -4,7 +4,7 @@ import tmp from 'tmp';
 import 'mocha';
 import {ID3v2} from '../../src/lib/id3v2/id3v2';
 import {IID3V2} from '../../src';
-import chaiExclude = require('chai-exclude');
+import chaiExclude from 'chai-exclude';
 import {BufferUtils} from '../../src/lib/common/buffer';
 import {ensureID3v2FrameVersionDef, matchFrame} from '../../src/lib/id3v2/id3v2_frames';
 import Debug from 'debug';
