@@ -150,7 +150,10 @@ const FramesMap: { [key: string]: string; } = {
 	'XHD3': 'MP3HD',
 	'TRDA': 'RECORDINGDATES',
 	'CDM': 'COMPRESSEDMETA',
-	'CRM': 'ENCRYPTEDMETA'
+	'CRM': 'ENCRYPTEDMETA',
+	'TRCK': 'TRACKNUMBER',
+	'MVIN': 'MOVEMENT',
+	'TPOS': 'DISCNUMBER'
 };
 
 const SplitFrameMap: { [key: string]: Array<string>; } = {
@@ -159,24 +162,26 @@ const SplitFrameMap: { [key: string]: Array<string>; } = {
 	'TPOS': ['DISCNUMBER', 'DISCTOTAL']
 };
 
+const DateUpgradeMap: { [key: string]: string; } = {
+	'TYER': 'Year',
+	'TDAT': 'Date',
+	'TIME': 'Time'
+};
+
 /**
-
+ TODO: simplify following frames more like in style VORBISCOMMENT
  POPM    RATING:user@email
-
- TXXX:MusicMagic Fingerprint    FINGERPRINT=MusicMagic Fingerprint {fingerprint}
-
  Chapter tags        CHAPTERxxx
- */
+*/
 
 if (process.env.NODE_ENV === 'development') {
-	console.log('debugging simply');
-
 	Object.keys(FrameDefs).forEach(key => {
 		const frame = findId3v2FrameDef(key);
 		if (!frame) {
 			console.error('DEVELOPER ERROR: Unknown frame id \'' + key + '\' in simplify list');
 		} else {
-			const slug = (['TXXX', 'UFID', 'COMM', 'PRIV', 'WXXX', 'LINK', 'TIPL', 'TMCL'].indexOf(key) >= 0) || FramesMap[key] || TXXXMap[key] || UFIDMap[key] || COMMMap[key] || PRIVMap[key] || SplitFrameMap[key];
+			const slug = (['TXXX', 'UFID', 'COMM', 'PRIV', 'WXXX', 'LINK', 'TIPL', 'TMCL'].indexOf(key) >= 0) || FramesMap[key] ||
+				TXXXMap[key] || UFIDMap[key] || COMMMap[key] || PRIVMap[key] || SplitFrameMap[key] || DateUpgradeMap[key];
 			if (!slug) {
 				if (frame.versions.indexOf(4) >= 0) {
 					console.error('DEVELOPER ERROR: Add a slug for the 2.4 frame \'' + key + '\': \'' + FrameDefs[key].title.toLowerCase().replace(/ /g, '_') + '\',');
@@ -270,20 +275,20 @@ export function simplifyFrame(frame: IID3V2.Frame, dropIDsList?: Array<string>):
 	if (text && SplitFrameMap[id]) {
 		const names = SplitFrameMap[id];
 		const split = text.split('/');
-		return [{slug: names[0], text: split[0]}, {slug: names[1], text: split[1]}];
+		const result = [];
+		if (split[0]) {
+			result.push({slug: names[0], text: split[0]});
+		}
+		if (split[1]) {
+			result.push({slug: names[1], text: split[1]});
+		}
+		return result;
 	}
 	if (text) {
 		return [{slug, text}];
 	}
 	return null;
 }
-
-
-const DateUpgradeMap: { [key: string]: string; } = {
-	'TYER': 'Year',
-	'TDAT': 'Date',
-	'TIME': 'Time'
-};
 
 export function simplifyTag(tag: IID3V2.Tag, dropIDsList?: Array<string>): IID3V2.TagSimplified {
 	const result: IID3V2.TagSimplified = {};
