@@ -12,9 +12,6 @@ import {
 } from './id3v2_frame';
 import {IID3V2} from './id3v2__types';
 import {IEncoding} from '../common/encodings';
-// import Debug from 'debug';
-
-// const debug = Debug('id3v2-frames');
 
 interface IFrameDef {
 	title: string;
@@ -1020,7 +1017,7 @@ export const FrameDefs: { [id: string]: IFrameDef } = {
 		 The 'Date' frame is a numeric string in the DDMM format containing the date for the recording. This field is always four characters long.
 		 */
 		title: 'Date',
-		versions: [3, 4],
+		versions: [3],
 		impl: FrameText
 	},
 	'TIME': {
@@ -1028,7 +1025,7 @@ export const FrameDefs: { [id: string]: IFrameDef } = {
 		 The 'Time' frame is a numeric string in the HHMM format containing the time for the recording. This field is always four characters long.
 		 */
 		title: 'Time',
-		versions: [3, 4],
+		versions: [3],
 		impl: FrameText
 	},
 	'TORY': {
@@ -1036,7 +1033,7 @@ export const FrameDefs: { [id: string]: IFrameDef } = {
 		 The 'Original release year' frame is intended for the year when the original recording, if for example the music in the file should be a cover of a previously released song, was released. The field is formatted as in the "TYER" frame.
 		 */
 		title: 'Original release year',
-		versions: [3, 4],
+		versions: [3],
 		impl: FrameText
 	},
 	'TRDA': {
@@ -1044,7 +1041,7 @@ export const FrameDefs: { [id: string]: IFrameDef } = {
 		 The 'Recording dates' frame is a intended to be used as complement to the "TYER", "TDAT" and "TIME" frames. E.g. "4th-7th June, 12th June" in combination with the "TYER" frame.
 		 */
 		title: 'Recording dates',
-		versions: [3, 4],
+		versions: [3],
 		impl: FrameText
 	},
 	'TSIZ': {
@@ -1052,7 +1049,7 @@ export const FrameDefs: { [id: string]: IFrameDef } = {
 		 The 'Size' frame contains the size of the audiofile in bytes, excluding the ID3v2 tag, represented as a numeric string.
 		 */
 		title: 'Size',
-		versions: [3, 4],
+		versions: [3],
 		impl: FrameText
 	},
 	'TYER': {
@@ -1062,7 +1059,7 @@ export const FrameDefs: { [id: string]: IFrameDef } = {
 		 structure document [ID3v2-strct].
 		 */
 		title: 'Year',
-		versions: [3, 4],
+		versions: [3],
 		impl: FrameText
 	},
 
@@ -1363,7 +1360,7 @@ export const FrameDefs: { [id: string]: IFrameDef } = {
 		impl: FrameLangDescText
 	},
 	'SYLT': {
-		title: 'Synchronised lyrics/text',
+		title: 'Synchronised lyrics',
 		versions: [3, 4],
 		impl: FrameSYLT
 	},
@@ -1693,7 +1690,8 @@ export const FrameDefs: { [id: string]: IFrameDef } = {
 		 */
 		title: 'Involved people list',
 		versions: [3],
-		impl: FrameTextList
+		impl: FrameTextList,
+		upgrade: 'TIPL'
 	},
 
 	// Others 4
@@ -2090,7 +2088,7 @@ export async function writeSubFrames(frames: Array<IID3V2.Frame>, stream: Writer
 export async function readSubFrames(bin: Buffer, head: IID3V2.TagHeader): Promise<Array<IID3V2.Frame>> {
 	const subtag: IID3V2.RawTag = {id: 'ID3v2', head, frames: [], start: 0, end: 0};
 	const reader = new ID3v2Reader();
-	const buffer = await reader.readFrames(bin, subtag);
+	const buffer = await reader.readFrames(bin, subtag); // TODO: re-add rest buffer to parse
 	const t = await buildID3v2(subtag);
 	return t.frames;
 }
@@ -2102,6 +2100,31 @@ export async function writeToRawFrames(frames: Array<IID3V2.Frame>, head: IID3V2
 		result.push(raw);
 	}
 	return result;
+}
+
+export function upgrade23DateFramesTov24Date(dateFrames: Array<IID3V2.Frame>): IID3V2.Frame | undefined {
+	const year = dateFrames.find(f => ['TYER', 'TYE'].indexOf(f.id) >= 0);
+	const date = dateFrames.find(f => ['TDAT', 'TDA'].indexOf(f.id) >= 0);
+	const time = dateFrames.find(f => ['TIME', 'TIM'].indexOf(f.id) >= 0);
+	if (!year && !date && !time) {
+		return;
+	}
+	const result: Array<string> = [];
+	if (year && year.value && year.value.hasOwnProperty('text')) {
+		result.push((<IID3V2.FrameValue.Text>year.value).text);
+	}
+	if (date && date.value && date.value.hasOwnProperty('text')) {
+		result.push((<IID3V2.FrameValue.Text>date.value).text);
+	}
+	if (time && time.value && time.value.hasOwnProperty('text')) {
+		result.push((<IID3V2.FrameValue.Text>time.value).text);
+	}
+	const frame: IID3V2.Frame = {
+		id: 'TDRC',
+		title: 'Recording time',
+		value: {text: result.join('-')}
+	};
+	return frame;
 }
 
 export function ensureID3v2FrameVersionDef(id: string, dest: number): string | null {

@@ -254,152 +254,142 @@ export namespace IID3V2 {
 	}
 
 	export interface TagSimplified {
-		album?: string; // TAL,TALB
-		album_artist?: string; // TPE2
-		album_artist_sort?: string; // TSO2
-		album_artist_sort_order?: string; // TS2
-		album_sort_order?: string; // TSA,TSOA,XSOA
-		artist?: string; // TP1, TPE1
-		artist_sort?: string; // TSOP
-		attached_picture?: string; // APIC,PIC
-		audio_encryption?: string; // AENC,CRA
-		audio_seek_point_index?: string; // ASPI
-		band?: string; // TP2
-		bpm?: string; // TBP,BPM,TBPM
-		chapter?: string; // CHAP
-		chapter_toc?: string; // CTOC
-		comment?: string; // COMM
-		comments?: string; // COM
-		commercial?: string; // COMR
-		commercial_information?: string; // WCM,WCOM
-		composer?: string; // TCM,TCOM
-		composer_sort?: string; // TSOC
-		composer_sort_order?: string; // TSC
-		conductor?: string; // TP3,TPE3
-		content_group?: string; // TIT1
-		content_group_description?: string; // TT1
-		copyright?: string; // WCP, WCOP
-		copyright_message?: string; // TCR
-		copyright_msg?: string; // TCOP
-		date?: string; // TDA,TDAT,TDRC
-		disc?: number; // TPOS (x/...)
-		disc_total?: number; // TPOS (.../x)
-		movement?: string; // MVNM
-		movement_nr?: number; // MVIN (x/...)
-		movement_nr_total?: number; // MVIN (.../x)
-		encoded_by?: string; // TEN,TENC
-		encoder?: string; // TSSE
-		encoding_software?: string; // TSS
-		encrypted_meta?: string; // CRM
-		encryption_method_registration?: string; // ENCR
-		equalisation?: string; // EQU,EQUA
-		event_timing_codes?: string; // ETC,ETCO
-		file_owner?: string; // TOWN
-		file_type?: string; // TFLT
-		general_encapsulated_object?: string; // GEO,GEOB
-		genre?: string; // TCO, TCON
-		group_id_registration?: string; // GRID
-		initial_key?: string; // TKE,TKEY
-		internet_radio_station_name?: string; // TRSN
-		internet_radio_station_owner?: string; // TRSO
-		interpreted_by?: string; // TP4, TPE4
-		involved_people?: string; // TIPL
-		involved_people_list?: string; // IPL,IPLS
-		isrc?: string; // TRC,TSRC
-		itunes_compilation_flag?: string; // TCMP,TCP
-		itunes_podcast_description?: string; // TDES,TDS
-		itunes_podcast_keywords?: string; // TKWD
-		itunes_podcast_marker?: string; // PCS, PCST
-		language?: string; // TLAN,LA
-		length?: string; // TLE,TLEN
-		linked_information?: string; // LINK,LNK
-		lyricist?: string; // TXT,TEXT
-		media?: string; // TMED
-		media_type?: string; // TMT
-		mood?: string; // TMOO
-		mpeg_location_lookup_table?: string; // MLL,MLLT
-		music_cd_identifier?: string; // MCDI
-		musicians_credits?: string; // TMCL
-		musicmatch_binary?: string; // NCO,NCON
-		official_artist?: string; // WAR,WOAR
-		official_audio_file_webpage?: string; // WAF, WOAF
-		official_audio_source_webpage?: string; // WAS,WOAS
-		official_internet_radio_station_homepage?: string; // WORS
-		original_album?: string; // TOT,TOAL
-		original_artist?: string; // TOA,TOPE
-		original_filename?: string; // TOF,TOFN
-		original_lyricist?: string; // TOL,TOLY
-		original_release_time?: string; // XDOR
-		original_release_year?: string; // TOR,ORY
-		ownership?: string; // OWNE
-		part_of_a_set?: string; // TPA
-		payment?: string; // WPAY
-		performer_sort_order?: string; // TSP, XSOP
-		play_counter?: string; // CNT,PCNT
-		playlist_delay?: string; // TDLY, TDY
-		podcast_feed_url?: string; // WFD, WFED
-		podcast_url?: string; // TGID, TID
-		popularimeter?: string; // POP, POPM
-		position_synchronisation?: string; // POSS
-		produced_notice?: string; // TPRO
-		publisher?: string; // TPB, TPUB
-		publishers_official_webpage?: string; // WPB, WPUB
-		recommended_buffer_size?: string; // BUF, RBUF
-		recording_dates?: string; // TRD, TRDA
-		relative_volume_adjustment?: string; // RVA, RVAD
-		relative_volume_adjustment_2?: string; // RVA2
-		release_date?: string; // TDOR
-		release_time?: string; // TDR, TDRL
-		release_year?: string; // TDLR
-		replay_gain_adjustment?: string; // RGAD
-		reverb?: string; // REV, RVRB
-		seek?: string; // SEEK
-		set_subtitle?: string; // TSST
-		signature?: string; // SIGN
-		size?: string; // TSI, TSIZ
-		subtitle?: string; // TIT3, TT3
-		synchronised_lyrics?: string; // SLT, SYLT
-		synchronised_tempo_codes?: string; // STC, SYTC
-		encoding_time?: string; // TDEN
-		tagging_time?: string; // TDTG
-		terms_of_use?: string; // USER
-		time?: string; // TIME, TIM
-		title?: string; // TT2, TIT2
-		title_sort_order?: string; // TSOT, TST, XSOT
-		track?: number; // TRCK, TRK (x/...)
-		track_total?: number; // TRCK, TRK (.../x)
-		unique_file_identifier?: string; // UFI, UFID
-		unsychronized_lyric?: string; // ULT
-		unsync_lyric?: string; // USLT
-		year?: number; // TYE,TYER
-
-		private_frame?: string; // PRI, PRIV
-		user_defined_text?: string; // TXX, TXXX
-		user_defined_url_link_frame?: string; // WXX, WXXX
-
-		TRACKID?: string;
-
-		asin?: string; // TXXX with id===ASIN
-		catalognumber?: string; // TXXX with id===CATALOGNUMBER
-		script?: string; // TXXX with id===SCRIPT
-		barcode?: string; // TXXX with id===BARCODE
-		originalyear?: string; // TXXX with id===originalyear
-		replaygain_track_gain?: string; // TXXX with id===replaygain_track_gain
-		replaygain_album_gain?: string; // TXXX with id===replaygain_album_gain
-		replaygain_track_peak?: string; // TXXX with id===replaygain_track_peak
-		replaygain_album_peak?: string; // TXXX with id===replaygain_album_peak
-		artists?: string; // TXXX with id===Artists
-		ACOUSTID?: string; // TXXX with id===Acoustid Id
-		ALBUMTYPE?: string; // TXXX with id===MusicBrainz Album Type
-		ALBUMARTISTID?: string; // TXXX with id===MusicBrainz Album Artist Id
-		ARTISTID?: string; // TXXX with id===MusicBrainz Artist Id
-		ALBUMID?: string; // TXXX with id===MusicBrainz Album Id
-		RELEASETRACKID?: string; // TXXX with id===MusicBrainz Release Track Id
-		RELEASEGROUPID?: string; // TXXX with id===MusicBrainz Release Group Id
-		RECORDINGID?: string; // TXXX with id===MusicBrainz Recording Id
-		ALBUMSTATUS?: string; // TXXX with id===MusicBrainz Album Status
-		RELEASECOUNTRY?: string; // TXXX with id===MusicBrainz Album Release Country
-		TRMID?: string; // TXXX with id===MusicBrainz TRM Id
+		ACOUSTID_FINGERPRINT?: string;
+		ACOUSTID_ID?: string;
+		ALBUM?: string;
+		ALBUMARTIST?: string;
+		ALBUMARTISTSORT?: string;
+		ALBUMSORT?: string;
+		ARRANGER?: string;
+		ARTIST?: string;
+		ARTISTS?: string;
+		ARTISTSORT?: string;
+		ASIN?: string;
+		AUDIOENCRYPTION?: string;
+		AUDIOSEEKPOINTINDEX?: string;
+		AUDIOSOURCEWWEBPAGEURL?: string;
+		AUDIOSTREAMSIZE?: string;
+		BARCODE?: string;
+		BPM?: string;
+		CATALOGNUMBER?: string;
+		CHAPTER?: string;
+		CHAPTERTOC?: string;
+		COMMENT?: string;
+		COMMERCIAL?: string;
+		COMMERCIALINFORMATIONURL?: string;
+		COMPILATION?: string;
+		COMPOSER?: string;
+		COMPOSERSORT?: string;
+		COMPRESSEDMETA?: string;
+		CONDUCTOR?: string;
+		COPYRIGHT?: string;
+		DATE?: string;
+		DISCNUMBER?: string;
+		DISCSUBTITLE?: string;
+		DISCTOTAL?: string;
+		DJMIXER?: string;
+		ENCODEDBY?: string;
+		ENCODERSETTINGS?: string;
+		ENCODINGTIME?: string;
+		ENCRYPTEDMET?: string;
+		ENCRYPTIONMETHODREGISTRATION?: string;
+		ENGINEER?: string;
+		EQUALISATION?: string;
+		EVENTTIMINGCODE?: string;
+		FILEOWNER?: string;
+		FILETYPE?: string;
+		FILEWEBPAGEURL?: string;
+		GENERALENCAPSULATEDOBJECT?: string;
+		GENRE?: string;
+		GROUPIDREGISTRATION?: string;
+		GROUPING?: string;
+		ISRC?: string;
+		KEY?: string;
+		LABEL?: string;
+		LANGUAGE?: string;
+		LICENSE?: string;
+		LYRICIST?: string;
+		LYRICS?: string;
+		MEDIA?: string;
+		MIXER?: string;
+		MOOD?: string;
+		MOVEMENT?: string;
+		MOVEMENTNAME?: string;
+		MOVEMENTTOTAL?: string;
+		MP3HD?: string;
+		MPEGLOCATIONLOOKUPTABLE?: string;
+		MUSICBRAINZ_ALBUMARTISTID?: string;
+		MUSICBRAINZ_ALBUMID?: string;
+		MUSICBRAINZ_ARTISTID?: string;
+		MUSICBRAINZ_DISCID?: string;
+		MUSICBRAINZ_ORIGINALALBUMID?: string;
+		MUSICBRAINZ_ORIGINALARTISTID?: string;
+		MUSICBRAINZ_RELEASEGROUPID?: string;
+		MUSICBRAINZ_RELEASETRACKID?: string;
+		MUSICBRAINZ_TRACKID?: string;
+		MUSICBRAINZ_TRMID?: string;
+		MUSICBRAINZ_WORKID?: string;
+		MUSICCDID?: string;
+		MUSICIP_PUID?: string;
+		MUSICMATCH?: string;
+		ORGANIZATION?: string;
+		ORIGINALALBUM?: string;
+		ORIGINALARTIST?: string;
+		ORIGINALDATE?: string;
+		ORIGINALFILENAME?: string;
+		ORIGINALLYICIST?: string;
+		ORIGINALYEAR?: string;
+		OWNERSHIP?: string;
+		PARTNUMBE?: string;
+		PAYMENTURL?: string;
+		PERFORME?: string;
+		PICTURE?: string;
+		PLAYCOUNTER?: string;
+		PLAYLISTDELAY?: string;
+		PODCAST?: string;
+		PODCAST_DESCRIPTION?: string;
+		PODCAST_KEYWORDS?: string;
+		PODCASTFEEDURL?: string;
+		PODCASTID?: string;
+		POSITIONSYNCHRONISATION?: string;
+		PRODUCEDNOTICE?: string;
+		PRODUCER?: string;
+		PUBLISHERURL?: string;
+		RADIOSTATIONNAME?: string;
+		RADIOSTATIONOWNER?: string;
+		RADIOSTATIONWEBPAGEURL?: string;
+		RATING?: string;
+		RECOMMENDEDBUFFERSIZE?: string;
+		RECORDINGDATES?: string;
+		RELATIVEVOLUMEADJUSTMENT?: string;
+		RELEASECOUNTRY?: string;
+		RELEASESTATUS?: string;
+		RELEASETIME?: string;
+		RELEASETYPE?: string;
+		REMIXER?: string;
+		REPLAYGAIN_ALBUM_GAIN?: string;
+		REPLAYGAIN_ALBUM_PEAK?: string;
+		REPLAYGAIN_TRACK_GAIN?: string;
+		REPLAYGAIN_TRACK_PEAK?: string;
+		REPLAYGAINADJUSTMENT?: string;
+		REVERB?: string;
+		SCRIPT?: string;
+		SEEK?: string;
+		SHOWMOVEMENT?: string;
+		SIGNATURE?: string;
+		SUBTITLE?: string;
+		SYNCHRONISEDLYRICS?: string;
+		SYNCHRONISEDTEMPOCODES?: string;
+		TAGGINGTIME?: string;
+		TERMSOFUSE?: string;
+		TITLE?: string;
+		TITLESORT?: string;
+		TRACKLENGTH?: string;
+		TRACKNUMBER?: string;
+		TRACKTOTAL?: string;
+		WEBSITE?: string;
+		WORK?: string;
+		WRITER?: string;
 	}
 }
 export const ID3v2_ValuePicTypes: { [name: string]: string; } = {
