@@ -49,7 +49,6 @@ export namespace IMP3 {
 		raw?: IMP3.Layout;
 	}
 
-
 	export interface FrameRawHeader {
 		offset: number; // pos in stream
 		size: number;  // calculated size

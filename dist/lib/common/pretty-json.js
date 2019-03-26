@@ -13,7 +13,7 @@ function prettyJSONify(obj, level, flat, flatNodes, space) {
     const lines = [];
     if (obj instanceof Array) {
         obj.forEach((c) => {
-            lines.push('\t'.repeat(level + 1) + prettyJSONify(c, level + 1, false, flatNodes, space));
+            lines.push(space.repeat(level + 1) + prettyJSONify(c, level + 1, false, flatNodes, space));
         });
         if (lines.length === 0) {
             return '[]';
@@ -21,7 +21,7 @@ function prettyJSONify(obj, level, flat, flatNodes, space) {
         return '[\n' + lines.join(',\n') + '\n' + space.repeat(level) + ']';
     }
     if (typeof obj !== 'object') {
-        return JSON.stringify(obj);
+        return JSON.stringify(obj, null, space);
     }
     if (obj instanceof Buffer) {
         return JSON.stringify(obj);
@@ -30,7 +30,7 @@ function prettyJSONify(obj, level, flat, flatNodes, space) {
         const val = obj[prop];
         if (val !== undefined) {
             const str = quoteJSONProperty(prop) + ': ' + prettyJSONify(val, level + 1, flatNodes.indexOf(prop) >= 0, flatNodes, space);
-            lines.push('\t'.repeat(level + 1) + str);
+            lines.push(space.repeat(level + 1) + str);
         }
     });
     if (lines.length === 0) {
@@ -38,8 +38,9 @@ function prettyJSONify(obj, level, flat, flatNodes, space) {
     }
     return '{\n' + lines.join(',\n') + '\n' + space.repeat(level) + '}';
 }
+exports.prettyJSONify = prettyJSONify;
 function toPrettyJsonWithBin(o) {
-    return prettyJSONify(o, 0, false, ['head'], '\t');
+    return prettyJSONify(o, 0, false, ['head'], ' ');
 }
 exports.toPrettyJsonWithBin = toPrettyJsonWithBin;
 //# sourceMappingURL=pretty-json.js.map

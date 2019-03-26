@@ -719,32 +719,32 @@ exports.FrameDefs = {
     },
     'TDAT': {
         title: 'Date',
-        versions: [3, 4],
+        versions: [3],
         impl: id3v2_frame_1.FrameText
     },
     'TIME': {
         title: 'Time',
-        versions: [3, 4],
+        versions: [3],
         impl: id3v2_frame_1.FrameText
     },
     'TORY': {
         title: 'Original release year',
-        versions: [3, 4],
+        versions: [3],
         impl: id3v2_frame_1.FrameText
     },
     'TRDA': {
         title: 'Recording dates',
-        versions: [3, 4],
+        versions: [3],
         impl: id3v2_frame_1.FrameText
     },
     'TSIZ': {
         title: 'Size',
-        versions: [3, 4],
+        versions: [3],
         impl: id3v2_frame_1.FrameText
     },
     'TYER': {
         title: 'Year',
-        versions: [3, 4],
+        versions: [3],
         impl: id3v2_frame_1.FrameText
     },
     'TMCL': {
@@ -883,7 +883,7 @@ exports.FrameDefs = {
         impl: id3v2_frame_1.FrameLangDescText
     },
     'SYLT': {
-        title: 'Synchronised lyrics/text',
+        title: 'Synchronised lyrics',
         versions: [3, 4],
         impl: id3v2_frame_1.FrameSYLT
     },
@@ -985,7 +985,8 @@ exports.FrameDefs = {
     'IPLS': {
         title: 'Involved people list',
         versions: [3],
-        impl: id3v2_frame_1.FrameTextList
+        impl: id3v2_frame_1.FrameTextList,
+        upgrade: 'TIPL'
     },
     'SIGN': {
         title: 'Signature',
@@ -1019,6 +1020,16 @@ exports.FrameDefs = {
     },
     'TSOC': {
         title: 'Composer sort order',
+        versions: [3, 4],
+        impl: id3v2_frame_1.FrameText
+    },
+    'MVNM': {
+        title: 'Movement',
+        versions: [3, 4],
+        impl: id3v2_frame_1.FrameText
+    },
+    'MVIN': {
+        title: 'Movement Number/Total',
         versions: [3, 4],
         impl: id3v2_frame_1.FrameText
     },
@@ -1300,6 +1311,31 @@ function writeToRawFrames(frames, head) {
     });
 }
 exports.writeToRawFrames = writeToRawFrames;
+function upgrade23DateFramesTov24Date(dateFrames) {
+    const year = dateFrames.find(f => ['TYER', 'TYE'].indexOf(f.id) >= 0);
+    const date = dateFrames.find(f => ['TDAT', 'TDA'].indexOf(f.id) >= 0);
+    const time = dateFrames.find(f => ['TIME', 'TIM'].indexOf(f.id) >= 0);
+    if (!year && !date && !time) {
+        return;
+    }
+    const result = [];
+    if (year && year.value && year.value.hasOwnProperty('text')) {
+        result.push(year.value.text);
+    }
+    if (date && date.value && date.value.hasOwnProperty('text')) {
+        result.push(date.value.text);
+    }
+    if (time && time.value && time.value.hasOwnProperty('text')) {
+        result.push(time.value.text);
+    }
+    const frame = {
+        id: 'TDRC',
+        title: 'Recording time',
+        value: { text: result.join('-') }
+    };
+    return frame;
+}
+exports.upgrade23DateFramesTov24Date = upgrade23DateFramesTov24Date;
 function ensureID3v2FrameVersionDef(id, dest) {
     const def = exports.FrameDefs[id];
     if (!def) {
