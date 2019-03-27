@@ -1,7 +1,35 @@
 import {IID3V2} from './id3v2__types';
 
-export interface ID3V2Frames {
-	[key: string]: Array<IID3V2.FrameValue.Base>;
+interface ID3V2Frames {
+	[key: string]: Array<IID3V2.Frame>;
+}
+
+interface ID3V2TextFrame extends IID3V2.Frame {
+	value: IID3V2.FrameValue.Text;
+}
+
+interface ID3V2IdTextFrame extends IID3V2.Frame {
+	value: IID3V2.FrameValue.IdText;
+}
+
+interface ID3V2TextListFrame extends IID3V2.Frame {
+	value: IID3V2.FrameValue.TextList;
+}
+
+interface ID3V2BoolValueFrame extends IID3V2.Frame {
+	value: IID3V2.FrameValue.Bool;
+}
+
+interface ID3V2LangDescTextValueFrame extends IID3V2.Frame {
+	value: IID3V2.FrameValue.LangDescText;
+}
+
+interface ID3V2PicValueFrame extends IID3V2.Frame {
+	value: IID3V2.FrameValue.Pic;
+}
+
+interface ID3V2ChapterValueFrame extends IID3V2.Frame {
+	value: IID3V2.FrameValue.Chapter;
 }
 
 export class ID3V2RawBuilder {
@@ -11,17 +39,18 @@ export class ID3V2RawBuilder {
 		return this.frameValues;
 	}
 
-	text(key: string, value: string | undefined) {
-		if (value) {
-			const frame: IID3V2.FrameValue.Text = {text: value};
+	text(key: string, text: string | undefined) {
+		if (text) {
+			const frame: ID3V2TextFrame = {id: key, value: {text}};
 			this.frameValues[key] = [frame];
 		}
 	}
 
 	idText(key: string, id: string, value: string | undefined) {
 		if (value) {
-			const list = ((<Array<IID3V2.FrameValue.IdText>>(this.frameValues[key] || []))).filter(f => f.id !== id);
-			const frame: IID3V2.FrameValue.IdText = {id, text: value};
+			const frame: ID3V2IdTextFrame = {id: key, value: {id, text: value}};
+			const list = (<Array<ID3V2IdTextFrame>>(this.frameValues[key] || []))
+				.filter(f => f.value.id !== id);
 			this.frameValues[key] = list.concat([frame]);
 		}
 	}
@@ -29,24 +58,24 @@ export class ID3V2RawBuilder {
 	nrAndTotal(key: string, value: number | string | undefined, total: number | string | undefined) {
 		if (value) {
 			const text = value.toString() + (total ? '/' + total.toString() : '');
-			const frame: IID3V2.FrameValue.Text = {text};
+			const frame: ID3V2TextFrame = {id: key, value: {text}};
 			this.frameValues[key] = [frame];
 		}
 	}
 
 	keyTextList(key: string, group: string, value?: string) {
 		if (value) {
-			const frames = <Array<IID3V2.FrameValue.TextList>>this.frameValues[key] || [];
-			const frame: IID3V2.FrameValue.TextList = (frames.length > 0) ? frames[0] : {list: []};
-			frame.list.push(group);
-			frame.list.push(value);
+			const frames = <Array<ID3V2TextListFrame>>(this.frameValues[key] || []);
+			const frame: ID3V2TextListFrame = (frames.length > 0) ? frames[0] : {id: key, value: {list: []}};
+			frame.value.list.push(group);
+			frame.value.list.push(value);
 			this.frameValues[key] = [frame];
 		}
 	}
 
 	bool(key: string, bool: boolean) {
 		if (bool !== undefined) {
-			const frame: IID3V2.FrameValue.Bool = {bool};
+			const frame: ID3V2BoolValueFrame = {id: key, value: {bool}};
 			this.frameValues[key] = [frame];
 		}
 	}
@@ -55,18 +84,36 @@ export class ID3V2RawBuilder {
 		if (value) {
 			id = id || '';
 			lang = lang || '';
-			const list = ((<Array<IID3V2.FrameValue.LangDescText>>(this.frameValues[key] || []))).filter(f => f.id !== id);
-			const frame: IID3V2.FrameValue.LangDescText = {id, language: lang, text: value};
+			const list = (<Array<ID3V2LangDescTextValueFrame>>(this.frameValues[key] || []))
+				.filter(f => f.value.id !== id);
+			const frame: ID3V2LangDescTextValueFrame = {id: key, value: {id, language: lang, text: value}};
 			this.frameValues[key] = list.concat([frame]);
 		}
 	}
 
 	addPicture(key: string, pictureType: number, description: string, mimeType: string, binary: any) {
-		const frame: IID3V2.FrameValue.Pic = {
-			description: description || '',
-			pictureType,
-			bin: binary,
-			mimeType: mimeType
+		const frame: ID3V2PicValueFrame = {
+			id: key, value: {
+				description: description || '',
+				pictureType,
+				bin: binary,
+				mimeType: mimeType
+			}
+		};
+		this.frameValues[key] = (this.frameValues[key] || []).concat([frame]);
+	}
+
+	addChapter(key: string, chapterID: string, start: number, end: number, offset: number, offsetEnd: number, subframes?: Array<IID3V2.Frame>) {
+		const frame: ID3V2ChapterValueFrame = {
+			id: key,
+			value: {
+				id: chapterID,
+				start,
+				end,
+				offset,
+				offsetEnd
+			},
+			subframes
 		};
 		this.frameValues[key] = (this.frameValues[key] || []).concat([frame]);
 	}
@@ -80,8 +127,8 @@ export class ID3V24TagBuilder {
 		const frameValues = this.rawBuilder.build();
 		Object.keys(frameValues).forEach(id => {
 			const list = frameValues[id];
-			for (const value of list) {
-				result.push({id, value});
+			for (const frame of list) {
+				result.push(frame);
 			}
 		});
 		return result;
@@ -458,6 +505,10 @@ export class ID3V24TagBuilder {
 	addPicture(pictureType: number, description: string, mimeType: string, binary: any) {
 		this.rawBuilder.addPicture('APIC', pictureType, description, mimeType, binary);
 		return this;
+	}
+
+	chapter(id: string, start: number, end: number, offset: number, offsetEnd: number, subframes?: Array<IID3V2.Frame>) {
+		this.rawBuilder.addChapter('CHAP', id, start, end, offset, offsetEnd, subframes);
 	}
 
 }
