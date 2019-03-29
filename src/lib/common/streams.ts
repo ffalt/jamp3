@@ -4,6 +4,7 @@ import {synchsafe, unbitarray} from './utils';
 import {Encodings, IEncoding} from './encodings';
 import {ID3v2_UnifiedENCODINGS} from '../id3v2/id3v2_consts';
 import {removeUnsync} from '../id3v2/id3v2_frames';
+import {Readable} from 'stream';
 
 const MemoryStream = require('memory-stream');
 
@@ -11,7 +12,7 @@ const ascii = Encodings['ascii'];
 const utf8 = Encodings['utf8'];
 
 export class ReaderStream {
-	readableStream: fs.ReadStream | null = null;
+	readableStream: Readable | null = null;
 	buffers: Array<Buffer> = [];
 	buffersLength = 0;
 	waiting: (() => void) | null = null;
@@ -45,15 +46,11 @@ export class ReaderStream {
 		this.pos += chunk.length;
 	}
 
-	async open(filename: string): Promise<void> {
-		try {
-			this.readableStream = fs.createReadStream(filename);
-		} catch (err) {
-			return Promise.reject(err);
-		}
+	async openStream(stream: Readable): Promise<void> {
+		this.readableStream = stream;
 		return new Promise<void>((resolve, reject) => {
 			if (!this.readableStream) {
-				return reject(Error('Could not open file ' + filename));
+				return Promise.reject('Invalid Stream');
 			}
 			this.readableStream.on('error', (err) => {
 				return reject(err);
@@ -62,24 +59,32 @@ export class ReaderStream {
 				this.end = true;
 				this.streamEnd = true;
 				if (this.waiting) {
-					// console.log('call waiting (open)', !!this.waiting);
 					const w = this.waiting;
 					this.waiting = null;
 					w();
 				}
-				this.close();
 			});
 			this.readableStream.on('data', (chunk) => {
-				// console.log('data', !!this.streamOnData);
 				if (this.streamOnData) {
 					this.streamOnData(chunk);
 				}
 			});
-			// console.log('set waiting start');
 			this.waiting = () => {
 				resolve();
 			};
 		});
+	}
+
+	async open(filename: string): Promise<void> {
+		try {
+			this.readableStream = fs.createReadStream(filename);
+		} catch (err) {
+			return Promise.reject(err);
+		}
+		if (!this.readableStream) {
+			return Promise.reject(Error('Could not open file ' + filename));
+		}
+		await this.openStream(this.readableStream);
 	}
 
 	async consumeToEnd(): Promise<void> {
@@ -91,7 +96,9 @@ export class ReaderStream {
 
 	close() {
 		if (this.readableStream) {
-			this.readableStream.close();
+			if (typeof (<any>this.readableStream).close === 'function') {
+				(<any>this.readableStream).close();
+			}
 			this.readableStream.destroy();
 			this.readableStream = null;
 		}

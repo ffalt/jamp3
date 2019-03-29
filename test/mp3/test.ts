@@ -40,7 +40,7 @@ const mp3 = new MP3();
 
 async function loadForSpec(filename: string): Promise<void> {
 	debug('loadForSpec', 'loading', filename);
-	const result = await mp3.read({filename, id3v1: true, id3v2: true});
+	const result = await mp3.read(filename, {id3v1: true, id3v2: true});
 	should().exist(result);
 	if (!result) {
 		return;
@@ -52,7 +52,7 @@ async function loadForSpec(filename: string): Promise<void> {
 
 async function loadSaveCompare(filename: string): Promise<void> {
 	debug('mp3test', 'loading', filename);
-	const result = await mp3.read({filename, id3v1: true, id3v2: true});
+	const result = await mp3.read(filename, {id3v1: true, id3v2: true});
 	should().exist(result);
 	if (!result) {
 		return;
@@ -199,7 +199,7 @@ async function loadFramesCompareProbe(filename: string, result: IMP3.Result): Pr
 
 async function loadFramesCompare(filename: string): Promise<void> {
 	debug('mp3test', 'loading', filename);
-	const result = await mp3.read({filename, mpeg: true, id3v2: true});
+	const result = await mp3.read(filename, {mpeg: true, id3v2: true});
 	should().exist(result);
 	if (!result || !result.frames) {
 		return;
@@ -213,7 +213,7 @@ async function loadFramesCompare(filename: string): Promise<void> {
 async function loadMPEGCompare(filename: string): Promise<void> {
 	debug('mp3test', 'loading', filename);
 	const compare: ITestSpec = await fse.readJSON(filename + '.frames.json');
-	const data = await mp3.read({filename, mpeg: true, mpegQuick: true, id3v2: true});
+	const data = await mp3.read(filename, {mpeg: true, mpegQuick: true, id3v2: true});
 	should().exist(data);
 	if (!data) {
 		return;

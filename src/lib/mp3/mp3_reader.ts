@@ -5,12 +5,18 @@ import {ID3v2Reader} from '../id3v2/id3v2_reader';
 import {MPEGFrameReader} from './mp3_frame';
 import {BufferUtils} from '../common/buffer';
 import {getBestMPEGChain} from './mp3_frames';
+import {Readable} from 'stream';
 
 type ErrorCallback = (err?: Error) => void;
 type DataCallback<T> = (err?: Error, data?: T) => void;
 
+interface MP3ReaderOptions extends IMP3.ReadOptions {
+	streamSize?: number;
+}
+
+
 export class MP3Reader {
-	private opts: IMP3.ReadOptions = {filename: ''};
+	private opts: MP3ReaderOptions = {};
 	private layout: IMP3.Layout = {
 		frames: [],
 		tags: [],
@@ -159,7 +165,7 @@ export class MP3Reader {
 			return;
 		}
 		if (!this.scanMpeg && !this.scanid3v2 && !this.scanid3v1) {
-			if (this.opts.fileSize !== undefined) {
+			if (this.opts.streamSize !== undefined) {
 				return cb();
 			}
 			// we are done here, but scroll to end to get full stream size
@@ -221,8 +227,8 @@ export class MP3Reader {
 			if (err2) {
 				return this.finished(err2);
 			}
-			if (this.opts.fileSize !== undefined) {
-				this.layout.size = this.opts.fileSize;
+			if (this.opts.streamSize !== undefined) {
+				this.layout.size = this.opts.streamSize;
 			} else {
 				this.layout.size = this.stream.pos;
 			}
@@ -230,8 +236,8 @@ export class MP3Reader {
 		});
 	}
 
-	async read(opts: IMP3.ReadOptions): Promise<IMP3.Layout> {
-		this.opts = opts;
+	async read(filename: string, opts: MP3ReaderOptions): Promise<IMP3.Layout> {
+		this.opts = opts || {};
 		this.scanMpeg = opts.mpeg || opts.mpegQuick || false;
 		this.scanid3v1 = opts.id3v1 || opts.id3v1IfNotid3v2 || false;
 		this.scanid3v2 = opts.id3v2 || opts.id3v1IfNotid3v2 || false;
@@ -244,11 +250,37 @@ export class MP3Reader {
 					resolve(layout);
 				}
 			};
-			this.stream.open(opts.filename)
+			this.stream.open(filename)
 				.then(() => {
 					this.scan();
 				})
-				.catch(e => reject(e));
+				.catch(e => {
+					this.stream.close();
+					reject(e);
+				});
+		});
+	}
+
+	async readStream(stream: Readable, opts: MP3ReaderOptions): Promise<IMP3.Layout> {
+		this.opts = opts;
+		this.scanMpeg = opts.mpeg || opts.mpegQuick || false;
+		this.scanid3v1 = opts.id3v1 || opts.id3v1IfNotid3v2 || false;
+		this.scanid3v2 = opts.id3v2 || opts.id3v1IfNotid3v2 || false;
+		return new Promise<IMP3.Layout>((resolve, reject) => {
+			this.finished = (err, layout) => {
+				if (err) {
+					reject(err);
+				} else {
+					resolve(layout);
+				}
+			};
+			this.stream.openStream(stream)
+				.then(() => {
+					this.scan();
+				})
+				.catch(e => {
+					reject(e);
+				});
 		});
 	}
 }
