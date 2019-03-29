@@ -33,7 +33,7 @@ export class MP3Analyzer {
 
 	async read(filename: string, options: IMP3AnalyzerOptions): Promise<IMP3Report> {
 		const mp3 = new MP3();
-		const data = await mp3.read({filename, id3v1: true, id3v2: true, mpeg: true, raw: true});
+		const data = await mp3.read(filename, {id3v1: true, id3v2: true, mpeg: true, raw: true});
 		if (!data || !data.mpeg || !data.frames) {
 			return Promise.reject(Error('No mpeg data in file:' + filename));
 		}
