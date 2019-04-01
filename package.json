@@ -47,7 +47,7 @@
     "nyc": "13.3.0",
     "tmp": "0.1.0",
     "ts-node": "8.0.3",
-    "tslint": "5.14.0",
+    "tslint": "5.15.0",
     "typescript": "3.4.1"
   },
   "main": "dist/index.js",
