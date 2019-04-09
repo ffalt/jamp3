@@ -144,10 +144,23 @@ class ID3v2Reader {
         }
         return head;
     }
-    readStream(reader) {
+    readReaderStream(reader) {
         return __awaiter(this, void 0, void 0, function* () {
             const result = yield this.scan(reader);
             return result.tag;
+        });
+    }
+    readStream(stream) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const reader = new streams_1.ReaderStream();
+            try {
+                yield reader.openStream(stream);
+                const tag = yield this.readReaderStream(reader);
+                return tag;
+            }
+            catch (e) {
+                return Promise.reject(e);
+            }
         });
     }
     read(filename) {
@@ -155,7 +168,7 @@ class ID3v2Reader {
             const reader = new streams_1.ReaderStream();
             try {
                 yield reader.open(filename);
-                const tag = yield this.readStream(reader);
+                const tag = yield this.readReaderStream(reader);
                 reader.close();
                 return tag;
             }

@@ -47,17 +47,12 @@ class ReaderStream {
     onSkip(chunk) {
         this.pos += chunk.length;
     }
-    open(filename) {
+    openStream(stream) {
         return __awaiter(this, void 0, void 0, function* () {
-            try {
-                this.readableStream = fs_1.default.createReadStream(filename);
-            }
-            catch (err) {
-                return Promise.reject(err);
-            }
+            this.readableStream = stream;
             return new Promise((resolve, reject) => {
                 if (!this.readableStream) {
-                    return reject(Error('Could not open file ' + filename));
+                    return Promise.reject('Invalid Stream');
                 }
                 this.readableStream.on('error', (err) => {
                     return reject(err);
@@ -70,7 +65,6 @@ class ReaderStream {
                         this.waiting = null;
                         w();
                     }
-                    this.close();
                 });
                 this.readableStream.on('data', (chunk) => {
                     if (this.streamOnData) {
@@ -83,6 +77,20 @@ class ReaderStream {
             });
         });
     }
+    open(filename) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                this.readableStream = fs_1.default.createReadStream(filename);
+            }
+            catch (err) {
+                return Promise.reject(err);
+            }
+            if (!this.readableStream) {
+                return Promise.reject(Error('Could not open file ' + filename));
+            }
+            yield this.openStream(this.readableStream);
+        });
+    }
     consumeToEnd() {
         return __awaiter(this, void 0, void 0, function* () {
             this.pos += this.buffersLength;
@@ -93,7 +101,9 @@ class ReaderStream {
     }
     close() {
         if (this.readableStream) {
-            this.readableStream.close();
+            if (typeof this.readableStream.close === 'function') {
+                this.readableStream.close();
+            }
             this.readableStream.destroy();
             this.readableStream = null;
         }

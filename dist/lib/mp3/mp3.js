@@ -149,12 +149,18 @@ class MP3 {
             return result;
         });
     }
-    read(opts) {
+    readStream(stream, opts, streamSize) {
         return __awaiter(this, void 0, void 0, function* () {
             const reader = new mp3_reader_1.MP3Reader();
-            const stat = yield fs_extra_1.default.stat(opts.filename);
-            opts.fileSize = stat.size;
-            const layout = yield reader.read(opts);
+            const layout = yield reader.readStream(stream, Object.assign({ streamSize }, opts));
+            return yield this.prepareResult(opts, layout);
+        });
+    }
+    read(filename, opts) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const reader = new mp3_reader_1.MP3Reader();
+            const stat = yield fs_extra_1.default.stat(filename);
+            const layout = yield reader.read(filename, Object.assign({ streamSize: stat.size }, opts));
             return yield this.prepareResult(opts, layout);
         });
     }

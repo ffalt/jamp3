@@ -8,13 +8,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const index_1 = require("../../index");
 const id3v2_frames_1 = require("../id3v2/id3v2_frames");
+const mp3_1 = require("./mp3");
 class MP3Analyzer {
     read(filename, options) {
         return __awaiter(this, void 0, void 0, function* () {
-            const mp3 = new index_1.MP3();
-            const data = yield mp3.read({ filename, id3v1: true, id3v2: true, mpeg: true, raw: true });
+            const mp3 = new mp3_1.MP3();
+            const data = yield mp3.read(filename, { id3v1: true, id3v2: true, mpeg: true, raw: true });
             if (!data || !data.mpeg || !data.frames) {
                 return Promise.reject(Error('No mpeg data in file:' + filename));
             }
@@ -52,6 +52,10 @@ class MP3Analyzer {
                         info.msgs.push({ msg: 'XING: Wrong number of data bytes declared in ' + head.mode + ' Header', expected: data.mpeg.audioBytesDeclared, actual: data.mpeg.audioBytes });
                     }
                 }
+            }
+            console.log(head);
+            if (!head && data.mpeg.encoded === 'VBR') {
+                info.msgs.push({ msg: 'XING: VBR detected, but no VBR head frame found', expected: 'VBR Header', actual: 'nothing' });
             }
             const lastframe = data.frames.length > 0 ? data.frames[data.frames.length - 1] : undefined;
             if (data.raw && lastframe) {

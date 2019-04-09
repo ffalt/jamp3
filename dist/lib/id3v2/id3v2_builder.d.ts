@@ -1,17 +1,18 @@
 import { IID3V2 } from './id3v2__types';
-export interface ID3V2Frames {
-    [key: string]: Array<IID3V2.FrameValue.Base>;
+interface ID3V2Frames {
+    [key: string]: Array<IID3V2.Frame>;
 }
 export declare class ID3V2RawBuilder {
     private frameValues;
     build(): ID3V2Frames;
-    text(key: string, value: string | undefined): void;
+    text(key: string, text: string | undefined): void;
     idText(key: string, id: string, value: string | undefined): void;
     nrAndTotal(key: string, value: number | string | undefined, total: number | string | undefined): void;
     keyTextList(key: string, group: string, value?: string): void;
     bool(key: string, bool: boolean): void;
     idLangText(key: string, value: string | undefined, lang: string | undefined, id: string | undefined): void;
     addPicture(key: string, pictureType: number, description: string, mimeType: string, binary: any): void;
+    addChapter(key: string, chapterID: string, start: number, end: number, offset: number, offsetEnd: number, subframes?: Array<IID3V2.Frame>): void;
 }
 export declare class ID3V24TagBuilder {
     rawBuilder: ID3V2RawBuilder;
@@ -88,4 +89,6 @@ export declare class ID3V24TagBuilder {
     trackLength(value?: number | string): this;
     mbTrackDisambiguation(value?: string): this;
     addPicture(pictureType: number, description: string, mimeType: string, binary: any): this;
+    chapter(id: string, start: number, end: number, offset: number, offsetEnd: number, subframes?: Array<IID3V2.Frame>): void;
 }
+export {};

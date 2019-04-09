@@ -3,8 +3,9 @@ import {Markers} from '../common/marker';
 import {ID3v1_MARKER} from './id3v1_consts';
 import {IID3V1} from './id3v1__types';
 import {BufferUtils} from '../common/buffer';
-
+import {Readable} from 'stream';
 import Debug from 'debug';
+
 const debug = Debug('id3v1-reader');
 
 export class ID3v1Reader {
@@ -53,7 +54,7 @@ export class ID3v1Reader {
 		// cb(null, tag);
 	}
 
-	async readStream(reader: ReaderStream): Promise<IID3V1.Tag | undefined> {
+	async readReaderStream(reader: ReaderStream): Promise<IID3V1.Tag | undefined> {
 		if (reader.end) {
 			return;
 		}
@@ -69,14 +70,25 @@ export class ID3v1Reader {
 		if (data.length !== 128) {
 			// must be last in stream
 			reader.unshift(data.slice(1));
-			return await this.readStream(reader);
+			return await this.readReaderStream(reader);
 		}
 		const tag = this.readTag(data);
 		if (tag) {
 			return tag;
 		} else {
 			reader.unshift(data.slice(1));
-			return await this.readStream(reader);
+			return await this.readReaderStream(reader);
+		}
+	}
+
+	async readStream(stream: Readable): Promise<IID3V1.Tag | undefined> {
+		const reader = new ReaderStream();
+		try {
+			await reader.openStream(stream);
+			const tag = await this.readReaderStream(reader);
+			return tag;
+		} catch (e) {
+			return Promise.reject(e);
 		}
 	}
 
@@ -84,12 +96,13 @@ export class ID3v1Reader {
 		const reader = new ReaderStream();
 		try {
 			await reader.open(filename);
+			const tag = await this.readReaderStream(reader);
+			reader.close();
+			return tag;
 		} catch (e) {
+			reader.close();
 			return Promise.reject(e);
 		}
-		const tag = await this.readStream(reader);
-		reader.close();
-		return tag;
 	}
 
 

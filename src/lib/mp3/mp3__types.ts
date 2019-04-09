@@ -5,8 +5,6 @@ import {ITag} from '../common/types';
 export namespace IMP3 {
 
 	export interface ReadOptions {
-		// the file to scan
-		filename: string;
 		// read mpeg informations
 		mpeg?: boolean;
 		// estimate mpeg informations based on mpeg header (XING|Info)
@@ -19,7 +17,6 @@ export namespace IMP3 {
 		id3v1IfNotid3v2?: boolean;
 		// do not parse frames & return binary blobs
 		raw?: boolean;
-		fileSize?: number;
 	}
 
 	export interface MPEG {

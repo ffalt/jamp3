@@ -7,38 +7,39 @@ class ID3V2RawBuilder {
     build() {
         return this.frameValues;
     }
-    text(key, value) {
-        if (value) {
-            const frame = { text: value };
+    text(key, text) {
+        if (text) {
+            const frame = { id: key, value: { text } };
             this.frameValues[key] = [frame];
         }
     }
     idText(key, id, value) {
         if (value) {
-            const list = ((this.frameValues[key] || [])).filter(f => f.id !== id);
-            const frame = { id, text: value };
+            const frame = { id: key, value: { id, text: value } };
+            const list = (this.frameValues[key] || [])
+                .filter(f => f.value.id !== id);
             this.frameValues[key] = list.concat([frame]);
         }
     }
     nrAndTotal(key, value, total) {
         if (value) {
             const text = value.toString() + (total ? '/' + total.toString() : '');
-            const frame = { text };
+            const frame = { id: key, value: { text } };
             this.frameValues[key] = [frame];
         }
     }
     keyTextList(key, group, value) {
         if (value) {
-            const frames = this.frameValues[key] || [];
-            const frame = (frames.length > 0) ? frames[0] : { list: [] };
-            frame.list.push(group);
-            frame.list.push(value);
+            const frames = (this.frameValues[key] || []);
+            const frame = (frames.length > 0) ? frames[0] : { id: key, value: { list: [] } };
+            frame.value.list.push(group);
+            frame.value.list.push(value);
             this.frameValues[key] = [frame];
         }
     }
     bool(key, bool) {
         if (bool !== undefined) {
-            const frame = { bool };
+            const frame = { id: key, value: { bool } };
             this.frameValues[key] = [frame];
         }
     }
@@ -46,17 +47,34 @@ class ID3V2RawBuilder {
         if (value) {
             id = id || '';
             lang = lang || '';
-            const list = ((this.frameValues[key] || [])).filter(f => f.id !== id);
-            const frame = { id, language: lang, text: value };
+            const list = (this.frameValues[key] || [])
+                .filter(f => f.value.id !== id);
+            const frame = { id: key, value: { id, language: lang, text: value } };
             this.frameValues[key] = list.concat([frame]);
         }
     }
     addPicture(key, pictureType, description, mimeType, binary) {
         const frame = {
-            description: description || '',
-            pictureType,
-            bin: binary,
-            mimeType: mimeType
+            id: key, value: {
+                description: description || '',
+                pictureType,
+                bin: binary,
+                mimeType: mimeType
+            }
+        };
+        this.frameValues[key] = (this.frameValues[key] || []).concat([frame]);
+    }
+    addChapter(key, chapterID, start, end, offset, offsetEnd, subframes) {
+        const frame = {
+            id: key,
+            value: {
+                id: chapterID,
+                start,
+                end,
+                offset,
+                offsetEnd
+            },
+            subframes
         };
         this.frameValues[key] = (this.frameValues[key] || []).concat([frame]);
     }
@@ -71,8 +89,8 @@ class ID3V24TagBuilder {
         const frameValues = this.rawBuilder.build();
         Object.keys(frameValues).forEach(id => {
             const list = frameValues[id];
-            for (const value of list) {
-                result.push({ id, value });
+            for (const frame of list) {
+                result.push(frame);
             }
         });
         return result;
@@ -377,6 +395,9 @@ class ID3V24TagBuilder {
     addPicture(pictureType, description, mimeType, binary) {
         this.rawBuilder.addPicture('APIC', pictureType, description, mimeType, binary);
         return this;
+    }
+    chapter(id, start, end, offset, offsetEnd, subframes) {
+        this.rawBuilder.addChapter('CHAP', id, start, end, offset, offsetEnd, subframes);
     }
 }
 exports.ID3V24TagBuilder = ID3V24TagBuilder;

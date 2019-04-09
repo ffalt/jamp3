@@ -5,6 +5,7 @@ import {readID3v2Frame, writeToRawFrames} from './id3v2_frames';
 import {FileWriterStream} from '../common/streams';
 import {IID3V2} from './id3v2__types';
 import {fileRangeToBuffer} from '../common/utils';
+import {Readable} from 'stream';
 
 export async function buildID3v2(tag: IID3V2.RawTag): Promise<IID3V2.Tag> {
 	const frames: Array<IID3V2.Frame> = [];
@@ -26,6 +27,14 @@ export class ID3v2 {
 	async read(filename: string): Promise<IID3V2.Tag | undefined> {
 		const reader = new ID3v2Reader();
 		const tag = await reader.read(filename);
+		if (tag) {
+			return await buildID3v2(tag);
+		}
+	}
+
+	async readStream(stream: Readable): Promise<IID3V2.Tag | undefined> {
+		const reader = new ID3v2Reader();
+		const tag = await reader.readStream(stream);
 		if (tag) {
 			return await buildID3v2(tag);
 		}

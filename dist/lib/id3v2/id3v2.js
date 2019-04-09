@@ -44,6 +44,15 @@ class ID3v2 {
             }
         });
     }
+    readStream(stream) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const reader = new id3v2_reader_1.ID3v2Reader();
+            const tag = yield reader.readStream(stream);
+            if (tag) {
+                return yield buildID3v2(tag);
+            }
+        });
+    }
     extractRaw(filename) {
         return __awaiter(this, void 0, void 0, function* () {
             const reader = new id3v2_reader_1.ID3v2Reader();

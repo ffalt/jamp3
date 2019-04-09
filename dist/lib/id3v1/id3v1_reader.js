@@ -43,7 +43,7 @@ class ID3v1Reader {
         tag.value = value;
         return tag;
     }
-    readStream(reader) {
+    readReaderStream(reader) {
         return __awaiter(this, void 0, void 0, function* () {
             if (reader.end) {
                 return;
@@ -59,7 +59,7 @@ class ID3v1Reader {
             }
             if (data.length !== 128) {
                 reader.unshift(data.slice(1));
-                return yield this.readStream(reader);
+                return yield this.readReaderStream(reader);
             }
             const tag = this.readTag(data);
             if (tag) {
@@ -67,7 +67,20 @@ class ID3v1Reader {
             }
             else {
                 reader.unshift(data.slice(1));
-                return yield this.readStream(reader);
+                return yield this.readReaderStream(reader);
+            }
+        });
+    }
+    readStream(stream) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const reader = new streams_1.ReaderStream();
+            try {
+                yield reader.openStream(stream);
+                const tag = yield this.readReaderStream(reader);
+                return tag;
+            }
+            catch (e) {
+                return Promise.reject(e);
             }
         });
     }
@@ -76,13 +89,14 @@ class ID3v1Reader {
             const reader = new streams_1.ReaderStream();
             try {
                 yield reader.open(filename);
+                const tag = yield this.readReaderStream(reader);
+                reader.close();
+                return tag;
             }
             catch (e) {
+                reader.close();
                 return Promise.reject(e);
             }
-            const tag = yield this.readStream(reader);
-            reader.close();
-            return tag;
         });
     }
 }

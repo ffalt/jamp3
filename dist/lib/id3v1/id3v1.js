@@ -17,6 +17,12 @@ class ID3v1 {
             return yield reader.read(filename);
         });
     }
+    readStream(stream) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const reader = new id3v1_reader_1.ID3v1Reader();
+            return yield reader.readStream(stream);
+        });
+    }
     write(filename, tag, version) {
         return __awaiter(this, void 0, void 0, function* () {
             const writer = new id3v1_writer_1.ID3v1Writer();

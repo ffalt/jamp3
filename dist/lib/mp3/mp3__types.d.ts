@@ -4,14 +4,12 @@ import { IID3V1 } from '../id3v1/id3v1__types';
 import { ITag } from '../common/types';
 export declare namespace IMP3 {
     interface ReadOptions {
-        filename: string;
         mpeg?: boolean;
         mpegQuick?: boolean;
         id3v2?: boolean;
         id3v1?: boolean;
         id3v1IfNotid3v2?: boolean;
         raw?: boolean;
-        fileSize?: number;
     }
     interface MPEG {
         durationEstimate: number;

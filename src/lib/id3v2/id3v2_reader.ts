@@ -5,6 +5,7 @@ import {Markers} from '../common/marker';
 import {BufferUtils} from '../common/buffer';
 import {ID3v2_FRAME_FLAGS1, ID3v2_FRAME_FLAGS2, ID3v2_FRAME_HEADER_LENGTHS, ID3v2_EXTHEADER, ID3v2_HEADER_FLAGS, ID3v2_HEADER, ID3v2_FRAME_HEADER, ID3v2_MARKER} from './id3v2_consts';
 import {IID3V2} from './id3v2__types';
+import {Readable} from 'stream';
 
 const ID3v2_MARKER_BUFFER = BufferUtils.fromString(ID3v2_MARKER);
 
@@ -180,16 +181,27 @@ export class ID3v2Reader {
 		return head;
 	}
 
-	async readStream(reader: ReaderStream): Promise<IID3V2.RawTag | undefined> {
+	async readReaderStream(reader: ReaderStream): Promise<IID3V2.RawTag | undefined> {
 		const result = await this.scan(reader);
 		return result.tag;
+	}
+
+	async readStream(stream: Readable): Promise<IID3V2.RawTag | undefined> {
+		const reader = new ReaderStream();
+		try {
+			await reader.openStream(stream);
+			const tag = await this.readReaderStream(reader);
+			return tag;
+		} catch (e) {
+			return Promise.reject(e);
+		}
 	}
 
 	async read(filename: string): Promise<IID3V2.RawTag | undefined> {
 		const reader = new ReaderStream();
 		try {
 			await reader.open(filename);
-			const tag = await this.readStream(reader);
+			const tag = await this.readReaderStream(reader);
 			reader.close();
 			return tag;
 		} catch (e) {

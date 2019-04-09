@@ -16,7 +16,7 @@ const buffer_1 = require("../common/buffer");
 const mp3_frames_1 = require("./mp3_frames");
 class MP3Reader {
     constructor() {
-        this.opts = { filename: '' };
+        this.opts = {};
         this.layout = {
             frames: [],
             tags: [],
@@ -154,7 +154,7 @@ class MP3Reader {
             return;
         }
         if (!this.scanMpeg && !this.scanid3v2 && !this.scanid3v1) {
-            if (this.opts.fileSize !== undefined) {
+            if (this.opts.streamSize !== undefined) {
                 return cb();
             }
             return this.stream.consumeToEnd().then(() => cb()).catch(e => cb(e));
@@ -219,8 +219,8 @@ class MP3Reader {
             if (err2) {
                 return this.finished(err2);
             }
-            if (this.opts.fileSize !== undefined) {
-                this.layout.size = this.opts.fileSize;
+            if (this.opts.streamSize !== undefined) {
+                this.layout.size = this.opts.streamSize;
             }
             else {
                 this.layout.size = this.stream.pos;
@@ -228,9 +228,9 @@ class MP3Reader {
             return this.finished(undefined, this.layout);
         });
     }
-    read(opts) {
+    read(filename, opts) {
         return __awaiter(this, void 0, void 0, function* () {
-            this.opts = opts;
+            this.opts = opts || {};
             this.scanMpeg = opts.mpeg || opts.mpegQuick || false;
             this.scanid3v1 = opts.id3v1 || opts.id3v1IfNotid3v2 || false;
             this.scanid3v2 = opts.id3v2 || opts.id3v1IfNotid3v2 || false;
@@ -244,11 +244,39 @@ class MP3Reader {
                         resolve(layout);
                     }
                 };
-                this.stream.open(opts.filename)
+                this.stream.open(filename)
                     .then(() => {
                     this.scan();
                 })
-                    .catch(e => reject(e));
+                    .catch(e => {
+                    this.stream.close();
+                    reject(e);
+                });
+            });
+        });
+    }
+    readStream(stream, opts) {
+        return __awaiter(this, void 0, void 0, function* () {
+            this.opts = opts;
+            this.scanMpeg = opts.mpeg || opts.mpegQuick || false;
+            this.scanid3v1 = opts.id3v1 || opts.id3v1IfNotid3v2 || false;
+            this.scanid3v2 = opts.id3v2 || opts.id3v1IfNotid3v2 || false;
+            return new Promise((resolve, reject) => {
+                this.finished = (err, layout) => {
+                    if (err) {
+                        reject(err);
+                    }
+                    else {
+                        resolve(layout);
+                    }
+                };
+                this.stream.openStream(stream)
+                    .then(() => {
+                    this.scan();
+                })
+                    .catch(e => {
+                    reject(e);
+                });
             });
         });
     }

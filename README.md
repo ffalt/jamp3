@@ -420,7 +420,6 @@ Example usage:
 ```javascript
 
 const options = {
-  filename: string;
   mpeg?: boolean; // read mpeg information 
   mpegQuick?: boolean; // estimate mpeg information based on mpeg header (XING|Info) and stop reading if tags and header is found
   id3v2?: boolean; // read ID3 v2 tag
@@ -435,7 +434,7 @@ const MP3 = require('jamp3').MP3;
 const mp3 = new MP3();
 
 // with promises
-mp3.read(options)
+mp3.read(filename, options)
   .then(result => {
    console.log(result);
   })
@@ -444,8 +443,8 @@ mp3.read(options)
   });
 }
 // or async/await
-async function read(options) {
-  const result = await mp3.read(options);
+async function read(filename, options) {
+  const result = await mp3.read(filename, options);
   console.log(result);
 }
 ```

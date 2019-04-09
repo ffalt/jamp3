@@ -1,8 +1,9 @@
 /// <reference types="node" />
 import fs from 'fs';
 import { IEncoding } from './encodings';
+import { Readable } from 'stream';
 export declare class ReaderStream {
-    readableStream: fs.ReadStream | null;
+    readableStream: Readable | null;
     buffers: Array<Buffer>;
     buffersLength: number;
     waiting: (() => void) | null;
@@ -13,6 +14,7 @@ export declare class ReaderStream {
     constructor();
     private onData;
     private onSkip;
+    openStream(stream: Readable): Promise<void>;
     open(filename: string): Promise<void>;
     consumeToEnd(): Promise<void>;
     close(): void;

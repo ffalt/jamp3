@@ -1,4 +1,9 @@
+/// <reference types="node" />
 import { IMP3 } from './mp3__types';
+import { Readable } from 'stream';
+interface MP3ReaderOptions extends IMP3.ReadOptions {
+    streamSize?: number;
+}
 export declare class MP3Reader {
     private opts;
     private layout;
@@ -18,5 +23,7 @@ export declare class MP3Reader {
     private readMPEGFrame;
     private processChunk;
     private scan;
-    read(opts: IMP3.ReadOptions): Promise<IMP3.Layout>;
+    read(filename: string, opts: MP3ReaderOptions): Promise<IMP3.Layout>;
+    readStream(stream: Readable, opts: MP3ReaderOptions): Promise<IMP3.Layout>;
 }
+export {};
