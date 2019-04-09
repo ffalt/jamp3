@@ -1,5 +1,7 @@
-import {IID3V1, IMP3, MP3} from '../../index';
+import {IID3V1} from '../id3v1/id3v1__types';
 import {findId3v2FrameDef} from '../id3v2/id3v2_frames';
+import {MP3} from './mp3';
+import {IMP3} from './mp3__types';
 
 export interface IMP3Warning {
 	msg: string;
@@ -72,6 +74,10 @@ export class MP3Analyzer {
 					info.msgs.push({msg: 'XING: Wrong number of data bytes declared in ' + head.mode + ' Header', expected: data.mpeg.audioBytesDeclared, actual: data.mpeg.audioBytes});
 				}
 			}
+		}
+		console.log(head);
+		if (!head && data.mpeg.encoded === 'VBR') {
+			info.msgs.push({msg: 'XING: VBR detected, but no VBR head frame found', expected: 'VBR Header', actual: 'nothing'});
 		}
 		const lastframe: IMP3.Frame | undefined = data.frames.length > 0 ? data.frames[data.frames.length - 1] : undefined;
 		if (data.raw && lastframe) {
