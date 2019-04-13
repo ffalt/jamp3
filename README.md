@@ -441,7 +441,7 @@ mp3.read(filename, options)
   .catch(e => {
    console.error(e);
   });
-}
+
 // or async/await
 async function read(filename, options) {
   const result = await mp3.read(filename, options);
