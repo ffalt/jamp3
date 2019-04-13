@@ -14,7 +14,7 @@ Motivation for this yet-another-id3-library:
 
 * On the fly & async & only as much as needed
   
-  Only loads small parts of the file stream at a time. So that 100MB of e.g. podcast-episode.mp3 is not read completely in memory to get 100kb for an ID3v2 at the beginning of a the file.
+  Only loads small parts of the file stream at a time. So that 100MB of e.g. podcast-episode.mp3 is not read completely in memory to get 100kb for an ID3v2 at the beginning of a file.
 
 * Native Node
 
