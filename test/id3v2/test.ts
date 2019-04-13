@@ -1,5 +1,5 @@
 import {expect, should, use} from 'chai';
-import 'mocha';
+import {describe, it, run} from 'mocha';
 import fse from 'fs-extra';
 import {ID3v2} from '../../src/lib/id3v2/id3v2';
 import chaiExclude from 'chai-exclude';
@@ -59,7 +59,7 @@ describe('ID3v2', async () => {
 		});
 	});
 	const files: Array<string> = await collectTestFiles(ID3v2TestDirectories, ID3v2TestPath, testSingleFile);
-	files.forEach(file => {
+	for (const file of files) {
 		describe(file.slice(ID3v2TestPath.length), () => {
 			it('should load & save & compare', async () => {
 				await loadSaveCompare(file);
@@ -71,7 +71,7 @@ describe('ID3v2', async () => {
 				}
 			});
 		});
-	});
-
+	}
+	run(); // https://github.com/mochajs/mocha/issues/2221#issuecomment-214636042
 });
 

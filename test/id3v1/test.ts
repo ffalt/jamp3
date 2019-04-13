@@ -1,5 +1,5 @@
 import {expect, should, use} from 'chai';
-import {describe, it} from 'mocha';
+import {describe, it, run} from 'mocha';
 import {ID3v1} from '../../src/lib/id3v1/id3v1';
 import chaiExclude from 'chai-exclude';
 import fse from 'fs-extra';
@@ -50,5 +50,6 @@ describe('ID3v1', async () => {
 			});
 		});
 	}
+	run(); // https://github.com/mochajs/mocha/issues/2221#issuecomment-214636042
 });
 

@@ -1,5 +1,5 @@
 import {expect, should, use} from 'chai';
-import {describe, it} from 'mocha';
+import {describe, it, run} from 'mocha';
 import chaiExclude from 'chai-exclude';
 import path from 'path';
 import Debug from 'debug';
@@ -262,9 +262,9 @@ describe('MP3', async () => {
 	for (const test of tests) {
 		roots.push({root: test.dir, files: await collectTestFiles(test.dirs, test.dir, testSingleFile)});
 	}
-	roots.forEach(root => {
+	for (const root of roots) {
 		describe(root.root, () => {
-			root.files.forEach(filename => {
+			for (const filename of root.files) {
 				describe(filename.slice(root.root.length), () => {
 					it('should load & compare to spec', async () => {
 						const exists = await fse.pathExists(filename + '.spec.json');
@@ -284,8 +284,9 @@ describe('MP3', async () => {
 						}).timeout(10000);
 					}
 				});
-			});
+			}
 		});
-	});
+	}
+	run(); // https://github.com/mochajs/mocha/issues/2221#issuecomment-214636042
 });
 
