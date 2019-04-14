@@ -75,7 +75,6 @@ export class MP3Analyzer {
 				}
 			}
 		}
-		console.log(head);
 		if (!head && data.mpeg.encoded === 'VBR') {
 			info.msgs.push({msg: 'XING: VBR detected, but no VBR head frame found', expected: 'VBR Header', actual: 'nothing'});
 		}
