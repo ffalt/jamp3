@@ -7,9 +7,6 @@ import {BufferUtils} from '../common/buffer';
 import {getBestMPEGChain} from './mp3_frames';
 import {Readable} from 'stream';
 
-type ErrorCallback = (err?: Error) => void;
-type DataCallback<T> = (err?: Error, data?: T) => void;
-
 interface MP3ReaderOptions extends IMP3.ReadOptions {
 	streamSize?: number;
 }
@@ -26,7 +23,6 @@ export class MP3Reader {
 	private id3v1reader = new ID3v1Reader();
 	private mpegFramereader = new MPEGFrameReader();
 	private stream: ReaderStream = new ReaderStream();
-	private finished: DataCallback<IMP3.Layout>;
 	private scanMpeg = true;
 	private scanid3v1 = true;
 	private scanid3v2 = true;
@@ -34,11 +30,9 @@ export class MP3Reader {
 	private hasMPEGHeadFrame = false;
 
 	constructor() {
-		this.finished = () => {
-		};
 	}
 
-	private readID3V1(chunk: Buffer, i: number, readNext: (buffer?: Buffer) => void): boolean {
+	private async readID3V1(chunk: Buffer, i: number): Promise<boolean> {
 		const tag = this.id3v1reader.readTag(chunk.slice(i, i + 128));
 		if (!tag) {
 			return false;
@@ -48,40 +42,35 @@ export class MP3Reader {
 		this.layout.tags.push(tag);
 		if (!this.stream.end || chunk.length - 128 - i > 0) {
 			// we need to rewind and scan, there are several unfortunate other tags which may be detected as valid td3v1, e.g. "APETAGEX", "TAG+", "CUSTOMTAG" or just a equal looking stream position
-			readNext(chunk.slice(i + 1));
+			this.stream.unshift(chunk.slice(i + 1));
 		} else {
-			readNext(chunk.slice(i + 128));
+			this.stream.unshift(chunk.slice(i + 128));
 		}
 		return true;
 	}
 
-	private readID3V2(chunk: Buffer, i: number, reader: ReaderStream, readNext: (buffer?: Buffer) => void, cb: ErrorCallback): boolean {
+	private async readID3V2(chunk: Buffer, i: number): Promise<boolean> {
 		const id3Header = this.id3v2reader.readID3v2Header(chunk, i);
 		if (id3Header && id3Header.valid) {
 			const start = this.stream.pos - chunk.length + i;
 			this.stream.unshift(chunk.slice(i));
-			this.id3v2reader.readTag(reader)
-				.then((result) => {
-					if (!result) {
-						return cb();
+			const result = await this.id3v2reader.readTag(this.stream);
+			if (result) {
+				let rest = result.rest || BufferUtils.zeroBuffer(0);
+				if (result.tag && result.tag.head.valid) {
+					this.layout.tags.push(result.tag);
+					result.tag.start = start;
+					result.tag.end = this.stream.pos;
+					this.scanid3v2 = false;
+					if (this.opts.id3v1IfNotid3v2) {
+						this.scanid3v1 = false;
 					}
-					let rest = result.rest || BufferUtils.zeroBuffer(0);
-					if (result.tag && result.tag.head.valid) {
-						this.layout.tags.push(result.tag);
-						result.tag.start = start;
-						result.tag.end = this.stream.pos;
-						this.scanid3v2 = false;
-						if (this.opts.id3v1IfNotid3v2) {
-							this.scanid3v1 = false;
-						}
-					} else {
-						rest = rest.slice(1);
-					}
-					readNext(rest);
-				}).catch(e => {
-				cb(e);
-			});
-			return true;
+				} else {
+					rest = rest.slice(1);
+				}
+				this.stream.unshift(rest);
+				return true;
+			}
 		}
 		return false;
 	}
@@ -108,69 +97,28 @@ export class MP3Reader {
 		}
 	}
 
-	private processChunk(stackLevel: number, chunk: Buffer, cb: ErrorCallback) {
+	private async processChunk(chunk: Buffer): Promise<boolean> {
 		let i = 0;
-		const requestChunkLength = 1800;
-
-		const readNext = (unwind?: Buffer) => {
-			if (unwind && unwind.length > 0) {
-				this.stream.unshift(unwind);
-			}
-			this.stream.read(requestChunkLength)
-				.then(data => {
-					if (!data || (data.length === 0)) {
-						return cb();
-					}
-					// debug('next chunk', 'stream.pos', this.stream.pos, 'pos:', i, 'buf:', data.length);
-					if (stackLevel > 1000) {
-						// invalid audio or large files from other types exceed the stack, avoid that with process.nextTick
-						process.nextTick(() => {
-							this.processChunk(0, data, cb);
-						});
-					} else {
-						this.processChunk(stackLevel + 1, data, cb);
-					}
-				})
-				.catch(e => {
-					cb(e);
-				});
-		};
-
 		const demandData = (): boolean => {
 			if (!this.stream.end && (chunk.length - i) < 200) {
 				// check if enough in chunk to read the frame header
-				readNext(chunk.slice(i));
+				this.stream.unshift(chunk.slice(i));
 				return true;
 			}
 			return false;
 		};
 
-		const readMPEGFrame = (): boolean => {
-			const header = this.mpegFramereader.readMPEGFrameHeader(chunk, i);
-			if (header) {
-				if (!this.scanMPEGFrame) {
-					header.offset = this.stream.pos - chunk.length + i;
-					this.layout.frames.push({header});
-				} else {
-					if (demandData()) {
-						return true;
-					}
-					this.readMPEGFrame(chunk, i, header);
-				}
-			}
-			return false;
-		};
-
 		if (demandData()) {
-			return;
+			return true;
 		}
 		if (!this.scanMpeg && !this.scanid3v2 && !this.scanid3v1) {
 			if (this.opts.streamSize !== undefined) {
-				return cb();
+				return false;
 			}
 			// we are done here, but scroll to end to get full stream size
 			// TODO: better way to get the stream size?
-			return this.stream.consumeToEnd().then(() => cb()).catch(e => cb(e));
+			await this.stream.consumeToEnd();
+			return false;
 		} else if (!this.scanMpeg && !this.scanid3v2) {
 			if (!this.stream.end && this.stream.buffersLength > 200) {
 				this.stream.skip(this.stream.buffersLength - 200);
@@ -181,8 +129,13 @@ export class MP3Reader {
 				const c1 = chunk[i];
 				const c2 = chunk[i + 1];
 				const c3 = chunk[i + 2];
-				if (this.scanid3v1 && c1 === 84 && c2 === 65 && c3 === 71 && (demandData() || this.readID3V1(chunk, i, readNext))) {
-					return;
+				if (this.scanid3v1 && c1 === 84 && c2 === 65 && c3 === 71) {
+					if (demandData()) {
+						return true;
+					}
+					if (await this.readID3V1(chunk, i)) {
+						return true;
+					}
 				}
 				i++;
 			}
@@ -191,10 +144,20 @@ export class MP3Reader {
 				const c1 = chunk[i];
 				const c2 = chunk[i + 1];
 				const c3 = chunk[i + 2];
-				if (this.scanid3v1 && c1 === 84 && c2 === 65 && c3 === 71 && (demandData() || this.readID3V1(chunk, i, readNext))) {
-					return;
-				} else if (this.scanid3v2 && c1 === 73 && c2 === 68 && c3 === 51 && (demandData() || this.readID3V2(chunk, i, this.stream, readNext, cb))) {
-					return;
+				if (this.scanid3v2 && c1 === 73 && c2 === 68 && c3 === 51) {
+					if (demandData()) {
+						return true;
+					}
+					if (await this.readID3V2(chunk, i)) {
+						return true;
+					}
+				} else if (this.scanid3v1 && c1 === 84 && c2 === 65 && c3 === 71) {
+					if (demandData()) {
+						return true;
+					}
+					if (await this.readID3V1(chunk, i)) {
+						return true;
+					}
 				}
 				i++;
 			}
@@ -203,37 +166,70 @@ export class MP3Reader {
 				const c1 = chunk[i];
 				const c2 = chunk[i + 1];
 				const c3 = chunk[i + 2];
-				if (this.scanMpeg && c1 === 255 && readMPEGFrame()) {
-					return;
-				} else if (this.scanid3v1 && c1 === 84 && c2 === 65 && c3 === 71 && (demandData() || this.readID3V1(chunk, i, readNext))) {
-					return;
-				} else if (this.scanid3v2 && c1 === 73 && c2 === 68 && c3 === 51 && (demandData() || this.readID3V2(chunk, i, this.stream, readNext, cb))) {
-					return;
+
+				if (this.scanid3v2 && c1 === 73 && c2 === 68 && c3 === 51) {
+					if (demandData()) {
+						return true;
+					}
+					if (await this.readID3V2(chunk, i)) {
+						return true;
+					}
+				} else if (this.scanMpeg && c1 === 255) {
+					if (demandData()) {
+						return true;
+					}
+					const header = this.mpegFramereader.readMPEGFrameHeader(chunk, i);
+					if (header) {
+						if (!this.scanMPEGFrame) {
+							header.offset = this.stream.pos - chunk.length + i;
+							this.layout.frames.push({header});
+						} else {
+							if (demandData()) {
+								return true;
+							}
+							this.readMPEGFrame(chunk, i, header);
+						}
+					}
+				} else if (this.scanid3v1 && c1 === 84 && c2 === 65 && c3 === 71) {
+					if (demandData()) {
+						return true;
+					}
+					if (await this.readID3V1(chunk, i)) {
+						return true;
+					}
 				}
 				i++;
 			}
 		}
 		if (chunk.length > 3) {
-			return readNext(chunk.slice(chunk.length - 3));
+			this.stream.unshift(chunk.slice(chunk.length - 3));
 		}
-		readNext();
+		return true;
 	}
 
-	private scan() {
+	private async scan(): Promise<void> {
 		if (this.stream.end) {
-			return this.finished(undefined, this.layout);
+			return;
 		}
-		this.processChunk(0, BufferUtils.zeroBuffer(0), (err2) => {
-			if (err2) {
-				return this.finished(err2);
+		const requestChunkLength = 1800;
+		let go = true;
+		while (go) {
+			const data = await this.stream.read(requestChunkLength);
+			if (!data || (data.length === 0)) {
+				go = false;
+				break;
 			}
-			if (this.opts.streamSize !== undefined) {
-				this.layout.size = this.opts.streamSize;
-			} else {
-				this.layout.size = this.stream.pos;
+			try {
+				go = await this.processChunk(data);
+			} catch (e) {
+				return Promise.reject(e);
 			}
-			return this.finished(undefined, this.layout);
-		});
+		}
+		if (this.opts.streamSize !== undefined) {
+			this.layout.size = this.opts.streamSize;
+		} else {
+			this.layout.size = this.stream.pos;
+		}
 	}
 
 	async read(filename: string, opts: MP3ReaderOptions): Promise<IMP3.Layout> {
@@ -241,24 +237,20 @@ export class MP3Reader {
 		this.scanMpeg = opts.mpeg || opts.mpegQuick || false;
 		this.scanid3v1 = opts.id3v1 || opts.id3v1IfNotid3v2 || false;
 		this.scanid3v2 = opts.id3v2 || opts.id3v1IfNotid3v2 || false;
-		return new Promise<IMP3.Layout>((resolve, reject) => {
-			this.finished = (err, layout) => {
-				this.stream.close();
-				if (err) {
-					reject(err);
-				} else {
-					resolve(layout);
-				}
-			};
-			this.stream.open(filename)
-				.then(() => {
-					this.scan();
-				})
-				.catch(e => {
-					this.stream.close();
-					reject(e);
-				});
-		});
+		this.layout = {
+			frames: [],
+			tags: [],
+			size: 0
+		};
+		await this.stream.open(filename);
+		try {
+			await this.scan();
+			this.stream.close();
+		} catch (e) {
+			this.stream.close();
+			return Promise.reject(e);
+		}
+		return this.layout;
 	}
 
 	async readStream(stream: Readable, opts: MP3ReaderOptions): Promise<IMP3.Layout> {
@@ -266,21 +258,13 @@ export class MP3Reader {
 		this.scanMpeg = opts.mpeg || opts.mpegQuick || false;
 		this.scanid3v1 = opts.id3v1 || opts.id3v1IfNotid3v2 || false;
 		this.scanid3v2 = opts.id3v2 || opts.id3v1IfNotid3v2 || false;
-		return new Promise<IMP3.Layout>((resolve, reject) => {
-			this.finished = (err, layout) => {
-				if (err) {
-					reject(err);
-				} else {
-					resolve(layout);
-				}
-			};
-			this.stream.openStream(stream)
-				.then(() => {
-					this.scan();
-				})
-				.catch(e => {
-					reject(e);
-				});
-		});
+		this.layout = {
+			frames: [],
+			tags: [],
+			size: 0
+		};
+		await this.stream.openStream(stream);
+		await this.scan();
+		return this.layout;
 	}
 }
