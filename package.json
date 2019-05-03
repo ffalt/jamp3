@@ -1,6 +1,6 @@
 {
   "name": "jamp3",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "author": "ffalt",
   "license": "MIT",
   "description": "mp3, id3v1, id3v2 - reader & writer",
@@ -44,7 +44,7 @@
     "deplokay": "0.0.6",
     "istanbul": "0.4.5",
     "mocha": "6.1.4",
-    "nyc": "13.3.0",
+    "nyc": "14.1.0",
     "tmp": "0.1.0",
     "ts-node": "8.1.0",
     "tslint": "5.16.0",
