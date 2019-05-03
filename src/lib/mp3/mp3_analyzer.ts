@@ -1,4 +1,5 @@
 import {IID3V1} from '../id3v1/id3v1__types';
+import {IID3V2} from '../id3v2/id3v2__types';
 import {findId3v2FrameDef} from '../id3v2/id3v2_frames';
 import {MP3} from './mp3';
 import {IMP3} from './mp3__types';
@@ -14,6 +15,7 @@ export interface IMP3AnalyzerOptions {
 	mpeg: boolean;
 	id3v2: boolean;
 	id3v1: boolean;
+	ignoreXingOffOne?: boolean;
 }
 
 export interface IMP3Report {
@@ -29,9 +31,24 @@ export interface IMP3Report {
 	id3v2: boolean;
 	id3v1: boolean;
 	msgs: Array<IMP3Warning>;
+	tags: {
+		id3v2?: IID3V2.Tag;
+		id3v1?: IID3V1.Tag;
+	};
 }
 
 export class MP3Analyzer {
+
+	analyseID3v2(id3v2: IID3V2.Tag): Array<IMP3Warning> {
+		const result: Array<IMP3Warning> = [];
+		id3v2.frames.forEach(frame => {
+			const def = findId3v2FrameDef(frame.id);
+			if (def && id3v2.head && def.versions.indexOf(id3v2.head.ver) < 0) {
+				result.push({msg: 'ID3v2: invalid version for frame ' + frame.id, expected: def.versions.join(','), actual: id3v2.head.ver});
+			}
+		});
+		return result;
+	}
 
 	async read(filename: string, options: IMP3AnalyzerOptions): Promise<IMP3Report> {
 		const mp3 = new MP3();
@@ -52,7 +69,11 @@ export class MP3Analyzer {
 			frames: data.mpeg.frameCount,
 			id3v1: !!data.id3v1,
 			id3v2: !!data.id3v2,
-			msgs: []
+			msgs: [],
+			tags: {
+				id3v1: data.id3v1,
+				id3v2: data.id3v2,
+			}
 		};
 		if (head && options.xing) {
 			if (head.mode === 'Xing' && data.mpeg.encoded === 'CBR') {
@@ -61,17 +82,21 @@ export class MP3Analyzer {
 			if (head.mode === 'Info' && data.mpeg.encoded === 'VBR') {
 				info.msgs.push({msg: 'XING: Wrong head frame for VBR', expected: 'Xing', actual: 'Info'});
 			}
-			if (
+			if (!options.ignoreXingOffOne &&
 				(data.mpeg.frameCount - data.mpeg.frameCountDeclared === 1) &&
 				(data.mpeg.audioBytes - data.mpeg.audioBytesDeclared === head.header.size)
 			) {
-				info.msgs.push({msg: 'XING: Wrong ' + head.mode + ' declaration (frameCount and audioBytes must include the ' + head.mode + ' Header itself)', expected: data.mpeg.frameCountDeclared, actual: data.mpeg.frameCount});
+				info.msgs.push({msg: 'XING: Wrong ' + head.mode + ' declaration (frameCount and audioBytes must include the ' + head.mode + ' Header itself)', expected: data.mpeg.frameCount, actual: data.mpeg.frameCountDeclared});
 			} else {
 				if (data.mpeg.frameCount !== data.mpeg.frameCountDeclared) {
-					info.msgs.push({msg: 'XING: Wrong number of frames declared in ' + head.mode + ' Header', expected: data.mpeg.frameCountDeclared, actual: data.mpeg.frameCount});
+					if (!options.ignoreXingOffOne || Math.abs(data.mpeg.frameCount - data.mpeg.frameCountDeclared) !== 1) {
+						info.msgs.push({msg: 'XING: Wrong number of frames declared in ' + head.mode + ' Header', expected: data.mpeg.frameCount, actual: data.mpeg.frameCountDeclared});
+					}
 				}
 				if (data.mpeg.audioBytes !== data.mpeg.audioBytesDeclared) {
-					info.msgs.push({msg: 'XING: Wrong number of data bytes declared in ' + head.mode + ' Header', expected: data.mpeg.audioBytesDeclared, actual: data.mpeg.audioBytes});
+					if (!options.ignoreXingOffOne || data.mpeg.audioBytes + head.header.size - data.mpeg.audioBytesDeclared === 0) {
+						info.msgs.push({msg: 'XING: Wrong number of data bytes declared in ' + head.mode + ' Header', expected: data.mpeg.audioBytes, actual: data.mpeg.audioBytesDeclared});
+					}
 				}
 			}
 		}
@@ -114,13 +139,7 @@ export class MP3Analyzer {
 			}
 		}
 		if (options.id3v2 && data.id3v2) {
-			const id3v2 = data.id3v2;
-			id3v2.frames.forEach(frame => {
-				const def = findId3v2FrameDef(frame.id);
-				if (def && id3v2.head && def.versions.indexOf(id3v2.head.ver) < 0) {
-					info.msgs.push({msg: 'ID3v2: invalid version for frame ' + frame.id, expected: def.versions.join(','), actual: id3v2.head.ver});
-				}
-			});
+			info.msgs = info.msgs.concat(this.analyseID3v2(data.id3v2));
 		}
 		return info;
 	}
