@@ -11,7 +11,6 @@ export declare class MP3Reader {
     private id3v1reader;
     private mpegFramereader;
     private stream;
-    private finished;
     private scanMpeg;
     private scanid3v1;
     private scanid3v2;

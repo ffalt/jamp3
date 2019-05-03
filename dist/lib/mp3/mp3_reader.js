@@ -31,55 +31,52 @@ class MP3Reader {
         this.scanid3v2 = true;
         this.scanMPEGFrame = true;
         this.hasMPEGHeadFrame = false;
-        this.finished = () => {
-        };
     }
-    readID3V1(chunk, i, readNext) {
-        const tag = this.id3v1reader.readTag(chunk.slice(i, i + 128));
-        if (!tag) {
-            return false;
-        }
-        tag.start = this.stream.pos - chunk.length + i;
-        tag.end = tag.start + 128;
-        this.layout.tags.push(tag);
-        if (!this.stream.end || chunk.length - 128 - i > 0) {
-            readNext(chunk.slice(i + 1));
-        }
-        else {
-            readNext(chunk.slice(i + 128));
-        }
-        return true;
-    }
-    readID3V2(chunk, i, reader, readNext, cb) {
-        const id3Header = this.id3v2reader.readID3v2Header(chunk, i);
-        if (id3Header && id3Header.valid) {
-            const start = this.stream.pos - chunk.length + i;
-            this.stream.unshift(chunk.slice(i));
-            this.id3v2reader.readTag(reader)
-                .then((result) => {
-                if (!result) {
-                    return cb();
-                }
-                let rest = result.rest || buffer_1.BufferUtils.zeroBuffer(0);
-                if (result.tag && result.tag.head.valid) {
-                    this.layout.tags.push(result.tag);
-                    result.tag.start = start;
-                    result.tag.end = this.stream.pos;
-                    this.scanid3v2 = false;
-                    if (this.opts.id3v1IfNotid3v2) {
-                        this.scanid3v1 = false;
-                    }
-                }
-                else {
-                    rest = rest.slice(1);
-                }
-                readNext(rest);
-            }).catch(e => {
-                cb(e);
-            });
+    readID3V1(chunk, i) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const tag = this.id3v1reader.readTag(chunk.slice(i, i + 128));
+            if (!tag) {
+                return false;
+            }
+            tag.start = this.stream.pos - chunk.length + i;
+            tag.end = tag.start + 128;
+            this.layout.tags.push(tag);
+            if (!this.stream.end || chunk.length - 128 - i > 0) {
+                this.stream.unshift(chunk.slice(i + 1));
+            }
+            else {
+                this.stream.unshift(chunk.slice(i + 128));
+            }
             return true;
-        }
-        return false;
+        });
+    }
+    readID3V2(chunk, i) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const id3Header = this.id3v2reader.readID3v2Header(chunk, i);
+            if (id3Header && id3Header.valid) {
+                const start = this.stream.pos - chunk.length + i;
+                this.stream.unshift(chunk.slice(i));
+                const result = yield this.id3v2reader.readTag(this.stream);
+                if (result) {
+                    let rest = result.rest || buffer_1.BufferUtils.zeroBuffer(0);
+                    if (result.tag && result.tag.head.valid) {
+                        this.layout.tags.push(result.tag);
+                        result.tag.start = start;
+                        result.tag.end = this.stream.pos;
+                        this.scanid3v2 = false;
+                        if (this.opts.id3v1IfNotid3v2) {
+                            this.scanid3v1 = false;
+                        }
+                    }
+                    else {
+                        rest = rest.slice(1);
+                    }
+                    this.stream.unshift(rest);
+                    return true;
+                }
+            }
+            return false;
+        });
     }
     readMPEGFrame(chunk, i, header) {
         const a = this.mpegFramereader.readFrame(chunk, i, header);
@@ -102,122 +99,138 @@ class MP3Reader {
             }
         }
     }
-    processChunk(stackLevel, chunk, cb) {
-        let i = 0;
-        const requestChunkLength = 1800;
-        const readNext = (unwind) => {
-            if (unwind && unwind.length > 0) {
-                this.stream.unshift(unwind);
-            }
-            this.stream.read(requestChunkLength)
-                .then(data => {
-                if (!data || (data.length === 0)) {
-                    return cb();
+    processChunk(chunk) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let i = 0;
+            const demandData = () => {
+                if (!this.stream.end && (chunk.length - i) < 200) {
+                    this.stream.unshift(chunk.slice(i));
+                    return true;
                 }
-                if (stackLevel > 1000) {
-                    process.nextTick(() => {
-                        this.processChunk(0, data, cb);
-                    });
-                }
-                else {
-                    this.processChunk(stackLevel + 1, data, cb);
-                }
-            })
-                .catch(e => {
-                cb(e);
-            });
-        };
-        const demandData = () => {
-            if (!this.stream.end && (chunk.length - i) < 200) {
-                readNext(chunk.slice(i));
+                return false;
+            };
+            if (demandData()) {
                 return true;
             }
-            return false;
-        };
-        const readMPEGFrame = () => {
-            const header = this.mpegFramereader.readMPEGFrameHeader(chunk, i);
-            if (header) {
-                if (!this.scanMPEGFrame) {
-                    header.offset = this.stream.pos - chunk.length + i;
-                    this.layout.frames.push({ header });
+            if (!this.scanMpeg && !this.scanid3v2 && !this.scanid3v1) {
+                if (this.opts.streamSize !== undefined) {
+                    return false;
                 }
-                else {
-                    if (demandData()) {
-                        return true;
+                yield this.stream.consumeToEnd();
+                return false;
+            }
+            else if (!this.scanMpeg && !this.scanid3v2) {
+                if (!this.stream.end && this.stream.buffersLength > 200) {
+                    this.stream.skip(this.stream.buffersLength - 200);
+                    chunk = this.stream.get(200);
+                    i = 0;
+                }
+                while (chunk.length - i >= 4) {
+                    const c1 = chunk[i];
+                    const c2 = chunk[i + 1];
+                    const c3 = chunk[i + 2];
+                    if (this.scanid3v1 && c1 === 84 && c2 === 65 && c3 === 71) {
+                        if (demandData()) {
+                            return true;
+                        }
+                        if (yield this.readID3V1(chunk, i)) {
+                            return true;
+                        }
                     }
-                    this.readMPEGFrame(chunk, i, header);
+                    i++;
                 }
             }
-            return false;
-        };
-        if (demandData()) {
-            return;
-        }
-        if (!this.scanMpeg && !this.scanid3v2 && !this.scanid3v1) {
-            if (this.opts.streamSize !== undefined) {
-                return cb();
+            else if (!this.scanMpeg) {
+                while (chunk.length - i >= 4) {
+                    const c1 = chunk[i];
+                    const c2 = chunk[i + 1];
+                    const c3 = chunk[i + 2];
+                    if (this.scanid3v2 && c1 === 73 && c2 === 68 && c3 === 51) {
+                        if (demandData()) {
+                            return true;
+                        }
+                        if (yield this.readID3V2(chunk, i)) {
+                            return true;
+                        }
+                    }
+                    else if (this.scanid3v1 && c1 === 84 && c2 === 65 && c3 === 71) {
+                        if (demandData()) {
+                            return true;
+                        }
+                        if (yield this.readID3V1(chunk, i)) {
+                            return true;
+                        }
+                    }
+                    i++;
+                }
             }
-            return this.stream.consumeToEnd().then(() => cb()).catch(e => cb(e));
-        }
-        else if (!this.scanMpeg && !this.scanid3v2) {
-            if (!this.stream.end && this.stream.buffersLength > 200) {
-                this.stream.skip(this.stream.buffersLength - 200);
-                chunk = this.stream.get(200);
-                i = 0;
+            else {
+                while (chunk.length - i >= 4) {
+                    const c1 = chunk[i];
+                    const c2 = chunk[i + 1];
+                    const c3 = chunk[i + 2];
+                    if (this.scanid3v2 && c1 === 73 && c2 === 68 && c3 === 51) {
+                        if (demandData()) {
+                            return true;
+                        }
+                        if (yield this.readID3V2(chunk, i)) {
+                            return true;
+                        }
+                    }
+                    else if (this.scanMpeg && c1 === 255) {
+                        if (demandData()) {
+                            return true;
+                        }
+                        const header = this.mpegFramereader.readMPEGFrameHeader(chunk, i);
+                        if (header) {
+                            if (!this.scanMPEGFrame) {
+                                header.offset = this.stream.pos - chunk.length + i;
+                                this.layout.frames.push({ header });
+                            }
+                            else {
+                                if (demandData()) {
+                                    return true;
+                                }
+                                this.readMPEGFrame(chunk, i, header);
+                            }
+                        }
+                    }
+                    else if (this.scanid3v1 && c1 === 84 && c2 === 65 && c3 === 71) {
+                        if (demandData()) {
+                            return true;
+                        }
+                        if (yield this.readID3V1(chunk, i)) {
+                            return true;
+                        }
+                    }
+                    i++;
+                }
             }
-            while (chunk.length - i >= 4) {
-                const c1 = chunk[i];
-                const c2 = chunk[i + 1];
-                const c3 = chunk[i + 2];
-                if (this.scanid3v1 && c1 === 84 && c2 === 65 && c3 === 71 && (demandData() || this.readID3V1(chunk, i, readNext))) {
-                    return;
-                }
-                i++;
+            if (chunk.length > 3) {
+                this.stream.unshift(chunk.slice(chunk.length - 3));
             }
-        }
-        else if (!this.scanMpeg) {
-            while (chunk.length - i >= 4) {
-                const c1 = chunk[i];
-                const c2 = chunk[i + 1];
-                const c3 = chunk[i + 2];
-                if (this.scanid3v1 && c1 === 84 && c2 === 65 && c3 === 71 && (demandData() || this.readID3V1(chunk, i, readNext))) {
-                    return;
-                }
-                else if (this.scanid3v2 && c1 === 73 && c2 === 68 && c3 === 51 && (demandData() || this.readID3V2(chunk, i, this.stream, readNext, cb))) {
-                    return;
-                }
-                i++;
-            }
-        }
-        else {
-            while (chunk.length - i >= 4) {
-                const c1 = chunk[i];
-                const c2 = chunk[i + 1];
-                const c3 = chunk[i + 2];
-                if (this.scanMpeg && c1 === 255 && readMPEGFrame()) {
-                    return;
-                }
-                else if (this.scanid3v1 && c1 === 84 && c2 === 65 && c3 === 71 && (demandData() || this.readID3V1(chunk, i, readNext))) {
-                    return;
-                }
-                else if (this.scanid3v2 && c1 === 73 && c2 === 68 && c3 === 51 && (demandData() || this.readID3V2(chunk, i, this.stream, readNext, cb))) {
-                    return;
-                }
-                i++;
-            }
-        }
-        if (chunk.length > 3) {
-            return readNext(chunk.slice(chunk.length - 3));
-        }
-        readNext();
+            return true;
+        });
     }
     scan() {
-        if (this.stream.end) {
-            return this.finished(undefined, this.layout);
-        }
-        this.processChunk(0, buffer_1.BufferUtils.zeroBuffer(0), (err2) => {
-            if (err2) {
-                return this.finished(err2);
+        return __awaiter(this, void 0, void 0, function* () {
+            if (this.stream.end) {
+                return;
+            }
+            const requestChunkLength = 1800;
+            let go = true;
+            while (go) {
+                const data = yield this.stream.read(requestChunkLength);
+                if (!data || (data.length === 0)) {
+                    go = false;
+                    break;
+                }
+                try {
+                    go = yield this.processChunk(data);
+                }
+                catch (e) {
+                    return Promise.reject(e);
+                }
             }
             if (this.opts.streamSize !== undefined) {
                 this.layout.size = this.opts.streamSize;
@@ -225,7 +238,6 @@ class MP3Reader {
             else {
                 this.layout.size = this.stream.pos;
             }
-            return this.finished(undefined, this.layout);
         });
     }
     read(filename, opts) {
@@ -234,25 +246,21 @@ class MP3Reader {
             this.scanMpeg = opts.mpeg || opts.mpegQuick || false;
             this.scanid3v1 = opts.id3v1 || opts.id3v1IfNotid3v2 || false;
             this.scanid3v2 = opts.id3v2 || opts.id3v1IfNotid3v2 || false;
-            return new Promise((resolve, reject) => {
-                this.finished = (err, layout) => {
-                    this.stream.close();
-                    if (err) {
-                        reject(err);
-                    }
-                    else {
-                        resolve(layout);
-                    }
-                };
-                this.stream.open(filename)
-                    .then(() => {
-                    this.scan();
-                })
-                    .catch(e => {
-                    this.stream.close();
-                    reject(e);
-                });
-            });
+            this.layout = {
+                frames: [],
+                tags: [],
+                size: 0
+            };
+            yield this.stream.open(filename);
+            try {
+                yield this.scan();
+                this.stream.close();
+            }
+            catch (e) {
+                this.stream.close();
+                return Promise.reject(e);
+            }
+            return this.layout;
         });
     }
     readStream(stream, opts) {
@@ -261,23 +269,14 @@ class MP3Reader {
             this.scanMpeg = opts.mpeg || opts.mpegQuick || false;
             this.scanid3v1 = opts.id3v1 || opts.id3v1IfNotid3v2 || false;
             this.scanid3v2 = opts.id3v2 || opts.id3v1IfNotid3v2 || false;
-            return new Promise((resolve, reject) => {
-                this.finished = (err, layout) => {
-                    if (err) {
-                        reject(err);
-                    }
-                    else {
-                        resolve(layout);
-                    }
-                };
-                this.stream.openStream(stream)
-                    .then(() => {
-                    this.scan();
-                })
-                    .catch(e => {
-                    reject(e);
-                });
-            });
+            this.layout = {
+                frames: [],
+                tags: [],
+                size: 0
+            };
+            yield this.stream.openStream(stream);
+            yield this.scan();
+            return this.layout;
         });
     }
 }

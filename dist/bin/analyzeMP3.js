@@ -22,6 +22,7 @@ commander_1.default
     .option('-i, --input <fileOrDir>', 'mp3 file or folder')
     .option('-r, --recursive', 'scan the folder recursive')
     .option('-w, --warnings', 'show results only for files with warnings')
+    .option('-x, --ignoreXingOffOne', 'ignore most common error in off-by-one XING header declaration')
     .option('-f, --format <format>', 'format of analyze result (plain|json)', /^(plain|json)$/i, 'plain')
     .option('-d, --dest <file>', 'destination analyze result file')
     .parse(process.argv);
@@ -87,6 +88,9 @@ function run() {
             if (commander_1.default.args[0]) {
                 input = commander_1.default.args[0];
             }
+        }
+        if (commander_1.default.ignoreXingOffOne) {
+            options.ignoreXingOffOne = commander_1.default.ignoreXingOffOne;
         }
         if (!input || input.length === 0) {
             return Promise.reject(Error('must specify a filename/directory'));

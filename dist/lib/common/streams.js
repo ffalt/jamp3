@@ -204,10 +204,12 @@ class ReaderStream {
         });
     }
     unshift(buffer) {
-        this.buffers.unshift(buffer);
-        this.buffersLength = this.getBufferLength();
-        this.pos -= buffer.length;
-        this.end = this.streamEnd && this.buffersLength === 0;
+        if (buffer.length > 0) {
+            this.buffers.unshift(buffer);
+            this.buffersLength = this.getBufferLength();
+            this.pos -= buffer.length;
+            this.end = this.streamEnd && this.buffersLength === 0;
+        }
     }
     scan(buffer) {
         return __awaiter(this, void 0, void 0, function* () {

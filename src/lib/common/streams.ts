@@ -203,11 +203,13 @@ export class ReaderStream {
 	}
 
 	public unshift(buffer: Buffer) {
-		this.buffers.unshift(buffer);
-		this.buffersLength = this.getBufferLength();
-		// this.buf = BufferUtils.concatBuffer(buffer, this.buf);
-		this.pos -= buffer.length;
-		this.end = this.streamEnd && this.buffersLength === 0;
+		if (buffer.length > 0) {
+			this.buffers.unshift(buffer);
+			this.buffersLength = this.getBufferLength();
+			// this.buf = BufferUtils.concatBuffer(buffer, this.buf);
+			this.pos -= buffer.length;
+			this.end = this.streamEnd && this.buffersLength === 0;
+		}
 	}
 
 	async scan(buffer: Buffer): Promise<number> {
