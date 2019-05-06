@@ -35,7 +35,7 @@
   "devDependencies": {
     "@types/chai": "4.1.7",
     "@types/debug": "4.1.4",
-    "@types/fs-extra": "5.0.5",
+    "@types/fs-extra": "5.1.0",
     "@types/mocha": "5.2.6",
     "@types/node": "11.13.10",
     "@types/tmp": "0.1.0",
