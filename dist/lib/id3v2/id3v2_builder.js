@@ -398,6 +398,7 @@ class ID3V24TagBuilder {
     }
     chapter(id, start, end, offset, offsetEnd, subframes) {
         this.rawBuilder.addChapter('CHAP', id, start, end, offset, offsetEnd, subframes);
+        return this;
     }
 }
 exports.ID3V24TagBuilder = ID3V24TagBuilder;

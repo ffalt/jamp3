@@ -192,6 +192,9 @@ function simplifyFrame(frame, dropIDsList) {
         if (value && value.id) {
             slug = UFIDMap[value.id] || ('UFID|' + value.id);
         }
+        else if (value) {
+            slug = id;
+        }
         else {
             return null;
         }
@@ -200,6 +203,9 @@ function simplifyFrame(frame, dropIDsList) {
         const value = frame.value;
         if (value && value.id) {
             slug = TXXXMap[value.id] || TXXXMap[value.id.toUpperCase()] || ('TXXX|' + value.id);
+        }
+        else if (value) {
+            slug = id;
         }
         else {
             return null;
@@ -210,6 +216,9 @@ function simplifyFrame(frame, dropIDsList) {
         if (value && value.id) {
             slug = COMMMap[value.id] || ('COMM|' + value.id);
         }
+        else if (value) {
+            slug = id;
+        }
         else {
             return null;
         }
@@ -218,6 +227,9 @@ function simplifyFrame(frame, dropIDsList) {
         const value = frame.value;
         if (value && value.id) {
             slug = PRIVMap[value.id] || ('PRIV|' + value.id);
+        }
+        else if (value) {
+            slug = id;
         }
         else {
             return null;
@@ -228,6 +240,9 @@ function simplifyFrame(frame, dropIDsList) {
         if (value && value.id) {
             slug = 'WXXX|' + value.id;
         }
+        else if (value) {
+            slug = id;
+        }
         else {
             return null;
         }
@@ -236,6 +251,9 @@ function simplifyFrame(frame, dropIDsList) {
         const value = frame.value;
         if (value && value.id) {
             slug = 'LINK|' + value.id;
+        }
+        else if (value) {
+            slug = id;
         }
         else {
             return null;

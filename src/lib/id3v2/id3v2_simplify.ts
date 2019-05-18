@@ -172,7 +172,7 @@ const DateUpgradeMap: { [key: string]: string; } = {
  TODO: simplify following frames more like in style VORBISCOMMENT
  POPM    RATING:user@email
  Chapter tags        CHAPTERxxx
-*/
+ */
 
 if (process.env.NODE_ENV === 'development') {
 	Object.keys(FrameDefs).forEach(key => {
@@ -203,6 +203,8 @@ export function simplifyFrame(frame: IID3V2.Frame, dropIDsList?: Array<string>):
 		const value = <IID3V2.FrameValue.IdText>frame.value;
 		if (value && value.id) {
 			slug = UFIDMap[value.id] || ('UFID|' + value.id);
+		} else if (value) {
+			slug = id;
 		} else {
 			return null;
 		}
@@ -210,6 +212,8 @@ export function simplifyFrame(frame: IID3V2.Frame, dropIDsList?: Array<string>):
 		const value = <IID3V2.FrameValue.IdText>frame.value;
 		if (value && value.id) {
 			slug = TXXXMap[value.id] || TXXXMap[value.id.toUpperCase()] || ('TXXX|' + value.id);
+		} else if (value) {
+			slug = id;
 		} else {
 			return null;
 		}
@@ -217,6 +221,8 @@ export function simplifyFrame(frame: IID3V2.Frame, dropIDsList?: Array<string>):
 		const value = <IID3V2.FrameValue.LangDescText>frame.value;
 		if (value && value.id) {
 			slug = COMMMap[value.id] || ('COMM|' + value.id);
+		} else if (value) {
+			slug = id;
 		} else {
 			return null;
 		}
@@ -224,6 +230,8 @@ export function simplifyFrame(frame: IID3V2.Frame, dropIDsList?: Array<string>):
 		const value = <IID3V2.FrameValue.IdBin>frame.value;
 		if (value && value.id) {
 			slug = PRIVMap[value.id] || ('PRIV|' + value.id);
+		} else if (value) {
+			slug = id;
 		} else {
 			return null;
 		}
@@ -231,6 +239,8 @@ export function simplifyFrame(frame: IID3V2.Frame, dropIDsList?: Array<string>):
 		const value = <IID3V2.FrameValue.IdText>frame.value;
 		if (value && value.id) {
 			slug = 'WXXX|' + value.id;
+		} else if (value) {
+			slug = id;
 		} else {
 			return null;
 		}
@@ -238,6 +248,8 @@ export function simplifyFrame(frame: IID3V2.Frame, dropIDsList?: Array<string>):
 		const value = <IID3V2.FrameValue.Link>frame.value;
 		if (value && value.id) {
 			slug = 'LINK|' + value.id;
+		} else if (value) {
+			slug = id;
 		} else {
 			return null;
 		}
