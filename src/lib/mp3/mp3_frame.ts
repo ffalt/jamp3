@@ -7,6 +7,61 @@ import {
 import {IMP3} from './mp3__types';
 import {isBit} from '../common/utils';
 
+export function colapseRawHeader(header: IMP3.FrameRawHeader): IMP3.FrameRawHeaderArray {
+	return [
+		header.offset,
+		header.size,
+		header.versionIdx,
+		header.layerIdx,
+		header.sampleIdx,
+		header.bitrateIdx,
+		header.modeIdx,
+		header.modeExtIdx,
+		header.emphasisIdx,
+		header.padded ? 1 : 0,
+		header.protected ? 1 : 0,
+		header.copyright ? 1 : 0,
+		header.original ? 1 : 0,
+		header.privatebit
+	];
+}
+
+
+export function rawHeaderOffSet(header: IMP3.FrameRawHeaderArray): number {
+	return header[0];
+}
+
+export function rawHeaderSize(header: IMP3.FrameRawHeaderArray): number {
+	return header[1];
+}
+
+export function rawHeaderVersionIdx(header: IMP3.FrameRawHeaderArray): number {
+	return header[2];
+}
+
+export function rawHeaderLayerIdx(header: IMP3.FrameRawHeaderArray): number {
+	return header[3];
+}
+
+export function expandRawHeaderArray(header: IMP3.FrameRawHeaderArray): IMP3.FrameRawHeader {
+	return {
+		offset: header[0],
+		size: header[1],
+		versionIdx: header[2],
+		layerIdx: header[3],
+		sampleIdx: header[4],
+		bitrateIdx: header[5],
+		modeIdx: header[6],
+		modeExtIdx: header[7],
+		emphasisIdx: header[8],
+		padded: header[9] === 1,
+		protected: header[10] === 1,
+		copyright: header[11] === 1,
+		original: header[12] === 1,
+		privatebit: header[13],
+	};
+}
+
 export function expandRawHeader(header: IMP3.FrameRawHeader): IMP3.FrameHeader {
 	const samplingRate = mpeg_srates[header.versionIdx][header.sampleIdx];
 	const samples = mpeg_frame_samples[header.versionIdx][header.layerIdx];
@@ -341,7 +396,7 @@ export class MPEGFrameReader {
 	}
 
 	public readFrame(chunk: Buffer, offset: number, header: IMP3.FrameRawHeader): { offset: number, frame: IMP3.RawFrame } {
-		const frame: IMP3.RawFrame = {header};
+		const frame: IMP3.RawFrame = {header: colapseRawHeader(header)};
 		let off = 0;
 		const length = offset + Math.min(40, chunk.length - 4 - offset);
 		for (let i = offset; i < length; i++) {

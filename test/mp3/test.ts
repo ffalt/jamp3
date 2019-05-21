@@ -10,7 +10,7 @@ import {compareID3v1Save, compareID3v1Spec} from '../id3v1/id3v1compare';
 import {ID3v2TestDirectories, ID3v2TestPath} from '../id3v2/id3v2config';
 import {ID3v1TestDirectories, ID3v1TestPath} from '../id3v1/id3v1config';
 import {collectTestFiles} from '../common/common';
-import {expandRawHeader} from '../../src/lib/mp3/mp3_frame';
+import {expandRawHeader, expandRawHeaderArray, rawHeaderOffSet, rawHeaderSize} from '../../src/lib/mp3/mp3_frame';
 import {filterBestMPEGChain} from '../../src/lib/mp3/mp3_frames';
 import fse from 'fs-extra';
 
@@ -132,32 +132,33 @@ async function loadFramesCompareProbe(filename: string, result: IMP3.Result): Pr
 		return <ITestSpecFrame>o;
 	});
 	// saveIfNotExists(filename + '.frames.jam.json', result.frames);
-	let frames = filterBestMPEGChain(result.frames || [], 50);
-	const head = frames.find(f => !!f.mode);
+	const allframes = result.frames && result.frames.audio ? result.frames.audio || [] : [];
+	let frames = filterBestMPEGChain(allframes, 50);
+	const head = result.frames && result.frames.headers ? result.frames.headers[0] : undefined;
 	if (head) {
 		const j = compareframes.findIndex(f => f.offset === head.header.offset);
 		if (j < 0) {
 			// probe removes xing frames sometimes
-			frames = frames.filter(f => f !== head);
+			frames = frames.filter(f => rawHeaderOffSet(f) !== head.header.offset);
 		}
 	}
 	// saveIfNotExists(filename + '.frames.jam.filtered.json', frames);
 	if (frames.length !== compareframes.length) {
 		const missing: Array<number> = [];
 		frames.forEach(frame => {
-			if (!compareframes.find(f => f.offset === frame.header.offset)) {
-				missing.push(frame.header.offset);
+			if (!compareframes.find(f => f.offset === rawHeaderOffSet(frame))) {
+				missing.push(rawHeaderOffSet(frame));
 			}
 		});
 		if (missing.length > 0) {
 			// console.log('missing frame offsets in probe', missing);
 			frames = frames.filter(f => {
-				return missing.indexOf(f.header.offset) < 0;
+				return missing.indexOf(rawHeaderOffSet(f)) < 0;
 			});
 		}
 		const missing2: Array<number> = [];
 		compareframes.forEach(frame => {
-			if (!frames.find(f => f.header.offset === frame.offset)) {
+			if (!frames.find(f => rawHeaderOffSet(f) === frame.offset)) {
 				missing2.push(frame.offset);
 			}
 		});
@@ -170,7 +171,7 @@ async function loadFramesCompareProbe(filename: string, result: IMP3.Result): Pr
 		if (!compareframe) {
 			return;
 		}
-		const header: IMP3.FrameHeader = expandRawHeader(frame.header);
+		const header: IMP3.FrameHeader = expandRawHeader(expandRawHeaderArray(frame));
 		if ((index > 0) && index < frames.length - 2) {
 			// ignore last calculated size (ffprobe reports the real size, which may be smaller)
 			expect(header.size).to.deep.equal(compareframe.size, 'Size not equal ' + index + ': ' + JSON.stringify(frame) + ' ' + JSON.stringify(compareframe));
@@ -237,11 +238,11 @@ async function loadMPEGCompare(filename: string): Promise<void> {
 
 		if (data.mpeg.encoded === 'VBR') {
 			let audioBytes = data.size;
-			if (!data.frames || data.frames.length < 20 && parseInt(compare.stream.nb_read_frames, 10) < 20) {
+			if (!data.frames || data.frames.audio.length < 20 && parseInt(compare.stream.nb_read_frames, 10) < 20) {
 				return;
 			}
-			if (data.frames) {
-				audioBytes -= data.frames[0].header.offset;
+			if (data.frames && data.frames.audio.length > 0) {
+				audioBytes -= rawHeaderSize(data.frames.audio[0]);
 				if (data.id3v1) {
 					audioBytes -= (data.id3v1.end - data.id3v1.start);
 				}

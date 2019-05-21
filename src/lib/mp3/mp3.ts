@@ -4,28 +4,25 @@ import {buildID3v2} from '../id3v2/id3v2';
 import {IID3V2} from '../id3v2/id3v2__types';
 import {IID3V1} from '../id3v1/id3v1__types';
 import {filterBestMPEGChain} from './mp3_frames';
-import {expandRawHeader} from './mp3_frame';
+import {expandRawHeader, expandRawHeaderArray, rawHeaderOffSet} from './mp3_frame';
 import fse from 'fs-extra';
 import {Readable} from 'stream';
 
-export function isHeadFrame(frame: IMP3.Frame): boolean {
-	return !!frame.mode;
-}
-
-export function analyzeBitrateMode(frames: Array<IMP3.Frame>): { encoded: string, bitRate: number, duration: number, count: number, audioBytes: number } {
+export function analyzeBitrateMode(frames: Array<IMP3.FrameRawHeaderArray>): { encoded: string, bitRate: number, duration: number, count: number, audioBytes: number } {
 	const bitRates: { [bitRate: number]: number } = {};
 	let duration = 0;
 	let audioBytes = 0;
 	let count = 0;
 	frames.forEach(frame => {
-		const header: IMP3.FrameHeader = frame.header;
+		const header: IMP3.FrameHeader = expandRawHeader(expandRawHeaderArray(frame));
 		bitRates[header.bitRate] = (bitRates[header.bitRate] || 0) + 1;
 		duration += header.time;
 		audioBytes += header.size;
 		count++;
 	});
 	let encoded = 'CBR';
-	let bitRate = frames.length > 0 ? frames[0].header.bitRate : 0;
+	const first: IMP3.FrameHeader | undefined = frames.length > 0 ? expandRawHeader(expandRawHeaderArray(frames[0])) : undefined;
+	let bitRate = first ? first.bitRate : 0;
 	const rates = Object.keys(bitRates).map(s => parseInt(s, 10));
 	if (rates.length > 1) {
 		encoded = 'VBR';
@@ -42,7 +39,7 @@ export function analyzeBitrateMode(frames: Array<IMP3.Frame>): { encoded: string
 
 export class MP3 {
 
-	async prepareResult(opts: IMP3.ReadOptions, layout: IMP3.Layout): Promise<IMP3.Result> {
+	async prepareResult(opts: IMP3.ReadOptions, layout: IMP3.RawLayout): Promise<IMP3.Result> {
 		const id3v1s: Array<IID3V1.Tag> = <Array<IID3V1.Tag>>layout.tags.filter((o) => o.id === 'ID3v1');
 		const result: IMP3.Result = {size: layout.size};
 		if (opts.raw) {
@@ -65,16 +62,20 @@ export class MP3 {
 				encoded: '',
 				mode: ''
 			};
-			const frames: Array<IMP3.Frame> = filterBestMPEGChain(layout.frames, 50).map(frame => {
-				return {
-					header: expandRawHeader(frame.header),
-					mode: frame.mode,
-					xing: frame.xing,
-					vbri: frame.vbri
-				};
-			});
-			if (frames.length > 0) {
-				const header: IMP3.FrameHeader = frames[0].header;
+			const chain = filterBestMPEGChain(layout.frameheaders, 50);
+			result.frames = {
+				audio: chain,
+				headers: layout.headframes.map(frame => {
+					return {
+						header: expandRawHeader(expandRawHeaderArray(frame.header)),
+						mode: frame.mode,
+						xing: frame.xing,
+						vbri: frame.vbri
+					};
+				})
+			};
+			if (chain.length > 0) {
+				const header: IMP3.FrameHeader = expandRawHeader(expandRawHeaderArray(chain[0]));
 				mpeg.mode = header.channelType;
 				mpeg.bitRate = header.bitRate;
 				mpeg.channels = header.channelCount;
@@ -83,15 +84,14 @@ export class MP3 {
 				mpeg.version = header.version;
 				mpeg.layer = header.layer;
 			}
-			const headframe = frames.find(f => isHeadFrame(f));
-			const bitRateMode = analyzeBitrateMode(frames);
+			const headframe = result.frames.headers[0];
+			const bitRateMode = analyzeBitrateMode(chain);
 			mpeg.encoded = bitRateMode.encoded;
 			mpeg.bitRate = bitRateMode.bitRate;
-			result.frames = frames;
 			if (opts.mpegQuick) {
 				let audioBytes = layout.size;
-				if (frames.length > 0) {
-					audioBytes -= frames[0].header.offset;
+				if (chain.length > 0) {
+					audioBytes -= rawHeaderOffSet(chain[0]);
 					if (id3v1s.length > 0) {
 						audioBytes -= 128;
 					}

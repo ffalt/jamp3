@@ -42,8 +42,11 @@ export namespace IMP3 {
 		mpeg?: MPEG;
 		id3v2?: IID3V2.Tag;
 		id3v1?: IID3V1.Tag;
-		frames?: Array<IMP3.Frame>;
-		raw?: IMP3.Layout;
+		frames?: {
+			headers: Array<IMP3.Frame>;
+			audio: Array<IMP3.FrameRawHeaderArray>;
+		};
+		raw?: RawLayout;
 	}
 
 	export interface FrameRawHeader {
@@ -111,20 +114,27 @@ export namespace IMP3 {
 		};
 	}
 
+	export type FrameRawHeaderArray = Array<number>;
+
 	export interface RawFrame {
-		header: IMP3.FrameRawHeader;
+		header: FrameRawHeaderArray;
 		mode?: string;
 		xing?: Xing;
 		vbri?: VBRI;
 	}
 
-	export interface Frame extends RawFrame {
-		header: IMP3.FrameHeader;
+	export interface Frame {
+		header: FrameHeader;
+		mode?: string;
+		xing?: Xing;
+		vbri?: VBRI;
 	}
 
-	export interface Layout {
-		frames: Array<IMP3.RawFrame>;
+	export interface RawLayout {
+		frameheaders: Array<FrameRawHeaderArray>;
+		headframes: Array<RawFrame>;
 		tags: Array<ITag>;
 		size: number;
 	}
+
 }

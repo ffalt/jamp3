@@ -3,6 +3,7 @@ import {IID3V2} from '../id3v2/id3v2__types';
 import {findId3v2FrameDef} from '../id3v2/id3v2_frames';
 import {MP3} from './mp3';
 import {IMP3} from './mp3__types';
+import {rawHeaderOffSet, rawHeaderSize} from './mp3_frame';
 
 export interface IMP3Warning {
 	msg: string;
@@ -56,7 +57,7 @@ export class MP3Analyzer {
 		if (!data || !data.mpeg || !data.frames) {
 			return Promise.reject(Error('No mpeg data in file:' + filename));
 		}
-		const head = data.frames.find(f => !!f.mode);
+		const head = data.frames.headers[0];
 		const info: IMP3Report = {
 			filename,
 			mode: data.mpeg.encoded,
@@ -103,9 +104,9 @@ export class MP3Analyzer {
 		if (!head && data.mpeg.encoded === 'VBR') {
 			info.msgs.push({msg: 'XING: VBR detected, but no VBR head frame found', expected: 'VBR Header', actual: 'nothing'});
 		}
-		const lastframe: IMP3.Frame | undefined = data.frames.length > 0 ? data.frames[data.frames.length - 1] : undefined;
+		const lastframe: IMP3.FrameRawHeaderArray | undefined = data.frames.audio.length > 0 ? data.frames.audio[data.frames.audio.length - 1] : undefined;
 		if (data.raw && lastframe) {
-			const audioEnd = lastframe.header.offset + lastframe.header.size;
+			const audioEnd = rawHeaderOffSet(lastframe) + rawHeaderSize(lastframe);
 			let id3v1s: Array<IID3V1.Tag> = <Array<IID3V1.Tag>>data.raw.tags.filter(t => t.id === 'ID3v1' && t.start >= audioEnd);
 			if (options.id3v1 && id3v1s.length > 0) {
 				if (id3v1s.length > 1) {
@@ -126,15 +127,15 @@ export class MP3Analyzer {
 			}
 		}
 		if (options.mpeg) {
-			if (data.frames.length === 0) {
+			if (data.frames.audio.length === 0) {
 				info.msgs.push({msg: 'MPEG: No frames found', expected: '>0', actual: 0});
 			} else {
-				let nextdata = data.frames[0].header.offset + data.frames[0].header.size;
-				data.frames.slice(1).forEach((f, index) => {
-					if (nextdata !== f.header.offset) {
-						info.msgs.push({msg: 'MPEG: stream error at position ' + nextdata + ', gap after frame ' + (index + 1), expected: 0, actual: f.header.offset - nextdata});
+				let nextdata = rawHeaderOffSet(data.frames.audio[0]) + rawHeaderSize(data.frames.audio[0]);
+				data.frames.audio.slice(1).forEach((f, index) => {
+					if (nextdata !== rawHeaderOffSet(f)) {
+						info.msgs.push({msg: 'MPEG: stream error at position ' + nextdata + ', gap after frame ' + (index + 1), expected: 0, actual: rawHeaderOffSet(f) - nextdata});
 					}
-					nextdata = f.header.offset + f.header.size;
+					nextdata = rawHeaderOffSet(f) + rawHeaderSize(f);
 				});
 			}
 		}
