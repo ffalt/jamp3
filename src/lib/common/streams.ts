@@ -30,12 +30,9 @@ export class ReaderStream {
 		if (this.readableStream) {
 			this.readableStream.pause();
 		}
-		// console.log('got %d bytes of data', chunk.length);
 		this.buffers.push(chunk);
 		this.buffersLength = this.getBufferLength();
-		// this.buf = BufferUtils.concatBuffer(this.buf, chunk);
 		if (this.waiting) {
-			// console.log('call waiting (data)', !!this.waiting);
 			const w = this.waiting;
 			this.waiting = null;
 			w();
@@ -118,7 +115,6 @@ export class ReaderStream {
 			return;
 		}
 		return new Promise<void>((resolve, reject) => {
-			// console.log('set waiting resume');
 			this.waiting = () => {
 				resolve();
 			};
@@ -194,10 +190,8 @@ export class ReaderStream {
 			const result = BufferUtils.concatBuffers(this.buffers);
 			this.buffers = [];
 			this.buffersLength = 0;
-			// const result = this.buf;
 			this.pos += result.length;
-			// this.buf = BufferUtils.zeroBuffer(0);
-			this.end = this.streamEnd; // && this.buf.length === 0;
+			this.end = this.streamEnd;
 			return result;
 		}
 	}
@@ -206,7 +200,6 @@ export class ReaderStream {
 		if (buffer.length > 0) {
 			this.buffers.unshift(buffer);
 			this.buffersLength = this.getBufferLength();
-			// this.buf = BufferUtils.concatBuffer(buffer, this.buf);
 			this.pos -= buffer.length;
 			this.end = this.streamEnd && this.buffersLength === 0;
 		}
