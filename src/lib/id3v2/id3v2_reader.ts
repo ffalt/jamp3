@@ -21,9 +21,6 @@ export class ID3v2Reader {
 			return {header};
 		}
 		const extended = await this.readID3ExtendedHeader(reader, header.ver);
-		// if (err2) {
-		// 	return cb(err2, {header, rest: extended ? extended.rest : undefined});
-		// }
 		header.extended = extended ? extended.exthead : undefined;
 		return {header, rest: extended ? extended.rest : undefined};
 	}
@@ -58,7 +55,6 @@ export class ID3v2Reader {
 		if (index < 0) {
 			return {};
 		}
-		// debug('scan', 'marker at', index);
 		const result = await this.readTag(reader);
 		if (!result.tag) {
 			return this.scan(reader);
@@ -126,8 +122,7 @@ export class ID3v2Reader {
 			exthead.ver3 = ver3;
 		} else if (ver === 4) {
 			const ver4: IID3V2.TagHeaderExtendedVer4 = {
-				flags: flags(ID3v2_EXTHEADER[4].FLAGS, bitarray(data[0])),
-				// flagscount: data[1]
+				flags: flags(ID3v2_EXTHEADER[4].FLAGS, bitarray(data[0]))
 			};
 			let pos = 1;
 			if (ver4.flags.crc) {
@@ -137,7 +132,6 @@ export class ID3v2Reader {
 				pos += size;
 			}
 			if (ver4.flags.restrictions) {
-				// const size = data[pos];
 				pos++;
 				const r = bitarray(data[pos]);
 				ver4.restrictions = {
@@ -226,26 +220,13 @@ export class ID3v2Reader {
 				reader.position = reader.position - marker;
 				return reader.rest();
 			}
-			// let id = removeZeroString(idbin.toString('ascii')).trim();
-			// console.log(id);
 			while (reader.unread() > 0 && (!isValidFrameBinId(idbin))) {
 				reader.position = reader.position - (marker - 1);
 				skip++;
-				// debug('readFrames', 'not a valid id, scan to next', id, 'pos', reader.position);
 				idbin = reader.readBuffer(marker);
-				// id = removeZeroString(idbin.toString('ascii')).trim();
-				// console.log(id);
 			}
 			if (reader.unread() > 0 && isValidFrameBinId(idbin)) {
-				// const skipped = (reader.position - scanpos - marker);
-				// if (skipped > 0) {
-				// 	skip += skipped;
-				// }
 				const pos = reader.position;
-				// if (marker - id.trim().length > 0) {
-				// 	debug('readFrames', 'frame id is too short in id3v2 version, reading anyway', id);
-				// }
-				// debug('readFrames', 'valid id, reading frame', id);
 				const frame: IID3V2.RawFrame = {id: removeZeroString(idbin.toString('ascii').trim()), size: 0, start: tag.start, end: tag.end, data: BufferUtils.zeroBuffer(0), statusFlags: {}, formatFlags: {}};
 				if (reader.unread() < sizebytes) {
 					return reader.rest();
@@ -261,9 +242,7 @@ export class ID3v2Reader {
 				let frameheaderValid = (!frame.statusFlags.reserved && !frame.formatFlags.reserved2 && !frame.formatFlags.reserved3);
 				if (frameheaderValid && frame.size > reader.unread()) {
 					// debug('readFrames', 'not enough data for frame.size ' + frame.size + ' with end of declared rest size', reader.unread());
-					// 	console.log(frame);
 					frameheaderValid = false;
-					// 	finish = true;
 				}
 				if (frameheaderValid) {
 					if (skip > 0 && tag.frames.length > 0) {
@@ -287,7 +266,6 @@ export class ID3v2Reader {
 					skip++;
 					// debug('readFrames', 'frame ' + frame.id + ' header invalid, go back to pos', reader.position);
 				}
-				// debug('readFrames', 'check next');
 			} else {
 				finish = true;
 			}
@@ -295,10 +273,6 @@ export class ID3v2Reader {
 		if (skip > 0) {
 			reader.position -= (skip + marker);
 		}
-		// debug('readFrames', 'over');
-		// if (reader.unread() === 0) {
-		// console.log('no padding?');
-		// }
 		return reader.rest();
 	}
 }
