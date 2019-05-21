@@ -22,7 +22,7 @@ export declare class MP3Reader {
     private readMPEGFrame;
     private processChunk;
     private scan;
-    read(filename: string, opts: MP3ReaderOptions): Promise<IMP3.Layout>;
-    readStream(stream: Readable, opts: MP3ReaderOptions): Promise<IMP3.Layout>;
+    read(filename: string, opts: MP3ReaderOptions): Promise<IMP3.RawLayout>;
+    readStream(stream: Readable, opts: MP3ReaderOptions): Promise<IMP3.RawLayout>;
 }
 export {};

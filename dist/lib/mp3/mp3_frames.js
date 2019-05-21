@@ -1,22 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-function findIndexOfOffset(start, list, offset) {
-    for (let i = start; i < list.length; i++) {
-        if (list[i].header.offset === offset) {
-            return i;
-        }
-        else if (list[i].header.offset > offset) {
-            return -1;
-        }
-    }
-    return -1;
-}
+const mp3_frame_1 = require("./mp3_frame");
 function followChain(frame, pos, frames) {
     const result = [];
     result.push(frame);
-    frames = frames.filter(f => f.header.size > 0);
+    frames = frames.filter(f => mp3_frame_1.rawHeaderSize(f) > 0);
     for (let i = pos + 1; i < frames.length; i++) {
-        const nextpos = frame.header.offset + frame.header.size;
+        const nextpos = mp3_frame_1.rawHeaderOffSet(frame) + mp3_frame_1.rawHeaderSize(frame);
         const direct = getNextMatch(nextpos, i - 1, frames);
         if (direct >= 0) {
             const nextframe = frames[direct];
@@ -26,14 +16,14 @@ function followChain(frame, pos, frames) {
         }
         else {
             const nextframe = frames[i];
-            const diff = nextframe.header.offset - nextpos;
+            const diff = mp3_frame_1.rawHeaderOffSet(nextframe) - nextpos;
             if (diff === 0) {
                 result.push(nextframe);
                 frame = nextframe;
             }
             else if (diff > 0) {
-                if ((nextframe.header.versionIdx === frame.header.versionIdx &&
-                    nextframe.header.layerIdx === frame.header.layerIdx)) {
+                if ((mp3_frame_1.rawHeaderVersionIdx(nextframe) === mp3_frame_1.rawHeaderVersionIdx(frame) &&
+                    mp3_frame_1.rawHeaderLayerIdx(nextframe) === mp3_frame_1.rawHeaderLayerIdx(frame))) {
                     result.push(nextframe);
                     frame = nextframe;
                 }
@@ -48,10 +38,10 @@ function followChain(frame, pos, frames) {
 }
 function getNextMatch(offset, pos, frames) {
     for (let j = pos + 1; j < frames.length; j++) {
-        if (frames[j].header.offset === offset) {
+        if (mp3_frame_1.rawHeaderOffSet(frames[j]) === offset) {
             return j;
         }
-        else if (frames[j].header.offset > offset) {
+        else if (mp3_frame_1.rawHeaderOffSet(frames[j]) > offset) {
             return -1;
         }
     }
@@ -70,12 +60,12 @@ function getBestMPEGChain(frames, followMaxChain) {
             const chain = { frame, count: 0, pos: i };
             chains.push(chain);
             done.push(frame);
-            let next = getNextMatch(frame.header.offset + frame.header.size, i, frames);
+            let next = getNextMatch(mp3_frame_1.rawHeaderOffSet(frame) + mp3_frame_1.rawHeaderSize(frame), i, frames);
             while (next >= 0 && chain.count < followMaxChain) {
                 chain.count++;
                 const nextframe = frames[next];
                 done.push(nextframe);
-                next = getNextMatch(nextframe.header.offset + nextframe.header.size, next, frames);
+                next = getNextMatch(mp3_frame_1.rawHeaderOffSet(nextframe) + mp3_frame_1.rawHeaderSize(nextframe), next, frames);
             }
         }
     }

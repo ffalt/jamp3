@@ -2,7 +2,7 @@ import {IMP3} from './mp3__types';
 import {ReaderStream} from '../common/streams';
 import {ID3v1Reader} from '../id3v1/id3v1_reader';
 import {ID3v2Reader} from '../id3v2/id3v2_reader';
-import {MPEGFrameReader} from './mp3_frame';
+import {colapseRawHeader, MPEGFrameReader} from './mp3_frame';
 import {BufferUtils} from '../common/buffer';
 import {getBestMPEGChain} from './mp3_frames';
 import {Readable} from 'stream';
@@ -11,11 +11,11 @@ interface MP3ReaderOptions extends IMP3.ReadOptions {
 	streamSize?: number;
 }
 
-
 export class MP3Reader {
 	private opts: MP3ReaderOptions = {};
-	private layout: IMP3.Layout = {
-		frames: [],
+	private layout: IMP3.RawLayout = {
+		frameheaders: [],
+		headframes: [],
 		tags: [],
 		size: 0
 	};
@@ -76,18 +76,20 @@ export class MP3Reader {
 	}
 
 	private readMPEGFrame(chunk: Buffer, i: number, header: IMP3.FrameRawHeader) {
+		header.offset = this.stream.pos - chunk.length + i;
 		const a = this.mpegFramereader.readFrame(chunk, i, header);
 		if (a.frame) {
-			header.offset = this.stream.pos - chunk.length + i;
-			this.layout.frames.push(a.frame);
+			if (a.frame.vbri || a.frame.xing) {
+				this.layout.headframes.push(a.frame);
+			}
+			this.layout.frameheaders.push(a.frame.header);
 			if (this.opts.mpegQuick) {
 				this.hasMPEGHeadFrame = this.hasMPEGHeadFrame || !!a.frame.mode;
-				if (this.layout.frames.length % 50 === 0) {
+				if (this.layout.frameheaders.length % 50 === 0) {
 					if (this.hasMPEGHeadFrame) {
 						this.scanMpeg = false;
-						// console.log('win head');
 					} else {
-						const chain = getBestMPEGChain(this.layout.frames, 20);
+						const chain = getBestMPEGChain(this.layout.frameheaders, 20);
 						if (chain && chain.count >= 10) {
 							this.scanMpeg = false;
 						}
@@ -166,7 +168,6 @@ export class MP3Reader {
 				const c1 = chunk[i];
 				const c2 = chunk[i + 1];
 				const c3 = chunk[i + 2];
-
 				if (this.scanid3v2 && c1 === 73 && c2 === 68 && c3 === 51) {
 					if (demandData()) {
 						return true;
@@ -182,7 +183,7 @@ export class MP3Reader {
 					if (header) {
 						if (!this.scanMPEGFrame) {
 							header.offset = this.stream.pos - chunk.length + i;
-							this.layout.frames.push({header});
+							this.layout.frameheaders.push(colapseRawHeader(header));
 						} else {
 							if (demandData()) {
 								return true;
@@ -232,13 +233,14 @@ export class MP3Reader {
 		}
 	}
 
-	async read(filename: string, opts: MP3ReaderOptions): Promise<IMP3.Layout> {
+	async read(filename: string, opts: MP3ReaderOptions): Promise<IMP3.RawLayout> {
 		this.opts = opts || {};
 		this.scanMpeg = opts.mpeg || opts.mpegQuick || false;
 		this.scanid3v1 = opts.id3v1 || opts.id3v1IfNotid3v2 || false;
 		this.scanid3v2 = opts.id3v2 || opts.id3v1IfNotid3v2 || false;
 		this.layout = {
-			frames: [],
+			headframes: [],
+			frameheaders: [],
 			tags: [],
 			size: 0
 		};
@@ -253,13 +255,14 @@ export class MP3Reader {
 		return this.layout;
 	}
 
-	async readStream(stream: Readable, opts: MP3ReaderOptions): Promise<IMP3.Layout> {
+	async readStream(stream: Readable, opts: MP3ReaderOptions): Promise<IMP3.RawLayout> {
 		this.opts = opts;
 		this.scanMpeg = opts.mpeg || opts.mpegQuick || false;
 		this.scanid3v1 = opts.id3v1 || opts.id3v1IfNotid3v2 || false;
 		this.scanid3v2 = opts.id3v2 || opts.id3v1IfNotid3v2 || false;
 		this.layout = {
-			frames: [],
+			headframes: [],
+			frameheaders: [],
 			tags: [],
 			size: 0
 		};

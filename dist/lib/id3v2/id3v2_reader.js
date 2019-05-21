@@ -95,7 +95,7 @@ class ID3v2Reader {
             }
             else if (ver === 4) {
                 const ver4 = {
-                    flags: utils_1.flags(id3v2_consts_1.ID3v2_EXTHEADER[4].FLAGS, utils_1.bitarray(data[0])),
+                    flags: utils_1.flags(id3v2_consts_1.ID3v2_EXTHEADER[4].FLAGS, utils_1.bitarray(data[0]))
                 };
                 let pos = 1;
                 if (ver4.flags.crc) {

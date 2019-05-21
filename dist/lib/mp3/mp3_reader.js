@@ -18,7 +18,8 @@ class MP3Reader {
     constructor() {
         this.opts = {};
         this.layout = {
-            frames: [],
+            frameheaders: [],
+            headframes: [],
             tags: [],
             size: 0
         };
@@ -79,18 +80,21 @@ class MP3Reader {
         });
     }
     readMPEGFrame(chunk, i, header) {
+        header.offset = this.stream.pos - chunk.length + i;
         const a = this.mpegFramereader.readFrame(chunk, i, header);
         if (a.frame) {
-            header.offset = this.stream.pos - chunk.length + i;
-            this.layout.frames.push(a.frame);
+            if (a.frame.vbri || a.frame.xing) {
+                this.layout.headframes.push(a.frame);
+            }
+            this.layout.frameheaders.push(a.frame.header);
             if (this.opts.mpegQuick) {
                 this.hasMPEGHeadFrame = this.hasMPEGHeadFrame || !!a.frame.mode;
-                if (this.layout.frames.length % 50 === 0) {
+                if (this.layout.frameheaders.length % 50 === 0) {
                     if (this.hasMPEGHeadFrame) {
                         this.scanMpeg = false;
                     }
                     else {
-                        const chain = mp3_frames_1.getBestMPEGChain(this.layout.frames, 20);
+                        const chain = mp3_frames_1.getBestMPEGChain(this.layout.frameheaders, 20);
                         if (chain && chain.count >= 10) {
                             this.scanMpeg = false;
                         }
@@ -185,7 +189,7 @@ class MP3Reader {
                         if (header) {
                             if (!this.scanMPEGFrame) {
                                 header.offset = this.stream.pos - chunk.length + i;
-                                this.layout.frames.push({ header });
+                                this.layout.frameheaders.push(mp3_frame_1.colapseRawHeader(header));
                             }
                             else {
                                 if (demandData()) {
@@ -247,7 +251,8 @@ class MP3Reader {
             this.scanid3v1 = opts.id3v1 || opts.id3v1IfNotid3v2 || false;
             this.scanid3v2 = opts.id3v2 || opts.id3v1IfNotid3v2 || false;
             this.layout = {
-                frames: [],
+                headframes: [],
+                frameheaders: [],
                 tags: [],
                 size: 0
             };
@@ -270,7 +275,8 @@ class MP3Reader {
             this.scanid3v1 = opts.id3v1 || opts.id3v1IfNotid3v2 || false;
             this.scanid3v2 = opts.id3v2 || opts.id3v1IfNotid3v2 || false;
             this.layout = {
-                frames: [],
+                headframes: [],
+                frameheaders: [],
                 tags: [],
                 size: 0
             };

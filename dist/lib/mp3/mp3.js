@@ -16,24 +16,21 @@ const id3v2_1 = require("../id3v2/id3v2");
 const mp3_frames_1 = require("./mp3_frames");
 const mp3_frame_1 = require("./mp3_frame");
 const fs_extra_1 = __importDefault(require("fs-extra"));
-function isHeadFrame(frame) {
-    return !!frame.mode;
-}
-exports.isHeadFrame = isHeadFrame;
 function analyzeBitrateMode(frames) {
     const bitRates = {};
     let duration = 0;
     let audioBytes = 0;
     let count = 0;
     frames.forEach(frame => {
-        const header = frame.header;
+        const header = mp3_frame_1.expandRawHeader(mp3_frame_1.expandRawHeaderArray(frame));
         bitRates[header.bitRate] = (bitRates[header.bitRate] || 0) + 1;
         duration += header.time;
         audioBytes += header.size;
         count++;
     });
     let encoded = 'CBR';
-    let bitRate = frames.length > 0 ? frames[0].header.bitRate : 0;
+    const first = frames.length > 0 ? mp3_frame_1.expandRawHeader(mp3_frame_1.expandRawHeaderArray(frames[0])) : undefined;
+    let bitRate = first ? first.bitRate : 0;
     const rates = Object.keys(bitRates).map(s => parseInt(s, 10));
     if (rates.length > 1) {
         encoded = 'VBR';
@@ -73,16 +70,20 @@ class MP3 {
                     encoded: '',
                     mode: ''
                 };
-                const frames = mp3_frames_1.filterBestMPEGChain(layout.frames, 50).map(frame => {
-                    return {
-                        header: mp3_frame_1.expandRawHeader(frame.header),
-                        mode: frame.mode,
-                        xing: frame.xing,
-                        vbri: frame.vbri
-                    };
-                });
-                if (frames.length > 0) {
-                    const header = frames[0].header;
+                const chain = mp3_frames_1.filterBestMPEGChain(layout.frameheaders, 50);
+                result.frames = {
+                    audio: chain,
+                    headers: layout.headframes.map(frame => {
+                        return {
+                            header: mp3_frame_1.expandRawHeader(mp3_frame_1.expandRawHeaderArray(frame.header)),
+                            mode: frame.mode,
+                            xing: frame.xing,
+                            vbri: frame.vbri
+                        };
+                    })
+                };
+                if (chain.length > 0) {
+                    const header = mp3_frame_1.expandRawHeader(mp3_frame_1.expandRawHeaderArray(chain[0]));
                     mpeg.mode = header.channelType;
                     mpeg.bitRate = header.bitRate;
                     mpeg.channels = header.channelCount;
@@ -91,15 +92,14 @@ class MP3 {
                     mpeg.version = header.version;
                     mpeg.layer = header.layer;
                 }
-                const headframe = frames.find(f => isHeadFrame(f));
-                const bitRateMode = analyzeBitrateMode(frames);
+                const headframe = result.frames.headers[0];
+                const bitRateMode = analyzeBitrateMode(chain);
                 mpeg.encoded = bitRateMode.encoded;
                 mpeg.bitRate = bitRateMode.bitRate;
-                result.frames = frames;
                 if (opts.mpegQuick) {
                     let audioBytes = layout.size;
-                    if (frames.length > 0) {
-                        audioBytes -= frames[0].header.offset;
+                    if (chain.length > 0) {
+                        audioBytes -= mp3_frame_1.rawHeaderOffSet(chain[0]);
                         if (id3v1s.length > 0) {
                             audioBytes -= 128;
                         }

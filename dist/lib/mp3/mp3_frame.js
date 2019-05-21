@@ -2,6 +2,60 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const mp3_consts_1 = require("./mp3_consts");
 const utils_1 = require("../common/utils");
+function colapseRawHeader(header) {
+    return [
+        header.offset,
+        header.size,
+        header.versionIdx,
+        header.layerIdx,
+        header.sampleIdx,
+        header.bitrateIdx,
+        header.modeIdx,
+        header.modeExtIdx,
+        header.emphasisIdx,
+        header.padded ? 1 : 0,
+        header.protected ? 1 : 0,
+        header.copyright ? 1 : 0,
+        header.original ? 1 : 0,
+        header.privatebit
+    ];
+}
+exports.colapseRawHeader = colapseRawHeader;
+function rawHeaderOffSet(header) {
+    return header[0];
+}
+exports.rawHeaderOffSet = rawHeaderOffSet;
+function rawHeaderSize(header) {
+    return header[1];
+}
+exports.rawHeaderSize = rawHeaderSize;
+function rawHeaderVersionIdx(header) {
+    return header[2];
+}
+exports.rawHeaderVersionIdx = rawHeaderVersionIdx;
+function rawHeaderLayerIdx(header) {
+    return header[3];
+}
+exports.rawHeaderLayerIdx = rawHeaderLayerIdx;
+function expandRawHeaderArray(header) {
+    return {
+        offset: header[0],
+        size: header[1],
+        versionIdx: header[2],
+        layerIdx: header[3],
+        sampleIdx: header[4],
+        bitrateIdx: header[5],
+        modeIdx: header[6],
+        modeExtIdx: header[7],
+        emphasisIdx: header[8],
+        padded: header[9] === 1,
+        protected: header[10] === 1,
+        copyright: header[11] === 1,
+        original: header[12] === 1,
+        privatebit: header[13],
+    };
+}
+exports.expandRawHeaderArray = expandRawHeaderArray;
 function expandRawHeader(header) {
     const samplingRate = mp3_consts_1.mpeg_srates[header.versionIdx][header.sampleIdx];
     const samples = mp3_consts_1.mpeg_frame_samples[header.versionIdx][header.layerIdx];
@@ -140,7 +194,7 @@ class MPEGFrameReader {
         return offset;
     }
     readFrame(chunk, offset, header) {
-        const frame = { header };
+        const frame = { header: colapseRawHeader(header) };
         let off = 0;
         const length = offset + Math.min(40, chunk.length - 4 - offset);
         for (let i = offset; i < length; i++) {
