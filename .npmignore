@@ -6,9 +6,13 @@
 *.pid
 *.gz
 
-.git
-.idea
+.git/
+.idea/
 .nyc_output/
+coverage/
+local/
+node_modules/
+test/
 
 .DS_Store
 .npmignore
@@ -16,8 +20,6 @@
 tslint.json
 tsconfig.json
 deplokay.json
+renovate.json
 
-coverage
-local
-node_modules
-test
+
