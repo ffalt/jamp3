@@ -91,7 +91,7 @@ export class ID3V2RawBuilder {
 		}
 	}
 
-	addPicture(key: string, pictureType: number, description: string, mimeType: string, binary: any) {
+	picture(key: string, pictureType: number, description: string, mimeType: string, binary: Buffer) {
 		const frame: ID3V2PicValueFrame = {
 			id: key, value: {
 				description: description || '',
@@ -103,7 +103,7 @@ export class ID3V2RawBuilder {
 		this.frameValues[key] = (this.frameValues[key] || []).concat([frame]);
 	}
 
-	addChapter(key: string, chapterID: string, start: number, end: number, offset: number, offsetEnd: number, subframes?: Array<IID3V2.Frame>) {
+	chapter(key: string, chapterID: string, start: number, end: number, offset: number, offsetEnd: number, subframes?: Array<IID3V2.Frame>) {
 		const frame: ID3V2ChapterValueFrame = {
 			id: key,
 			value: {
@@ -502,13 +502,13 @@ export class ID3V24TagBuilder {
 		return this;
 	}
 
-	addPicture(pictureType: number, description: string, mimeType: string, binary: any): ID3V24TagBuilder {
-		this.rawBuilder.addPicture('APIC', pictureType, description, mimeType, binary);
+	picture(pictureType: number, description: string, mimeType: string, binary: Buffer): ID3V24TagBuilder {
+		this.rawBuilder.picture('APIC', pictureType, description, mimeType, binary);
 		return this;
 	}
 
 	chapter(id: string, start: number, end: number, offset: number, offsetEnd: number, subframes?: Array<IID3V2.Frame>): ID3V24TagBuilder {
-		this.rawBuilder.addChapter('CHAP', id, start, end, offset, offsetEnd, subframes);
+		this.rawBuilder.chapter('CHAP', id, start, end, offset, offsetEnd, subframes);
 		return this;
 	}
 
