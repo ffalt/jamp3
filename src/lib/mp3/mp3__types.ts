@@ -51,6 +51,8 @@ export namespace IMP3 {
 
 	export interface FrameRawHeader {
 		offset: number; // pos in stream
+		front: number; // first header flags
+		back: number; // second header flags
 		size: number;  // calculated size
 		versionIdx: number; // BB: MPEG Audio version ID
 		layerIdx: number; // CC: Layer description

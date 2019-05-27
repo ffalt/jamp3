@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import { IID3V2 } from './id3v2__types';
 interface ID3V2Frames {
     [key: string]: Array<IID3V2.Frame>;
@@ -11,8 +12,9 @@ export declare class ID3V2RawBuilder {
     keyTextList(key: string, group: string, value?: string): void;
     bool(key: string, bool: boolean): void;
     idLangText(key: string, value: string | undefined, lang: string | undefined, id: string | undefined): void;
-    addPicture(key: string, pictureType: number, description: string, mimeType: string, binary: any): void;
-    addChapter(key: string, chapterID: string, start: number, end: number, offset: number, offsetEnd: number, subframes?: Array<IID3V2.Frame>): void;
+    picture(key: string, pictureType: number, description: string, mimeType: string, binary: Buffer): void;
+    idBin(key: string, id: string, binary: Buffer): void;
+    chapter(key: string, chapterID: string, start: number, end: number, offset: number, offsetEnd: number, subframes?: Array<IID3V2.Frame>): void;
 }
 export declare class ID3V24TagBuilder {
     rawBuilder: ID3V2RawBuilder;
@@ -88,7 +90,8 @@ export declare class ID3V24TagBuilder {
     comment(id: string, value?: string): ID3V24TagBuilder;
     trackLength(value?: number | string): ID3V24TagBuilder;
     mbTrackDisambiguation(value?: string): ID3V24TagBuilder;
-    addPicture(pictureType: number, description: string, mimeType: string, binary: any): ID3V24TagBuilder;
+    picture(pictureType: number, description: string, mimeType: string, binary: Buffer): ID3V24TagBuilder;
     chapter(id: string, start: number, end: number, offset: number, offsetEnd: number, subframes?: Array<IID3V2.Frame>): ID3V24TagBuilder;
+    priv(id: string, binary: Buffer): ID3V24TagBuilder;
 }
 export {};

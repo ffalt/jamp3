@@ -40,6 +40,8 @@ export declare namespace IMP3 {
     }
     interface FrameRawHeader {
         offset: number;
+        front: number;
+        back: number;
         size: number;
         versionIdx: number;
         layerIdx: number;

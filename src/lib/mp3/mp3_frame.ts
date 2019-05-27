@@ -13,19 +13,10 @@ export function colapseRawHeader(header: IMP3.FrameRawHeader): IMP3.FrameRawHead
 		header.size,
 		header.versionIdx,
 		header.layerIdx,
-		header.sampleIdx,
-		header.bitrateIdx,
-		header.modeIdx,
-		header.modeExtIdx,
-		header.emphasisIdx,
-		header.padded ? 1 : 0,
-		header.protected ? 1 : 0,
-		header.copyright ? 1 : 0,
-		header.original ? 1 : 0,
-		header.privatebit
+		header.front,
+		header.back
 	];
 }
-
 
 export function rawHeaderOffSet(header: IMP3.FrameRawHeaderArray): number {
 	return header[0];
@@ -43,23 +34,104 @@ export function rawHeaderLayerIdx(header: IMP3.FrameRawHeaderArray): number {
 	return header[3];
 }
 
+export function expandMPEGFrameFlags(front: number, back: number, offset: number): IMP3.FrameRawHeader | null {
+	// AAAAAAAA: frame sync must be 11111111
+	// AAA: frame sync must be 111
+	const hasSync = (front & 0xFFE0) === 0xFFE0;
+	const validVer = (front & 0x18) !== 0x8;
+	const validLayer = (front & 0x6) !== 0x0;
+	const validBitRate = (back & 0xF000) !== 0xF000;
+	const validSample = (back & 0xC00) !== 0xC00;
+	if (!hasSync || !validVer || !validLayer || !validBitRate || !validSample) {
+		return null;
+	}
+	// BB: MPEG Audio version ID
+	const versionIdx = (front >> 3) & 0x3;
+	// CC: Layer description
+	const layerIdx = (front >> 1) & 0x3;
+	// D: Protection bit / 0 - Protected by CRC (16bit crc follows header) /  1 - Not protected
+	const protection = (front & 0x1) === 0;
+	// EEEE: Bitrate index
+	const bitrateIdx = back >> 12;
+	// FF: Sampling rate frequency index
+	const sampleIdx = (back >> 10) & 0x3;
+	// G: Padding bit / 0 - frame is not padded / 1 - frame is padded with one extra slot
+	const padded = ((back >> 9) & 0x1) === 1;
+	// H: Private bit. It may be freely used for specific needs of an application, i.e. if it has to trigger some application specific events.
+	const privatebit = ((back >> 8) & 0x1);
+	// II: Channel mode
+	const modeIdx = (back >> 6) & 0x3;
+	// JJ: Mode extension (Only if Joint stereo)
+	const modeExtIdx = (back >> 4) & 0x3;
+	// K: Copyright / 0 - Audio is not copyrighted / 1 - Audio is copyrighted
+	const copyright = ((back >> 3) & 0x1) === 1;
+	// L Original / 0 - Copy of original media / 1 - Original media
+	const original = ((back >> 2) & 0x1) === 1;
+	// MM: Emphasis
+	const emphasisIdx = back & 0x3;
+	if (mpeg_bitrates[versionIdx] && mpeg_bitrates[versionIdx][layerIdx] && (mpeg_bitrates[versionIdx][layerIdx][bitrateIdx] > 0) &&
+		mpeg_srates[versionIdx] && (mpeg_srates[versionIdx][sampleIdx] > 0) &&
+		mpeg_frame_samples[versionIdx] && (mpeg_frame_samples[versionIdx][layerIdx] > 0) &&
+		(mpeg_slot_size[layerIdx] > 0)
+	) {
+		const bitrate = mpeg_bitrates[versionIdx][layerIdx][bitrateIdx] * 1000;
+		const samprate = mpeg_srates[versionIdx][sampleIdx];
+		const samples = mpeg_frame_samples[versionIdx][layerIdx];
+		const slot_size = mpeg_slot_size[layerIdx];
+		const bps = samples / 8.0;
+		/**
+		 Frame Size = ( (Samples Per Frame / 8 * Bitrate) / Sampling Rate) + Padding Size
+		 Because of rounding errors, the official formula to calculate the frame size is a little bit different.
+		 According to the ISO standards, you have to calculate the frame size in slots (see 2. MPEG Audio Format),
+		 then truncate this number to an integer, and after that multiply it with the slot size.
+		 */
+		const size = Math.floor(((bps * bitrate) / samprate)) + ((padded) ? slot_size : 0);
+		const result: IMP3.FrameRawHeader = {
+			offset,
+			front,
+			back,
+			size,
+			versionIdx,
+			layerIdx,
+			sampleIdx,
+			bitrateIdx,
+			modeIdx,
+			modeExtIdx,
+			emphasisIdx,
+			padded,
+			protected: protection,
+			copyright,
+			original,
+			privatebit
+		};
+		return result;
+	}
+	return null;
+}
+
 export function expandRawHeaderArray(header: IMP3.FrameRawHeaderArray): IMP3.FrameRawHeader {
-	return {
-		offset: header[0],
-		size: header[1],
-		versionIdx: header[2],
-		layerIdx: header[3],
-		sampleIdx: header[4],
-		bitrateIdx: header[5],
-		modeIdx: header[6],
-		modeExtIdx: header[7],
-		emphasisIdx: header[8],
-		padded: header[9] === 1,
-		protected: header[10] === 1,
-		copyright: header[11] === 1,
-		original: header[12] === 1,
-		privatebit: header[13],
-	};
+	const result = expandMPEGFrameFlags(header[4], header[5], header[0]);
+	if (!result) {
+		return {
+			offset: header[0],
+			size: header[1],
+			versionIdx: header[2],
+			layerIdx: header[3],
+			front: 0,
+			back: 0,
+			sampleIdx: 0,
+			bitrateIdx: 0,
+			modeIdx: 0,
+			modeExtIdx: 0,
+			emphasisIdx: 0,
+			padded: false,
+			protected: false,
+			copyright: false,
+			original: false,
+			privatebit: 0
+		};
+	}
+	return result;
 }
 
 export function expandRawHeader(header: IMP3.FrameRawHeader): IMP3.FrameHeader {
@@ -101,76 +173,7 @@ export class MPEGFrameReader {
 		const front = buffer.readUInt16BE(offset);
 		// EEEEFFGH IIJJKLMM
 		const back = buffer.readUInt16BE(offset + 2);
-		// AAAAAAAA: frame sync must be 11111111
-		// AAA: frame sync must be 111
-		const hasSync = (front & 0xFFE0) === 0xFFE0;
-		const validVer = (front & 0x18) !== 0x8;
-		const validLayer = (front & 0x6) !== 0x0;
-		const validBitRate = (back & 0xF000) !== 0xF000;
-		const validSample = (back & 0xC00) !== 0xC00;
-		if (!hasSync || !validVer || !validLayer || !validBitRate || !validSample) {
-			return null;
-		}
-		// BB: MPEG Audio version ID
-		const versionIdx = (front >> 3) & 0x3;
-		// CC: Layer description
-		const layerIdx = (front >> 1) & 0x3;
-		// D: Protection bit / 0 - Protected by CRC (16bit crc follows header) /  1 - Not protected
-		const protection = (front & 0x1) === 0;
-		// EEEE: Bitrate index
-		const bitrateIdx = back >> 12;
-		// FF: Sampling rate frequency index
-		const sampleIdx = (back >> 10) & 0x3;
-		// G: Padding bit / 0 - frame is not padded / 1 - frame is padded with one extra slot
-		const padded = ((back >> 9) & 0x1) === 1;
-		// H: Private bit. It may be freely used for specific needs of an application, i.e. if it has to trigger some application specific events.
-		const privatebit = ((back >> 8) & 0x1);
-		// II: Channel mode
-		const modeIdx = (back >> 6) & 0x3;
-		// JJ: Mode extension (Only if Joint stereo)
-		const modeExtIdx = (back >> 4) & 0x3;
-		// K: Copyright / 0 - Audio is not copyrighted / 1 - Audio is copyrighted
-		const copyright = ((back >> 3) & 0x1) === 1;
-		// L Original / 0 - Copy of original media / 1 - Original media
-		const original = ((back >> 2) & 0x1) === 1;
-		// MM: Emphasis
-		const emphasisIdx = back & 0x3;
-		if (mpeg_bitrates[versionIdx] && mpeg_bitrates[versionIdx][layerIdx] && (mpeg_bitrates[versionIdx][layerIdx][bitrateIdx] > 0) &&
-			mpeg_srates[versionIdx] && (mpeg_srates[versionIdx][sampleIdx] > 0) &&
-			mpeg_frame_samples[versionIdx] && (mpeg_frame_samples[versionIdx][layerIdx] > 0) &&
-			(mpeg_slot_size[layerIdx] > 0)
-		) {
-			const bitrate = mpeg_bitrates[versionIdx][layerIdx][bitrateIdx] * 1000;
-			const samprate = mpeg_srates[versionIdx][sampleIdx];
-			const samples = mpeg_frame_samples[versionIdx][layerIdx];
-			const slot_size = mpeg_slot_size[layerIdx];
-			const bps = samples / 8.0;
-			/**
-			 Frame Size = ( (Samples Per Frame / 8 * Bitrate) / Sampling Rate) + Padding Size
-			 Because of rounding errors, the official formula to calculate the frame size is a little bit different.
-			 According to the ISO standards, you have to calculate the frame size in slots (see 2. MPEG Audio Format),
-			 then truncate this number to an integer, and after that multiply it with the slot size.
-			 */
-			const size = Math.floor(((bps * bitrate) / samprate)) + ((padded) ? slot_size : 0);
-			const result: IMP3.FrameRawHeader = {
-				offset: 0,
-				size,
-				versionIdx,
-				layerIdx,
-				sampleIdx,
-				bitrateIdx,
-				modeIdx,
-				modeExtIdx,
-				emphasisIdx,
-				padded,
-				protected: protection,
-				copyright,
-				original,
-				privatebit
-			};
-			return result;
-		}
-		return null;
+		return expandMPEGFrameFlags(front, back, offset);
 	}
 
 	private verfiyCRC() {

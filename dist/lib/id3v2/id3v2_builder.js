@@ -53,7 +53,7 @@ class ID3V2RawBuilder {
             this.frameValues[key] = list.concat([frame]);
         }
     }
-    addPicture(key, pictureType, description, mimeType, binary) {
+    picture(key, pictureType, description, mimeType, binary) {
         const frame = {
             id: key, value: {
                 description: description || '',
@@ -64,7 +64,17 @@ class ID3V2RawBuilder {
         };
         this.frameValues[key] = (this.frameValues[key] || []).concat([frame]);
     }
-    addChapter(key, chapterID, start, end, offset, offsetEnd, subframes) {
+    idBin(key, id, binary) {
+        const frame = {
+            id: key,
+            value: {
+                id,
+                bin: binary
+            }
+        };
+        this.frameValues[key] = (this.frameValues[key] || []).concat([frame]);
+    }
+    chapter(key, chapterID, start, end, offset, offsetEnd, subframes) {
         const frame = {
             id: key,
             value: {
@@ -392,12 +402,16 @@ class ID3V24TagBuilder {
         this.rawBuilder.idText('TXXX', 'MusicBrainz Track Disambiguation', value);
         return this;
     }
-    addPicture(pictureType, description, mimeType, binary) {
-        this.rawBuilder.addPicture('APIC', pictureType, description, mimeType, binary);
+    picture(pictureType, description, mimeType, binary) {
+        this.rawBuilder.picture('APIC', pictureType, description, mimeType, binary);
         return this;
     }
     chapter(id, start, end, offset, offsetEnd, subframes) {
-        this.rawBuilder.addChapter('CHAP', id, start, end, offset, offsetEnd, subframes);
+        this.rawBuilder.chapter('CHAP', id, start, end, offset, offsetEnd, subframes);
+        return this;
+    }
+    priv(id, binary) {
+        this.rawBuilder.idBin('PRIV', id, binary);
         return this;
     }
 }

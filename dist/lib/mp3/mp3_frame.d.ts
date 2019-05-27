@@ -5,6 +5,7 @@ export declare function rawHeaderOffSet(header: IMP3.FrameRawHeaderArray): numbe
 export declare function rawHeaderSize(header: IMP3.FrameRawHeaderArray): number;
 export declare function rawHeaderVersionIdx(header: IMP3.FrameRawHeaderArray): number;
 export declare function rawHeaderLayerIdx(header: IMP3.FrameRawHeaderArray): number;
+export declare function expandMPEGFrameFlags(front: number, back: number, offset: number): IMP3.FrameRawHeader | null;
 export declare function expandRawHeaderArray(header: IMP3.FrameRawHeaderArray): IMP3.FrameRawHeader;
 export declare function expandRawHeader(header: IMP3.FrameRawHeader): IMP3.FrameHeader;
 export declare class MPEGFrameReader {

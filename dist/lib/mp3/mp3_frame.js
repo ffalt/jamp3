@@ -8,16 +8,8 @@ function colapseRawHeader(header) {
         header.size,
         header.versionIdx,
         header.layerIdx,
-        header.sampleIdx,
-        header.bitrateIdx,
-        header.modeIdx,
-        header.modeExtIdx,
-        header.emphasisIdx,
-        header.padded ? 1 : 0,
-        header.protected ? 1 : 0,
-        header.copyright ? 1 : 0,
-        header.original ? 1 : 0,
-        header.privatebit
+        header.front,
+        header.back
     ];
 }
 exports.colapseRawHeader = colapseRawHeader;
@@ -37,23 +29,83 @@ function rawHeaderLayerIdx(header) {
     return header[3];
 }
 exports.rawHeaderLayerIdx = rawHeaderLayerIdx;
+function expandMPEGFrameFlags(front, back, offset) {
+    const hasSync = (front & 0xFFE0) === 0xFFE0;
+    const validVer = (front & 0x18) !== 0x8;
+    const validLayer = (front & 0x6) !== 0x0;
+    const validBitRate = (back & 0xF000) !== 0xF000;
+    const validSample = (back & 0xC00) !== 0xC00;
+    if (!hasSync || !validVer || !validLayer || !validBitRate || !validSample) {
+        return null;
+    }
+    const versionIdx = (front >> 3) & 0x3;
+    const layerIdx = (front >> 1) & 0x3;
+    const protection = (front & 0x1) === 0;
+    const bitrateIdx = back >> 12;
+    const sampleIdx = (back >> 10) & 0x3;
+    const padded = ((back >> 9) & 0x1) === 1;
+    const privatebit = ((back >> 8) & 0x1);
+    const modeIdx = (back >> 6) & 0x3;
+    const modeExtIdx = (back >> 4) & 0x3;
+    const copyright = ((back >> 3) & 0x1) === 1;
+    const original = ((back >> 2) & 0x1) === 1;
+    const emphasisIdx = back & 0x3;
+    if (mp3_consts_1.mpeg_bitrates[versionIdx] && mp3_consts_1.mpeg_bitrates[versionIdx][layerIdx] && (mp3_consts_1.mpeg_bitrates[versionIdx][layerIdx][bitrateIdx] > 0) &&
+        mp3_consts_1.mpeg_srates[versionIdx] && (mp3_consts_1.mpeg_srates[versionIdx][sampleIdx] > 0) &&
+        mp3_consts_1.mpeg_frame_samples[versionIdx] && (mp3_consts_1.mpeg_frame_samples[versionIdx][layerIdx] > 0) &&
+        (mp3_consts_1.mpeg_slot_size[layerIdx] > 0)) {
+        const bitrate = mp3_consts_1.mpeg_bitrates[versionIdx][layerIdx][bitrateIdx] * 1000;
+        const samprate = mp3_consts_1.mpeg_srates[versionIdx][sampleIdx];
+        const samples = mp3_consts_1.mpeg_frame_samples[versionIdx][layerIdx];
+        const slot_size = mp3_consts_1.mpeg_slot_size[layerIdx];
+        const bps = samples / 8.0;
+        const size = Math.floor(((bps * bitrate) / samprate)) + ((padded) ? slot_size : 0);
+        const result = {
+            offset,
+            front,
+            back,
+            size,
+            versionIdx,
+            layerIdx,
+            sampleIdx,
+            bitrateIdx,
+            modeIdx,
+            modeExtIdx,
+            emphasisIdx,
+            padded,
+            protected: protection,
+            copyright,
+            original,
+            privatebit
+        };
+        return result;
+    }
+    return null;
+}
+exports.expandMPEGFrameFlags = expandMPEGFrameFlags;
 function expandRawHeaderArray(header) {
-    return {
-        offset: header[0],
-        size: header[1],
-        versionIdx: header[2],
-        layerIdx: header[3],
-        sampleIdx: header[4],
-        bitrateIdx: header[5],
-        modeIdx: header[6],
-        modeExtIdx: header[7],
-        emphasisIdx: header[8],
-        padded: header[9] === 1,
-        protected: header[10] === 1,
-        copyright: header[11] === 1,
-        original: header[12] === 1,
-        privatebit: header[13],
-    };
+    const result = expandMPEGFrameFlags(header[4], header[5], header[0]);
+    if (!result) {
+        return {
+            offset: header[0],
+            size: header[1],
+            versionIdx: header[2],
+            layerIdx: header[3],
+            front: 0,
+            back: 0,
+            sampleIdx: 0,
+            bitrateIdx: 0,
+            modeIdx: 0,
+            modeExtIdx: 0,
+            emphasisIdx: 0,
+            padded: false,
+            protected: false,
+            copyright: false,
+            original: false,
+            privatebit: 0
+        };
+    }
+    return result;
 }
 exports.expandRawHeaderArray = expandRawHeaderArray;
 function expandRawHeader(header) {
@@ -70,55 +122,7 @@ class MPEGFrameReader {
         }
         const front = buffer.readUInt16BE(offset);
         const back = buffer.readUInt16BE(offset + 2);
-        const hasSync = (front & 0xFFE0) === 0xFFE0;
-        const validVer = (front & 0x18) !== 0x8;
-        const validLayer = (front & 0x6) !== 0x0;
-        const validBitRate = (back & 0xF000) !== 0xF000;
-        const validSample = (back & 0xC00) !== 0xC00;
-        if (!hasSync || !validVer || !validLayer || !validBitRate || !validSample) {
-            return null;
-        }
-        const versionIdx = (front >> 3) & 0x3;
-        const layerIdx = (front >> 1) & 0x3;
-        const protection = (front & 0x1) === 0;
-        const bitrateIdx = back >> 12;
-        const sampleIdx = (back >> 10) & 0x3;
-        const padded = ((back >> 9) & 0x1) === 1;
-        const privatebit = ((back >> 8) & 0x1);
-        const modeIdx = (back >> 6) & 0x3;
-        const modeExtIdx = (back >> 4) & 0x3;
-        const copyright = ((back >> 3) & 0x1) === 1;
-        const original = ((back >> 2) & 0x1) === 1;
-        const emphasisIdx = back & 0x3;
-        if (mp3_consts_1.mpeg_bitrates[versionIdx] && mp3_consts_1.mpeg_bitrates[versionIdx][layerIdx] && (mp3_consts_1.mpeg_bitrates[versionIdx][layerIdx][bitrateIdx] > 0) &&
-            mp3_consts_1.mpeg_srates[versionIdx] && (mp3_consts_1.mpeg_srates[versionIdx][sampleIdx] > 0) &&
-            mp3_consts_1.mpeg_frame_samples[versionIdx] && (mp3_consts_1.mpeg_frame_samples[versionIdx][layerIdx] > 0) &&
-            (mp3_consts_1.mpeg_slot_size[layerIdx] > 0)) {
-            const bitrate = mp3_consts_1.mpeg_bitrates[versionIdx][layerIdx][bitrateIdx] * 1000;
-            const samprate = mp3_consts_1.mpeg_srates[versionIdx][sampleIdx];
-            const samples = mp3_consts_1.mpeg_frame_samples[versionIdx][layerIdx];
-            const slot_size = mp3_consts_1.mpeg_slot_size[layerIdx];
-            const bps = samples / 8.0;
-            const size = Math.floor(((bps * bitrate) / samprate)) + ((padded) ? slot_size : 0);
-            const result = {
-                offset: 0,
-                size,
-                versionIdx,
-                layerIdx,
-                sampleIdx,
-                bitrateIdx,
-                modeIdx,
-                modeExtIdx,
-                emphasisIdx,
-                padded,
-                protected: protection,
-                copyright,
-                original,
-                privatebit
-            };
-            return result;
-        }
-        return null;
+        return expandMPEGFrameFlags(front, back, offset);
     }
     verfiyCRC() {
     }
