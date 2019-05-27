@@ -28,6 +28,10 @@ interface ID3V2PicValueFrame extends IID3V2.Frame {
 	value: IID3V2.FrameValue.Pic;
 }
 
+interface ID3V2IdBinValueFrame extends IID3V2.Frame {
+	value: IID3V2.FrameValue.IdBin;
+}
+
 interface ID3V2ChapterValueFrame extends IID3V2.Frame {
 	value: IID3V2.FrameValue.Chapter;
 }
@@ -98,6 +102,17 @@ export class ID3V2RawBuilder {
 				pictureType,
 				bin: binary,
 				mimeType: mimeType
+			}
+		};
+		this.frameValues[key] = (this.frameValues[key] || []).concat([frame]);
+	}
+
+	idBin(key: string, id: string, binary: Buffer) {
+		const frame: ID3V2IdBinValueFrame = {
+			id: key,
+			value: {
+				id,
+				bin: binary
 			}
 		};
 		this.frameValues[key] = (this.frameValues[key] || []).concat([frame]);
@@ -509,6 +524,11 @@ export class ID3V24TagBuilder {
 
 	chapter(id: string, start: number, end: number, offset: number, offsetEnd: number, subframes?: Array<IID3V2.Frame>): ID3V24TagBuilder {
 		this.rawBuilder.chapter('CHAP', id, start, end, offset, offsetEnd, subframes);
+		return this;
+	}
+
+	priv(id: string, binary: Buffer): ID3V24TagBuilder {
+		this.rawBuilder.idBin('PRIV', id, binary);
 		return this;
 	}
 
