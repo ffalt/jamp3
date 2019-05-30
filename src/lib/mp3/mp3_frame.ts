@@ -11,8 +11,6 @@ export function colapseRawHeader(header: IMP3.FrameRawHeader): IMP3.FrameRawHead
 	return [
 		header.offset,
 		header.size,
-		header.versionIdx,
-		header.layerIdx,
 		header.front,
 		header.back
 	];
@@ -27,11 +25,11 @@ export function rawHeaderSize(header: IMP3.FrameRawHeaderArray): number {
 }
 
 export function rawHeaderVersionIdx(header: IMP3.FrameRawHeaderArray): number {
-	return header[2];
+	return (header[2] >> 3) & 0x3;
 }
 
 export function rawHeaderLayerIdx(header: IMP3.FrameRawHeaderArray): number {
-	return header[3];
+	return (header[2] >> 1) & 0x3;
 }
 
 export function expandMPEGFrameFlags(front: number, back: number, offset: number): IMP3.FrameRawHeader | null {
@@ -110,13 +108,13 @@ export function expandMPEGFrameFlags(front: number, back: number, offset: number
 }
 
 export function expandRawHeaderArray(header: IMP3.FrameRawHeaderArray): IMP3.FrameRawHeader {
-	const result = expandMPEGFrameFlags(header[4], header[5], header[0]);
+	const result = expandMPEGFrameFlags(header[2], header[3], header[0]);
 	if (!result) {
 		return {
-			offset: header[0],
-			size: header[1],
-			versionIdx: header[2],
-			layerIdx: header[3],
+			offset: 0,
+			size: 0,
+			versionIdx: 0,
+			layerIdx: 0,
 			front: 0,
 			back: 0,
 			sampleIdx: 0,
