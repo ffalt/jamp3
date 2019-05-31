@@ -45,7 +45,7 @@ export class MP3Analyzer {
 		id3v2.frames.forEach(frame => {
 			const def = findId3v2FrameDef(frame.id);
 			if (def && id3v2.head && def.versions.indexOf(id3v2.head.ver) < 0) {
-				result.push({msg: 'ID3v2: invalid version for frame ' + frame.id, expected: def.versions.join(','), actual: id3v2.head.ver});
+				result.push({msg: 'ID3v2: invalid version for frame ' + frame.id, expected: def.versions.join('|'), actual: id3v2.head.ver});
 			}
 		});
 		return result;

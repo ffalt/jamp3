@@ -15,4 +15,5 @@ var id3v2_simplify_1 = require("./lib/id3v2/id3v2_simplify");
 exports.simplifyTag = id3v2_simplify_1.simplifyTag;
 __export(require("./lib/id3v2/id3v2_builder"));
 __export(require("./lib/id3v2/id3v2__types"));
+__export(require("./lib/id3v1/id3v1_consts"));
 //# sourceMappingURL=index.js.map

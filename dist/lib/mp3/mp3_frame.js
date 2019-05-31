@@ -6,8 +6,6 @@ function colapseRawHeader(header) {
     return [
         header.offset,
         header.size,
-        header.versionIdx,
-        header.layerIdx,
         header.front,
         header.back
     ];
@@ -22,11 +20,11 @@ function rawHeaderSize(header) {
 }
 exports.rawHeaderSize = rawHeaderSize;
 function rawHeaderVersionIdx(header) {
-    return header[2];
+    return (header[2] >> 3) & 0x3;
 }
 exports.rawHeaderVersionIdx = rawHeaderVersionIdx;
 function rawHeaderLayerIdx(header) {
-    return header[3];
+    return (header[2] >> 1) & 0x3;
 }
 exports.rawHeaderLayerIdx = rawHeaderLayerIdx;
 function expandMPEGFrameFlags(front, back, offset) {
@@ -84,13 +82,13 @@ function expandMPEGFrameFlags(front, back, offset) {
 }
 exports.expandMPEGFrameFlags = expandMPEGFrameFlags;
 function expandRawHeaderArray(header) {
-    const result = expandMPEGFrameFlags(header[4], header[5], header[0]);
+    const result = expandMPEGFrameFlags(header[2], header[3], header[0]);
     if (!result) {
         return {
-            offset: header[0],
-            size: header[1],
-            versionIdx: header[2],
-            layerIdx: header[3],
+            offset: 0,
+            size: 0,
+            versionIdx: 0,
+            layerIdx: 0,
             front: 0,
             back: 0,
             sampleIdx: 0,
