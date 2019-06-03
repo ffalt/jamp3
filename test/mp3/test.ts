@@ -310,7 +310,7 @@ describe('MP3', async () => {
 						it('should read mpeg more quick info', async () => {
 							await loadMPEGCompare(filename);
 						}).timeout(10000);
-						it('should read remove tags', async () => {
+						it('should remove tags', async () => {
 							await removeTagsTest(filename);
 						}).timeout(10000);
 					}
