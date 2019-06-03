@@ -1,4 +1,5 @@
 import {IID3V2} from './id3v2__types';
+import {ITagID} from '../..';
 
 interface ID3V2Frames {
 	[key: string]: Array<IID3V2.Frame>;
@@ -151,7 +152,7 @@ export class ID3V24TagBuilder {
 
 	buildTag(): IID3V2.Tag {
 		const result: IID3V2.Tag = {
-			id: 'ID3v2',
+			id: ITagID.ID3v2,
 			head: {
 				ver: 4,
 				rev: 0,

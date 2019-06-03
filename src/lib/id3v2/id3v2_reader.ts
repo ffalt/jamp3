@@ -6,6 +6,7 @@ import {BufferUtils} from '../common/buffer';
 import {ID3v2_FRAME_FLAGS1, ID3v2_FRAME_FLAGS2, ID3v2_FRAME_HEADER_LENGTHS, ID3v2_EXTHEADER, ID3v2_HEADER_FLAGS, ID3v2_HEADER, ID3v2_FRAME_HEADER, ID3v2_MARKER} from './id3v2_consts';
 import {IID3V2} from './id3v2__types';
 import {Readable} from 'stream';
+import {ITagID} from '../..';
 
 const ID3v2_MARKER_BUFFER = BufferUtils.fromString(ID3v2_MARKER);
 
@@ -26,7 +27,7 @@ export class ID3v2Reader {
 	}
 
 	private async readRawTag(head: IID3V2.TagHeader, reader: ReaderStream): Promise<{ rest?: Buffer, tag?: IID3V2.RawTag }> {
-		const tag: IID3V2.RawTag = {id: 'ID3v2', frames: [], start: 0, end: 0, head: head || {ver: 0, rev: 0, size: 0, valid: false}};
+		const tag: IID3V2.RawTag = {id: ITagID.ID3v2, frames: [], start: 0, end: 0, head: head || {ver: 0, rev: 0, size: 0, valid: false}};
 		const data = await reader.read(tag.head.size);
 		const rest = await this.readFrames(data, tag);
 		return {rest, tag};
