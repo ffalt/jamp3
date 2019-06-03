@@ -387,6 +387,23 @@ export class FileWriterStream extends WriterStream {
 		});
 	}
 
+	async copyRange(filename: string, start: number, finish: number): Promise<void> {
+		const readstream = fs.createReadStream(filename, {start, end: finish});
+		return new Promise<void>((resolve, reject) => {
+			readstream.on('error', (err) => {
+				return reject(err);
+			});
+			readstream.on('end', (err) => {
+				if (err) {
+					reject(err);
+				} else {
+					resolve();
+				}
+			});
+			readstream.pipe(this.wstream);
+		});
+	}
+
 	async copyFrom(filename: string, position: number): Promise<void> {
 		const readstream = fs.createReadStream(filename, {start: position});
 		return new Promise<void>((resolve, reject) => {
