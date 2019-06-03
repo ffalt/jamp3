@@ -16,13 +16,14 @@ const marker_1 = require("../common/marker");
 const id3v1_consts_1 = require("./id3v1_consts");
 const buffer_1 = require("../common/buffer");
 const debug_1 = __importDefault(require("debug"));
+const __1 = require("../..");
 const debug = debug_1.default('id3v1-reader');
 class ID3v1Reader {
     readTag(data) {
         if (data.length < 128 || !marker_1.Markers.isMarker(data, 0, marker_1.Markers.MARKERS.tag)) {
             return null;
         }
-        const tag = { id: 'ID3v1', start: 0, end: 0, version: 0, value: {} };
+        const tag = { id: __1.ITagID.ID3v1, start: 0, end: 0, version: 0, value: {} };
         const reader = new streams_1.DataReader(data);
         reader.position = 3;
         const value = {};

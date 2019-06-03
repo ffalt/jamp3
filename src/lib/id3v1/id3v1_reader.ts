@@ -5,6 +5,7 @@ import {IID3V1} from './id3v1__types';
 import {BufferUtils} from '../common/buffer';
 import {Readable} from 'stream';
 import Debug from 'debug';
+import {ITagID} from '../..';
 
 const debug = Debug('id3v1-reader');
 
@@ -32,7 +33,7 @@ export class ID3v1Reader {
 		if (data.length < 128 || !Markers.isMarker(data, 0, Markers.MARKERS.tag)) {
 			return null;
 		}
-		const tag: IID3V1.Tag = {id: 'ID3v1', start: 0, end: 0, version: 0, value: {}};
+		const tag: IID3V1.Tag = {id: ITagID.ID3v1, start: 0, end: 0, version: 0, value: {}};
 		const reader = new DataReader(data);
 		reader.position = 3;
 		const value: IID3V1.Value = {};

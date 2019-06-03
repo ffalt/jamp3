@@ -7,6 +7,6 @@ export declare class ID3v2 {
     readStream(stream: Readable): Promise<IID3V2.Tag | undefined>;
     extractRaw(filename: string): Promise<Buffer | undefined>;
     private writeTag;
-    replaceTag(filename: string, frames: Array<IID3V2.RawFrame>, head: IID3V2.TagHeader): Promise<void>;
-    write(filename: string, tag: IID3V2.Tag, version: number, rev: number): Promise<void>;
+    private replaceTag;
+    write(filename: string, tag: IID3V2.Tag, version: number, rev: number, keepBackup?: boolean): Promise<void>;
 }

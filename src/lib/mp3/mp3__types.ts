@@ -4,6 +4,12 @@ import {ITag} from '../common/types';
 
 export namespace IMP3 {
 
+	export interface RemoveTagsOptions {
+		id3v2: boolean; // remove id3v2 tag
+		id3v1: boolean; // remove id3v1 tag
+		keepBackup?: boolean; // keep backup file created while removing tags
+	}
+
 	export interface ReadOptions {
 		// read mpeg informations
 		mpeg?: boolean;
@@ -15,6 +21,8 @@ export namespace IMP3 {
 		id3v1?: boolean;
 		// read ID3 v1 tag only if no ID3 v2 tag is found
 		id3v1IfNotid3v2?: boolean;
+		// do not stop looking for id3v2, even if one is already found
+		detectDuplicateID3v2?: boolean;
 		// do not parse frames & return binary blobs
 		raw?: boolean;
 	}
@@ -116,7 +124,7 @@ export namespace IMP3 {
 		};
 	}
 
-	export type FrameRawHeaderArray = Array<number>;
+	export type FrameRawHeaderArray = Array<number>; // 0: offset, 1:size, 2:front flags, 3:back flags
 
 	export interface RawFrame {
 		header: FrameRawHeaderArray;

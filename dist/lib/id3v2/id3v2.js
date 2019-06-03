@@ -17,6 +17,8 @@ const id3v2_writer_1 = require("./id3v2_writer");
 const id3v2_frames_1 = require("./id3v2_frames");
 const streams_1 = require("../common/streams");
 const utils_1 = require("../common/utils");
+const update_file_1 = require("../common/update-file");
+const __1 = require("../..");
 function buildID3v2(tag) {
     return __awaiter(this, void 0, void 0, function* () {
         const frames = [];
@@ -77,40 +79,24 @@ class ID3v2 {
             yield stream.close();
         });
     }
-    replaceTag(filename, frames, head) {
+    replaceTag(filename, frames, head, keepBackup) {
         return __awaiter(this, void 0, void 0, function* () {
-            const reader = new id3v2_reader_1.ID3v2Reader();
-            const state_tag = yield reader.read(filename);
-            let exists = yield fs_extra_1.default.pathExists(filename + '.tempmp3');
-            if (exists) {
-                yield fs_extra_1.default.remove(filename + '.tempmp3');
-            }
-            const state_stream = new streams_1.FileWriterStream();
-            yield state_stream.open(filename + '.tempmp3');
-            try {
+            yield update_file_1.updateFile(filename, keepBackup, (stat, layout, fileWriter) => __awaiter(this, void 0, void 0, function* () {
                 const writer = new id3v2_writer_1.ID3v2Writer();
-                yield writer.write(state_stream, frames, head);
+                yield writer.write(fileWriter, frames, head);
                 let start = 0;
-                if (state_tag && state_tag.head && state_tag.head.size) {
-                    start = state_tag.head.size + 10;
+                for (const tag of layout.tags) {
+                    if (tag.id === __1.ITagID.ID3v2) {
+                        if (start < tag.end) {
+                            start = tag.end;
+                        }
+                    }
                 }
-                yield state_stream.copyFrom(filename, start);
-            }
-            catch (e) {
-                yield state_stream.close();
-                return Promise.reject(e);
-            }
-            yield state_stream.close();
-            exists = yield fs_extra_1.default.pathExists(filename + '.bak');
-            if (exists) {
-                yield fs_extra_1.default.remove(filename + '.bak');
-            }
-            yield fs_extra_1.default.rename(filename, filename + '.bak');
-            yield fs_extra_1.default.rename(filename + '.tempmp3', filename);
-            yield fs_extra_1.default.remove(filename + '.bak');
+                yield fileWriter.copyFrom(filename, start);
+            }));
         });
     }
-    write(filename, tag, version, rev) {
+    write(filename, tag, version, rev, keepBackup) {
         return __awaiter(this, void 0, void 0, function* () {
             const head = {
                 ver: version,
@@ -128,7 +114,7 @@ class ID3v2 {
                 yield this.writeTag(filename, raw_frames, head);
             }
             else {
-                yield this.replaceTag(filename, raw_frames, head);
+                yield this.replaceTag(filename, raw_frames, head, !!keepBackup);
             }
         });
     }

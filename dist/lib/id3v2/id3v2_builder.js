@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const __1 = require("../..");
 class ID3V2RawBuilder {
     constructor() {
         this.frameValues = {};
@@ -107,7 +108,7 @@ class ID3V24TagBuilder {
     }
     buildTag() {
         const result = {
-            id: 'ID3v2',
+            id: __1.ITagID.ID3v2,
             head: {
                 ver: 4,
                 rev: 0,

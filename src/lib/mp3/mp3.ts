@@ -7,6 +7,8 @@ import {filterBestMPEGChain} from './mp3_frames';
 import {expandRawHeader, expandRawHeaderArray, rawHeaderOffSet} from './mp3_frame';
 import fse from 'fs-extra';
 import {Readable} from 'stream';
+import {ITagID} from '../..';
+import {updateFile} from '../common/update-file';
 
 export function analyzeBitrateMode(frames: Array<IMP3.FrameRawHeaderArray>): { encoded: string, bitRate: number, duration: number, count: number, audioBytes: number } {
 	const bitRates: { [bitRate: number]: number } = {};
@@ -40,10 +42,16 @@ export function analyzeBitrateMode(frames: Array<IMP3.FrameRawHeaderArray>): { e
 export class MP3 {
 
 	async prepareResult(opts: IMP3.ReadOptions, layout: IMP3.RawLayout): Promise<IMP3.Result> {
-		const id3v1s: Array<IID3V1.Tag> = <Array<IID3V1.Tag>>layout.tags.filter((o) => o.id === 'ID3v1');
+		const id3v1s: Array<IID3V1.Tag> = <Array<IID3V1.Tag>>layout.tags.filter((o) => o.id === ITagID.ID3v1);
 		const result: IMP3.Result = {size: layout.size};
 		if (opts.raw) {
 			result.raw = layout;
+		}
+		if (opts.id3v1 || opts.id3v1IfNotid3v2) {
+			const id3v1: IID3V1.Tag | undefined = id3v1s.length > 0 ? id3v1s[id3v1s.length - 1] : undefined;
+			if (id3v1 && id3v1.end === layout.size) {
+				result.id3v1 = id3v1;
+			}
 		}
 		if (opts.mpeg || opts.mpegQuick) {
 			const mpeg: IMP3.MPEG = {
@@ -125,13 +133,8 @@ export class MP3 {
 			}
 			result.mpeg = mpeg;
 		}
-		if (opts.id3v1 || opts.id3v1IfNotid3v2) {
-			const id3v1: IID3V1.Tag | undefined = id3v1s.length > 0 ? id3v1s[id3v1s.length - 1] : undefined;
-			if (id3v1 && id3v1.end === layout.size) {
-				result.id3v1 = id3v1;
-			}
-		}
-		const id3v2s: Array<IID3V2.RawTag> = <Array<IID3V2.RawTag>>layout.tags.filter(o => o.id === 'ID3v2');
+
+		const id3v2s: Array<IID3V2.RawTag> = <Array<IID3V2.RawTag>>layout.tags.filter(o => o.id === ITagID.ID3v2);
 		const id3v2raw: IID3V2.RawTag | undefined = id3v2s.length > 0 ? id3v2s[0] : undefined; // if there are more than one id3v2 tags, we take the first
 		if ((opts.id3v2 || opts.id3v1IfNotid3v2) && id3v2raw) {
 			result.id3v2 = await buildID3v2(id3v2raw);
@@ -150,6 +153,27 @@ export class MP3 {
 		const stat = await fse.stat(filename);
 		const layout = await reader.read(filename, Object.assign({streamSize: stat.size}, opts));
 		return await this.prepareResult(opts, layout);
+	}
+
+	async removeTags(filename: string, opts: IMP3.RemoveTagsOptions): Promise<void> {
+		await updateFile(filename, !!opts.keepBackup, async (stat, layout, fileWriter): Promise<void> => {
+			let start = 0;
+			let finish = stat.size;
+			for (const tag of layout.tags) {
+				if (tag.id === ITagID.ID3v2 && opts.id3v2) {
+					if (start < tag.end) {
+						start = tag.end;
+					}
+				} else if (tag.id === ITagID.ID3v1 && opts.id3v1 && tag.end === stat.size) {
+					if (finish > tag.start) {
+						finish = tag.start;
+					}
+				}
+			}
+			if (finish > start) {
+				await fileWriter.copyRange(filename, start, finish);
+			}
+		});
 	}
 
 }

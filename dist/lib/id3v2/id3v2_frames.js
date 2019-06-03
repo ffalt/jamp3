@@ -23,6 +23,7 @@ const id3v2_1 = require("./id3v2");
 const zlib = __importStar(require("zlib"));
 const id3v2_writer_1 = require("./id3v2_writer");
 const id3v2_frame_1 = require("./id3v2_frame");
+const __1 = require("../..");
 function validCharKeyCode(c) {
     return ((c >= 48) && (c < 58)) || ((c >= 65) && (c < 91));
 }
@@ -1292,7 +1293,7 @@ function writeSubFrames(frames, stream, head) {
 exports.writeSubFrames = writeSubFrames;
 function readSubFrames(bin, head) {
     return __awaiter(this, void 0, void 0, function* () {
-        const subtag = { id: 'ID3v2', head, frames: [], start: 0, end: 0 };
+        const subtag = { id: __1.ITagID.ID3v2, head, frames: [], start: 0, end: 0 };
         const reader = new id3v2_reader_1.ID3v2Reader();
         const buffer = yield reader.readFrames(bin, subtag);
         const t = yield id3v2_1.buildID3v2(subtag);

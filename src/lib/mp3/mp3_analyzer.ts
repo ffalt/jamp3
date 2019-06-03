@@ -4,6 +4,7 @@ import {findId3v2FrameDef} from '../id3v2/id3v2_frames';
 import {MP3} from './mp3';
 import {IMP3} from './mp3__types';
 import {rawHeaderOffSet, rawHeaderSize} from './mp3_frame';
+import {ITagID} from '../..';
 
 export interface IMP3Warning {
 	msg: string;
@@ -107,7 +108,7 @@ export class MP3Analyzer {
 		const lastframe: IMP3.FrameRawHeaderArray | undefined = data.frames.audio.length > 0 ? data.frames.audio[data.frames.audio.length - 1] : undefined;
 		if (data.raw && lastframe) {
 			const audioEnd = rawHeaderOffSet(lastframe) + rawHeaderSize(lastframe);
-			let id3v1s: Array<IID3V1.Tag> = <Array<IID3V1.Tag>>data.raw.tags.filter(t => t.id === 'ID3v1' && t.start >= audioEnd);
+			let id3v1s: Array<IID3V1.Tag> = <Array<IID3V1.Tag>>data.raw.tags.filter(t => t.id === ITagID.ID3v1 && t.start >= audioEnd);
 			if (options.id3v1 && id3v1s.length > 0) {
 				if (id3v1s.length > 1) {
 					// filter out not yet supported APETAGEX

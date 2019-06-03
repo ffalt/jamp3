@@ -56,6 +56,7 @@ class MP3Reader {
             const id3Header = this.id3v2reader.readID3v2Header(chunk, i);
             if (id3Header && id3Header.valid) {
                 const start = this.stream.pos - chunk.length + i;
+                const end = this.stream.pos;
                 this.stream.unshift(chunk.slice(i));
                 const result = yield this.id3v2reader.readTag(this.stream);
                 if (result) {
@@ -63,8 +64,10 @@ class MP3Reader {
                     if (result.tag && result.tag.head.valid) {
                         this.layout.tags.push(result.tag);
                         result.tag.start = start;
-                        result.tag.end = this.stream.pos;
-                        this.scanid3v2 = false;
+                        result.tag.end = this.stream.pos - rest.length;
+                        if (!this.opts.detectDuplicateID3v2) {
+                            this.scanid3v2 = false;
+                        }
                         if (this.opts.id3v1IfNotid3v2) {
                             this.scanid3v1 = false;
                         }

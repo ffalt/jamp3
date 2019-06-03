@@ -12,6 +12,7 @@ import {
 } from './id3v2_frame';
 import {IID3V2} from './id3v2__types';
 import {IEncoding} from '../common/encodings';
+import {ITagID} from '../..';
 
 interface IFrameDef {
 	title: string;
@@ -2086,7 +2087,7 @@ export async function writeSubFrames(frames: Array<IID3V2.Frame>, stream: Writer
 }
 
 export async function readSubFrames(bin: Buffer, head: IID3V2.TagHeader): Promise<Array<IID3V2.Frame>> {
-	const subtag: IID3V2.RawTag = {id: 'ID3v2', head, frames: [], start: 0, end: 0};
+	const subtag: IID3V2.RawTag = {id: ITagID.ID3v2, head, frames: [], start: 0, end: 0};
 	const reader = new ID3v2Reader();
 	const buffer = await reader.readFrames(bin, subtag); // TODO: re-add rest buffer to parse
 	const t = await buildID3v2(subtag);

@@ -11,6 +11,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const id3v2_frames_1 = require("../id3v2/id3v2_frames");
 const mp3_1 = require("./mp3");
 const mp3_frame_1 = require("./mp3_frame");
+const __1 = require("../..");
 class MP3Analyzer {
     analyseID3v2(id3v2) {
         const result = [];
@@ -79,7 +80,7 @@ class MP3Analyzer {
             const lastframe = data.frames.audio.length > 0 ? data.frames.audio[data.frames.audio.length - 1] : undefined;
             if (data.raw && lastframe) {
                 const audioEnd = mp3_frame_1.rawHeaderOffSet(lastframe) + mp3_frame_1.rawHeaderSize(lastframe);
-                let id3v1s = data.raw.tags.filter(t => t.id === 'ID3v1' && t.start >= audioEnd);
+                let id3v1s = data.raw.tags.filter(t => t.id === __1.ITagID.ID3v1 && t.start >= audioEnd);
                 if (options.id3v1 && id3v1s.length > 0) {
                     if (id3v1s.length > 1) {
                         id3v1s = id3v1s.filter(t => {

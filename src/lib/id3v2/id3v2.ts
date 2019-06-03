@@ -6,6 +6,8 @@ import {FileWriterStream} from '../common/streams';
 import {IID3V2} from './id3v2__types';
 import {fileRangeToBuffer} from '../common/utils';
 import {Readable} from 'stream';
+import {updateFile} from '../common/update-file';
+import {ITagID} from '../..';
 
 export async function buildID3v2(tag: IID3V2.RawTag): Promise<IID3V2.Tag> {
 	const frames: Array<IID3V2.Frame> = [];
@@ -62,43 +64,24 @@ export class ID3v2 {
 		await stream.close();
 	}
 
-	async replaceTag(filename: string, frames: Array<IID3V2.RawFrame>, head: IID3V2.TagHeader): Promise<void> {
-		// debug('writing tag to existing file', filename);
-		const reader = new ID3v2Reader();
-		// debug('reading old tag for position', filename);
-		const state_tag = await reader.read(filename);
-		// debug('writing new tag to temp file', filename + '.tempmp3');
-		let exists = await fse.pathExists(filename + '.tempmp3');
-		if (exists) {
-			await fse.remove(filename + '.tempmp3');
-		}
-		const state_stream = new FileWriterStream();
-		await state_stream.open(filename + '.tempmp3');
-		try {
+	private async replaceTag(filename: string, frames: Array<IID3V2.RawFrame>, head: IID3V2.TagHeader, keepBackup: boolean): Promise<void> {
+		await updateFile(filename, keepBackup, async (stat, layout, fileWriter): Promise<void> => {
 			const writer = new ID3v2Writer();
-			await writer.write(state_stream, frames, head);
+			await writer.write(fileWriter, frames, head);
 			let start = 0;
-			if (state_tag && state_tag.head && state_tag.head.size) {
-				start = state_tag.head.size + 10;
-			} // plus header 10
-			// debug('copy from old file from position', start, filename);
-			await state_stream.copyFrom(filename, start);
-		} catch (e) {
-			await state_stream.close();
-			return Promise.reject(e);
-		}
-		await state_stream.close();
-		exists = await fse.pathExists(filename + '.bak');
-		if (exists) {
-			await fse.remove(filename + '.bak');
-		}
-		await fse.rename(filename, filename + '.bak');
-		await fse.rename(filename + '.tempmp3', filename);
-		await fse.remove(filename + '.bak');
+			for (const tag of layout.tags) {
+				if (tag.id === ITagID.ID3v2) {
+					if (start < tag.end) {
+						start = tag.end;
+					}
+				}
+			}
+			await fileWriter.copyFrom(filename, start);
+		});
 	}
 
-	async write(filename: string, tag: IID3V2.Tag, version: number, rev: number): Promise<void> {
-		// TODO: transform header to id3v2 version
+	async write(filename: string, tag: IID3V2.Tag, version: number, rev: number, keepBackup?: boolean): Promise<void> {
+		// TODO: ensure header flags are valid in id3v2.${version}
 		const head: IID3V2.TagHeader = {
 			ver: version,
 			rev: rev,
@@ -114,7 +97,7 @@ export class ID3v2 {
 		if (!exists) {
 			await this.writeTag(filename, raw_frames, head);
 		} else {
-			await this.replaceTag(filename, raw_frames, head);
+			await this.replaceTag(filename, raw_frames, head, !!keepBackup);
 		}
 	}
 }

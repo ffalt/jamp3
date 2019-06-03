@@ -375,6 +375,25 @@ class FileWriterStream extends WriterStream {
             });
         });
     }
+    copyRange(filename, start, finish) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const readstream = fs_1.default.createReadStream(filename, { start, end: finish });
+            return new Promise((resolve, reject) => {
+                readstream.on('error', (err) => {
+                    return reject(err);
+                });
+                readstream.on('end', (err) => {
+                    if (err) {
+                        reject(err);
+                    }
+                    else {
+                        resolve();
+                    }
+                });
+                readstream.pipe(this.wstream);
+            });
+        });
+    }
     copyFrom(filename, position) {
         return __awaiter(this, void 0, void 0, function* () {
             const readstream = fs_1.default.createReadStream(filename, { start: position });

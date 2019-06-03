@@ -14,6 +14,7 @@ const utils_1 = require("../common/utils");
 const marker_1 = require("../common/marker");
 const buffer_1 = require("../common/buffer");
 const id3v2_consts_1 = require("./id3v2_consts");
+const __1 = require("../..");
 const ID3v2_MARKER_BUFFER = buffer_1.BufferUtils.fromString(id3v2_consts_1.ID3v2_MARKER);
 class ID3v2Reader {
     readHeader(reader) {
@@ -33,7 +34,7 @@ class ID3v2Reader {
     }
     readRawTag(head, reader) {
         return __awaiter(this, void 0, void 0, function* () {
-            const tag = { id: 'ID3v2', frames: [], start: 0, end: 0, head: head || { ver: 0, rev: 0, size: 0, valid: false } };
+            const tag = { id: __1.ITagID.ID3v2, frames: [], start: 0, end: 0, head: head || { ver: 0, rev: 0, size: 0, valid: false } };
             const data = yield reader.read(tag.head.size);
             const rest = yield this.readFrames(data, tag);
             return { rest, tag };
