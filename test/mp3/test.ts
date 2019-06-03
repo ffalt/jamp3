@@ -13,6 +13,7 @@ import {collectTestFiles} from '../common/common';
 import {expandRawHeader, expandRawHeaderArray, rawHeaderOffSet, rawHeaderSize} from '../../src/lib/mp3/mp3_frame';
 import {filterBestMPEGChain} from '../../src/lib/mp3/mp3_frames';
 import fse from 'fs-extra';
+import tmp from 'tmp';
 
 export const IMP3TestPath = path.join(__dirname, '..', 'data', 'testfiles', 'mp3');
 export const IMP3TestDirectories = [
@@ -29,8 +30,9 @@ const tests = [
 	, {dirs: IMP3TestDirectories, dir: IMP3TestPath}
 ];
 
-const testSingleFile: string | undefined = undefined;
-// const testSingleFile = 'toc_many';
+const testSingleFile: string | undefined =
+	undefined;
+	// 'duplicate_id3v2';
 
 const debug = Debug('id3v2-test');
 
@@ -211,6 +213,31 @@ async function loadFramesCompare(filename: string): Promise<void> {
 	}
 }
 
+async function removeTagsTest(filename: string): Promise<void> {
+	const result1 = await mp3.read(filename, {id3v1: true, id3v2: true, mpeg: true});
+	const rem = {
+		id3v1: !!result1.id3v1,
+		id3v2: !!result1.id3v2
+	};
+	if (!result1.frames) {
+		console.log('no frames obj', filename);
+		return;
+	}
+	const file = tmp.fileSync();
+	await fse.remove(file.name);
+	await fse.copyFile(filename, file.name);
+	await mp3.removeTags(file.name, rem);
+	const result2 = await mp3.read(file.name, {id3v1: true, id3v2: true, mpeg: true});
+	file.removeCallback();
+	if (!result2.frames) {
+		return Promise.reject(Error('no frames obj in written ' + file.name));
+	}
+	expect(result2.frames.headers.length).to.equal(result1.frames.headers.length, 'header frames length not equal');
+	expect(result2.frames.audio.length).to.equal(result1.frames.audio.length, 'audio frames length not equal');
+	expect(!!result2.id3v2).to.equal(false, 'id3v2 tag should no longer exists');
+	expect(!!result2.id3v1).to.equal(false, 'id3v1 tag should no longer exists' + JSON.stringify(result2.id3v1));
+}
+
 async function loadMPEGCompare(filename: string): Promise<void> {
 	debug('mp3test', 'loading', filename);
 	const compare: ITestSpec = await fse.readJSON(filename + '.frames.json');
@@ -267,21 +294,24 @@ describe('MP3', async () => {
 		describe(root.root, () => {
 			for (const filename of root.files) {
 				describe(filename.slice(root.root.length), () => {
-					it('should load & compare to spec', async () => {
-						const exists = await fse.pathExists(filename + '.spec.json');
-						if (exists) {
-							await loadForSpec(filename);
-						}
-					});
-					it('should load tags & save tags & compare tags', async () => {
-						await loadSaveCompare(filename);
-					});
+					// it('should load & compare to spec', async () => {
+					// 	const exists = await fse.pathExists(filename + '.spec.json');
+					// 	if (exists) {
+					// 		await loadForSpec(filename);
+					// 	}
+					// });
+					// it('should load tags & save tags & compare tags', async () => {
+					// 	await loadSaveCompare(filename);
+					// });
 					if (path.extname(filename) !== '.id3') {
 						it('should read mpeg frames', async () => {
 							await loadFramesCompare(filename);
 						}).timeout(200000);
-						it('should read quickly read mpeg info', async () => {
+						it('should read mpeg more quick info', async () => {
 							await loadMPEGCompare(filename);
+						}).timeout(10000);
+						it('should read remove tags', async () => {
+							await removeTagsTest(filename);
 						}).timeout(10000);
 					}
 				});
