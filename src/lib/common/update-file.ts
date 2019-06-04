@@ -1,14 +1,11 @@
-import {MP3Reader} from '../mp3/mp3_reader';
+import {MP3Reader, MP3ReaderOptions} from '../mp3/mp3_reader';
 import fse from 'fs-extra';
 import {FileWriterStream} from './streams';
 import {IMP3} from '../..';
-import fs from 'fs';
 
-export async function updateFile(filename: string, keepBackup: boolean, process: (stat: fs.Stats, layout: IMP3.RawLayout, fileWriter: FileWriterStream) => Promise<void>) {
+export async function updateFile(filename: string, opts: MP3ReaderOptions, keepBackup: boolean, process: (layout: IMP3.RawLayout, fileWriter: FileWriterStream) => Promise<void>) {
 	const reader = new MP3Reader();
-	const stat = await fse.stat(filename);
-	const readerOpts = {streamSize: stat.size, id3v1: true, id3v2: true, detectDuplicateID3v2: true};
-	const layout = await reader.read(filename, readerOpts);
+	const layout = await reader.read(filename, opts);
 	let exists = await fse.pathExists(filename + '.tempmp3');
 	if (exists) {
 		await fse.remove(filename + '.tempmp3');
@@ -16,7 +13,7 @@ export async function updateFile(filename: string, keepBackup: boolean, process:
 	const fileWriterStream = new FileWriterStream();
 	await fileWriterStream.open(filename + '.tempmp3');
 	try {
-		await process(stat, layout, fileWriterStream);
+		await process(layout, fileWriterStream);
 	} catch (e) {
 		await fileWriterStream.close();
 		return Promise.reject(e);

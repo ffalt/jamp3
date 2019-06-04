@@ -51,7 +51,6 @@ export class ID3v2 {
 	}
 
 	private async writeTag(filename: string, frames: Array<IID3V2.RawFrame>, head: IID3V2.TagHeader): Promise<void> {
-		// debug('writing tag to new file', filename);
 		const stream = new FileWriterStream();
 		await stream.open(filename);
 		const writer = new ID3v2Writer();
@@ -65,7 +64,7 @@ export class ID3v2 {
 	}
 
 	private async replaceTag(filename: string, frames: Array<IID3V2.RawFrame>, head: IID3V2.TagHeader, keepBackup: boolean): Promise<void> {
-		await updateFile(filename, keepBackup, async (stat, layout, fileWriter): Promise<void> => {
+		await updateFile(filename, {id3v2: true}, keepBackup, async (layout, fileWriter): Promise<void> => {
 			const writer = new ID3v2Writer();
 			await writer.write(fileWriter, frames, head);
 			let start = 0;

@@ -390,7 +390,7 @@ class FileWriterStream extends WriterStream {
                         resolve();
                     }
                 });
-                readstream.pipe(this.wstream);
+                readstream.pipe(this.wstream, { end: false });
             });
         });
     }
@@ -409,7 +409,7 @@ class FileWriterStream extends WriterStream {
                         resolve();
                     }
                 });
-                readstream.pipe(this.wstream);
+                readstream.pipe(this.wstream, { end: false });
             });
         });
     }

@@ -8,61 +8,38 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const streams_1 = require("../common/streams");
-class Writer {
-    constructor(filename, version, tag) {
-        this.filename = filename;
+class Id3v1RawWriter {
+    constructor(stream, tag, version) {
+        this.stream = stream;
         this.version = version;
         this.tag = tag;
     }
-    writeTag(stream) {
-        return __awaiter(this, void 0, void 0, function* () {
-            stream.writeAscii('TAG');
-            stream.writeFixedAsciiString(this.tag.value.title || '', 30);
-            stream.writeFixedAsciiString(this.tag.value.artist || '', 30);
-            stream.writeFixedAsciiString(this.tag.value.album || '', 30);
-            stream.writeFixedAsciiString(this.tag.value.year || '', 4);
-            if (this.version === 0) {
-                stream.writeFixedAsciiString(this.tag.value.comment || '', 30);
-            }
-            else {
-                stream.writeFixedAsciiString(this.tag.value.comment || '', 28);
-                stream.writeByte(0);
-                stream.writeByte(this.tag.value.track || 0);
-            }
-            stream.writeByte(this.tag.value.genreIndex || 0);
-        });
-    }
-    openFile() {
-        return __awaiter(this, void 0, void 0, function* () {
-            const stream = new streams_1.FileWriterStream();
-            yield stream.open(this.filename);
-            return stream;
-        });
-    }
-    closeFile(stream) {
-        return __awaiter(this, void 0, void 0, function* () {
-            yield stream.close();
-        });
-    }
     write() {
         return __awaiter(this, void 0, void 0, function* () {
-            const stream = yield this.openFile();
-            try {
-                yield this.writeTag(stream);
+            this.stream.writeAscii('TAG');
+            this.stream.writeFixedAsciiString(this.tag.value.title || '', 30);
+            this.stream.writeFixedAsciiString(this.tag.value.artist || '', 30);
+            this.stream.writeFixedAsciiString(this.tag.value.album || '', 30);
+            this.stream.writeFixedAsciiString(this.tag.value.year || '', 4);
+            if (this.version === 0) {
+                this.stream.writeFixedAsciiString(this.tag.value.comment || '', 30);
             }
-            catch (e) {
-                yield this.closeFile(stream);
-                return Promise.reject(e);
+            else {
+                this.stream.writeFixedAsciiString(this.tag.value.comment || '', 28);
+                this.stream.writeByte(0);
+                this.stream.writeByte(this.tag.value.track || 0);
             }
-            yield this.closeFile(stream);
+            this.stream.writeByte(this.tag.value.genreIndex || 0);
         });
     }
 }
 class ID3v1Writer {
-    write(filename, tag, version) {
+    write(stream, tag, version) {
         return __awaiter(this, void 0, void 0, function* () {
-            const writer = new Writer(filename, version, tag);
+            if (version < 0 || version > 1) {
+                return Promise.reject(Error('Unsupported Version'));
+            }
+            const writer = new Id3v1RawWriter(stream, tag, version);
             yield writer.write();
         });
     }

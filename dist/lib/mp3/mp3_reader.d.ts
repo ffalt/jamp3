@@ -1,7 +1,7 @@
 /// <reference types="node" />
 import { IMP3 } from './mp3__types';
 import { Readable } from 'stream';
-interface MP3ReaderOptions extends IMP3.ReadOptions {
+export interface MP3ReaderOptions extends IMP3.ReadOptions {
     streamSize?: number;
 }
 export declare class MP3Reader {
@@ -25,4 +25,3 @@ export declare class MP3Reader {
     read(filename: string, opts: MP3ReaderOptions): Promise<IMP3.RawLayout>;
     readStream(stream: Readable, opts: MP3ReaderOptions): Promise<IMP3.RawLayout>;
 }
-export {};

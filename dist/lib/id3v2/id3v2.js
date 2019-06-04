@@ -81,7 +81,7 @@ class ID3v2 {
     }
     replaceTag(filename, frames, head, keepBackup) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield update_file_1.updateFile(filename, keepBackup, (stat, layout, fileWriter) => __awaiter(this, void 0, void 0, function* () {
+            yield update_file_1.updateFile(filename, { id3v2: true }, keepBackup, (layout, fileWriter) => __awaiter(this, void 0, void 0, function* () {
                 const writer = new id3v2_writer_1.ID3v2Writer();
                 yield writer.write(fileWriter, frames, head);
                 let start = 0;

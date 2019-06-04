@@ -168,7 +168,9 @@ class MP3 {
     }
     removeTags(filename, opts) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield update_file_1.updateFile(filename, !!opts.keepBackup, (stat, layout, fileWriter) => __awaiter(this, void 0, void 0, function* () {
+            const stat = yield fs_extra_1.default.stat(filename);
+            const readerOpts = { streamSize: stat.size, id3v2: opts.id3v2, detectDuplicateID3v2: opts.id3v2, id3v1: opts.id3v1 };
+            yield update_file_1.updateFile(filename, readerOpts, !!opts.keepBackup, (layout, fileWriter) => __awaiter(this, void 0, void 0, function* () {
                 let start = 0;
                 let finish = stat.size;
                 for (const tag of layout.tags) {
