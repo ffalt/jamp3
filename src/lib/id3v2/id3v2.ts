@@ -64,7 +64,7 @@ export class ID3v2 {
 	}
 
 	private async replaceTag(filename: string, frames: Array<IID3V2.RawFrame>, head: IID3V2.TagHeader, keepBackup: boolean): Promise<void> {
-		await updateFile(filename, {id3v2: true}, keepBackup, async (layout, fileWriter): Promise<void> => {
+		await updateFile(filename, {id3v2: true}, keepBackup, () => true, async (layout, fileWriter): Promise<void> => {
 			const writer = new ID3v2Writer();
 			await writer.write(fileWriter, frames, head);
 			let start = 0;

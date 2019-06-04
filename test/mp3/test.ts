@@ -225,9 +225,15 @@ async function removeID3v1TagsTest(filename: string, before: IMP3.Result): Promi
 	const file = tmp.fileSync();
 	await fse.remove(file.name);
 	await fse.copyFile(filename, file.name);
-	await mp3.removeTags(file.name, {id3v1: true, id3v2: false});
+	const result = await mp3.removeTags(file.name, {id3v1: true, id3v2: false});
 	const after = await mp3.read(file.name, {id3v1: true, id3v2: true, mpeg: true});
 	file.removeCallback();
+	should().exist(result);
+	if (!result) {
+		return;
+	}
+	expect(result.id3v1).to.equal(true, 'result should report removed id3v1 tag (id3v1.remove)');
+	expect(result.id3v2).to.equal(false, 'result should not report removed id3v2 tag (id3v1.remove)');
 	expect(!!after.id3v2).to.equal(!!before.id3v2, 'id3v2 tag should be unchanged (id3v1.remove)');
 	expect(!!after.id3v1).to.equal(false, 'id3v1 tag should no longer exists (id3v1.remove)');
 	return compareRemovalAudio(before, after);
@@ -237,21 +243,36 @@ async function removeID3v2TagsTest(filename: string, before: IMP3.Result): Promi
 	const file = tmp.fileSync();
 	await fse.remove(file.name);
 	await fse.copyFile(filename, file.name);
-	await mp3.removeTags(file.name, {id3v1: false, id3v2: true});
+	const result = await mp3.removeTags(file.name, {id3v1: false, id3v2: true});
 	const after = await mp3.read(file.name, {id3v1: true, id3v2: true, mpeg: true});
 	file.removeCallback();
+	should().exist(result);
+	if (!result) {
+		return;
+	}
+	expect(result.id3v1).to.equal(false, 'result should not report removed id3v1 tag (id3v2.remove)');
+	expect(result.id3v2).to.equal(true, 'result should report removed id3v2 tag (id3v2.remove)');
 	expect(!!after.id3v1).to.equal(!!before.id3v1, 'id3v1 tag should be unchanged (id3v2.remove)');
 	expect(!!after.id3v2).to.equal(false, 'id3v2 tag should no longer exists (id3v2.remove)');
 	return compareRemovalAudio(before, after);
 }
 
+
 async function removeID3TagsTest(filename: string, before: IMP3.Result): Promise<void> {
 	const file = tmp.fileSync();
 	await fse.remove(file.name);
 	await fse.copyFile(filename, file.name);
-	await mp3.removeTags(file.name, {id3v1: true, id3v2: true});
+	const result = await mp3.removeTags(file.name, {id3v1: true, id3v2: true});
 	const after = await mp3.read(file.name, {id3v1: true, id3v2: true, mpeg: true});
+	const empty = await mp3.removeTags(file.name, {id3v1: true, id3v2: false});
 	file.removeCallback();
+	should().exist(result);
+	should().not.exist(empty);
+	if (!result) {
+		return;
+	}
+	expect(result.id3v1).to.equal(true, 'result should report removed id3v1 tag (id3v2&1.remove)');
+	expect(result.id3v2).to.equal(true, 'result should report removed id3v2 tag (id3v2&1.remove)');
 	expect(!!after.id3v1).to.equal(false, 'id3v1 tag should no longer exists (id3v2&1.remove)');
 	expect(!!after.id3v2).to.equal(false, 'id3v2 tag should no longer exists (id3v2&1.remove)');
 	return compareRemovalAudio(before, after);

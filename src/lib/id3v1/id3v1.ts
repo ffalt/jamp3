@@ -34,7 +34,7 @@ export class ID3v1 {
 
 	private async replaceTag(filename: string, tag: IID3V1.Tag, version: number, keepBackup: boolean): Promise<void> {
 		const stat = await fse.stat(filename);
-		await updateFile(filename, {id3v1: true}, keepBackup, async (layout, fileWriter): Promise<void> => {
+		await updateFile(filename, {id3v1: true}, keepBackup, () => true, async (layout, fileWriter): Promise<void> => {
 			let finish = stat.size;
 			for (const t of layout.tags) {
 				if (t.id === ITagID.ID3v1) {

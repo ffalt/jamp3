@@ -155,27 +155,43 @@ export class MP3 {
 		return await this.prepareResult(opts, layout);
 	}
 
-	async removeTags(filename: string, opts: IMP3.RemoveTagsOptions): Promise<void> {
+	async removeTags(filename: string, opts: IMP3.RemoveTagsOptions): Promise<{ id3v2: boolean, id3v1: boolean } | undefined> {
 		const stat = await fse.stat(filename);
 		const readerOpts: MP3ReaderOptions = {streamSize: stat.size, id3v2: opts.id3v2, detectDuplicateID3v2: opts.id3v2, id3v1: opts.id3v1};
-		await updateFile(filename, readerOpts, !!opts.keepBackup, async (layout, fileWriter): Promise<void> => {
-			let start = 0;
-			let finish = stat.size;
-			for (const tag of layout.tags) {
-				if (tag.id === ITagID.ID3v2 && opts.id3v2) {
-					if (start < tag.end) {
-						start = tag.end;
-					}
-				} else if (tag.id === ITagID.ID3v1 && opts.id3v1 && tag.end === stat.size) {
-					if (finish > tag.start) {
-						finish = tag.start;
+		let id2v1removed = false;
+		let id2v2removed = false;
+		await updateFile(filename, readerOpts, !!opts.keepBackup,
+			layout => {
+				for (const tag of layout.tags) {
+					if (opts.id3v2 && tag.id === ITagID.ID3v2 && tag.end > 0) {
+						return true;
+					} else if (opts.id3v1 && tag.id === ITagID.ID3v1 && tag.end === stat.size && tag.start < stat.size) {
+						return true;
 					}
 				}
-			}
-			if (finish > start) {
-				await fileWriter.copyRange(filename, start, finish);
-			}
-		});
+				return false;
+			},
+			async (layout, fileWriter): Promise<void> => {
+				let start = 0;
+				let finish = stat.size;
+				for (const tag of layout.tags) {
+					if (tag.id === ITagID.ID3v2 && opts.id3v2) {
+						if (start < tag.end) {
+							start = tag.end;
+							id2v2removed = true;
+						}
+					} else if (tag.id === ITagID.ID3v1 && opts.id3v1 && tag.end === stat.size) {
+						if (finish > tag.start) {
+							finish = tag.start;
+							id2v1removed = true;
+						}
+					}
+				}
+				if (finish > start) {
+					await fileWriter.copyRange(filename, start, finish);
+				}
+			});
+		return id2v2removed || id2v1removed ? {id3v2: id2v2removed, id3v1: id2v1removed} : undefined;
 	}
 
 }
