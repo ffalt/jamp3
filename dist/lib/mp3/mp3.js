@@ -170,18 +170,32 @@ class MP3 {
         return __awaiter(this, void 0, void 0, function* () {
             const stat = yield fs_extra_1.default.stat(filename);
             const readerOpts = { streamSize: stat.size, id3v2: opts.id3v2, detectDuplicateID3v2: opts.id3v2, id3v1: opts.id3v1 };
-            yield update_file_1.updateFile(filename, readerOpts, !!opts.keepBackup, (layout, fileWriter) => __awaiter(this, void 0, void 0, function* () {
+            let id2v1removed = false;
+            let id2v2removed = false;
+            yield update_file_1.updateFile(filename, readerOpts, !!opts.keepBackup, layout => {
+                for (const tag of layout.tags) {
+                    if (opts.id3v2 && tag.id === __1.ITagID.ID3v2 && tag.end > 0) {
+                        return true;
+                    }
+                    else if (opts.id3v1 && tag.id === __1.ITagID.ID3v1 && tag.end === stat.size && tag.start < stat.size) {
+                        return true;
+                    }
+                }
+                return false;
+            }, (layout, fileWriter) => __awaiter(this, void 0, void 0, function* () {
                 let start = 0;
                 let finish = stat.size;
                 for (const tag of layout.tags) {
                     if (tag.id === __1.ITagID.ID3v2 && opts.id3v2) {
                         if (start < tag.end) {
                             start = tag.end;
+                            id2v2removed = true;
                         }
                     }
                     else if (tag.id === __1.ITagID.ID3v1 && opts.id3v1 && tag.end === stat.size) {
                         if (finish > tag.start) {
                             finish = tag.start;
+                            id2v1removed = true;
                         }
                     }
                 }
@@ -189,6 +203,7 @@ class MP3 {
                     yield fileWriter.copyRange(filename, start, finish);
                 }
             }));
+            return id2v2removed || id2v1removed ? { id3v2: id2v2removed, id3v1: id2v1removed } : undefined;
         });
     }
 }

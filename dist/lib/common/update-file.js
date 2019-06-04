@@ -14,10 +14,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const mp3_reader_1 = require("../mp3/mp3_reader");
 const fs_extra_1 = __importDefault(require("fs-extra"));
 const streams_1 = require("./streams");
-function updateFile(filename, opts, keepBackup, process) {
+function updateFile(filename, opts, keepBackup, canProcess, process) {
     return __awaiter(this, void 0, void 0, function* () {
         const reader = new mp3_reader_1.MP3Reader();
         const layout = yield reader.read(filename, opts);
+        if (!canProcess(layout)) {
+            return;
+        }
         let exists = yield fs_extra_1.default.pathExists(filename + '.tempmp3');
         if (exists) {
             yield fs_extra_1.default.remove(filename + '.tempmp3');

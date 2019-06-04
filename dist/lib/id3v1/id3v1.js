@@ -48,7 +48,7 @@ class ID3v1 {
     replaceTag(filename, tag, version, keepBackup) {
         return __awaiter(this, void 0, void 0, function* () {
             const stat = yield fs_extra_1.default.stat(filename);
-            yield update_file_1.updateFile(filename, { id3v1: true }, keepBackup, (layout, fileWriter) => __awaiter(this, void 0, void 0, function* () {
+            yield update_file_1.updateFile(filename, { id3v1: true }, keepBackup, () => true, (layout, fileWriter) => __awaiter(this, void 0, void 0, function* () {
                 let finish = stat.size;
                 for (const t of layout.tags) {
                     if (t.id === __1.ITagID.ID3v1) {

@@ -3,9 +3,16 @@ import fse from 'fs-extra';
 import {FileWriterStream} from './streams';
 import {IMP3} from '../..';
 
-export async function updateFile(filename: string, opts: MP3ReaderOptions, keepBackup: boolean, process: (layout: IMP3.RawLayout, fileWriter: FileWriterStream) => Promise<void>) {
+export async function updateFile(
+	filename: string, opts: MP3ReaderOptions, keepBackup: boolean,
+	canProcess: (layout: IMP3.RawLayout) => boolean,
+	process: (layout: IMP3.RawLayout, fileWriter: FileWriterStream) => Promise<void>
+) {
 	const reader = new MP3Reader();
 	const layout = await reader.read(filename, opts);
+	if (!canProcess(layout)) {
+		return;
+	}
 	let exists = await fse.pathExists(filename + '.tempmp3');
 	if (exists) {
 		await fse.remove(filename + '.tempmp3');
