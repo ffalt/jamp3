@@ -1,7 +1,15 @@
+<a name="0.3.8"></a>
+# 0.3.8 (2019/06/04)
+### Features
+* ID3v1.write: add optional "keepBackup:boolean" parameter to keep the ${filename}.bak file which is created while writing (if it does not already exists)
+
+### Bug Fixes
+* ID3v1.write: did not properly update existing files
+
 <a name="0.3.7"></a>
 # 0.3.7 (2019/06/03)
 ### Features
-* ID3v2.writeTag: add optional "keepBackup:boolean" parameter to keep the ${filename}.bak file which is created while writing (if it does not already exists)
+* ID3v2.write: add optional "keepBackup:boolean" parameter to keep the ${filename}.bak file which is created while writing (if it does not already exists)
 * MP3.removeTags: add MP3.removeTags(filename, {id3v2:boolean, id3v1:boolean, keepBackup:boolean}) for stripping tags
 * ITagID enum: add ITagID string enum (ID3v2 | ID3v1)
 
