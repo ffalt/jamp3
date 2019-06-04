@@ -1,19 +1,19 @@
-import {FileWriterStream, WriterStream} from '../common/streams';
+import {WriterStream} from '../common/streams';
 import {IID3V1} from './id3v1__types';
 
-class Writer {
-	filename: string;
+class Id3v1RawWriter {
 	version: number;
 	tag: IID3V1.Tag;
+	stream: WriterStream;
 
-	constructor(filename: string, version: number, tag: IID3V1.Tag) {
-		this.filename = filename;
+	constructor(stream: WriterStream, tag: IID3V1.Tag, version: number) {
+		this.stream = stream;
 		this.version = version;
 		this.tag = tag;
 	}
 
-	private async writeTag(stream: WriterStream): Promise<void> {
-		stream.writeAscii('TAG'); // ID3v1/file identifier
+	async write(): Promise<void> {
+		this.stream.writeAscii('TAG'); // ID3v1/file identifier
 		/* v1
 		 Song Title		30 characters
 		 Artist	 		30 characters
@@ -33,46 +33,29 @@ class Writer {
 		 Genre			1 byte
 		 */
 
-		stream.writeFixedAsciiString(this.tag.value.title || '', 30);
-		stream.writeFixedAsciiString(this.tag.value.artist || '', 30);
-		stream.writeFixedAsciiString(this.tag.value.album || '', 30);
-		stream.writeFixedAsciiString(this.tag.value.year || '', 4);
+		this.stream.writeFixedAsciiString(this.tag.value.title || '', 30);
+		this.stream.writeFixedAsciiString(this.tag.value.artist || '', 30);
+		this.stream.writeFixedAsciiString(this.tag.value.album || '', 30);
+		this.stream.writeFixedAsciiString(this.tag.value.year || '', 4);
 		if (this.version === 0) {
-			stream.writeFixedAsciiString(this.tag.value.comment || '', 30);
+			this.stream.writeFixedAsciiString(this.tag.value.comment || '', 30);
 		} else {
-			stream.writeFixedAsciiString(this.tag.value.comment || '', 28);
-			stream.writeByte(0);
-			stream.writeByte(this.tag.value.track || 0);
+			this.stream.writeFixedAsciiString(this.tag.value.comment || '', 28);
+			this.stream.writeByte(0);
+			this.stream.writeByte(this.tag.value.track || 0);
 		}
-		stream.writeByte(this.tag.value.genreIndex || 0);
+		this.stream.writeByte(this.tag.value.genreIndex || 0);
 	}
 
-	private async openFile(): Promise<FileWriterStream> {
-		const stream = new FileWriterStream();
-		await stream.open(this.filename);
-		return stream;
-	}
-
-	private async closeFile(stream: FileWriterStream): Promise<void> {
-		await stream.close();
-	}
-
-	async write(): Promise<void> {
-		const stream = await this.openFile();
-		try {
-			await this.writeTag(stream);
-		} catch (e) {
-			await this.closeFile(stream);
-			return Promise.reject(e);
-		}
-		await this.closeFile(stream);
-	}
 }
 
 export class ID3v1Writer {
 
-	async write(filename: string, tag: IID3V1.Tag, version: number): Promise<void> {
-		const writer = new Writer(filename, version, tag);
+	async write(stream: WriterStream, tag: IID3V1.Tag, version: number): Promise<void> {
+		if (version < 0 || version > 1) {
+			return Promise.reject(Error('Unsupported Version'));
+		}
+		const writer = new Id3v1RawWriter(stream, tag, version);
 		await writer.write();
 	}
 
