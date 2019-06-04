@@ -1,3 +1,9 @@
+<a name="0.3.9"></a>
+# 0.3.9 (2019/06/04)
+### Features
+* MP3.removeTags: returns report obj if and which tags are removed
+`async removeTags(filename: string, opts: IMP3.RemoveTagsOptions): Promise<{ id3v2: boolean, id3v1: boolean } | undefined>`
+
 <a name="0.3.8"></a>
 # 0.3.8 (2019/06/04)
 ### Features
