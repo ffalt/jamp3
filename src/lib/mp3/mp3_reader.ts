@@ -7,7 +7,7 @@ import {BufferUtils} from '../common/buffer';
 import {getBestMPEGChain} from './mp3_frames';
 import {Readable} from 'stream';
 
-interface MP3ReaderOptions extends IMP3.ReadOptions {
+export interface MP3ReaderOptions extends IMP3.ReadOptions {
 	streamSize?: number;
 }
 

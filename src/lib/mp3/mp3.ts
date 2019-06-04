@@ -1,5 +1,5 @@
 import {IMP3} from './mp3__types';
-import {MP3Reader} from './mp3_reader';
+import {MP3Reader, MP3ReaderOptions} from './mp3_reader';
 import {buildID3v2} from '../id3v2/id3v2';
 import {IID3V2} from '../id3v2/id3v2__types';
 import {IID3V1} from '../id3v1/id3v1__types';
@@ -156,7 +156,9 @@ export class MP3 {
 	}
 
 	async removeTags(filename: string, opts: IMP3.RemoveTagsOptions): Promise<void> {
-		await updateFile(filename, !!opts.keepBackup, async (stat, layout, fileWriter): Promise<void> => {
+		const stat = await fse.stat(filename);
+		const readerOpts: MP3ReaderOptions = {streamSize: stat.size, id3v2: opts.id3v2, detectDuplicateID3v2: opts.id3v2, id3v1: opts.id3v1};
+		await updateFile(filename, readerOpts, !!opts.keepBackup, async (layout, fileWriter): Promise<void> => {
 			let start = 0;
 			let finish = stat.size;
 			for (const tag of layout.tags) {
