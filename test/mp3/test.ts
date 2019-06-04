@@ -32,7 +32,7 @@ const tests = [
 
 const testSingleFile: string | undefined =
 	undefined;
-	// 'duplicate_id3v2';
+// 'duplicate_id3v2';
 
 const debug = Debug('id3v2-test');
 
@@ -213,29 +213,61 @@ async function loadFramesCompare(filename: string): Promise<void> {
 	}
 }
 
-async function removeTagsTest(filename: string): Promise<void> {
-	const result1 = await mp3.read(filename, {id3v1: true, id3v2: true, mpeg: true});
-	const rem = {
-		id3v1: !!result1.id3v1,
-		id3v2: !!result1.id3v2
-	};
-	if (!result1.frames) {
-		console.log('no frames obj', filename);
-		return;
+async function compareRemovalAudio(before: IMP3.Result, after: IMP3.Result): Promise<void> {
+	if (!before.frames || !after.frames) {
+		return Promise.reject(Error('no frames obj'));
 	}
+	expect(after.frames.headers.length).to.equal(before.frames.headers.length, 'header frames length not equal');
+	expect(after.frames.audio.length).to.equal(before.frames.audio.length, 'audio frames length not equal');
+}
+
+async function removeID3v1TagsTest(filename: string, before: IMP3.Result): Promise<void> {
 	const file = tmp.fileSync();
 	await fse.remove(file.name);
 	await fse.copyFile(filename, file.name);
-	await mp3.removeTags(file.name, rem);
-	const result2 = await mp3.read(file.name, {id3v1: true, id3v2: true, mpeg: true});
+	await mp3.removeTags(file.name, {id3v1: true, id3v2: false});
+	const after = await mp3.read(file.name, {id3v1: true, id3v2: true, mpeg: true});
 	file.removeCallback();
-	if (!result2.frames) {
-		return Promise.reject(Error('no frames obj in written ' + file.name));
+	expect(!!after.id3v2).to.equal(!!before.id3v2, 'id3v2 tag should be unchanged (id3v1.remove)');
+	expect(!!after.id3v1).to.equal(false, 'id3v1 tag should no longer exists (id3v1.remove)');
+	return compareRemovalAudio(before, after);
+}
+
+async function removeID3v2TagsTest(filename: string, before: IMP3.Result): Promise<void> {
+	const file = tmp.fileSync();
+	await fse.remove(file.name);
+	await fse.copyFile(filename, file.name);
+	await mp3.removeTags(file.name, {id3v1: false, id3v2: true});
+	const after = await mp3.read(file.name, {id3v1: true, id3v2: true, mpeg: true});
+	file.removeCallback();
+	expect(!!after.id3v1).to.equal(!!before.id3v1, 'id3v1 tag should be unchanged (id3v2.remove)');
+	expect(!!after.id3v2).to.equal(false, 'id3v2 tag should no longer exists (id3v2.remove)');
+	return compareRemovalAudio(before, after);
+}
+
+async function removeID3TagsTest(filename: string, before: IMP3.Result): Promise<void> {
+	const file = tmp.fileSync();
+	await fse.remove(file.name);
+	await fse.copyFile(filename, file.name);
+	await mp3.removeTags(file.name, {id3v1: true, id3v2: true});
+	const after = await mp3.read(file.name, {id3v1: true, id3v2: true, mpeg: true});
+	file.removeCallback();
+	expect(!!after.id3v1).to.equal(false, 'id3v1 tag should no longer exists (id3v2&1.remove)');
+	expect(!!after.id3v2).to.equal(false, 'id3v2 tag should no longer exists (id3v2&1.remove)');
+	return compareRemovalAudio(before, after);
+}
+
+async function removeTagsTest(filename: string): Promise<void> {
+	const before = await mp3.read(filename, {id3v1: true, id3v2: true, mpeg: true});
+	if (before.id3v1) {
+		await removeID3v1TagsTest(filename, before);
 	}
-	expect(result2.frames.headers.length).to.equal(result1.frames.headers.length, 'header frames length not equal');
-	expect(result2.frames.audio.length).to.equal(result1.frames.audio.length, 'audio frames length not equal');
-	expect(!!result2.id3v2).to.equal(false, 'id3v2 tag should no longer exists');
-	expect(!!result2.id3v1).to.equal(false, 'id3v1 tag should no longer exists' + JSON.stringify(result2.id3v1));
+	if (before.id3v2) {
+		await removeID3v2TagsTest(filename, before);
+	}
+	if (before.id3v1 && before.id3v2) {
+		await removeID3TagsTest(filename, before);
+	}
 }
 
 async function loadMPEGCompare(filename: string): Promise<void> {
