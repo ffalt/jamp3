@@ -169,7 +169,7 @@ class MP3 {
     removeTags(filename, opts) {
         return __awaiter(this, void 0, void 0, function* () {
             const stat = yield fs_extra_1.default.stat(filename);
-            const readerOpts = { streamSize: stat.size, id3v2: opts.id3v2, detectDuplicateID3v2: opts.id3v2, id3v1: opts.id3v1 };
+            const readerOpts = { streamSize: stat.size, id3v2: opts.id3v2, detectDuplicateID3v2: opts.id3v2, id3v1: opts.id3v1, mpegQuick: opts.id3v2 };
             let id2v1removed = false;
             let id2v2removed = false;
             yield update_file_1.updateFile(filename, readerOpts, !!opts.keepBackup, layout => {
@@ -185,9 +185,11 @@ class MP3 {
             }, (layout, fileWriter) => __awaiter(this, void 0, void 0, function* () {
                 let start = 0;
                 let finish = stat.size;
+                let specEnd = 0;
                 for (const tag of layout.tags) {
                     if (tag.id === __1.ITagID.ID3v2 && opts.id3v2) {
                         if (start < tag.end) {
+                            specEnd = tag.head.size + tag.start + 10;
                             start = tag.end;
                             id2v2removed = true;
                         }
@@ -197,6 +199,15 @@ class MP3 {
                             finish = tag.start;
                             id2v1removed = true;
                         }
+                    }
+                }
+                if (opts.id3v2) {
+                    if (layout.frameheaders.length > 0) {
+                        const mediastart = mp3_frame_1.rawHeaderOffSet(layout.frameheaders[0]);
+                        start = specEnd < mediastart ? specEnd : mediastart;
+                    }
+                    else {
+                        start = Math.max(start, specEnd);
                     }
                 }
                 if (finish > start) {

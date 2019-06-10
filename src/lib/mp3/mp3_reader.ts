@@ -215,7 +215,7 @@ export class MP3Reader {
 		if (this.stream.end) {
 			return;
 		}
-		const requestChunkLength = 1800;
+		const requestChunkLength = 20000;
 		let go = true;
 		while (go) {
 			const data = await this.stream.read(requestChunkLength);
@@ -236,7 +236,7 @@ export class MP3Reader {
 		}
 	}
 
-	async read(filename: string, opts: MP3ReaderOptions): Promise<IMP3.RawLayout> {
+	private setOptions(opts: MP3ReaderOptions): void {
 		this.opts = opts || {};
 		this.scanMpeg = opts.mpeg || opts.mpegQuick || false;
 		this.scanid3v1 = opts.id3v1 || opts.id3v1IfNotid3v2 || false;
@@ -247,6 +247,10 @@ export class MP3Reader {
 			tags: [],
 			size: 0
 		};
+	}
+
+	async read(filename: string, opts: MP3ReaderOptions): Promise<IMP3.RawLayout> {
+		this.setOptions(opts);
 		await this.stream.open(filename);
 		try {
 			await this.scan();
@@ -259,16 +263,7 @@ export class MP3Reader {
 	}
 
 	async readStream(stream: Readable, opts: MP3ReaderOptions): Promise<IMP3.RawLayout> {
-		this.opts = opts;
-		this.scanMpeg = opts.mpeg || opts.mpegQuick || false;
-		this.scanid3v1 = opts.id3v1 || opts.id3v1IfNotid3v2 || false;
-		this.scanid3v2 = opts.id3v2 || opts.id3v1IfNotid3v2 || false;
-		this.layout = {
-			headframes: [],
-			frameheaders: [],
-			tags: [],
-			size: 0
-		};
+		this.setOptions(opts);
 		await this.stream.openStream(stream);
 		await this.scan();
 		return this.layout;

@@ -5,7 +5,7 @@ export declare class Id3v2RawWriter {
     stream: WriterStream;
     frames: Array<IID3V2.RawFrame>;
     head: IID3V2.TagHeader;
-    constructor(stream: WriterStream, head: IID3V2.TagHeader, frames?: Array<IID3V2.RawFrame>);
+    constructor(stream: WriterStream, head: IID3V2.TagHeader, frames?: Array<IID3V2.RawFrame>, paddingSize?: number);
     private writeHeader;
     private writeExtHeader;
     writeFrame(frame: IID3V2.RawFrame): Promise<void>;
@@ -14,5 +14,5 @@ export declare class Id3v2RawWriter {
     write(): Promise<void>;
 }
 export declare class ID3v2Writer {
-    write(stream: WriterStream, frames: Array<IID3V2.RawFrame>, head: IID3V2.TagHeader): Promise<void>;
+    write(stream: WriterStream, frames: Array<IID3V2.RawFrame>, head: IID3V2.TagHeader, paddingSize: number): Promise<void>;
 }

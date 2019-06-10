@@ -12,11 +12,11 @@ const utils_1 = require("../common/utils");
 const id3v2_consts_1 = require("./id3v2_consts");
 const buffer_1 = require("../common/buffer");
 class Id3v2RawWriter {
-    constructor(stream, head, frames) {
-        this.paddingSize = 2000;
+    constructor(stream, head, frames, paddingSize) {
         this.stream = stream;
         this.head = head;
         this.frames = frames || [];
+        this.paddingSize = paddingSize === undefined ? 0 : paddingSize;
     }
     writeHeader(frames) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -97,7 +97,9 @@ class Id3v2RawWriter {
     }
     writeEnd() {
         return __awaiter(this, void 0, void 0, function* () {
-            this.stream.writeBuffer(buffer_1.BufferUtils.zeroBuffer(this.paddingSize));
+            if (this.paddingSize > 0) {
+                this.stream.writeBuffer(buffer_1.BufferUtils.zeroBuffer(this.paddingSize));
+            }
         });
     }
     write() {
@@ -111,12 +113,12 @@ class Id3v2RawWriter {
 }
 exports.Id3v2RawWriter = Id3v2RawWriter;
 class ID3v2Writer {
-    write(stream, frames, head) {
+    write(stream, frames, head, paddingSize) {
         return __awaiter(this, void 0, void 0, function* () {
             if (head.ver === 0 || head.ver > 4) {
                 return Promise.reject(Error('Unsupported Version'));
             }
-            const writer = new Id3v2RawWriter(stream, head, frames);
+            const writer = new Id3v2RawWriter(stream, head, frames, paddingSize);
             yield writer.write();
         });
     }

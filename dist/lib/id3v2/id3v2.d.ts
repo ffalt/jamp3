@@ -8,5 +8,5 @@ export declare class ID3v2 {
     extractRaw(filename: string): Promise<Buffer | undefined>;
     private writeTag;
     private replaceTag;
-    write(filename: string, tag: IID3V2.Tag, version: number, rev: number, keepBackup?: boolean): Promise<void>;
+    write(filename: string, tag: IID3V2.Tag, version: number, rev: number, keepBackup?: boolean, paddingSize?: number): Promise<void>;
 }

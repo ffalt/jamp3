@@ -19,6 +19,7 @@ const streams_1 = require("../common/streams");
 const utils_1 = require("../common/utils");
 const update_file_1 = require("../common/update-file");
 const __1 = require("../..");
+const mp3_frame_1 = require("../mp3/mp3_frame");
 function buildID3v2(tag) {
     return __awaiter(this, void 0, void 0, function* () {
         const frames = [];
@@ -70,7 +71,7 @@ class ID3v2 {
             yield stream.open(filename);
             const writer = new id3v2_writer_1.ID3v2Writer();
             try {
-                yield writer.write(stream, frames, head);
+                yield writer.write(stream, frames, head, 0);
             }
             catch (e) {
                 yield stream.close();
@@ -79,24 +80,33 @@ class ID3v2 {
             yield stream.close();
         });
     }
-    replaceTag(filename, frames, head, keepBackup) {
+    replaceTag(filename, frames, head, keepBackup, paddingSize) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield update_file_1.updateFile(filename, { id3v2: true }, keepBackup, () => true, (layout, fileWriter) => __awaiter(this, void 0, void 0, function* () {
+            yield update_file_1.updateFile(filename, { id3v2: true, mpegQuick: true }, keepBackup, () => true, (layout, fileWriter) => __awaiter(this, void 0, void 0, function* () {
                 const writer = new id3v2_writer_1.ID3v2Writer();
-                yield writer.write(fileWriter, frames, head);
+                yield writer.write(fileWriter, frames, head, paddingSize);
                 let start = 0;
+                let specEnd = 0;
                 for (const tag of layout.tags) {
                     if (tag.id === __1.ITagID.ID3v2) {
                         if (start < tag.end) {
+                            specEnd = tag.head.size + tag.start + 10;
                             start = tag.end;
                         }
                     }
+                }
+                if (layout.frameheaders.length > 0) {
+                    const mediastart = mp3_frame_1.rawHeaderOffSet(layout.frameheaders[0]);
+                    start = specEnd < mediastart ? specEnd : mediastart;
+                }
+                else {
+                    start = Math.max(start, specEnd);
                 }
                 yield fileWriter.copyFrom(filename, start);
             }));
         });
     }
-    write(filename, tag, version, rev, keepBackup) {
+    write(filename, tag, version, rev, keepBackup, paddingSize = 100) {
         return __awaiter(this, void 0, void 0, function* () {
             const head = {
                 ver: version,
@@ -114,7 +124,7 @@ class ID3v2 {
                 yield this.writeTag(filename, raw_frames, head);
             }
             else {
-                yield this.replaceTag(filename, raw_frames, head, !!keepBackup);
+                yield this.replaceTag(filename, raw_frames, head, !!keepBackup, paddingSize);
             }
         });
     }

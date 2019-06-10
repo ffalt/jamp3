@@ -224,7 +224,7 @@ class MP3Reader {
             if (this.stream.end) {
                 return;
             }
-            const requestChunkLength = 1800;
+            const requestChunkLength = 20000;
             let go = true;
             while (go) {
                 const data = yield this.stream.read(requestChunkLength);
@@ -247,18 +247,21 @@ class MP3Reader {
             }
         });
     }
+    setOptions(opts) {
+        this.opts = opts || {};
+        this.scanMpeg = opts.mpeg || opts.mpegQuick || false;
+        this.scanid3v1 = opts.id3v1 || opts.id3v1IfNotid3v2 || false;
+        this.scanid3v2 = opts.id3v2 || opts.id3v1IfNotid3v2 || false;
+        this.layout = {
+            headframes: [],
+            frameheaders: [],
+            tags: [],
+            size: 0
+        };
+    }
     read(filename, opts) {
         return __awaiter(this, void 0, void 0, function* () {
-            this.opts = opts || {};
-            this.scanMpeg = opts.mpeg || opts.mpegQuick || false;
-            this.scanid3v1 = opts.id3v1 || opts.id3v1IfNotid3v2 || false;
-            this.scanid3v2 = opts.id3v2 || opts.id3v1IfNotid3v2 || false;
-            this.layout = {
-                headframes: [],
-                frameheaders: [],
-                tags: [],
-                size: 0
-            };
+            this.setOptions(opts);
             yield this.stream.open(filename);
             try {
                 yield this.scan();
@@ -273,16 +276,7 @@ class MP3Reader {
     }
     readStream(stream, opts) {
         return __awaiter(this, void 0, void 0, function* () {
-            this.opts = opts;
-            this.scanMpeg = opts.mpeg || opts.mpegQuick || false;
-            this.scanid3v1 = opts.id3v1 || opts.id3v1IfNotid3v2 || false;
-            this.scanid3v2 = opts.id3v2 || opts.id3v1IfNotid3v2 || false;
-            this.layout = {
-                headframes: [],
-                frameheaders: [],
-                tags: [],
-                size: 0
-            };
+            this.setOptions(opts);
             yield this.stream.openStream(stream);
             yield this.scan();
             return this.layout;
