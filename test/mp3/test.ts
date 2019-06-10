@@ -5,7 +5,8 @@ import path from 'path';
 import Debug from 'debug';
 import {compareID3v2Spec} from '../id3v2/id3v2spec';
 import {compareID3v2Save} from '../id3v2/id3v2compare';
-import {IMP3, MP3} from '../../src';
+import {ID3v2} from '../../src/lib/id3v2/id3v2';
+import {ID3V24TagBuilder, IMP3, MP3} from '../../src';
 import {compareID3v1Save, compareID3v1Spec} from '../id3v1/id3v1compare';
 import {ID3v2TestDirectories, ID3v2TestPath} from '../id3v2/id3v2config';
 import {ID3v1TestDirectories, ID3v1TestPath} from '../id3v1/id3v1config';
@@ -32,7 +33,7 @@ const tests = [
 
 const testSingleFile: string | undefined =
 	undefined;
-// 'duplicate_id3v2';
+// 'mpeg20-xing';
 
 const debug = Debug('id3v2-test');
 
@@ -245,6 +246,11 @@ async function removeID3v2TagsTest(filename: string, before: IMP3.Result): Promi
 	await fse.copyFile(filename, file.name);
 	const result = await mp3.removeTags(file.name, {id3v1: false, id3v2: true});
 	const after = await mp3.read(file.name, {id3v1: true, id3v2: true, mpeg: true});
+	const cleanFileSize = (await fse.stat(file.name)).size;
+	const id3v2 = new ID3v2();
+	await id3v2.write(file.name, (new ID3V24TagBuilder()).buildTag(), 4, 0);
+	await mp3.removeTags(file.name, {id3v1: false, id3v2: true});
+	const cleanFileSize2 = (await fse.stat(file.name)).size;
 	file.removeCallback();
 	should().exist(result);
 	if (!result) {
@@ -254,9 +260,9 @@ async function removeID3v2TagsTest(filename: string, before: IMP3.Result): Promi
 	expect(result.id3v2).to.equal(true, 'result should report removed id3v2 tag (id3v2.remove)');
 	expect(!!after.id3v1).to.equal(!!before.id3v1, 'id3v1 tag should be unchanged (id3v2.remove)');
 	expect(!!after.id3v2).to.equal(false, 'id3v2 tag should no longer exists (id3v2.remove)');
-	return compareRemovalAudio(before, after);
+	await compareRemovalAudio(before, after);
+	expect(cleanFileSize2).to.equal(cleanFileSize, 'padding leftovers not removed');
 }
-
 
 async function removeID3TagsTest(filename: string, before: IMP3.Result): Promise<void> {
 	const file = tmp.fileSync();
@@ -347,15 +353,15 @@ describe('MP3', async () => {
 		describe(root.root, () => {
 			for (const filename of root.files) {
 				describe(filename.slice(root.root.length), () => {
-					// it('should load & compare to spec', async () => {
-					// 	const exists = await fse.pathExists(filename + '.spec.json');
-					// 	if (exists) {
-					// 		await loadForSpec(filename);
-					// 	}
-					// });
-					// it('should load tags & save tags & compare tags', async () => {
-					// 	await loadSaveCompare(filename);
-					// });
+					it('should load & compare to spec', async () => {
+						const exists = await fse.pathExists(filename + '.spec.json');
+						if (exists) {
+							await loadForSpec(filename);
+						}
+					});
+					it('should load tags & save tags & compare tags', async () => {
+						await loadSaveCompare(filename);
+					});
 					if (path.extname(filename) !== '.id3') {
 						it('should read mpeg frames', async () => {
 							await loadFramesCompare(filename);

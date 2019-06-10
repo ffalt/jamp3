@@ -157,7 +157,7 @@ export class MP3 {
 
 	async removeTags(filename: string, opts: IMP3.RemoveTagsOptions): Promise<{ id3v2: boolean, id3v1: boolean } | undefined> {
 		const stat = await fse.stat(filename);
-		const readerOpts: MP3ReaderOptions = {streamSize: stat.size, id3v2: opts.id3v2, detectDuplicateID3v2: opts.id3v2, id3v1: opts.id3v1};
+		const readerOpts: MP3ReaderOptions = {streamSize: stat.size, id3v2: opts.id3v2, detectDuplicateID3v2: opts.id3v2, id3v1: opts.id3v1, mpegQuick: opts.id3v2};
 		let id2v1removed = false;
 		let id2v2removed = false;
 		await updateFile(filename, readerOpts, !!opts.keepBackup,
@@ -174,9 +174,11 @@ export class MP3 {
 			async (layout, fileWriter): Promise<void> => {
 				let start = 0;
 				let finish = stat.size;
+				let specEnd = 0;
 				for (const tag of layout.tags) {
 					if (tag.id === ITagID.ID3v2 && opts.id3v2) {
 						if (start < tag.end) {
+							specEnd = (tag as IID3V2.RawTag).head.size + tag.start + 10 /*header itself*/;
 							start = tag.end;
 							id2v2removed = true;
 						}
@@ -185,6 +187,14 @@ export class MP3 {
 							finish = tag.start;
 							id2v1removed = true;
 						}
+					}
+				}
+				if (opts.id3v2) {
+					if (layout.frameheaders.length > 0) {
+						const mediastart = rawHeaderOffSet(layout.frameheaders[0]);
+						start = specEnd < mediastart ? specEnd : mediastart;
+					} else {
+						start = Math.max(start, specEnd);
 					}
 				}
 				if (finish > start) {

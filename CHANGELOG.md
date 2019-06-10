@@ -1,3 +1,11 @@
+<a name="0.3.10"></a>
+# 0.3.10 (2019/06/10)
+### Bug Fixes
+* MP3.removeTags/ID3v2.updateTag: remove padding between id3v2 and audio
+
+### Features
+ID3v2.write(): optional padding size parameter
+
 <a name="0.3.9"></a>
 # 0.3.9 (2019/06/04)
 ### Features
