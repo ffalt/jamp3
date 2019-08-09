@@ -1,5 +1,5 @@
 import iconv from 'iconv-lite';
-import Debug from 'debug';
+// import Debug from 'debug';
 import {BufferUtils} from './buffer';
 
 // const debug = Debug('encodings');
