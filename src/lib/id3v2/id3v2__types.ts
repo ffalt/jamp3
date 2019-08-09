@@ -254,6 +254,8 @@ export namespace IID3V2 {
 	}
 
 	export interface TagSimplified {
+		[name: string]: string | undefined;
+
 		ACOUSTID_FINGERPRINT?: string;
 		ACOUSTID_ID?: string;
 		ALBUM?: string;

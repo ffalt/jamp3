@@ -22,6 +22,7 @@ const TXXXMap: { [key: string]: string; } = {
 	'Acoustid Fingerprint': 'ACOUSTID_FINGERPRINT',
 	'Acoustid Id': 'ACOUSTID_ID',
 	'MusicBrainz Recording Id': 'MUSICBRAINZ_TRACKID',
+	'MusicBrainz Track Id': 'MUSICBRAINZ_TRACKID',
 	'MusicBrainz Disc Id': 'MUSICBRAINZ_DISCID',
 	'MusicBrainz TRM Id': 'MUSICBRAINZ_TRMID',
 	'MusicBrainz Work Id': 'MUSICBRAINZ_WORKID',
