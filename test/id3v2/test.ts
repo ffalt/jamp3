@@ -1,56 +1,19 @@
-import {expect, should, use} from 'chai';
+import {should, use} from 'chai';
 import {describe, it, run} from 'mocha';
-import fse from 'fs-extra';
 import {ID3v2} from '../../src/lib/id3v2/id3v2';
 import chaiExclude from 'chai-exclude';
-import Debug from 'debug';
-import {compareID3v2Spec} from './id3v2spec';
-import {compareID3v2Save} from './id3v2compare';
-import {ID3v2TestDirectories, ID3v2TestPath} from './id3v2config';
+import {ID3v2TestDirectories, ID3v2TestPath} from './id3v2_test_config';
 import {collectTestFiles} from '../common/common';
-
-const debug = Debug('id3v2-test');
+import {testLoadSaveCompare} from './id3v2_test_load-save-compare';
+import {testLoadSaveSpec} from './id3v2_test_spec';
 
 use(chaiExclude);
 
-const id3 = new ID3v2();
-
 const testSingleFile: string | undefined = undefined;
-
-// const testSingleFile = '22TCP';
-
-async function loadSaveSpec(filename: string): Promise<void> {
-	debug('loadSaveSpec', 'loading', filename);
-	let tag = await id3.read(filename);
-	if (tag && tag.head && !tag.head.valid) {
-		console.log('invalid id3v2 tag found', filename);
-		tag = undefined;
-	}
-	should().exist(tag);
-	if (!tag) {
-		return;
-	}
-	should().exist(tag.head);
-	await compareID3v2Spec(filename, tag);
-}
-
-async function loadSaveCompare(filename: string): Promise<void> {
-	debug('id3v2test', 'loading', filename);
-	let tag = await id3.read(filename);
-	if (tag && tag.head && !tag.head.valid) {
-		console.log('invalid id3v2 tag found', filename);
-		tag = undefined;
-	}
-	should().exist(tag);
-	if (!tag) {
-		return;
-	}
-	should().exist(tag.head);
-	await compareID3v2Save(filename, tag);
-}
 
 describe('ID3v2', async () => {
 	it('should reject the promise not send an unhandled stream error', (done) => {
+		const id3 = new ID3v2();
 		id3.read('notexistingfilename').then(() => {
 			throw new Error('should not return success');
 		}).catch(e => {
@@ -62,13 +25,10 @@ describe('ID3v2', async () => {
 	for (const file of files) {
 		describe(file.slice(ID3v2TestPath.length), () => {
 			it('should load & save & compare', async () => {
-				await loadSaveCompare(file);
+				await testLoadSaveCompare(file);
 			});
 			it('should load & compare to spec', async () => {
-				const exists = await fse.pathExists(file + '.spec.json');
-				if (exists) {
-					await loadSaveSpec(file);
-				}
+				await testLoadSaveSpec(file);
 			});
 		});
 	}

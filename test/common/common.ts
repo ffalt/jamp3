@@ -37,3 +37,11 @@ export async function collectTestFiles(dirs: Array<string>, rootDir: string, tes
 	}
 	return files;
 }
+
+export async function hasSpec(filename: string): Promise<any> {
+	return (await fse.pathExists(filename + '.spec.json'));
+}
+
+export async function loadSpec(filename: string): Promise<any> {
+	return await fse.readJSON(filename + '.spec.json');
+}

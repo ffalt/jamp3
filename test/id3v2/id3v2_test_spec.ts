@@ -1,11 +1,15 @@
 import {expect, should, use} from 'chai';
 import 'mocha';
-import {IID3V2} from '../../src';
-import chaiExclude from 'chai-exclude';
-import {toNonBinJson} from '../common/common';
+import {ID3v2, IID3V2} from '../../src';
+import {loadSpec, toNonBinJson} from '../common/common';
 import fse from 'fs-extra';
+import Debug from 'debug';
+import chaiExclude from 'chai-exclude';
+import {childOfKind} from 'tslint';
 
 use(chaiExclude);
+
+const debug = Debug('id3v2-test');
 
 function compareID3v2SpecFrame(filename: string, framespec: any, frame: IID3V2.Frame) {
 	const frameHead = frame.head;
@@ -41,12 +45,12 @@ function compareID3v2SpecFrame(filename: string, framespec: any, frame: IID3V2.F
 	if (framespec.subframes) {
 		should().exist(frame.subframes);
 		if (frame.subframes) {
-			compareeID3v2SpecFrames(filename, framespec.subframes, frame.subframes);
+			compareID3v2SpecFrames(filename, framespec.subframes, frame.subframes);
 		}
 	}
 }
 
-function compareeID3v2SpecFrames(filename: string, specframes: Array<any>, frames: Array<IID3V2.Frame>) {
+function compareID3v2SpecFrames(filename: string, specframes: Array<any>, frames: Array<IID3V2.Frame>) {
 	(specframes || []).forEach((framespec: any) => {
 		const list: Array<IID3V2.Frame> = frames.filter(f => f.id === framespec.id);
 		if (list.length === 0) {
@@ -150,7 +154,7 @@ function compareeID3v2SpecFrames(filename: string, specframes: Array<any>, frame
 }
 
 export async function compareID3v2Spec(filename: string, tag: IID3V2.Tag | undefined): Promise<void> {
-	const spec = await fse.readJSON(filename + '.spec.json');
+	const spec = await loadSpec(filename);
 	if (!spec.id3v2) {
 		if (tag) {
 			if (tag.head) {
@@ -167,6 +171,22 @@ export async function compareID3v2Spec(filename: string, tag: IID3V2.Tag | undef
 	if (tag.head) {
 		expect(tag.head.ver).to.equal(spec.id3v2.ver, 'wrong id3v2 version');
 	}
-	compareeID3v2SpecFrames(filename, spec.id3v2.frames, tag.frames);
+	compareID3v2SpecFrames(filename, spec.id3v2.frames, tag.frames);
 	expect(tag.frames.length).to.equal(spec.id3v2.frames ? spec.id3v2.frames.length : 0, 'Invalid frame count ' + toNonBinJson(tag.frames));
+}
+
+export async function testLoadSaveSpec(filename: string): Promise<void> {
+	const id3 = new ID3v2();
+	debug('LoadSaveSpec', 'loading', filename);
+	let tag = await id3.read(filename);
+	if (tag && tag.head && !tag.head.valid) {
+		console.log('invalid id3v2 tag found', filename);
+		tag = undefined;
+	}
+	should().exist(tag);
+	if (!tag) {
+		return;
+	}
+	should().exist(tag.head);
+	await compareID3v2Spec(filename, tag);
 }
