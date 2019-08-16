@@ -2,7 +2,7 @@ import {IMP3} from './mp3__types';
 import {ReaderStream} from '../common/streams';
 import {ID3v1Reader} from '../id3v1/id3v1_reader';
 import {ID3v2Reader} from '../id3v2/id3v2_reader';
-import {colapseRawHeader, MPEGFrameReader} from './mp3_frame';
+import {collapseRawHeader, MPEGFrameReader} from './mp3_frame';
 import {BufferUtils} from '../common/buffer';
 import {getBestMPEGChain} from './mp3_frames';
 import {Readable} from 'stream';
@@ -185,7 +185,7 @@ export class MP3Reader {
 					if (header) {
 						if (!this.scanMPEGFrame) {
 							header.offset = this.stream.pos - chunk.length + i;
-							this.layout.frameheaders.push(colapseRawHeader(header));
+							this.layout.frameheaders.push(collapseRawHeader(header));
 						} else {
 							if (demandData()) {
 								return true;

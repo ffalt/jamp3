@@ -7,7 +7,7 @@ import {
 import {IMP3} from './mp3__types';
 import {isBit} from '../common/utils';
 
-export function colapseRawHeader(header: IMP3.FrameRawHeader): IMP3.FrameRawHeaderArray {
+export function collapseRawHeader(header: IMP3.FrameRawHeader): IMP3.FrameRawHeaderArray {
 	return [
 		header.offset,
 		header.size,
@@ -397,7 +397,7 @@ export class MPEGFrameReader {
 	}
 
 	public readFrame(chunk: Buffer, offset: number, header: IMP3.FrameRawHeader): { offset: number, frame: IMP3.RawFrame } {
-		const frame: IMP3.RawFrame = {header: colapseRawHeader(header)};
+		const frame: IMP3.RawFrame = {header: collapseRawHeader(header)};
 		let off = 0;
 		const length = offset + Math.min(40, chunk.length - 4 - offset);
 		for (let i = offset; i < length; i++) {
