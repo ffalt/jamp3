@@ -201,7 +201,7 @@ export class ID3v2Reader {
 				}
 			};
 		}
-		head.valid = head.size >= 0;
+		head.valid = head.size >= 0 && head.ver <= 4;
 		return head;
 	}
 
