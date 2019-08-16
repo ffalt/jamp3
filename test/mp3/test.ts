@@ -2,7 +2,8 @@ import {use} from 'chai';
 import {describe, it, run} from 'mocha';
 import chaiExclude from 'chai-exclude';
 import path from 'path';
-import {MP3} from '../../src';
+
+import {MP3} from '../../src/lib/mp3/mp3';
 import {ID3v2TestDirectories, ID3v2TestPath} from '../id3v2/id3v2_test_config';
 import {ID3v1TestDirectories, ID3v1TestPath} from '../id3v1/id3v1_test_config';
 import {collectTestFiles} from '../common/common';
@@ -31,7 +32,7 @@ describe('MP3', async () => {
 		roots.push({root: test.dir, files: await collectTestFiles(test.dirs, test.dir, testSingleFile)});
 	}
 	for (const root of roots) {
-		describe(root.root, () => {
+		describe('MP3: ' + root.root, () => {
 			for (const filename of root.files) {
 				describe(filename.slice(root.root.length), () => {
 					it('should load & compare to spec', async () => {

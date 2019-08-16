@@ -1,8 +1,9 @@
 import {should} from 'chai';
+import Debug from 'debug';
+
 import {compareID3v1Save} from '../id3v1/id3v1_test_compare';
 import {compareID3v2Save} from '../id3v2/id3v2_test_compare';
-import Debug from 'debug';
-import {MP3} from '../../src';
+import {MP3} from '../../src/lib/mp3/mp3';
 
 const debug = Debug('mp3-test');
 

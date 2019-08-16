@@ -1,17 +1,16 @@
 import {expect, should, use} from 'chai';
+import chaiExclude from 'chai-exclude';
 import fse from 'fs-extra';
 import tmp from 'tmp';
-import 'mocha';
+import Debug from 'debug';
+
 import {ID3v1} from '../../src/lib/id3v1/id3v1';
 import {IID3V1} from '../../src/lib/id3v1/id3v1__types';
-import chaiExclude from 'chai-exclude';
-import Debug from 'debug';
-import {ITagID} from '../../src';
+import {ITagID} from '../../src/lib/common/types';
 import {loadSpec, wait} from '../common/common';
 
-const debug = Debug('id3v1-test');
-
 use(chaiExclude);
+const debug = Debug('id3v1-test');
 
 async function compareTags(a: IID3V1.Tag, b: IID3V1.Tag): Promise<void> {
 	expect(b.version).to.equal(a.version);
@@ -74,6 +73,7 @@ export async function compareID3v1Save(filename: string, tag: IID3V1.Tag): Promi
 		file.removeCallback();
 		return Promise.reject(e);
 	}
+	file.removeCallback();
 }
 
 export async function testOverWriteMock(filename: string): Promise<void> {
@@ -104,4 +104,5 @@ export async function testOverWriteMock(filename: string): Promise<void> {
 		file.removeCallback();
 		return Promise.reject(e);
 	}
+	file.removeCallback();
 }

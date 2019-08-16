@@ -1,11 +1,11 @@
 import {expect, should, use} from 'chai';
 import 'mocha';
-import {ID3v2, IID3V2} from '../../src';
 import {loadSpec, toNonBinJson} from '../common/common';
-import fse from 'fs-extra';
 import Debug from 'debug';
 import chaiExclude from 'chai-exclude';
-import {childOfKind} from 'tslint';
+
+import {IID3V2} from '../../src/lib/id3v2/id3v2__types';
+import {ID3v2} from '../../src/lib/id3v2/id3v2';
 
 use(chaiExclude);
 

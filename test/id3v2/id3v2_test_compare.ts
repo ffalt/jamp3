@@ -1,18 +1,18 @@
 import {expect, should, use} from 'chai';
 import fse from 'fs-extra';
 import tmp from 'tmp';
-import 'mocha';
-import {ID3v2} from '../../src/lib/id3v2/id3v2';
-import {IID3V2, MP3} from '../../src';
 import chaiExclude from 'chai-exclude';
+import Debug from 'debug';
+
+import {ID3v2} from '../../src/lib/id3v2/id3v2';
+import {IID3V2} from '../../src/lib/id3v2/id3v2__types';
+import {MP3} from '../../src/lib/mp3/mp3';
 import {BufferUtils} from '../../src/lib/common/buffer';
 import {ensureID3v2FrameVersionDef, matchFrame} from '../../src/lib/id3v2/id3v2_frames';
-import Debug from 'debug';
 import {rawHeaderOffSet} from '../../src/lib/mp3/mp3_frame';
 
-const debug = Debug('id3v2-compare');
-
 use(chaiExclude);
+const debug = Debug('id3v2-compare');
 
 export async function compareID3v2Tags(a: IID3V2.Tag, b: IID3V2.Tag): Promise<void> {
 	expect(b.frames.length).to.equal(a.frames.length, 'Not the same frame count: ' + b.frames.map(f => f.id) + ' vs. ' + a.frames.map(f => f.id));
@@ -102,4 +102,5 @@ export async function compareID3v2Save(filename: string, tag: IID3V2.Tag): Promi
 		file.removeCallback();
 		return Promise.reject(e);
 	}
+	file.removeCallback();
 }

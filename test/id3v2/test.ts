@@ -1,11 +1,13 @@
 import {should, use} from 'chai';
 import {describe, it, run} from 'mocha';
-import {ID3v2} from '../../src/lib/id3v2/id3v2';
 import chaiExclude from 'chai-exclude';
-import {ID3v2TestDirectories, ID3v2TestPath} from './id3v2_test_config';
+
+import {ID3v2} from '../../src/lib/id3v2/id3v2';
+
 import {collectTestFiles} from '../common/common';
 import {testLoadSaveCompare} from './id3v2_test_load-save-compare';
 import {testLoadSaveSpec} from './id3v2_test_spec';
+import {ID3v2TestDirectories, ID3v2TestPath} from './id3v2_test_config';
 
 use(chaiExclude);
 
@@ -23,7 +25,7 @@ describe('ID3v2', async () => {
 	});
 	const files: Array<string> = await collectTestFiles(ID3v2TestDirectories, ID3v2TestPath, testSingleFile);
 	for (const file of files) {
-		describe(file.slice(ID3v2TestPath.length), () => {
+		describe('ID3v2: ' + file.slice(ID3v2TestPath.length), () => {
 			it('should load & save & compare', async () => {
 				await testLoadSaveCompare(file);
 			});

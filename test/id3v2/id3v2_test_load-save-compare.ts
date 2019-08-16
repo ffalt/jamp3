@@ -1,7 +1,8 @@
 import {should} from 'chai';
-import {compareID3v2Save} from './id3v2_test_compare';
-import {ID3v2} from '../../src';
 import Debug from 'debug';
+
+import {compareID3v2Save} from './id3v2_test_compare';
+import {ID3v2} from '../../src/lib/id3v2/id3v2';
 
 const debug = Debug('id3v2-test');
 

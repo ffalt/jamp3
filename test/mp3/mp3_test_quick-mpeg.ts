@@ -1,9 +1,10 @@
 import fse from 'fs-extra';
-import {ITestSpec} from '../common/test-spec';
 import {expect, should} from 'chai';
-import {rawHeaderSize} from '../../src/lib/mp3/mp3_frame';
 import Debug from 'debug';
-import {MP3} from '../../src';
+
+import {ITestSpec} from '../common/test-spec';
+import {rawHeaderSize} from '../../src/lib/mp3/mp3_frame';
+import {MP3} from '../../src/lib/mp3/mp3';
 
 const debug = Debug('mp3-test');
 

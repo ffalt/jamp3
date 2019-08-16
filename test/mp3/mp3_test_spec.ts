@@ -1,8 +1,9 @@
 import {should} from 'chai';
+import Debug from 'debug';
+
 import {compareID3v1Spec} from '../id3v1/id3v1_test_compare';
 import {compareID3v2Spec} from '../id3v2/id3v2_test_spec';
-import Debug from 'debug';
-import {MP3} from '../../src';
+import {MP3} from '../../src/lib/mp3/mp3';
 import {hasSpec} from '../common/common';
 
 const debug = Debug('mp3-test');

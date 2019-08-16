@@ -1,10 +1,11 @@
 import {expect, should} from 'chai';
-import 'mocha';
-import {BufferUtils} from '../../src/lib/common/buffer';
-import {DataReader, MemoryWriterStream} from '../../src/lib/common/streams';
-import {synchsafe, unsynchsafe} from '../../src/lib/common/utils';
-import {ID3v2_ENCODINGS} from '../../src/lib/id3v2/id3v2_consts';
-import {ID3v2_ValuePicTypes, IID3V2} from '../../src';
+import {describe, it, run} from 'mocha';
+
+import {BufferUtils} from '../../../src/lib/common/buffer';
+import {DataReader, MemoryWriterStream} from '../../../src/lib/common/streams';
+import {synchsafe, unsynchsafe} from '../../../src/lib/common/utils';
+import {ID3v2_ENCODINGS} from '../../../src/lib/id3v2/id3v2_consts';
+import {ID3v2_ValuePicTypes, IID3V2} from '../../../src/lib/id3v2/id3v2__types';
 import {
 	FrameAsciiValue,
 	FrameIdAscii,
@@ -19,7 +20,7 @@ import {
 	FrameText,
 	FrameUnknown,
 	IFrameImpl
-} from '../../src/lib/id3v2/id3v2_frame';
+} from '../../../src/lib/id3v2/id3v2_frame';
 
 describe('SyncSaveInt', function() {
 	it('should calculate back & forth', function() {
@@ -255,6 +256,7 @@ describe('ID3v2Frames', () => {
 			});
 		});
 	});
-
-
+	setTimeout(() => {
+		run(); // https://github.com/mochajs/mocha/issues/2221#issuecomment-214636042
+	});
 });
