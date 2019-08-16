@@ -1,16 +1,19 @@
-import {expect} from 'chai';
+import {expect, should} from 'chai';
 import {describe, it, run} from 'mocha';
 import fse from 'fs-extra';
 import tmp from 'tmp';
 
 import {ID3v2} from '../../../src/lib/id3v2/id3v2';
 import {ID3V24TagBuilder} from '../../../src/lib/id3v2/id3v2_builder24';
+import {toNonBinJson} from '../../common/common';
+import {BufferUtils} from '../../../src/lib/common/buffer';
+
+const testNumber = 5;
+const testString = 'räksmörgåsЪЭЯ😀';
+const testLanguage = 'xYz';
+const testBuffer = Buffer.alloc(10, 0);
 
 async function fill24Builder(builder: ID3V24TagBuilder): Promise<void> {
-	const testNumber = 5;
-	const testString = 'dfdf';
-	const testLanguage = 'xYz';
-	const testBuffer = Buffer.alloc(10, 0);
 	builder
 		.acoustidFingerprint(testString)
 		.acoustidID(testString)
@@ -126,7 +129,7 @@ async function fill24Builder(builder: ID3V24TagBuilder): Promise<void> {
 		.track(testNumber, testNumber)
 		.trackLength(testNumber)
 		.uniqueFileID(testString, testString)
-		.unknown('___', testBuffer)
+		.unknown('TTTT', testBuffer)
 		.url(testString, testString)
 		.website(testString)
 		.work(testString)
@@ -141,8 +144,16 @@ async function test24Builder(encoding: string): Promise<void> {
 		await fse.remove(file.name);
 		const id3 = new ID3v2();
 		await id3.writeBuilder(file.name, builder, {keepBackup: false, paddingSize: 0});
-		const data = id3.read(file.name);
-		console.log(data);
+		const frames = builder.buildFrames();
+		const data = await id3.read(file.name);
+		should().exist(data);
+		if (!data) {
+			file.removeCallback();
+			return;
+		}
+		expect(data.frames.length).to.equal(frames.length, 'frames.length does not match');
+		// console.log(toNonBinJson(data));
+		// await id3.writeBuilder('test-' + encoding + '.id3', builder, {keepBackup: false, paddingSize: 0});
 	} catch (e) {
 		file.removeCallback();
 		return Promise.reject(e);
@@ -164,25 +175,3 @@ describe('ID3v24Builder', async () => {
 		run(); // https://github.com/mochajs/mocha/issues/2221#issuecomment-214636042
 	});
 });
-/*
-import {expect, use} from 'chai';
-import {describe, it, run} from 'mocha';
-import chaiExclude from 'chai-exclude';
-import 'mocha';
-import {ID3v2, ID3V24TagBuilder} from '../../src';
-
-use(chaiExclude);
-
-describe('ID3v24Builder', async () => {
-
-	describe('encodings', async () => {
-		for (const testValue of ['iso-8859-1', 'ucs2', 'utf16-be', 'utf8']) {
-			it(testValue, async () => {
-				// await test24Builder(testValue);
-			});
-		}
-	});
-
-	run(); // https://github.com/mochajs/mocha/issues/2221#issuecomment-214636042
-});
-*/

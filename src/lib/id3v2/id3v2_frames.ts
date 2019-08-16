@@ -1829,7 +1829,7 @@ export const FrameDefs: { [id: string]: IFrameDef } = {
 	'TKWD': {
 		title: 'Podcast Keywords',
 		versions: [3, 4],
-		impl: FrameUnknown
+		impl: FrameText
 	},
 	'TGID': {
 		title: 'Podcast URL',
@@ -1838,6 +1838,11 @@ export const FrameDefs: { [id: string]: IFrameDef } = {
 	},
 	'WFED': {
 		title: 'Podcast feed URL',
+		versions: [3, 4],
+		impl: FrameText
+	},
+	'GRP1': {
+		title: 'Work',
 		versions: [3, 4],
 		impl: FrameText
 	},

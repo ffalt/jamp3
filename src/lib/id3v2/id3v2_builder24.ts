@@ -218,7 +218,7 @@ export class ID3V24TagBuilder implements ID3v2Builder {
 	}
 
 	grouping(value?: string): ID3V24TagBuilder {
-		this.rawBuilder.text('GRP1', value);
+		this.rawBuilder.text('TIT1', value);
 		return this;
 	}
 
@@ -617,13 +617,13 @@ export class ID3V24TagBuilder implements ID3v2Builder {
 		return this;
 	}
 
-	work(value?: string): ID3V24TagBuilder {
-		this.rawBuilder.text('TIT1', value);
+	writer(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.idText('TXXX', 'Writer', value);
 		return this;
 	}
 
-	writer(value?: string): ID3V24TagBuilder {
-		this.rawBuilder.idText('TXXX', 'Writer', value);
+	work(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.text('GRP1', value);
 		return this;
 	}
 
