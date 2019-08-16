@@ -7,7 +7,7 @@ import {IID3V2} from './id3v2__types';
 import {fileRangeToBuffer} from '../common/utils';
 import {Readable} from 'stream';
 import {updateFile} from '../common/update-file';
-import {ITagID} from '../..';
+import {ID3v2Builder, ITagID} from '../..';
 import {rawHeaderOffSet} from '../mp3/mp3_frame';
 
 export async function buildID3v2(tag: IID3V2.RawTag): Promise<IID3V2.Tag> {
@@ -111,6 +111,10 @@ export class ID3v2 {
 			await fileWriter.copyFrom(filename, start);
 		});
 		return removed;
+	}
+
+	async writeBuilder(filename: string, builder: ID3v2Builder, options: IID3V2.WriteOptions): Promise<void> {
+		await this.write(filename, {frames: builder.buildFrames()}, builder.version(), builder.rev(), options);
 	}
 
 	async write(filename: string, tag: IID3V2.ID3v2, version: number, rev: number, options: IID3V2.WriteOptions): Promise<void> {
