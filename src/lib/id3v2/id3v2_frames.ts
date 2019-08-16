@@ -6,9 +6,33 @@ import {buildID3v2} from './id3v2';
 import * as zlib from 'zlib';
 import {Id3v2RawWriter} from './id3v2_writer';
 import {
-	FrameAENC, FrameAsciiValue, FrameCHAP, FrameCTOC, FrameETCO, FrameGEOB, FrameIdAscii, FrameIdBin, FrameIdText,
-	FrameLangDescText, FrameLangText, FrameLINK, FrameMusicCDId, FramePartOfCompilation, FramePCST,
-	FramePic, FramePlayCounter, FramePopularimeter, FrameRelativeVolumeAdjustment, FrameRelativeVolumeAdjustment2, FrameRGAD, FrameSYLT, FrameText, FrameTextConcatList, FrameTextList, FrameUnknown, IFrameImpl
+	FrameAENC,
+	FrameAsciiValue,
+	FrameCHAP,
+	FrameCTOC,
+	FrameETCO,
+	FrameGEOB,
+	FrameIdAscii,
+	FrameIdBin,
+	FrameIdText,
+	FrameLangDescText,
+	FrameLangText,
+	FrameLINK,
+	FrameMusicCDId,
+	FramePartOfCompilation,
+	FramePCST,
+	FramePic,
+	FramePlayCounter,
+	FramePopularimeter,
+	FrameRelativeVolumeAdjustment,
+	FrameRelativeVolumeAdjustment2,
+	FrameRGAD,
+	FrameSYLT,
+	FrameText,
+	FrameTextConcatList,
+	FrameTextList,
+	FrameUnknown,
+	IFrameImpl
 } from './id3v2_frame';
 import {IID3V2} from './id3v2__types';
 import {IEncoding} from '../common/encodings';
@@ -2051,7 +2075,7 @@ async function writeToRawFrame(frame: IID3V2.Frame, head: IID3V2.TagHeader): Pro
 		}
 	}
 
-	if (frameHead.formatFlags.grouping) {
+	if (frameHead.formatFlags && frameHead.formatFlags.grouping) {
 		if (frame.groupId === undefined) {
 			return Promise.reject(Error('Missing frame groupId but flag is set'));
 		}
@@ -2060,7 +2084,7 @@ async function writeToRawFrame(frame: IID3V2.Frame, head: IID3V2.TagHeader): Pro
 		data = BufferUtils.concatBuffer(buf, data);
 	}
 
-	return {id: id, start: 0, end: 0, size: data.length, data: data, statusFlags: frameHead.statusFlags, formatFlags: frameHead.formatFlags};
+	return {id: id, start: 0, end: 0, size: data.length, data: data, statusFlags: frameHead.statusFlags || {}, formatFlags: frameHead.formatFlags || {}};
 }
 
 export function isKnownFrameId(id: string): boolean {
@@ -2125,12 +2149,11 @@ export function upgrade23DateFramesTov24Date(dateFrames: Array<IID3V2.Frame>): I
 	if (time && time.value && time.value.hasOwnProperty('text')) {
 		result.push((<IID3V2.FrameValue.Text>time.value).text);
 	}
-	const frame: IID3V2.Frame = {
+	return {
 		id: 'TDRC',
 		title: 'Recording time',
 		value: {text: result.join('-')}
 	};
-	return frame;
 }
 
 export function ensureID3v2FrameVersionDef(id: string, dest: number): string | null {

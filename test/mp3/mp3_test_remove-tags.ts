@@ -23,9 +23,9 @@ async function removeID3v1TagsTest(filename: string, before: IMP3.Result): Promi
 		const mp3 = new MP3();
 		const result = await mp3.removeTags(file.name, {id3v1: true, id3v2: false});
 		const after = await mp3.read(file.name, {id3v1: true, id3v2: true, mpeg: true});
+		file.removeCallback();
 		should().exist(result);
 		if (!result) {
-			file.removeCallback();
 			return;
 		}
 		expect(result.id3v1).to.equal(true, 'result should report removed id3v1 tag (id3v1.remove)');
@@ -37,7 +37,6 @@ async function removeID3v1TagsTest(filename: string, before: IMP3.Result): Promi
 		file.removeCallback();
 		return Promise.reject(e);
 	}
-	file.removeCallback();
 }
 
 async function removeID3v2TagsTest(filename: string, before: IMP3.Result): Promise<void> {

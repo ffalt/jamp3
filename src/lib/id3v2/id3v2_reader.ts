@@ -3,7 +3,7 @@ import {isValidFrameBinId} from './id3v2_frames';
 import {bitarray, flags, removeZeroString, unsynchsafe} from '../common/utils';
 import {Markers} from '../common/marker';
 import {BufferUtils} from '../common/buffer';
-import {ID3v2_FRAME_FLAGS1, ID3v2_FRAME_FLAGS2, ID3v2_FRAME_HEADER_LENGTHS, ID3v2_EXTHEADER, ID3v2_HEADER_FLAGS, ID3v2_HEADER, ID3v2_FRAME_HEADER, ID3v2_MARKER} from './id3v2_consts';
+import {ID3v2_EXTHEADER, ID3v2_FRAME_FLAGS1, ID3v2_FRAME_FLAGS2, ID3v2_FRAME_HEADER, ID3v2_FRAME_HEADER_LENGTHS, ID3v2_HEADER, ID3v2_MARKER} from './id3v2_consts';
 import {IID3V2} from './id3v2__types';
 import {Readable} from 'stream';
 import {ITagID} from '../..';
@@ -214,8 +214,7 @@ export class ID3v2Reader {
 		const reader = new ReaderStream();
 		try {
 			await reader.openStream(stream);
-			const tag = await this.readReaderStream(reader);
-			return tag;
+			return await this.readReaderStream(reader);
 		} catch (e) {
 			return Promise.reject(e);
 		}

@@ -1,7 +1,7 @@
-const ID3v1 = require('jamp3').ID3v1;
+const jamp3 = require('jamp3');
 
 function run() {
-	const id3v1 = new ID3v1();
+	const id3v1 = new jamp3.ID3v1();
 	const filename = 'demo.mp3';
 	const options = {
 		keepBackup: true // keep a filename.mp3.bak copy of the original file

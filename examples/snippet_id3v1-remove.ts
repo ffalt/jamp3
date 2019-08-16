@@ -1,4 +1,4 @@
-import {ID3v1, IID3V1} from '../src'; // 'jamp3'
+import {ID3v1, IID3V1} from '../src'; // 'jamp3';
 
 async function run(): Promise<void> {
 	const id3v1 = new ID3v1();

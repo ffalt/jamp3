@@ -1,4 +1,4 @@
-const jamp3 = require('../src');//('jamp3')
+const jamp3 = require('jamp3');
 
 function run() {
 	const id3v1 = new jamp3.ID3v1();

@@ -86,8 +86,7 @@ export class ID3v1Reader {
 		const reader = new ReaderStream();
 		try {
 			await reader.openStream(stream);
-			const tag = await this.readReaderStream(reader);
-			return tag;
+			return await this.readReaderStream(reader);
 		} catch (e) {
 			return Promise.reject(e);
 		}

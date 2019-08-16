@@ -1,8 +1,14 @@
 import {IID3V2} from './id3v2__types';
 import {ID3v2Builder, ID3V2RawBuilder} from './id3v2_builder';
-import {ITagID} from '../..';
+import {ITagID} from '../common/types';
 
 export class ID3V24TagBuilder implements ID3v2Builder {
+	public static encodings = {
+		iso88591: 'iso-8859-1',
+		ucs2: 'ucs2',
+		utf16be: 'utf16-be',
+		utf8: 'utf8'
+	};
 	rawBuilder: ID3V2RawBuilder;
 
 	constructor(encoding?: string) {
@@ -30,7 +36,7 @@ export class ID3V24TagBuilder implements ID3v2Builder {
 	}
 
 	buildTag(): IID3V2.Tag {
-		const result: IID3V2.Tag = {
+		return {
 			id: ITagID.ID3v2,
 			head: {
 				ver: 4,
@@ -42,7 +48,6 @@ export class ID3V24TagBuilder implements ID3v2Builder {
 			end: 0,
 			frames: this.buildFrames()
 		};
-		return result;
 	}
 
 	//
@@ -529,7 +534,7 @@ export class ID3V24TagBuilder implements ID3v2Builder {
 		return this;
 	}
 
-	relativeVolumeAdjustment2(id: string, channels: Array<{ type: number; adjustment: number; peak?: number }>) : ID3V24TagBuilder{
+	relativeVolumeAdjustment2(id: string, channels: Array<{ type: number; adjustment: number; peak?: number }>): ID3V24TagBuilder {
 		this.rawBuilder.relativeVolumeAdjustment2('RVA2', id, channels);
 		return this;
 	}

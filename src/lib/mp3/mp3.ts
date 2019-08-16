@@ -197,8 +197,7 @@ export class MP3 {
 				}
 				if (options.id3v2) {
 					if (layout.frameheaders.length > 0) {
-						const mediastart = rawHeaderOffSet(layout.frameheaders[0]);
-						start = mediastart;
+						start = rawHeaderOffSet(layout.frameheaders[0]);
 					} else {
 						start = Math.max(start, specEnd);
 					}

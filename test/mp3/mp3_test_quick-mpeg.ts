@@ -12,7 +12,7 @@ export async function testQuickMPEG(filename: string): Promise<void> {
 	debug('QuickMPEG', 'loading', filename);
 	const exists = await fse.pathExists(filename + '.frames.json');
 	if (!exists) {
-		throw new Error('Testset incomplete, missing filename.frames.json')
+		throw new Error('Testset incomplete, missing filename.frames.json');
 	}
 	const mp3 = new MP3();
 	const compare: ITestSpec = await fse.readJSON(filename + '.frames.json');

@@ -3,9 +3,6 @@ import {unflags} from '../common/utils';
 import {ID3v2_FRAME_FLAGS1, ID3v2_FRAME_FLAGS2, ID3v2_FRAME_HEADER_LENGTHS, ID3v2_EXTHEADER, ID3v2_HEADER_FLAGS, ID3v2_FRAME_HEADER} from './id3v2_consts';
 import {IID3V2} from './id3v2__types';
 import {BufferUtils} from '../common/buffer';
-import Debug from 'debug';
-
-const debug = Debug('id3v2-writer');
 
 export interface Id3v2RawWriterOptions {
 	paddingSize?: number;
@@ -80,7 +77,7 @@ export class Id3v2RawWriter {
 		this.stream.writeByte(this.head.ver);  // ID3v2 version
 		this.stream.writeByte(this.head.rev); // ID3v2 rev version
 
-		let footerSize = 0;
+		const footerSize = 0;
 		let extendedHeaderBuffer: Buffer | undefined;
 		let flagBits: Array<number>;
 
@@ -571,8 +568,8 @@ export class Id3v2RawWriter {
 }
 
 
-export interface Id3v2WriterOptions
-	extends Id3v2RawWriterOptions {
+export interface Id3v2WriterOptions extends Id3v2RawWriterOptions {
+	paddingSize?: number;
 }
 
 export class ID3v2Writer {

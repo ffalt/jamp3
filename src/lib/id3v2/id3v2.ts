@@ -7,7 +7,8 @@ import {IID3V2} from './id3v2__types';
 import {fileRangeToBuffer} from '../common/utils';
 import {Readable} from 'stream';
 import {updateFile} from '../common/update-file';
-import {ID3v2Builder, ITagID} from '../..';
+import {ID3v2Builder} from './id3v2_builder';
+import {ITagID} from '../common/types';
 import {rawHeaderOffSet} from '../mp3/mp3_frame';
 
 export async function buildID3v2(tag: IID3V2.RawTag): Promise<IID3V2.Tag> {

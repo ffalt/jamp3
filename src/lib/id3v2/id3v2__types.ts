@@ -188,9 +188,9 @@ export namespace IID3V2 {
 
 	export interface FrameHeader {
 		encoding?: string;
-		statusFlags: Flags;
-		formatFlags: FormatFlags;
-		size: number;
+		statusFlags?: Flags;
+		formatFlags?: FormatFlags;
+		size?: number;
 	}
 
 	export interface Frame {
@@ -428,6 +428,7 @@ export namespace IID3V2 {
 	}
 
 	export interface WriteOptions extends Id3v2WriterOptions {
+		paddingSize?: number;
 		keepBackup?: boolean;
 	}
 }
