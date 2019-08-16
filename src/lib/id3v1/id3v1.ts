@@ -49,10 +49,10 @@ export class ID3v1 {
 		});
 	}
 
-	async remove(filename: string, opts: IID3V1.RemoveOptions): Promise<boolean> {
+	async remove(filename: string, options: IID3V1.RemoveOptions): Promise<boolean> {
 		const stat = await fse.stat(filename);
 		let removed = false;
-		await updateFile(filename, {id3v1: true}, !!opts.keepBackup, () => true, async (layout, fileWriter): Promise<void> => {
+		await updateFile(filename, {id3v1: true}, !!options.keepBackup, () => true, async (layout, fileWriter): Promise<void> => {
 			let finish = stat.size;
 			for (const t of layout.tags) {
 				if (t.id === ITagID.ID3v1) {
@@ -67,12 +67,12 @@ export class ID3v1 {
 		return removed;
 	}
 
-	async write(filename: string, tag: IID3V1.ID3v1Tag, version: number, opts: IID3V1.WriteOptions): Promise<void> {
+	async write(filename: string, tag: IID3V1.ID3v1Tag, version: number, options: IID3V1.WriteOptions): Promise<void> {
 		const exists = await fse.pathExists(filename);
 		if (!exists) {
 			await this.writeTag(filename, tag, version);
 		} else {
-			await this.replaceTag(filename, tag, version, !!opts.keepBackup);
+			await this.replaceTag(filename, tag, version, !!options.keepBackup);
 		}
 	}
 

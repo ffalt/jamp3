@@ -41,19 +41,19 @@ export function analyzeBitrateMode(frames: Array<IMP3.FrameRawHeaderArray>): { e
 
 export class MP3 {
 
-	async prepareResult(opts: IMP3.ReadOptions, layout: IMP3.RawLayout): Promise<IMP3.Result> {
+	async prepareResult(options: IMP3.ReadOptions, layout: IMP3.RawLayout): Promise<IMP3.Result> {
 		const id3v1s: Array<IID3V1.Tag> = <Array<IID3V1.Tag>>layout.tags.filter((o) => o.id === ITagID.ID3v1);
 		const result: IMP3.Result = {size: layout.size};
-		if (opts.raw) {
+		if (options.raw) {
 			result.raw = layout;
 		}
-		if (opts.id3v1 || opts.id3v1IfNotid3v2) {
+		if (options.id3v1 || options.id3v1IfNotid3v2) {
 			const id3v1: IID3V1.Tag | undefined = id3v1s.length > 0 ? id3v1s[id3v1s.length - 1] : undefined;
 			if (id3v1 && id3v1.end === layout.size) {
 				result.id3v1 = id3v1;
 			}
 		}
-		if (opts.mpeg || opts.mpegQuick) {
+		if (options.mpeg || options.mpegQuick) {
 			const mpeg: IMP3.MPEG = {
 				durationEstimate: 0,
 				durationRead: 0,
@@ -96,7 +96,7 @@ export class MP3 {
 			const bitRateMode = analyzeBitrateMode(chain);
 			mpeg.encoded = bitRateMode.encoded;
 			mpeg.bitRate = bitRateMode.bitRate;
-			if (opts.mpegQuick) {
+			if (options.mpegQuick) {
 				let audioBytes = layout.size;
 				if (chain.length > 0) {
 					audioBytes -= rawHeaderOffSet(chain[0]);
@@ -136,36 +136,42 @@ export class MP3 {
 
 		const id3v2s: Array<IID3V2.RawTag> = <Array<IID3V2.RawTag>>layout.tags.filter(o => o.id === ITagID.ID3v2);
 		const id3v2raw: IID3V2.RawTag | undefined = id3v2s.length > 0 ? id3v2s[0] : undefined; // if there are more than one id3v2 tags, we take the first
-		if ((opts.id3v2 || opts.id3v1IfNotid3v2) && id3v2raw) {
+		if ((options.id3v2 || options.id3v1IfNotid3v2) && id3v2raw) {
 			result.id3v2 = await buildID3v2(id3v2raw);
 		}
 		return result;
 	}
 
-	async readStream(stream: Readable, opts: IMP3.ReadOptions, streamSize?: number): Promise<IMP3.Result> {
+	async readStream(stream: Readable, options: IMP3.ReadOptions, streamSize?: number): Promise<IMP3.Result> {
 		const reader = new MP3Reader();
-		const layout = await reader.readStream(stream, Object.assign({streamSize}, opts));
-		return await this.prepareResult(opts, layout);
+		const layout = await reader.readStream(stream, Object.assign({streamSize}, options));
+		return await this.prepareResult(options, layout);
 	}
 
-	async read(filename: string, opts: IMP3.ReadOptions): Promise<IMP3.Result> {
+	async read(filename: string, options: IMP3.ReadOptions): Promise<IMP3.Result> {
 		const reader = new MP3Reader();
 		const stat = await fse.stat(filename);
-		const layout = await reader.read(filename, Object.assign({streamSize: stat.size}, opts));
-		return await this.prepareResult(opts, layout);
+		const layout = await reader.read(filename, Object.assign({streamSize: stat.size}, options));
+		return await this.prepareResult(options, layout);
 	}
 
-	async removeTags(filename: string, opts: IMP3.RemoveTagsOptions): Promise<{ id3v2: boolean, id3v1: boolean } | undefined> {
+	async removeTags(filename: string, options: IMP3.RemoveTagsOptions): Promise<{ id3v2: boolean, id3v1: boolean } | undefined> {
 		const stat = await fse.stat(filename);
-		const readerOpts: MP3ReaderOptions = {streamSize: stat.size, id3v2: opts.id3v2, detectDuplicateID3v2: opts.id3v2, id3v1: opts.id3v1, mpegQuick: opts.id3v2};
+		const opts: MP3ReaderOptions = {
+			streamSize: stat.size,
+			id3v2: options.id3v2,
+			detectDuplicateID3v2: options.id3v2,
+			id3v1: options.id3v1,
+			mpegQuick: options.id3v2
+		};
 		let id2v1removed = false;
 		let id2v2removed = false;
-		await updateFile(filename, readerOpts, !!opts.keepBackup,
+		await updateFile(filename, opts, !!options.keepBackup,
 			layout => {
 				for (const tag of layout.tags) {
-					if (opts.id3v2 && tag.id === ITagID.ID3v2 && tag.end > 0) {
+					if (options.id3v2 && tag.id === ITagID.ID3v2 && tag.end > 0) {
 						return true;
-					} else if (opts.id3v1 && tag.id === ITagID.ID3v1 && tag.end === stat.size && tag.start < stat.size) {
+					} else if (options.id3v1 && tag.id === ITagID.ID3v1 && tag.end === stat.size && tag.start < stat.size) {
 						return true;
 					}
 				}
@@ -176,20 +182,20 @@ export class MP3 {
 				let finish = stat.size;
 				let specEnd = 0;
 				for (const tag of layout.tags) {
-					if (tag.id === ITagID.ID3v2 && opts.id3v2) {
+					if (tag.id === ITagID.ID3v2 && options.id3v2) {
 						if (start < tag.end) {
 							specEnd = (tag as IID3V2.RawTag).head.size + tag.start + 10 /*header itself*/;
 							start = tag.end;
 							id2v2removed = true;
 						}
-					} else if (tag.id === ITagID.ID3v1 && opts.id3v1 && tag.end === stat.size) {
+					} else if (tag.id === ITagID.ID3v1 && options.id3v1 && tag.end === stat.size) {
 						if (finish > tag.start) {
 							finish = tag.start;
 							id2v1removed = true;
 						}
 					}
 				}
-				if (opts.id3v2) {
+				if (options.id3v2) {
 					if (layout.frameheaders.length > 0) {
 						const mediastart = rawHeaderOffSet(layout.frameheaders[0]);
 						start = specEnd < mediastart ? specEnd : mediastart;
