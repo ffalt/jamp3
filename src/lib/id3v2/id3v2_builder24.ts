@@ -3,7 +3,11 @@ import {ID3v2Builder, ID3V2RawBuilder} from './id3v2_builder';
 import {ITagID} from '../..';
 
 export class ID3V24TagBuilder implements ID3v2Builder {
-	rawBuilder = new ID3V2RawBuilder();
+	rawBuilder: ID3V2RawBuilder;
+
+	constructor(encoding?: string) {
+		this.rawBuilder = new ID3V2RawBuilder(encoding);
+	}
 
 	buildFrames(): Array<IID3V2.Frame> {
 		const result: Array<IID3V2.Frame> = [];
@@ -40,6 +44,8 @@ export class ID3V24TagBuilder implements ID3v2Builder {
 		};
 		return result;
 	}
+
+	//
 
 	acoustidFingerprint(value?: string): ID3V24TagBuilder {
 		this.rawBuilder.idText('TXXX', 'Acoustid Fingerprint', value);
@@ -285,8 +291,8 @@ export class ID3V24TagBuilder implements ID3v2Builder {
 		return this;
 	}
 
-	lyrics(value?: string, lang?: string, id?: string): ID3V24TagBuilder {
-		this.rawBuilder.idLangText('USLT', value, lang, id);
+	lyrics(value?: string, language?: string, id?: string): ID3V24TagBuilder {
+		this.rawBuilder.idLangText('USLT', value, language, id);
 		return this;
 	}
 
@@ -424,12 +430,12 @@ export class ID3V24TagBuilder implements ID3v2Builder {
 		return this;
 	}
 
-	originalArtist(value: string): ID3V24TagBuilder {
+	originalArtist(value?: string): ID3V24TagBuilder {
 		this.rawBuilder.text('TOPE', value);
 		return this;
 	}
 
-	originalDate(value: string): ID3V24TagBuilder {
+	originalDate(value?: string): ID3V24TagBuilder {
 		this.rawBuilder.text('TDOR', value);
 		return this;
 	}
@@ -454,7 +460,7 @@ export class ID3V24TagBuilder implements ID3v2Builder {
 		return this;
 	}
 
-	playCount(value?: number) {
+	playCount(value?: number): ID3V24TagBuilder {
 		this.rawBuilder.number('PCNT', value);
 		return this;
 	}
@@ -464,27 +470,27 @@ export class ID3V24TagBuilder implements ID3v2Builder {
 		return this;
 	}
 
-	podcastDescription(value: string): ID3V24TagBuilder {
+	podcastDescription(value?: string): ID3V24TagBuilder {
 		this.rawBuilder.text('TDES', value);
 		return this;
 	}
 
-	podcastFeedURL(value: string): ID3V24TagBuilder {
+	podcastFeedURL(value?: string): ID3V24TagBuilder {
 		this.rawBuilder.text('WFED', value);
 		return this;
 	}
 
-	podcastKeywords(value: string): ID3V24TagBuilder {
+	podcastKeywords(value?: string): ID3V24TagBuilder {
 		this.rawBuilder.text('TKWD', value);
 		return this;
 	}
 
-	podcastURL(value: string): ID3V24TagBuilder {
+	podcastURL(value?: string): ID3V24TagBuilder {
 		this.rawBuilder.text('TGID', value);
 		return this;
 	}
 
-	popularimeter(email: string, rating: number, count: number) {
+	popularimeter(email: string, rating: number, count: number): ID3V24TagBuilder {
 		this.rawBuilder.popularimeter('POPM', email, rating, count);
 		return this;
 	}
@@ -513,7 +519,7 @@ export class ID3V24TagBuilder implements ID3v2Builder {
 		peakCenter?: number,
 		bass?: number,
 		peakBass?: number
-	) {
+	): ID3V24TagBuilder {
 		this.rawBuilder.relativeVolumeAdjustment('RVAD', right, left,
 			peakRight, peakLeft,
 			rightBack, leftBack,
@@ -523,7 +529,7 @@ export class ID3V24TagBuilder implements ID3v2Builder {
 		return this;
 	}
 
-	relativeVolumeAdjustment2(id: string, channels: Array<{ type: number; adjustment: number; peak?: number }>) {
+	relativeVolumeAdjustment2(id: string, channels: Array<{ type: number; adjustment: number; peak?: number }>) : ID3V24TagBuilder{
 		this.rawBuilder.relativeVolumeAdjustment2('RVA2', id, channels);
 		return this;
 	}
@@ -538,7 +544,7 @@ export class ID3V24TagBuilder implements ID3v2Builder {
 		return this;
 	}
 
-	replayGainAdjustment(peak: number, radioAdjustment: number, audiophileAdjustment: number) {
+	replayGainAdjustment(peak: number, radioAdjustment: number, audiophileAdjustment: number): ID3V24TagBuilder {
 		this.rawBuilder.replayGainAdjustment('RGAD', peak, radioAdjustment, audiophileAdjustment);
 		return this;
 	}
@@ -556,7 +562,7 @@ export class ID3V24TagBuilder implements ID3v2Builder {
 	synchronisedLyrics(
 		id: string, language: string, timestampFormat: number,
 		contentType: number, events: Array<{ timestamp: number; text: string; }>
-	) {
+	): ID3V24TagBuilder {
 		this.rawBuilder.synchronisedLyrics('SYLT', id, language, timestampFormat, contentType, events);
 		return this;
 	}
@@ -566,7 +572,7 @@ export class ID3V24TagBuilder implements ID3v2Builder {
 		return this;
 	}
 
-	termsOfUse(id: string, language: string, text: string) {
+	termsOfUse(id: string, language: string, text: string): ID3V24TagBuilder {
 		this.rawBuilder.langText('USER', language, text);
 		return this;
 	}
@@ -618,11 +624,6 @@ export class ID3V24TagBuilder implements ID3v2Builder {
 
 	writer(value?: string): ID3V24TagBuilder {
 		this.rawBuilder.idText('TXXX', 'Writer', value);
-		return this;
-	}
-
-	year(year?: number): ID3V24TagBuilder {
-		this.rawBuilder.text('TORY', year ? year.toString() : undefined);
 		return this;
 	}
 

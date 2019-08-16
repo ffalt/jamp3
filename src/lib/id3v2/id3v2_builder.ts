@@ -1,5 +1,4 @@
 import {IID3V2} from './id3v2__types';
-import {FrameCTOC} from './id3v2_frame';
 
 interface ID3V2Frames {
 	[key: string]: Array<IID3V2.Frame>;
@@ -98,31 +97,50 @@ export interface ID3v2Builder {
 }
 
 export class ID3V2RawBuilder {
+	constructor(private encoding?: string) {
+	}
+
 	private frameValues: ID3V2Frames = {};
 
 	build(): ID3V2Frames {
 		return this.frameValues;
 	}
 
+	private replace(key: string, frame: IID3V2.Frame) {
+		this.frameValues[key] = [frame];
+	}
+
+	private add(key: string, frame: IID3V2.Frame) {
+		this.frameValues[key] = (this.frameValues[key] || []).concat([frame]);
+	}
+
+	private head(): IID3V2.FrameHeader {
+		return {
+			size: 0,
+			statusFlags: {},
+			formatFlags: {},
+			encoding: this.encoding
+		};
+	}
+
 	text(key: string, text: string | undefined) {
 		if (text) {
-			const frame: ID3V2TextFrame = {id: key, value: {text}};
-			this.frameValues[key] = [frame];
+			const frame: ID3V2TextFrame = {id: key, value: {text}, head: this.head()};
+			this.replace(key, frame);
 		}
 	}
 
 	number(key: string, num: number | undefined) {
 		if (num !== undefined) {
-			const frame: ID3V2NumberFrame = {id: key, value: {num}};
-			this.frameValues[key] = [frame];
+			const frame: ID3V2NumberFrame = {id: key, value: {num}, head: this.head()};
+			this.replace(key, frame);
 		}
 	}
 
 	idText(key: string, id: string, value: string | undefined) {
 		if (value) {
-			const frame: ID3V2IdTextFrame = {id: key, value: {id, text: value}};
-			const list = (<Array<ID3V2IdTextFrame>>(this.frameValues[key] || []))
-				.filter(f => f.value.id !== id);
+			const frame: ID3V2IdTextFrame = {id: key, value: {id, text: value}, head: this.head()};
+			const list = (<Array<ID3V2IdTextFrame>>(this.frameValues[key] || [])).filter(f => f.value.id !== id);
 			this.frameValues[key] = list.concat([frame]);
 		}
 	}
@@ -130,25 +148,25 @@ export class ID3V2RawBuilder {
 	nrAndTotal(key: string, value: number | string | undefined, total: number | string | undefined) {
 		if (value) {
 			const text = value.toString() + (total ? '/' + total.toString() : '');
-			const frame: ID3V2TextFrame = {id: key, value: {text}};
-			this.frameValues[key] = [frame];
+			const frame: ID3V2TextFrame = {id: key, value: {text}, head: this.head()};
+			this.replace(key, frame);
 		}
 	}
 
 	keyTextList(key: string, group: string, value?: string) {
 		if (value) {
 			const frames = <Array<ID3V2TextListFrame>>(this.frameValues[key] || []);
-			const frame: ID3V2TextListFrame = (frames.length > 0) ? frames[0] : {id: key, value: {list: []}};
+			const frame: ID3V2TextListFrame = (frames.length > 0) ? frames[0] : {id: key, value: {list: []}, head: this.head()};
 			frame.value.list.push(group);
 			frame.value.list.push(value);
-			this.frameValues[key] = [frame];
+			this.replace(key, frame);
 		}
 	}
 
 	bool(key: string, bool: boolean) {
 		if (bool !== undefined) {
-			const frame: ID3V2BoolValueFrame = {id: key, value: {bool}};
-			this.frameValues[key] = [frame];
+			const frame: ID3V2BoolValueFrame = {id: key, value: {bool}, head: this.head()};
+			this.replace(key, frame);
 		}
 	}
 
@@ -158,47 +176,41 @@ export class ID3V2RawBuilder {
 			lang = lang || '';
 			const list = (<Array<ID3V2LangDescTextValueFrame>>(this.frameValues[key] || []))
 				.filter(f => f.value.id !== id);
-			const frame: ID3V2LangDescTextValueFrame = {id: key, value: {id, language: lang, text: value}};
+			const frame: ID3V2LangDescTextValueFrame = {id: key, value: {id, language: lang, text: value}, head: this.head()};
 			this.frameValues[key] = list.concat([frame]);
 		}
 	}
 
 	picture(key: string, pictureType: number, description: string, mimeType: string, binary: Buffer) {
 		const frame: ID3V2PicValueFrame = {
-			id: key, value: {
+			id: key,
+			value: {
 				description: description || '',
 				pictureType,
 				bin: binary,
 				mimeType: mimeType
-			}
+			},
+			head: this.head()
 		};
-		this.frameValues[key] = (this.frameValues[key] || []).concat([frame]);
+		this.add(key, frame);
 	}
 
 	idBin(key: string, id: string, binary: Buffer) {
 		const frame: ID3V2IdBinValueFrame = {
 			id: key,
-			value: {
-				id,
-				bin: binary
-			}
+			value: {id, bin: binary},
+			head: this.head()
 		};
-		this.frameValues[key] = (this.frameValues[key] || []).concat([frame]);
+		this.add(key, frame);
 	}
 
 	chapter(key: string, chapterID: string, start: number, end: number, offset: number, offsetEnd: number, subframes?: Array<IID3V2.Frame>) {
 		const frame: ID3V2ChapterValueFrame = {
 			id: key,
-			value: {
-				id: chapterID,
-				start,
-				end,
-				offset,
-				offsetEnd
-			},
-			subframes
+			value: {id: chapterID, start, end, offset, offsetEnd},
+			subframes, head: this.head()
 		};
-		this.frameValues[key] = (this.frameValues[key] || []).concat([frame]);
+		this.add(key, frame);
 	}
 
 	synchronisedLyrics(
@@ -207,9 +219,10 @@ export class ID3V2RawBuilder {
 	) {
 		const frame: ID3V2SynchronisedLyricsFrame = {
 			id: key,
-			value: {id, language, timestampFormat, contentType, events}
+			value: {id, language, timestampFormat, contentType, events},
+			head: this.head()
 		};
-		this.frameValues[key] = (this.frameValues[key] || []).concat([frame]);
+		this.add(key, frame);
 	}
 
 	relativeVolumeAdjustment(
@@ -236,9 +249,10 @@ export class ID3V2RawBuilder {
 				peakRightBack, peakLeftBack,
 				center, peakCenter,
 				bass, peakBass
-			}
+			},
+			head: this.head()
 		};
-		this.frameValues[key] = (this.frameValues[key] || []).concat([frame]);
+		this.add(key, frame);
 	}
 
 	relativeVolumeAdjustment2(key: string, id: string, channels: Array<{ type: number; adjustment: number; peak?: number }>) {
@@ -247,9 +261,10 @@ export class ID3V2RawBuilder {
 			value: {
 				id,
 				channels
-			}
+			},
+			head: this.head()
 		};
-		this.frameValues[key] = (this.frameValues[key] || []).concat([frame]);
+		this.add(key, frame);
 	}
 
 	eventTimingCodes(key: string, timeStampFormat: number, events: Array<{ type: number; timestamp: number }>) {
@@ -258,9 +273,10 @@ export class ID3V2RawBuilder {
 			value: {
 				format: timeStampFormat,
 				events
-			}
+			},
+			head: this.head()
 		};
-		this.frameValues[key] = (this.frameValues[key] || []).concat([frame]);
+		this.add(key, frame);
 	}
 
 	unknown(key: string, binary: Buffer) {
@@ -268,9 +284,10 @@ export class ID3V2RawBuilder {
 			id: key,
 			value: {
 				bin: binary
-			}
+			},
+			head: this.head()
 		};
-		this.frameValues[key] = (this.frameValues[key] || []).concat([frame]);
+		this.add(key, frame);
 	}
 
 	object(key: string, filename: string, mimeType: string, contentDescription: string, bin: Buffer) {
@@ -278,9 +295,10 @@ export class ID3V2RawBuilder {
 			id: key,
 			value: {
 				filename, mimeType, contentDescription, bin
-			}
+			},
+			head: this.head()
 		};
-		this.frameValues[key] = (this.frameValues[key] || []).concat([frame]);
+		this.add(key, frame);
 	}
 
 	popularimeter(key: string, email: string, rating: number, count: number) {
@@ -288,9 +306,10 @@ export class ID3V2RawBuilder {
 			id: key,
 			value: {
 				email, rating, count
-			}
+			},
+			head: this.head()
 		};
-		this.frameValues[key] = (this.frameValues[key] || []).concat([frame]);
+		this.add(key, frame);
 	}
 
 	audioEncryption(key: string, id: string, previewStart: number, previewLength: number, bin: Buffer) {
@@ -298,9 +317,10 @@ export class ID3V2RawBuilder {
 			id: key,
 			value: {
 				id, previewStart, previewLength, bin
-			}
+			},
+			head: this.head()
 		};
-		this.frameValues[key] = (this.frameValues[key] || []).concat([frame]);
+		this.add(key, frame);
 	}
 
 	linkedInformation(key: string, id: string, url: string, additional: Array<string>) {
@@ -308,32 +328,36 @@ export class ID3V2RawBuilder {
 			id: key,
 			value: {
 				id, url, additional
-			}
+			},
+			head: this.head()
 		};
-		this.frameValues[key] = (this.frameValues[key] || []).concat([frame]);
+		this.add(key, frame);
 	}
 
 	langText(key: string, language: string, text: string) {
 		const frame: ID3V2LangTextFrame = {
 			id: key,
-			value: {language, text}
+			value: {language, text},
+			head: this.head()
 		};
-		this.frameValues[key] = (this.frameValues[key] || []).concat([frame]);
+		this.add(key, frame);
 	}
 
 	replayGainAdjustment(key: string, peak: number, radioAdjustment: number, audiophileAdjustment: number) {
 		const frame: ID3V2ReplayGainAdjustmentFrame = {
 			id: key,
-			value: {peak, radioAdjustment, audiophileAdjustment}
+			value: {peak, radioAdjustment, audiophileAdjustment},
+			head: this.head()
 		};
-		this.frameValues[key] = (this.frameValues[key] || []).concat([frame]);
+		this.add(key, frame);
 	}
 
 	chapterTOC(key: string, id: string, ordered: boolean, topLevel: boolean, children: Array<string>) {
 		const frame: ID3V2ChapterTOCFrame = {
 			id: key,
-			value: {id, ordered, topLevel, children}
+			value: {id, ordered, topLevel, children},
+			head: this.head()
 		};
-		this.frameValues[key] = (this.frameValues[key] || []).concat([frame]);
+		this.add(key, frame);
 	}
 }

@@ -1,6 +1,6 @@
 import fse from 'fs-extra';
 import {ID3v2Reader} from './id3v2_reader';
-import {ID3v2Writer, Id3v2WriterOptions} from './id3v2_writer';
+import {ID3v2Writer} from './id3v2_writer';
 import {readID3v2Frame, writeToRawFrames} from './id3v2_frames';
 import {FileWriterStream} from '../common/streams';
 import {IID3V2} from './id3v2__types';
@@ -117,7 +117,7 @@ export class ID3v2 {
 		await this.write(filename, {frames: builder.buildFrames()}, builder.version(), builder.rev(), options);
 	}
 
-	async write(filename: string, tag: IID3V2.ID3v2, version: number, rev: number, options: IID3V2.WriteOptions): Promise<void> {
+	async write(filename: string, tag: IID3V2.ID3v2Tag, version: number, rev: number, options: IID3V2.WriteOptions): Promise<void> {
 		if (typeof options !== 'object') {
 			throw Error('Invalid options object, update your code'); // function api change
 		}

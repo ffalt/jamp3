@@ -262,7 +262,7 @@ export namespace IID3V2 {
 		frames: Array<Frame>;
 	}
 
-	export interface ID3v2 {
+	export interface ID3v2Tag {
 		head?: TagHeader;
 		frames: Array<Frame>;
 	}

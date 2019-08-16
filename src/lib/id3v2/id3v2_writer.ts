@@ -84,6 +84,7 @@ export class Id3v2RawWriter {
 		let extendedHeaderBuffer: Buffer | undefined;
 		let flagBits: Array<number>;
 
+		// TODO: currently no support for writing footer
 		// TODO: currently no support for unsynchronised writing
 		if (this.head.ver <= 2) {
 			this.head.v2 = this.head.v2 || {flags: {}};
