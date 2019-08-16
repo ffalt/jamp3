@@ -1,3 +1,22 @@
+<a name="0.3.11"></a>
+# 0.3.11 (2019/??/??)
+### Features
+* ID3v24Builder: add more frames, add encoding parameter
+* ID3v2.write(): move optional parameters into options object 
+* ID3v2.remove(): remove id3v2
+* ID3v1.remove(): remove id3v1
+* add library usage examples
+* rebuild mocha test options and calls
+ 
+### Bug Fixes
+* ID3v2.write in v2.2 no longer syncsafe the size field
+* ID3v2.read handles empty id3v2 tag (size:0) 
+
+### BREAKING
+* ID3v24Builder: renamed functions
+* ID3v2.write(): changed api - options object is mandatory
+* ID3v2.Head: changed structure into version depended sub-objects 
+
 <a name="0.3.10"></a>
 # 0.3.10 (2019/06/10)
 ### Bug Fixes
@@ -10,7 +29,7 @@ ID3v2.write(): optional padding size parameter
 # 0.3.9 (2019/06/04)
 ### Features
 * MP3.removeTags: returns report obj if and which tags are removed
-`async removeTags(filename: string, opts: IMP3.RemoveTagsOptions): Promise<{ id3v2: boolean, id3v1: boolean } | undefined>`
+`async removeTags(filename: string, options: IMP3.RemoveTagsOptions): Promise<{ id3v2: boolean, id3v1: boolean } | undefined>`
 
 <a name="0.3.8"></a>
 # 0.3.8 (2019/06/04)
