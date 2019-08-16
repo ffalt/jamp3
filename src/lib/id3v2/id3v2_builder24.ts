@@ -41,13 +41,23 @@ export class ID3V24TagBuilder implements ID3v2Builder {
 		return result;
 	}
 
-	artist(value?: string) {
-		this.rawBuilder.text('TPE1', value);
+	acoustidFingerprint(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.idText('TXXX', 'Acoustid Fingerprint', value);
 		return this;
 	}
 
-	artistSort(value?: string): ID3V24TagBuilder {
-		this.rawBuilder.text('TSOP', value);
+	acoustidID(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.idText('TXXX', 'Acoustid Id', value);
+		return this;
+	}
+
+	album(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.text('TALB', value);
+		return this;
+	}
+
+	albumSort(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.text('TSOA', value);
 		return this;
 	}
 
@@ -61,13 +71,351 @@ export class ID3V24TagBuilder implements ID3v2Builder {
 		return this;
 	}
 
-	album(value?: string): ID3V24TagBuilder {
-		this.rawBuilder.text('TALB', value);
+	artist(value?: string) {
+		this.rawBuilder.text('TPE1', value);
 		return this;
 	}
 
-	albumSort(value?: string): ID3V24TagBuilder {
-		this.rawBuilder.text('TSOA', value);
+	artistSort(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.text('TSOP', value);
+		return this;
+	}
+
+	artists(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.idText('TXXX', 'Artists', value);
+		return this;
+	}
+
+	asin(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.idText('TXXX', 'ASIN', value);
+		return this;
+	}
+
+	audioEncryption(id: string, previewStart: number, previewLength: number, bin: Buffer) {
+		this.rawBuilder.audioEncryption('AENC', id, previewStart, previewLength, bin);
+		return this;
+	}
+
+	barcode(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.idText('TXXX', 'BARCODE', value);
+		return this;
+	}
+
+	bpm(value?: string | number): ID3V24TagBuilder {
+		this.rawBuilder.text('TBPM', value ? value.toString() : undefined);
+		return this;
+	}
+
+	catalogNumber(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.idText('TXXX', 'CATALOGNUMBER', value);
+		return this;
+	}
+
+	chapter(id: string, start: number, end: number, offset: number, offsetEnd: number, subframes?: Array<IID3V2.Frame>): ID3V24TagBuilder {
+		this.rawBuilder.chapter('CHAP', id, start, end, offset, offsetEnd, subframes);
+		return this;
+	}
+
+	chapterTOC(value: string, id: string, ordered: boolean, topLevel: boolean, children: Array<string>): ID3V24TagBuilder {
+		this.rawBuilder.chapterTOC('CTOC', id, ordered, topLevel, children);
+		return this;
+	}
+
+	comment(id: string, value?: string): ID3V24TagBuilder {
+		this.rawBuilder.idText('COMM', id, value);
+		return this;
+	}
+
+	commercialInformationURL(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.text('WCOM', value);
+		return this;
+	}
+
+	composer(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.text('TCOM', value);
+		return this;
+	}
+
+	composerSort(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.text('TSOC', value);
+		return this;
+	}
+
+	conductor(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.text('TPE3', value);
+		return this;
+	}
+
+	copyright(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.text('TCOP', value);
+		return this;
+	}
+
+	copyrightURL(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.text('WCOP', value);
+		return this;
+	}
+
+	custom(id: string, value?: string): ID3V24TagBuilder {
+		this.rawBuilder.idText('TXXX', id, value);
+		return this;
+	}
+
+	date(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.text('TDRC', value);
+		return this;
+	}
+
+	disc(discNr?: string | number, discTotal?: string | number): ID3V24TagBuilder {
+		this.rawBuilder.nrAndTotal('TPOS', discNr, discTotal);
+		return this;
+	}
+
+	discSubtitle(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.text('TSST', value);
+		return this;
+	}
+
+	encoder(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.text('TENC', value);
+		return this;
+	}
+
+	encoderSettings(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.text('TSSE', value);
+		return this;
+	}
+
+	encodingDate(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.text('TDEN', value);
+		return this;
+	}
+
+	eventTimingCodes(timeStampFormat: number, events: Array<{ type: number; timestamp: number }>): ID3V24TagBuilder {
+		this.rawBuilder.eventTimingCodes('ETCO', timeStampFormat, events);
+		return this;
+	}
+
+	fileOwner(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.text('TOWN', value);
+		return this;
+	}
+
+	fileType(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.text('TFLT', value);
+		return this;
+	}
+
+	genre(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.text('TCON', value);
+		return this;
+	}
+
+	grouping(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.text('GRP1', value);
+		return this;
+	}
+
+	initialKey(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.text('TKEY', value);
+		return this;
+	}
+
+	internetRadioStation(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.text('TRSN', value);
+		return this;
+	}
+
+	internetRadioStationOwner(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.text('TRSO', value);
+		return this;
+	}
+
+	involved(group: string, value?: string): ID3V24TagBuilder {
+		this.rawBuilder.keyTextList('TIPL', group, value);
+		return this;
+	}
+
+	isCompilation(value?: boolean | number | string): ID3V24TagBuilder {
+		if (value !== undefined) {
+			this.rawBuilder.bool('TCMP', value === 1 || value === 'true' || value === true);
+		}
+		return this;
+	}
+
+	isPodcast(value?: boolean | number | string): ID3V24TagBuilder {
+		if (value !== undefined) {
+			this.rawBuilder.number('PCST', value === 1 || value === 'true' || value === true ? 1 : 0);
+		}
+		return this;
+	}
+
+	isrc(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.text('TSRC', value);
+		return this;
+	}
+
+	label(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.text('TPUB', value);
+		return this;
+	}
+
+	labelURL(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.text('WPUB', value);
+		return this;
+	}
+
+	language(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.text('TLAN', value);
+		return this;
+	}
+
+	license(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.idText('TXXX', 'LICENSE', value);
+		return this;
+	}
+
+	linkedInformation(id: string, url: string, additional: Array<string>) {
+		this.rawBuilder.linkedInformation('LINK', id, url, additional);
+		return this;
+	}
+
+	lyricist(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.text('TEXT', value);
+		return this;
+	}
+
+	lyrics(value?: string, lang?: string, id?: string): ID3V24TagBuilder {
+		this.rawBuilder.idLangText('USLT', value, lang, id);
+		return this;
+	}
+
+	mbAlbumArtistID(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.idText('TXXX', 'MusicBrainz Album Artist Id', value);
+		return this;
+	}
+
+	mbAlbumID(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.idText('TXXX', 'MusicBrainz Album Id', value);
+		return this;
+	}
+
+	mbAlbumReleaseCountry(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.idText('TXXX', 'MusicBrainz Album Release Country', value);
+		return this;
+	}
+
+	mbAlbumStatus(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.idText('TXXX', 'MusicBrainz Album Status', value);
+		return this;
+	}
+
+	mbAlbumType(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.idText('TXXX', 'MusicBrainz Album Type', value);
+		return this;
+	}
+
+	mbArtistID(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.idText('TXXX', 'MusicBrainz Artist Id', value);
+		return this;
+	}
+
+	mbDiscID(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.idText('TXXX', 'MusicBrainz Disc Id', value);
+		return this;
+	}
+
+	mbOriginalAlbumID(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.idText('TXXX', 'MusicBrainz Original Album Id', value);
+		return this;
+	}
+
+	mbOriginalArtistID(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.idText('TXXX', 'MusicBrainz Original Artist Id', value);
+		return this;
+	}
+
+	mbReleaseGroupID(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.idText('TXXX', 'MusicBrainz Release Group Id', value);
+		return this;
+	}
+
+	mbReleaseTrackID(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.idText('TXXX', 'MusicBrainz Release Track Id', value);
+		return this;
+	}
+
+	mbTrackDisambiguation(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.idText('TXXX', 'MusicBrainz Track Disambiguation', value);
+		return this;
+	}
+
+	mbTrackID(value?: string): ID3V24TagBuilder {
+		return this.uniqueFileID('http://musicbrainz.org', value);
+	}
+
+	mbTRMID(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.idText('TXXX', 'MusicBrainz TRM Id', value);
+		return this;
+	}
+
+	mbWorkID(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.idText('TXXX', 'MusicBrainz Work Id', value);
+		return this;
+	}
+
+	mediaType(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.text('TMED', value);
+		return this;
+	}
+
+	mood(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.text('TMOO', value);
+		return this;
+	}
+
+	movement(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.text('MVNM', value);
+		return this;
+	}
+
+	movementNr(nr?: string | number, total?: string | number): ID3V24TagBuilder {
+		this.rawBuilder.nrAndTotal('MVIN', nr, total);
+		return this;
+	}
+
+	musicianCredit(group: string, value?: string): ID3V24TagBuilder {
+		this.rawBuilder.keyTextList('TMCL', group, value);
+		return this;
+	}
+
+	musicIPPUID(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.idText('TXXX', 'MusicIP PUID', value);
+		return this;
+	}
+
+	object(filename: string, mimeType: string, contentDescription: string, bin: Buffer): ID3V24TagBuilder {
+		this.rawBuilder.object('GEOB', filename, mimeType, contentDescription, bin);
+		return this;
+	}
+
+	officialArtistURL(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.text('WOAR', value);
+		return this;
+	}
+
+	officialAudioFileURL(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.text('WOAF', value);
+		return this;
+	}
+
+	officialAudioSourceURL(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.text('WOAS', value);
+		return this;
+	}
+
+	officialInternetRadioStationURL(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.text('WORS', value);
 		return this;
 	}
 
@@ -86,310 +434,18 @@ export class ID3V24TagBuilder implements ID3v2Builder {
 		return this;
 	}
 
-	title(value?: string): ID3V24TagBuilder {
-		this.rawBuilder.text('TIT2', value);
+	originalFilename(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.text('TOFN', value);
 		return this;
 	}
 
-	work(value?: string): ID3V24TagBuilder {
-		this.rawBuilder.text('TIT1', value);
+	originalLyricist(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.text('TOLY', value);
 		return this;
 	}
 
-	titleSort(value?: string): ID3V24TagBuilder {
-		this.rawBuilder.text('TSOT', value);
-		return this;
-	}
-
-	genre(value?: string): ID3V24TagBuilder {
-		this.rawBuilder.text('TCON', value);
-		return this;
-	}
-
-	bmp(value?: string | number): ID3V24TagBuilder {
-		this.rawBuilder.text('TBPM', value ? value.toString() : undefined);
-		return this;
-	}
-
-	mood(value?: string): ID3V24TagBuilder {
-		this.rawBuilder.text('TMOO', value);
-		return this;
-	}
-
-	media(value?: string): ID3V24TagBuilder {
-		this.rawBuilder.text('TMED', value);
-		return this;
-	}
-
-	language(value?: string): ID3V24TagBuilder {
-		this.rawBuilder.text('TLAN', value);
-		return this;
-	}
-
-	grouping(value?: string): ID3V24TagBuilder {
-		this.rawBuilder.text('GRP1', value);
-		return this;
-	}
-
-	date(value?: string): ID3V24TagBuilder {
-		this.rawBuilder.text('TDRC', value);
-		return this;
-	}
-
-	track(trackNr?: string | number, trackTotal?: string | number): ID3V24TagBuilder {
-		this.rawBuilder.nrAndTotal('TRCK', trackNr, trackTotal);
-		return this;
-	}
-
-	disc(discNr?: string | number, discTotal?: string | number): ID3V24TagBuilder {
-		this.rawBuilder.nrAndTotal('TPOS', discNr, discTotal);
-		return this;
-	}
-
-	year(year?: number): ID3V24TagBuilder {
-		this.rawBuilder.text('TORY', year ? year.toString() : undefined);
-		return this;
-	}
-
-	artists(value?: string): ID3V24TagBuilder {
-		this.rawBuilder.idText('TXXX', 'Artists', value);
-		return this;
-	}
-
-	isCompilation(value?: boolean | number | string): ID3V24TagBuilder {
-		if (value !== undefined) {
-			this.rawBuilder.bool('TCMP', value === 1 || value === 'true' || value === true);
-		}
-		return this;
-	}
-
-	originalYear(value?: string): ID3V24TagBuilder {
-		this.rawBuilder.text('TYER', value);
-		return this;
-	}
-
-	composer(value?: string): ID3V24TagBuilder {
-		this.rawBuilder.text('TCOM', value);
-		return this;
-	}
-
-	composerSort(value?: string): ID3V24TagBuilder {
-		this.rawBuilder.text('TSOC', value);
-		return this;
-	}
-
-	remixer(value?: string): ID3V24TagBuilder {
-		this.rawBuilder.text('TPE4', value);
-		return this;
-	}
-
-	label(value?: string): ID3V24TagBuilder {
-		this.rawBuilder.text('TPUB', value);
-		return this;
-	}
-
-	subtitle(value?: string): ID3V24TagBuilder {
-		this.rawBuilder.text('TIT3', value);
-		return this;
-	}
-
-	discSubtitle(value?: string): ID3V24TagBuilder {
-		this.rawBuilder.text('TSST', value);
-		return this;
-	}
-
-	lyricist(value?: string): ID3V24TagBuilder {
-		this.rawBuilder.text('TEXT', value);
-		return this;
-	}
-
-	lyrics(value?: string, lang?: string, id?: string): ID3V24TagBuilder {
-		this.rawBuilder.idLangText('USLT', value, lang, id);
-		return this;
-	}
-
-	encoder(value?: string): ID3V24TagBuilder {
-		this.rawBuilder.text('TENC', value);
-		return this;
-	}
-
-	encoderSettings(value?: string): ID3V24TagBuilder {
-		this.rawBuilder.text('TSSE', value);
-		return this;
-	}
-
-	key(value?: string): ID3V24TagBuilder {
-		this.rawBuilder.text('TKEY', value);
-		return this;
-	}
-
-	copyright(value?: string): ID3V24TagBuilder {
-		this.rawBuilder.text('TCOP', value);
-		return this;
-	}
-
-	isrc(value?: string): ID3V24TagBuilder {
-		this.rawBuilder.text('TSRC', value);
-		return this;
-	}
-
-	barcode(value?: string): ID3V24TagBuilder {
-		this.rawBuilder.idText('TXXX', 'BARCODE', value);
-		return this;
-	}
-
-	asin(value?: string): ID3V24TagBuilder {
-		this.rawBuilder.idText('TXXX', 'ASIN', value);
-		return this;
-	}
-
-	catalogNumber(value?: string): ID3V24TagBuilder {
-		this.rawBuilder.idText('TXXX', 'CATALOGNUMBER', value);
-		return this;
-	}
-
-	script(value?: string): ID3V24TagBuilder {
-		this.rawBuilder.idText('TXXX', 'SCRIPT', value);
-		return this;
-	}
-
-	license(value?: string): ID3V24TagBuilder {
-		this.rawBuilder.idText('TXXX', 'LICENSE', value);
-		return this;
-	}
-
-	website(value?: string): ID3V24TagBuilder {
-		this.rawBuilder.text('WOAR', value);
-		return this;
-	}
-
-	movement(value?: string): ID3V24TagBuilder {
-		this.rawBuilder.text('MVNM', value);
-		return this;
-	}
-
-	movementNr(nr?: string | number, total?: string | number): ID3V24TagBuilder {
-		this.rawBuilder.nrAndTotal('MVIN', nr, total);
-		return this;
-	}
-
-	writer(value?: string): ID3V24TagBuilder {
-		this.rawBuilder.idText('TXXX', 'Writer', value);
-		return this;
-	}
-
-	custom(id: string, value?: string): ID3V24TagBuilder {
-		this.rawBuilder.idText('TXXX', 'VERSION', value);
-		return this;
-	}
-
-	musicianCredit(group: string, value?: string): ID3V24TagBuilder {
-		this.rawBuilder.keyTextList('TMCL', group, value);
-		return this;
-	}
-
-	involved(group: string, value?: string): ID3V24TagBuilder {
-		this.rawBuilder.keyTextList('TIPL', group, value);
-		return this;
-	}
-
-	mbAlbumStatus(value?: string): ID3V24TagBuilder {
-		this.rawBuilder.idText('TXXX', 'MusicBrainz Album Status', value);
-		return this;
-	}
-
-	mbAlbumType(value?: string): ID3V24TagBuilder {
-		this.rawBuilder.idText('TXXX', 'MusicBrainz Album Type', value);
-		return this;
-	}
-
-	mbAlbumReleaseCountry(value?: string): ID3V24TagBuilder {
-		this.rawBuilder.idText('TXXX', 'MusicBrainz Album Release Country', value);
-		return this;
-	}
-
-	mbTrackID(value?: string): ID3V24TagBuilder {
-		this.rawBuilder.idText('UFID', 'http://musicbrainz.org', value);
-		return this;
-	}
-
-	mbReleaseTrackID(value?: string): ID3V24TagBuilder {
-		this.rawBuilder.idText('TXXX', 'MusicBrainz Release Track Id', value);
-		return this;
-	}
-
-	mbAlbumID(value?: string): ID3V24TagBuilder {
-		this.rawBuilder.idText('TXXX', 'MusicBrainz Album Id', value);
-		return this;
-	}
-
-	mbOriginalAlbumID(value?: string): ID3V24TagBuilder {
-		this.rawBuilder.idText('TXXX', 'MusicBrainz Original Album Id', value);
-		return this;
-	}
-
-	mbArtistID(value?: string): ID3V24TagBuilder {
-		this.rawBuilder.idText('TXXX', 'MusicBrainz Artist Id', value);
-		return this;
-	}
-
-	mbOriginalArtistID(value?: string): ID3V24TagBuilder {
-		this.rawBuilder.idText('TXXX', 'MusicBrainz Original Artist Id', value);
-		return this;
-	}
-
-	mbAlbumArtistID(value?: string): ID3V24TagBuilder {
-		this.rawBuilder.idText('TXXX', 'MusicBrainz Album Artist Id', value);
-		return this;
-	}
-
-	mbReleaseGroupID(value?: string): ID3V24TagBuilder {
-		this.rawBuilder.idText('TXXX', 'MusicBrainz Release Group Id', value);
-		return this;
-	}
-
-	mbWorkID(value?: string): ID3V24TagBuilder {
-		this.rawBuilder.idText('TXXX', 'MusicBrainz Work Id', value);
-		return this;
-	}
-
-	mbTRMID(value?: string): ID3V24TagBuilder {
-		this.rawBuilder.idText('TXXX', 'MusicBrainz TRM Id', value);
-		return this;
-	}
-
-	mbDiscID(value?: string): ID3V24TagBuilder {
-		this.rawBuilder.idText('TXXX', 'MusicBrainz Disc Id', value);
-		return this;
-	}
-
-	acoustidID(value?: string): ID3V24TagBuilder {
-		this.rawBuilder.idText('TXXX', 'Acoustid Id', value);
-		return this;
-	}
-
-	acoustidFingerprint(value?: string): ID3V24TagBuilder {
-		this.rawBuilder.idText('TXXX', 'Acoustid Fingerprint', value);
-		return this;
-	}
-
-	musicIPPUID(value?: string): ID3V24TagBuilder {
-		this.rawBuilder.idText('TXXX', 'MusicIP PUID', value);
-		return this;
-	}
-
-	comment(id: string, value?: string): ID3V24TagBuilder {
-		this.rawBuilder.idText('COMM', id, value);
-		return this;
-	}
-
-	trackLength(value?: number | string): ID3V24TagBuilder {
-		this.rawBuilder.text('TLEN', value ? value.toString() : undefined);
-		return this;
-	}
-
-	mbTrackDisambiguation(value?: string): ID3V24TagBuilder {
-		this.rawBuilder.idText('TXXX', 'MusicBrainz Track Disambiguation', value);
+	paymentURL(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.text('WPAY', value);
 		return this;
 	}
 
@@ -398,13 +454,175 @@ export class ID3V24TagBuilder implements ID3v2Builder {
 		return this;
 	}
 
-	chapter(id: string, start: number, end: number, offset: number, offsetEnd: number, subframes?: Array<IID3V2.Frame>): ID3V24TagBuilder {
-		this.rawBuilder.chapter('CHAP', id, start, end, offset, offsetEnd, subframes);
+	playCount(value?: number) {
+		this.rawBuilder.number('PCNT', value);
+		return this;
+	}
+
+	playlistDelay(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.text('TDLY', value);
+		return this;
+	}
+
+	podcastDescription(value: string): ID3V24TagBuilder {
+		this.rawBuilder.text('TDES', value);
+		return this;
+	}
+
+	podcastFeedURL(value: string): ID3V24TagBuilder {
+		this.rawBuilder.text('WFED', value);
+		return this;
+	}
+
+	podcastKeywords(value: string): ID3V24TagBuilder {
+		this.rawBuilder.text('TKWD', value);
+		return this;
+	}
+
+	podcastURL(value: string): ID3V24TagBuilder {
+		this.rawBuilder.text('TGID', value);
+		return this;
+	}
+
+	popularimeter(email: string, rating: number, count: number) {
+		this.rawBuilder.popularimeter('POPM', email, rating, count);
 		return this;
 	}
 
 	priv(id: string, binary: Buffer): ID3V24TagBuilder {
 		this.rawBuilder.idBin('PRIV', id, binary);
+		return this;
+	}
+
+	productionNotice(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.text('TPRO', value);
+		return this;
+	}
+
+	relativeVolumeAdjustment(
+		key: string,
+		right: number,
+		left: number,
+		peakRight?: number,
+		peakLeft?: number,
+		rightBack?: number,
+		leftBack?: number,
+		peakRightBack?: number,
+		peakLeftBack?: number,
+		center?: number,
+		peakCenter?: number,
+		bass?: number,
+		peakBass?: number
+	) {
+		this.rawBuilder.relativeVolumeAdjustment('RVAD', right, left,
+			peakRight, peakLeft,
+			rightBack, leftBack,
+			peakRightBack, peakLeftBack,
+			center, peakCenter,
+			bass, peakBass);
+		return this;
+	}
+
+	relativeVolumeAdjustment2(id: string, channels: Array<{ type: number; adjustment: number; peak?: number }>) {
+		this.rawBuilder.relativeVolumeAdjustment2('RVA2', id, channels);
+		return this;
+	}
+
+	releaseDate(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.text('TDRL', value);
+		return this;
+	}
+
+	remixer(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.text('TPE4', value);
+		return this;
+	}
+
+	replayGainAdjustment(peak: number, radioAdjustment: number, audiophileAdjustment: number) {
+		this.rawBuilder.replayGainAdjustment('RGAD', peak, radioAdjustment, audiophileAdjustment);
+		return this;
+	}
+
+	script(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.idText('TXXX', 'SCRIPT', value);
+		return this;
+	}
+
+	subtitle(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.text('TIT3', value);
+		return this;
+	}
+
+	synchronisedLyrics(
+		id: string, language: string, timestampFormat: number,
+		contentType: number, events: Array<{ timestamp: number; text: string; }>
+	) {
+		this.rawBuilder.synchronisedLyrics('SYLT', id, language, timestampFormat, contentType, events);
+		return this;
+	}
+
+	taggingDate(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.text('TDTG', value);
+		return this;
+	}
+
+	termsOfUse(id: string, language: string, text: string) {
+		this.rawBuilder.langText('USER', language, text);
+		return this;
+	}
+
+	title(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.text('TIT2', value);
+		return this;
+	}
+
+	titleSort(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.text('TSOT', value);
+		return this;
+	}
+
+	track(trackNr?: string | number, trackTotal?: string | number): ID3V24TagBuilder {
+		this.rawBuilder.nrAndTotal('TRCK', trackNr, trackTotal);
+		return this;
+	}
+
+	trackLength(value?: number | string): ID3V24TagBuilder {
+		this.rawBuilder.text('TLEN', value ? value.toString() : undefined);
+		return this;
+	}
+
+	uniqueFileID(id: string, value?: string): ID3V24TagBuilder {
+		this.rawBuilder.idText('UFID', id, value);
+		return this;
+	}
+
+	unknown(key: string, binary: Buffer): ID3V24TagBuilder {
+		this.rawBuilder.unknown(key, binary);
+		return this;
+	}
+
+	url(id: string, value?: string): ID3V24TagBuilder {
+		this.rawBuilder.idText('WXXX', id, value);
+		return this;
+	}
+
+	website(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.text('WOAR', value);
+		return this;
+	}
+
+	work(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.text('TIT1', value);
+		return this;
+	}
+
+	writer(value?: string): ID3V24TagBuilder {
+		this.rawBuilder.idText('TXXX', 'Writer', value);
+		return this;
+	}
+
+	year(year?: number): ID3V24TagBuilder {
+		this.rawBuilder.text('TORY', year ? year.toString() : undefined);
 		return this;
 	}
 

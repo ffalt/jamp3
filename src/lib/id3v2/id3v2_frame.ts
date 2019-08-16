@@ -74,6 +74,34 @@ export const FrameLangDescText: IFrameImpl = {
 	}
 };
 
+export const FrameLangText: IFrameImpl = {
+	/**
+	 Text encoding          $xx
+	 Language               $xx xx xx
+	 The actual text        <full text string according to encoding>
+	 */
+	parse: async (reader) => {
+		const enc = reader.readEncoding();
+		const language = removeZeroString(reader.readString(3, ascii)).trim();
+		const text = reader.readStringTerminated(enc);
+		const value: IID3V2.FrameValue.LangText = {language, text};
+		return {value, encoding: enc};
+	},
+	write: async (frame, stream, head) => {
+		const value = <IID3V2.FrameValue.LangText>frame.value;
+		const enc = getWriteTextEncoding(frame, head);
+		stream.writeEncoding(enc);
+		stream.writeAsciiString(value.language || '', 3);
+		stream.writeString(value.text, enc);
+	},
+	simplify: (value: IID3V2.FrameValue.LangText) => {
+		if (value && value.text && value.text.length > 0) {
+			return value.text;
+		}
+		return null;
+	}
+};
+
 export const FrameIdBin: IFrameImpl = {
 	/**
 	 Owner identifier        <text string> $00
@@ -222,7 +250,7 @@ export const FramePic: IFrameImpl = {
 	parse: async (reader, frame, head) => {
 		const enc = reader.readEncoding();
 		let mimeType;
-		if (head.ver === 2) {
+		if (head.ver <= 2) {
 			mimeType = reader.readString(3, ascii);
 		} else {
 			mimeType = reader.readStringTerminated(ascii);
@@ -241,7 +269,7 @@ export const FramePic: IFrameImpl = {
 		const value = <IID3V2.FrameValue.Pic>frame.value;
 		const enc = getWriteTextEncoding(frame, head);
 		stream.writeEncoding(enc);
-		if (head.ver === 2) {
+		if (head.ver <= 2) {
 			if (value.url) {
 				stream.writeString('-->', ascii);
 			} else {
@@ -1117,7 +1145,7 @@ export const FrameGEOB: IFrameImpl = {
 		stream.writeBuffer(value.bin);
 	},
 	simplify: (value: IID3V2.FrameValue.GEOB) => {
-		return null; // TODO IID3V2.FrameValue.GEOB IID3V2.FrameValue.Link
+		return null; // TODO IID3V2.FrameValue.GEOB
 	}
 };
 

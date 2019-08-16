@@ -7,7 +7,7 @@ import {IID3V1} from '../../src/lib/id3v1/id3v1__types';
 import chaiExclude from 'chai-exclude';
 import Debug from 'debug';
 import {ITagID} from '../../src';
-import {loadSpec} from '../common/common';
+import {loadSpec, wait} from '../common/common';
 
 const debug = Debug('id3v1-test');
 
@@ -57,7 +57,7 @@ export async function compareID3v1Save(filename: string, tag: IID3V1.Tag): Promi
 	debug('writing', file.name);
 	try {
 		const id3 = new ID3v1();
-		await id3.write(file.name, tag, tag.version || 0);
+		await id3.write(file.name, tag.value, tag.version || 0, {keepBackup: false});
 	} catch (e) {
 		file.removeCallback();
 		return Promise.reject(e);
@@ -76,14 +76,6 @@ export async function compareID3v1Save(filename: string, tag: IID3V1.Tag): Promi
 	}
 }
 
-async function wait(duration: number = 100): Promise<void> {
-	return new Promise<void>(function(resolve, reject) {
-		setTimeout(function() {
-			resolve();
-		}, duration);
-	});
-}
-
 export async function testOverWriteMock(filename: string): Promise<void> {
 	const file = tmp.fileSync();
 	await fse.remove(file.name);
@@ -91,7 +83,7 @@ export async function testOverWriteMock(filename: string): Promise<void> {
 	debug('writing', file.name);
 	try {
 		const id3 = new ID3v1();
-		await id3.write(file.name, mockTag, mockTag.version || 0);
+		await id3.write(file.name, mockTag.value, mockTag.version || 0, {keepBackup: false});
 	} catch (e) {
 		file.removeCallback();
 		return Promise.reject(e);

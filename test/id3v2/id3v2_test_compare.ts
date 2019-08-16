@@ -3,11 +3,12 @@ import fse from 'fs-extra';
 import tmp from 'tmp';
 import 'mocha';
 import {ID3v2} from '../../src/lib/id3v2/id3v2';
-import {IID3V2} from '../../src';
+import {IID3V2, MP3} from '../../src';
 import chaiExclude from 'chai-exclude';
 import {BufferUtils} from '../../src/lib/common/buffer';
 import {ensureID3v2FrameVersionDef, matchFrame} from '../../src/lib/id3v2/id3v2_frames';
 import Debug from 'debug';
+import {rawHeaderOffSet} from '../../src/lib/mp3/mp3_frame';
 
 const debug = Debug('id3v2-compare');
 
@@ -15,7 +16,6 @@ use(chaiExclude);
 
 export async function compareID3v2Tags(a: IID3V2.Tag, b: IID3V2.Tag): Promise<void> {
 	expect(b.frames.length).to.equal(a.frames.length, 'Not the same frame count: ' + b.frames.map(f => f.id) + ' vs. ' + a.frames.map(f => f.id));
-	expect(b.head).excluding(['syncSaveSize', 'size']).to.deep.equal(a.head);
 	if (!a.head) {
 		return Promise.reject('invalid tag header');
 	}
@@ -46,26 +46,58 @@ export async function compareID3v2Tags(a: IID3V2.Tag, b: IID3V2.Tag): Promise<vo
 }
 
 export async function compareID3v2Save(filename: string, tag: IID3V2.Tag): Promise<void> {
+	const mp3 = new MP3();
 	const file = tmp.fileSync();
 	await fse.remove(file.name);
+	await fse.copy(filename, file.name);
+	await mp3.removeTags(file.name, {id3v1: true, id3v2: true, keepBackup: false});
+	const before = await mp3.read(file.name, {mpegQuick: true});
+	const paddingSize = 10;
 	debug('writing', file.name);
 	try {
 		const id3 = new ID3v2();
 		const ver = tag.head ? tag.head.ver : 4;
 		const rev = tag.head ? tag.head.rev : 0;
-		await id3.write(file.name, tag, ver, rev);
+		await id3.write(file.name, tag, ver, rev, {keepBackup: false, paddingSize});
 	} catch (e) {
 		file.removeCallback();
 		return Promise.reject(e);
 	}
 	try {
 		debug('id3v2test', 'loading', file.name);
-		const id3 = new ID3v2();
-		const tag2 = await id3.read(file.name);
-		should().exist(tag2);
-		if (tag2) {
-			await compareID3v2Tags(tag, tag2);
+		const data = await mp3.read(file.name, {id3v2: true, mpegQuick: true});
+		should().exist(data);
+		if (!data) {
+			return;
 		}
+		should().exist(data.id3v2);
+		if (!data.id3v2) {
+			return;
+		}
+		should().exist(data.id3v2.head);
+		if (!data.id3v2.head) {
+			return;
+		}
+		if (data.frames && data.frames.audio.length > 0) {
+			const trashInFile = (before && before.frames ? rawHeaderOffSet(before.frames.audio[0]) : 0);
+			const startOfAudio = rawHeaderOffSet(data.frames.audio[0]) - trashInFile;
+			const headerSize = 10;
+			const size = data.id3v2.head.size;
+			const endOfID3v2spec = data.id3v2.start + size + headerSize;
+			if (startOfAudio !== endOfID3v2spec) {
+				console.log('trashInFile', trashInFile);
+				console.log('startOfAudio', startOfAudio);
+				console.log('endOfID3v2 spec', endOfID3v2spec);
+				console.log('endOfID3v2 real', data.id3v2.end + paddingSize);
+				console.log('id3v2.start', data.id3v2.start);
+				console.log('id3v2.size', data.id3v2.head.size);
+				console.log('id3v2.head', data.id3v2.head);
+				console.log('---');
+			}
+			expect(startOfAudio).to.equal(endOfID3v2spec, 'id3v2 header size declaration seems to be wrong');
+			// expect(startOfAudio).to.equal(data.id3v2.end + paddingSize, 'id3v2 padding seems to be wrong');
+		}
+		await compareID3v2Tags(tag, data.id3v2);
 	} catch (e) {
 		file.removeCallback();
 		return Promise.reject(e);

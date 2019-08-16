@@ -39,8 +39,9 @@ async function removeID3v2TagsTest(filename: string, before: IMP3.Result): Promi
 	const after = await mp3.read(file.name, {id3v1: true, id3v2: true, mpeg: true});
 	const cleanFileSize = (await fse.stat(file.name)).size;
 	const id3v2 = new ID3v2();
-	await id3v2.write(file.name, (new ID3V24TagBuilder()).buildTag(), 4, 0);
+	await id3v2.writeBuilder(file.name, (new ID3V24TagBuilder()), {keepBackup: false, paddingSize: 0});
 	await mp3.removeTags(file.name, {id3v1: false, id3v2: true});
+	const after2 = await mp3.read(file.name, {id3v1: true, id3v2: true, mpeg: true});
 	const cleanFileSize2 = (await fse.stat(file.name)).size;
 	file.removeCallback();
 	should().exist(result);
@@ -51,6 +52,8 @@ async function removeID3v2TagsTest(filename: string, before: IMP3.Result): Promi
 	expect(result.id3v2).to.equal(true, 'result should report removed id3v2 tag (id3v2.remove)');
 	expect(!!after.id3v1).to.equal(!!before.id3v1, 'id3v1 tag should be unchanged (id3v2.remove)');
 	expect(!!after.id3v2).to.equal(false, 'id3v2 tag should no longer exists (id3v2.remove)');
+	expect(!!after2.id3v1).to.equal(!!before.id3v1, 'id3v1 tag should be unchanged (id3v2.remove)');
+	expect(!!after2.id3v2).to.equal(false, 'id3v2 tag should no longer exists (id3v2.remove)');
 	await compareRemovalAudio(before, after);
 	expect(cleanFileSize2).to.equal(cleanFileSize, 'padding leftovers not removed');
 }

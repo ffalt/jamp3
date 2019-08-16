@@ -7,7 +7,7 @@ import * as zlib from 'zlib';
 import {Id3v2RawWriter} from './id3v2_writer';
 import {
 	FrameAENC, FrameAsciiValue, FrameCHAP, FrameCTOC, FrameETCO, FrameGEOB, FrameIdAscii, FrameIdBin, FrameIdText,
-	FrameLangDescText, FrameLINK, FrameMusicCDId, FramePartOfCompilation, FramePCST,
+	FrameLangDescText, FrameLangText, FrameLINK, FrameMusicCDId, FramePartOfCompilation, FramePCST,
 	FramePic, FramePlayCounter, FramePopularimeter, FrameRelativeVolumeAdjustment, FrameRelativeVolumeAdjustment2, FrameRGAD, FrameSYLT, FrameText, FrameTextConcatList, FrameTextList, FrameUnknown, IFrameImpl
 } from './id3v2_frame';
 import {IID3V2} from './id3v2__types';
@@ -1226,7 +1226,7 @@ export const FrameDefs: { [id: string]: IFrameDef } = {
 		/*
 		 The 'Payment' frame is a URL pointing at a webpage that will handle the process of paying for this file.
 		 */
-		title: 'Payment',
+		title: 'Payment URL',
 		versions: [3, 4],
 		impl: FrameAsciiValue
 	},
@@ -1560,7 +1560,7 @@ export const FrameDefs: { [id: string]: IFrameDef } = {
 		 */
 		title: 'Terms of use',
 		versions: [3, 4],
-		impl: FrameUnknown
+		impl: FrameLangText
 	},
 	'OWNE': {
 		/*
@@ -1817,17 +1817,17 @@ export const FrameDefs: { [id: string]: IFrameDef } = {
 		/*
 		 Itunes - Indicates a podcast.
 		 */
-		title: 'iTunes podcast marker',
+		title: 'Podcast Marker',
 		versions: [3, 4],
 		impl: FramePCST
 	},
 	'TDES': {
-		title: 'iTunes podcast description',
+		title: 'Podcast Description',
 		versions: [3, 4],
 		impl: FrameText
 	},
 	'TKWD': {
-		title: 'iTunes podcast keywords',
+		title: 'Podcast Keywords',
 		versions: [3, 4],
 		impl: FrameUnknown
 	},

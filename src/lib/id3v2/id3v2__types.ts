@@ -19,6 +19,11 @@ export namespace IID3V2 {
 			text: string;
 		}
 
+		export interface LangText extends Base {
+			language: string;
+			text: string;
+		}
+
 		export interface Pic extends Base {
 			description: string;
 			pictureType: number;
@@ -203,19 +208,36 @@ export namespace IID3V2 {
 		rev: number;
 		size: number;
 		valid: boolean;
-		syncSaveSize?: number;
-		flags?: Flags;
+		v2?: {
+			sizeAsSyncSafe?: number; // just in case if size is written in wrong v2.2 format
+			flags: {
+				unsynchronisation?: boolean;
+				compression?: boolean;
+			}
+		};
+		v3?: {
+			flags: {
+				unsynchronisation?: boolean;
+				extendedheader?: boolean;
+				experimental?: boolean;
+			}
+			extended?: TagHeaderExtendedVer3;
+		};
+		v4?: {
+			flags: {
+				unsynchronisation?: boolean;
+				extendedheader?: boolean;
+				experimental?: boolean;
+				footer?: boolean;
+			}
+			extended?: TagHeaderExtendedVer4;
+		};
+		// flags?: Flags;
 		flagBits?: Array<number>;
-		extended?: TagHeaderExtended;
-	}
-
-	export interface TagHeaderExtended {
-		size: number;
-		ver3?: TagHeaderExtendedVer3;
-		ver4?: TagHeaderExtendedVer4;
 	}
 
 	export interface TagHeaderExtendedVer3 {
+		size: number;
 		flags1: Flags;
 		flags2: Flags;
 		crcData?: number;
@@ -223,6 +245,7 @@ export namespace IID3V2 {
 	}
 
 	export interface TagHeaderExtendedVer4 {
+		size: number;
 		flags: Flags;
 		restrictions?: {
 			tagSize: string;

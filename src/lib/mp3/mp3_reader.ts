@@ -6,6 +6,7 @@ import {colapseRawHeader, MPEGFrameReader} from './mp3_frame';
 import {BufferUtils} from '../common/buffer';
 import {getBestMPEGChain} from './mp3_frames';
 import {Readable} from 'stream';
+import fse from 'fs-extra';
 
 export interface MP3ReaderOptions extends IMP3.ReadOptions {
 	streamSize?: number;
@@ -53,7 +54,6 @@ export class MP3Reader {
 		const id3Header = this.id3v2reader.readID3v2Header(chunk, i);
 		if (id3Header && id3Header.valid) {
 			const start = this.stream.pos - chunk.length + i;
-			const end = this.stream.pos;
 			this.stream.unshift(chunk.slice(i));
 			const result = await this.id3v2reader.readTag(this.stream);
 			if (result) {
@@ -112,7 +112,6 @@ export class MP3Reader {
 			}
 			return false;
 		};
-
 		if (demandData()) {
 			return true;
 		}
@@ -251,6 +250,9 @@ export class MP3Reader {
 
 	async read(filename: string, options: MP3ReaderOptions): Promise<IMP3.RawLayout> {
 		this.setOptions(options);
+		if (!options.streamSize) {
+			options.streamSize = (await fse.stat(filename)).size;
+		}
 		await this.stream.open(filename);
 		try {
 			await this.scan();

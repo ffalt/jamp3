@@ -21,7 +21,7 @@ const tests = [
 
 const testSingleFile: string | undefined =
 	undefined;
-// 'mpeg20-xing';
+// 'v2.2-itunes81';
 
 use(chaiExclude);
 
@@ -39,7 +39,7 @@ describe('MP3', async () => {
 					});
 					it('should load tags & save tags & compare tags', async () => {
 						await testLoadSaveCompare(filename);
-					});
+					}).timeout(200000);
 					if (path.extname(filename) !== '.id3') {
 						it('should read mpeg frames', async () => {
 							await testFrames(filename);

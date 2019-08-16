@@ -45,3 +45,11 @@ export async function hasSpec(filename: string): Promise<any> {
 export async function loadSpec(filename: string): Promise<any> {
 	return await fse.readJSON(filename + '.spec.json');
 }
+
+export async function wait(duration: number = 100): Promise<void> {
+	return new Promise<void>(function(resolve, reject) {
+		setTimeout(function() {
+			resolve();
+		}, duration);
+	});
+}

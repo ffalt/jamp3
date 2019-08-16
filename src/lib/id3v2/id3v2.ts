@@ -118,21 +118,28 @@ export class ID3v2 {
 	}
 
 	async write(filename: string, tag: IID3V2.ID3v2, version: number, rev: number, options: IID3V2.WriteOptions): Promise<void> {
-		const opts = Object.assign({keepBackup: false, paddingSize: 100}, options);
 		if (typeof options !== 'object') {
 			throw Error('Invalid options object, update your code'); // function api change
 		}
-		// TODO: ensure header flags are valid in id3v2.${version}
+		const opts = Object.assign({keepBackup: false, paddingSize: 100}, options);
 		const head: IID3V2.TagHeader = {
 			ver: version,
 			rev: rev,
 			size: 0,
 			valid: true,
-			syncSaveSize: tag.head ? tag.head.syncSaveSize : undefined,
-			flags: tag.head ? tag.head.flags : undefined,
-			flagBits: tag.head ? tag.head.flagBits : undefined,
-			extended: tag.head ? tag.head.extended : undefined
+			flagBits: tag.head ? tag.head.flagBits : undefined
 		};
+		if (tag.head) {
+			if (version === 4 && tag.head.v4) {
+				head.v4 = tag.head.v4;
+			}
+			if (version === 3 && tag.head.v3) {
+				head.v3 = tag.head.v3;
+			}
+			if (version <= 2 && tag.head.v2) {
+				head.v2 = tag.head.v2;
+			}
+		}
 		const raw_frames = await writeToRawFrames(tag.frames, head);
 		const exists = await fse.pathExists(filename);
 		if (!exists) {
