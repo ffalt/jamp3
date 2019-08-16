@@ -5,6 +5,7 @@ export {MP3Analyzer, IMP3Report, IMP3AnalyzerOptions, IMP3Warning} from './lib/m
 export {simplifyTag} from './lib/id3v2/id3v2_simplify';
 export * from './lib/common/types';
 export * from './lib/id3v2/id3v2_builder';
+export * from './lib/id3v2/id3v2_builder24';
 export * from './lib/id3v2/id3v2__types';
 export * from './lib/id3v1/id3v1__types';
 export * from './lib/id3v1/id3v1_consts';
