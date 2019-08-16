@@ -20,7 +20,12 @@
   "scripts": {
     "build": "tsc -m commonjs --outDir dist",
     "build:deploy": "tsc -m commonjs --outDir dist",
-    "test": "mocha --require ts-node/register --recursive test/test.ts test/**/test.ts",
+    "test": "mocha --opts ./mocha.opts --recursive test/test.ts test/**/test.ts",
+    "test:id3v1": "mocha --opts ./test/mocha.opts test/id3v1/test.ts",
+    "test:id3v2": "mocha --opts ./test/mocha.opts test/id3v2/test.ts",
+    "test:mp3": "mocha --opts ./test/mocha.opts test/idmp33v2/test.ts",
+    "test:builder": "mocha --opts ./test/mocha.opts test/id3v2/builder/test.ts",
+    "test:frames": "mocha --opts ./test/mocha.opts test/id3v2/frames/test.ts",
     "lint": "tslint --project tsconfig.json \"src/**/*.ts\"",
     "lint-fix": "tslint --fix --project tsconfig.json \"src/**/*.ts\"",
     "coverage": "nyc npm run test",
