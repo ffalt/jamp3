@@ -1,6 +1,6 @@
 import fse from 'fs-extra';
 import {ID3v2Reader} from './id3v2_reader';
-import {ID3v2Writer} from './id3v2_writer';
+import {ID3v2Writer, Id3v2WriterOptions} from './id3v2_writer';
 import {readID3v2Frame, writeToRawFrames} from './id3v2_frames';
 import {FileWriterStream} from '../common/streams';
 import {IID3V2} from './id3v2__types';
@@ -56,7 +56,7 @@ export class ID3v2 {
 		await stream.open(filename);
 		const writer = new ID3v2Writer();
 		try {
-			await writer.write(stream, frames, head, 0);
+			await writer.write(stream, frames, head, {paddingSize: 0});
 		} catch (e) {
 			await stream.close();
 			return Promise.reject(e);
@@ -64,10 +64,10 @@ export class ID3v2 {
 		await stream.close();
 	}
 
-	private async replaceTag(filename: string, frames: Array<IID3V2.RawFrame>, head: IID3V2.TagHeader, keepBackup: boolean, paddingSize: number): Promise<void> {
-		await updateFile(filename, {id3v2: true, mpegQuick: true}, keepBackup, () => true, async (layout, fileWriter): Promise<void> => {
+	private async replaceTag(filename: string, frames: Array<IID3V2.RawFrame>, head: IID3V2.TagHeader, options: IID3V2.WriteOptions): Promise<void> {
+		await updateFile(filename, {id3v2: true, mpegQuick: true}, !!options.keepBackup, () => true, async (layout, fileWriter): Promise<void> => {
 			const writer = new ID3v2Writer();
-			await writer.write(fileWriter, frames, head, paddingSize);
+			await writer.write(fileWriter, frames, head, options);
 			let start = 0;
 			let specEnd = 0;
 			for (const tag of layout.tags) {
@@ -88,7 +88,36 @@ export class ID3v2 {
 		});
 	}
 
-	async write(filename: string, tag: IID3V2.Tag, version: number, rev: number, keepBackup?: boolean, paddingSize: number = 100): Promise<void> {
+	async remove(filename: string, options: IID3V2.RemoveOptions): Promise<boolean> {
+		let removed = false;
+		await updateFile(filename, {id3v2: true, mpegQuick: true}, !!options.keepBackup, () => true, async (layout, fileWriter): Promise<void> => {
+			let start = 0;
+			let specEnd = 0;
+			for (const tag of layout.tags) {
+				if (tag.id === ITagID.ID3v2) {
+					if (start < tag.end) {
+						specEnd = (tag as IID3V2.RawTag).head.size + tag.start + 10 /*header itself*/;
+						start = tag.end;
+						removed = true;
+					}
+				}
+			}
+			if (layout.frameheaders.length > 0) {
+				const mediastart = rawHeaderOffSet(layout.frameheaders[0]);
+				start = specEnd < mediastart ? specEnd : mediastart;
+			} else {
+				start = Math.max(start, specEnd);
+			}
+			await fileWriter.copyFrom(filename, start);
+		});
+		return removed;
+	}
+
+	async write(filename: string, tag: IID3V2.ID3v2, version: number, rev: number, options: IID3V2.WriteOptions): Promise<void> {
+		const opts = Object.assign({keepBackup: false, paddingSize: 100}, options);
+		if (typeof options !== 'object') {
+			throw Error('Invalid options object, update your code'); // function api change
+		}
 		// TODO: ensure header flags are valid in id3v2.${version}
 		const head: IID3V2.TagHeader = {
 			ver: version,
@@ -105,7 +134,7 @@ export class ID3v2 {
 		if (!exists) {
 			await this.writeTag(filename, raw_frames, head);
 		} else {
-			await this.replaceTag(filename, raw_frames, head, !!keepBackup, paddingSize);
+			await this.replaceTag(filename, raw_frames, head, opts);
 		}
 	}
 }

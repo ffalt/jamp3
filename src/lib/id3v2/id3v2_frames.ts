@@ -2079,7 +2079,7 @@ export function isValidFrameId(id: string): boolean {
 }
 
 export async function writeSubFrames(frames: Array<IID3V2.Frame>, stream: WriterStream, head: IID3V2.TagHeader): Promise<void> {
-	const writer = new Id3v2RawWriter(stream, head);
+	const writer = new Id3v2RawWriter(stream, head, {paddingSize: 0});
 	const rawframes = await writeToRawFrames(frames, head);
 	for (const frame of rawframes) {
 		await writer.writeFrame(frame);

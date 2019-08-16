@@ -1,4 +1,5 @@
 import {ITag} from '../common/types';
+import {Id3v2WriterOptions} from './id3v2_writer';
 
 export namespace IID3V2 {
 
@@ -238,6 +239,11 @@ export namespace IID3V2 {
 		frames: Array<Frame>;
 	}
 
+	export interface ID3v2 {
+		head?: TagHeader;
+		frames: Array<Frame>;
+	}
+
 	export interface RawTag extends ITag {
 		head: TagHeader;
 		frames: Array<RawFrame>;
@@ -393,7 +399,16 @@ export namespace IID3V2 {
 		WORK?: string;
 		WRITER?: string;
 	}
+
+	export interface RemoveOptions {
+		keepBackup?: boolean;
+	}
+
+	export interface WriteOptions extends Id3v2WriterOptions {
+		keepBackup?: boolean;
+	}
 }
+
 export const ID3v2_ValuePicTypes: { [name: string]: string; } = {
 	'0': 'Other',
 	'1': '32x32 pixels \'file icon\' (PNG only)',

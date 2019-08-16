@@ -3,10 +3,10 @@ import {IID3V1} from './id3v1__types';
 
 class Id3v1RawWriter {
 	version: number;
-	tag: IID3V1.Tag;
+	tag: IID3V1.ID3v1Tag;
 	stream: WriterStream;
 
-	constructor(stream: WriterStream, tag: IID3V1.Tag, version: number) {
+	constructor(stream: WriterStream, tag: IID3V1.ID3v1Tag, version: number) {
 		this.stream = stream;
 		this.version = version;
 		this.tag = tag;
@@ -33,25 +33,25 @@ class Id3v1RawWriter {
 		 Genre			1 byte
 		 */
 
-		this.stream.writeFixedAsciiString(this.tag.value.title || '', 30);
-		this.stream.writeFixedAsciiString(this.tag.value.artist || '', 30);
-		this.stream.writeFixedAsciiString(this.tag.value.album || '', 30);
-		this.stream.writeFixedAsciiString(this.tag.value.year || '', 4);
+		this.stream.writeFixedAsciiString(this.tag.title || '', 30);
+		this.stream.writeFixedAsciiString(this.tag.artist || '', 30);
+		this.stream.writeFixedAsciiString(this.tag.album || '', 30);
+		this.stream.writeFixedAsciiString(this.tag.year || '', 4);
 		if (this.version === 0) {
-			this.stream.writeFixedAsciiString(this.tag.value.comment || '', 30);
+			this.stream.writeFixedAsciiString(this.tag.comment || '', 30);
 		} else {
-			this.stream.writeFixedAsciiString(this.tag.value.comment || '', 28);
+			this.stream.writeFixedAsciiString(this.tag.comment || '', 28);
 			this.stream.writeByte(0);
-			this.stream.writeByte(this.tag.value.track || 0);
+			this.stream.writeByte(this.tag.track || 0);
 		}
-		this.stream.writeByte(this.tag.value.genreIndex || 0);
+		this.stream.writeByte(this.tag.genreIndex || 0);
 	}
 
 }
 
 export class ID3v1Writer {
 
-	async write(stream: WriterStream, tag: IID3V1.Tag, version: number): Promise<void> {
+	async write(stream: WriterStream, tag: IID3V1.ID3v1Tag, version: number): Promise<void> {
 		if (version < 0 || version > 1) {
 			return Promise.reject(Error('Unsupported Version'));
 		}

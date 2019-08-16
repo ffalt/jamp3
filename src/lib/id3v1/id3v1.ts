@@ -19,7 +19,7 @@ export class ID3v1 {
 		return await reader.readStream(stream);
 	}
 
-	private async writeTag(filename: string, tag: IID3V1.Tag, version: number): Promise<void> {
+	private async writeTag(filename: string, tag: IID3V1.ID3v1Tag, version: number): Promise<void> {
 		const stream = new FileWriterStream();
 		await stream.open(filename);
 		const writer = new ID3v1Writer();
@@ -32,7 +32,7 @@ export class ID3v1 {
 		await stream.close();
 	}
 
-	private async replaceTag(filename: string, tag: IID3V1.Tag, version: number, keepBackup: boolean): Promise<void> {
+	private async replaceTag(filename: string, tag: IID3V1.ID3v1Tag, version: number, keepBackup: boolean): Promise<void> {
 		const stat = await fse.stat(filename);
 		await updateFile(filename, {id3v1: true}, keepBackup, () => true, async (layout, fileWriter): Promise<void> => {
 			let finish = stat.size;
@@ -49,12 +49,30 @@ export class ID3v1 {
 		});
 	}
 
-	async write(filename: string, tag: IID3V1.Tag, version: number, keepBackup?: boolean): Promise<void> {
+	async remove(filename: string, opts: IID3V1.RemoveOptions): Promise<boolean> {
+		const stat = await fse.stat(filename);
+		let removed = false;
+		await updateFile(filename, {id3v1: true}, !!opts.keepBackup, () => true, async (layout, fileWriter): Promise<void> => {
+			let finish = stat.size;
+			for (const t of layout.tags) {
+				if (t.id === ITagID.ID3v1) {
+					removed = true;
+					if (finish > t.start) {
+						finish = t.start;
+					}
+				}
+			}
+			await fileWriter.copyRange(filename, 0, finish);
+		});
+		return removed;
+	}
+
+	async write(filename: string, tag: IID3V1.ID3v1Tag, version: number, opts: IID3V1.WriteOptions): Promise<void> {
 		const exists = await fse.pathExists(filename);
 		if (!exists) {
 			await this.writeTag(filename, tag, version);
 		} else {
-			await this.replaceTag(filename, tag, version, !!keepBackup);
+			await this.replaceTag(filename, tag, version, !!opts.keepBackup);
 		}
 	}
 

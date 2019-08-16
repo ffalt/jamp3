@@ -4,17 +4,21 @@ import {ID3v2_FRAME_FLAGS1, ID3v2_FRAME_FLAGS2, ID3v2_FRAME_HEADER_LENGTHS, ID3v
 import {IID3V2} from './id3v2__types';
 import {BufferUtils} from '../common/buffer';
 
+export interface Id3v2RawWriterOptions {
+	paddingSize?: number;
+}
+
 export class Id3v2RawWriter {
-	paddingSize: number;
 	stream: WriterStream;
 	frames: Array<IID3V2.RawFrame>;
 	head: IID3V2.TagHeader;
+	paddingSize: number;
 
-	constructor(stream: WriterStream, head: IID3V2.TagHeader, frames?: Array<IID3V2.RawFrame>, paddingSize?: number) {
+	constructor(stream: WriterStream, head: IID3V2.TagHeader, options: Id3v2RawWriterOptions, frames?: Array<IID3V2.RawFrame>) {
 		this.stream = stream;
 		this.head = head;
 		this.frames = frames || [];
-		this.paddingSize = paddingSize === undefined ? 0 : paddingSize;
+		this.paddingSize = options.paddingSize === undefined ? 0 : options.paddingSize;
 	}
 
 	private async writeHeader(frames: Array<IID3V2.RawFrame>): Promise<void> {
@@ -534,13 +538,17 @@ export class Id3v2RawWriter {
 	}
 }
 
+
+export interface Id3v2WriterOptions extends Id3v2RawWriterOptions {
+}
+
 export class ID3v2Writer {
 
-	async write(stream: WriterStream, frames: Array<IID3V2.RawFrame>, head: IID3V2.TagHeader, paddingSize: number): Promise<void> {
+	async write(stream: WriterStream, frames: Array<IID3V2.RawFrame>, head: IID3V2.TagHeader, options: Id3v2WriterOptions): Promise<void> {
 		if (head.ver === 0 || head.ver > 4) {
 			return Promise.reject(Error('Unsupported Version'));
 		}
-		const writer = new Id3v2RawWriter(stream, head, frames, paddingSize);
+		const writer = new Id3v2RawWriter(stream, head, options, frames);
 		await writer.write();
 	}
 }
