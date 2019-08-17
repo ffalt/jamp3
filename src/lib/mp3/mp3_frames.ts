@@ -91,15 +91,11 @@ export function getBestMPEGChain(frames: Array<IMP3.FrameRawHeaderArray>, follow
 			}
 		}
 	}
-	let select = chains.filter(chain => chain.count > 0)[0];
+	const bestChains = chains.filter(chain => chain.count > 0).sort((a, b) => b.count - a.count);
+	let select = bestChains[0];
 	if (!select) {
 		select = chains[0];
 	}
-	// const o = chains.filter(chain => chain.count > 0).map(chain => {
-	// 	return 'chain from offset ' + chain.frame.header.offset + ': ' + chain.count;
-	// }).join('\n');
-	// console.log(o);
-	// console.log('select', select.frame.header.offset, 'count', select.count);
 	return select;
 }
 
