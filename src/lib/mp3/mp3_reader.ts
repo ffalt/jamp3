@@ -183,6 +183,7 @@ export class MP3Reader {
 					}
 					const header = this.mpegFramereader.readMPEGFrameHeader(chunk, i);
 					if (header) {
+						this.scanid3v2 = false; // no more scanning for id3v2 after audio start
 						if (!this.scanMPEGFrame) {
 							header.offset = this.stream.pos - chunk.length + i;
 							this.layout.frameheaders.push(collapseRawHeader(header));
