@@ -167,7 +167,7 @@ export namespace IID3V2 {
 	export interface FormatFlags {
 		[name: string]: boolean | undefined;
 
-		data_length_indicator?: boolean;
+		dataLengthIndicator?: boolean;
 		unsynchronised?: boolean;
 		compressed?: boolean;
 		encrypted?: boolean;

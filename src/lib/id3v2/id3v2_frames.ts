@@ -2018,7 +2018,7 @@ async function processRawFrame(frame: IID3V2.RawFrame, head: IID3V2.TagHeader): 
 				});
 			});
 		});
-	} else if ((frame.formatFlags) && (frame.formatFlags.data_length_indicator)) {
+	} else if ((frame.formatFlags) && (frame.formatFlags.dataLengthIndicator)) {
 		/*
 		 p - Data length indicator
 			 The data length indicator is the value one would write
@@ -2068,7 +2068,7 @@ async function writeToRawFrame(frame: IID3V2.Frame, head: IID3V2.TagHeader): Pro
 				uncompressedStream.writeUInt3Byte(data.length);
 			}
 			data = BufferUtils.concatBuffer(uncompressedStream.toBuffer(), zlib.deflateSync(data));
-		} else if ((frameHead.formatFlags) && (frameHead.formatFlags.data_length_indicator)) {
+		} else if ((frameHead.formatFlags) && (frameHead.formatFlags.dataLengthIndicator)) {
 			const dataLengthStream = new MemoryWriterStream();
 			dataLengthStream.writeSyncSafeInt(data.length);
 			data = BufferUtils.concatBuffer(dataLengthStream.toBuffer(), data);

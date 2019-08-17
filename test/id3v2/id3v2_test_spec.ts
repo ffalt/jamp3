@@ -17,15 +17,16 @@ function compareID3v2SpecFrame(filename: string, framespec: any, frame: IID3V2.F
 	if (!frameHead) {
 		return;
 	}
+	const formatFlags = frameHead.formatFlags || {};
 	if (framespec.formatFlags) {
 		Object.keys(framespec.formatFlags).forEach(flag => {
-			expect(frameHead.formatFlags[flag]).to.equal(framespec.formatFlags[flag], 'Flag values not equal for frame ' + framespec.id + ' flag ' + flag + ' frame: ' + JSON.stringify(frame));
+			expect(formatFlags[flag]).to.equal(framespec.formatFlags[flag], 'Flag values not equal for frame ' + framespec.id + ' flag ' + flag + ' frame: ' + JSON.stringify(frame));
 		});
 	}
-	Object.keys(frameHead.formatFlags).forEach(flag => {
-		if (frameHead.formatFlags[flag]) {
+	Object.keys(formatFlags).forEach(flag => {
+		if (formatFlags[flag]) {
 			should().exist(framespec.formatFlags, 'SpecError: Flag values must be specified for frame ' + framespec.id + ' flag ' + flag);
-			expect(frameHead.formatFlags[flag]).to.equal(framespec.formatFlags[flag], 'SpecError: All Flag values must be correctly specified for frame ' + framespec.id + ' flag ' + flag);
+			expect(formatFlags[flag]).to.equal(framespec.formatFlags[flag], 'SpecError: All Flag values must be correctly specified for frame ' + framespec.id + ' flag ' + flag);
 		}
 	});
 	if (framespec.binSize !== undefined) {
