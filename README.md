@@ -541,27 +541,26 @@ Example result:
 {
   "size": 4096,
   "mpeg": {
-            "durationEstimate": 1.044875, // only a few audioframes have been read to estimate duration
-            "durationRead": 0,
-            "channels": 2,
-            "frameCount": 0,
-            "frameCountDeclared": 0,
-            "bitRate": 128000,
-            "sampleRate": 44100,
-            "sampleCount": 1152,
-            "audioBytes": 0,
-            "audioBytesDeclared": 0,
-            "version": "1 (ISO/IEC 11172-3)",
-            "layer": "MPEG audio layer 3",
-            "encoded": "CBR",
-            "mode": "joint"
-          }
-  ,
-  "id3v1": {
-      // see sections above for example ID3v1 output
-   },
+    "durationEstimate": 1.044875, 
+    "durationRead": 0,
+    "channels": 2,
+    "frameCount": 0,
+    "frameCountDeclared": 0,
+    "bitRate": 128000,
+    "sampleRate": 44100,
+    "sampleCount": 1152,
+    "audioBytes": 0,
+    "audioBytesDeclared": 0,
+    "version": "1 (ISO/IEC 11172-3)",
+    "layer": "MPEG audio layer 3",
+    "encoded": "CBR",
+    "mode": "joint"
+  },
+  "id3v1": { 
+      "…": "see documentation above"  
+  },
   "id3v2": {
-      // see sections above for example ID3v2 output
+      "…": "see documentation above"  
   }
 }
 ```
