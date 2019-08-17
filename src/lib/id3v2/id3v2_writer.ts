@@ -86,7 +86,7 @@ export class Id3v2RawWriter {
 		if (this.head.ver <= 2) {
 			this.head.v2 = this.head.v2 || {flags: {}};
 			this.head.v2.flags.unsynchronisation = false;
-			flagBits = unflags(ID3v2_HEADER_FLAGS[2], this.head.v2.flags);
+			flagBits = unflags(ID3v2_HEADER_FLAGS[2], this.head.v2.flags as any);
 		} else if (this.head.ver === 3) {
 			this.head.v3 = this.head.v3 || {flags: {}};
 			this.head.v3.flags.unsynchronisation = false;
@@ -96,7 +96,7 @@ export class Id3v2RawWriter {
 			} else {
 				this.head.v3.flags.extendedheader = false;
 			}
-			flagBits = unflags(ID3v2_HEADER_FLAGS[this.head.ver], this.head.v3.flags);
+			flagBits = unflags(ID3v2_HEADER_FLAGS[this.head.ver], this.head.v3.flags as any);
 		} else if (this.head.ver === 4) {
 			this.head.v4 = this.head.v4 || {flags: {}};
 			this.head.v4.flags.unsynchronisation = false;
@@ -106,7 +106,7 @@ export class Id3v2RawWriter {
 			} else {
 				this.head.v4.flags.extendedheader = false;
 			}
-			flagBits = unflags(ID3v2_HEADER_FLAGS[this.head.ver], this.head.v4.flags);
+			flagBits = unflags(ID3v2_HEADER_FLAGS[this.head.ver], this.head.v4.flags as any);
 		} else {
 			flagBits = unflags(ID3v2_HEADER_FLAGS[this.head.ver], {});
 		}

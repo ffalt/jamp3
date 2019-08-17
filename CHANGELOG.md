@@ -14,6 +14,7 @@
 * ID3v2.read handles empty id3v2 tag (size:0) 
 
 ### BREAKING
+* MP3Analyzer: renamed result fields
 * ID3v24Builder: renamed functions (key=>initialKey, media=>mediaType, bmp=>bpm)
 * ID3v2.write(): changed api - options object is mandatory
 * MP3.read(): option id3v1IfNotid3v2 renamed to id3v1IfNotID3v2

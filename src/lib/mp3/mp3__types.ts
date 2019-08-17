@@ -2,13 +2,10 @@ import {IID3V2} from '../id3v2/id3v2__types';
 import {IID3V1} from '../id3v1/id3v1__types';
 import {ITag} from '../common/types';
 
+/**
+ * Interfaces for class MP3
+ */
 export namespace IMP3 {
-
-	export interface RemoveTagsOptions {
-		id3v2: boolean; // remove id3v2 tag
-		id3v1: boolean; // remove id3v1 tag
-		keepBackup?: boolean; // keep backup file created while removing tags
-	}
 
 	export interface ReadOptions {
 		// read mpeg informations
@@ -45,15 +42,39 @@ export namespace IMP3 {
 		// starttime?: number;
 	}
 
+	export interface RemoveTagsOptions {
+		/** remove ID3v2 tag */
+		id3v2: boolean;
+		/** remove ID3v1 tag */
+		id3v1: boolean;
+		/** keep backup file (.bak) created while removing tags */
+		keepBackup?: boolean;
+	}
+
+	export interface RemoveResult {
+		/** ID3v2 tag removed */
+		id3v2: boolean;
+		/** ID3v1 tag removed */
+		id3v1: boolean;
+	}
+
 	export interface Result {
+		/** total size */
 		size: number;
-		mpeg?: MPEG;
+		/** ID3v2 tag */
 		id3v2?: IID3V2.Tag;
+		/** ID3v1 tag */
 		id3v1?: IID3V1.Tag;
+		/** mpeg information */
+		mpeg?: MPEG;
+		/** mpeg frames */
 		frames?: {
+			/** mpeg header frames (like XING, etc.) */
 			headers: Array<IMP3.Frame>;
+			/** mpeg audio frames as array */
 			audio: Array<IMP3.FrameRawHeaderArray>;
 		};
+		/** raw parse result */
 		raw?: RawLayout;
 	}
 
@@ -124,17 +145,17 @@ export namespace IMP3 {
 		};
 	}
 
-	export type FrameRawHeaderArray = Array<number>; // 0: offset, 1:size, 2:front flags, 3:back flags
-
-	export interface RawFrame {
-		header: FrameRawHeaderArray;
+	export interface Frame {
+		header: FrameHeader;
 		mode?: string;
 		xing?: Xing;
 		vbri?: VBRI;
 	}
 
-	export interface Frame {
-		header: FrameHeader;
+	export type FrameRawHeaderArray = Array<number>; // 0: offset, 1:size, 2:front flags, 3:back flags
+
+	export interface RawFrame {
+		header: FrameRawHeaderArray;
 		mode?: string;
 		xing?: Xing;
 		vbri?: VBRI;

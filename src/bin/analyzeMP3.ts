@@ -1,4 +1,4 @@
-import {IMP3AnalyzerOptions, IMP3Report, MP3Analyzer} from '../lib/mp3/mp3_analyzer';
+import {IMP3Analyzer, MP3Analyzer} from '../lib/mp3/mp3_analyzer';
 import {collectFiles} from '../lib/common/utils';
 import program from 'commander';
 import fse from 'fs-extra';
@@ -16,10 +16,10 @@ program
 	.option('-d, --dest <file>', 'destination analyze result file')
 	.parse(process.argv);
 
-const result: Array<IMP3Report> = [];
-const options: IMP3AnalyzerOptions = {mpeg: true, xing: true, id3v2: true, id3v1: true};
+const result: Array<IMP3Analyzer.Report> = [];
+const options: IMP3Analyzer.Options = {mpeg: true, xing: true, id3v2: true, id3v1: true};
 
-function toPlain(report: IMP3Report): string {
+function toPlain(report: IMP3Analyzer.Report): string {
 	const sl: Array<string> = [report.filename];
 	const features: Array<string> = [];
 	if (report.frames) {
@@ -47,9 +47,9 @@ function toPlain(report: IMP3Report): string {
 		features.push('ID3v2');
 	}
 	sl.push(features.join(', '));
-	if (report.msgs.length > 0) {
+	if (report.warnings.length > 0) {
 		sl.push('WARNINGS:');
-		report.msgs.forEach(msg => {
+		report.warnings.forEach(msg => {
 			sl.push(msg.msg + ' (expected: ' + msg.expected + ', actual: ' + msg.actual + ')');
 		});
 	}
@@ -59,7 +59,7 @@ function toPlain(report: IMP3Report): string {
 async function onFile(filename: string): Promise<void> {
 	const probe = new MP3Analyzer();
 	const info = await probe.read(filename, options);
-	if (!program.warnings || info.msgs.length > 0) {
+	if (!program.warnings || info.warnings.length > 0) {
 		if (program.dest) {
 			result.push(info);
 		} else if (program.format === 'plain') {

@@ -2,6 +2,17 @@ import {IID3V2} from './id3v2__types';
 import {ID3v2Builder, ID3V2RawBuilder} from './id3v2_builder';
 import {ITagID} from '../common/types';
 
+
+/**
+ * Class for
+ * - building a ID3v2.4.0 object
+ *
+ * Basic usage example:
+ *
+ * ```ts
+ * [[include:snippet_id3v2-build.ts]]
+ * ```
+ */
 export class ID3V24TagBuilder implements ID3v2Builder {
 	public static encodings = {
 		iso88591: 'iso-8859-1',

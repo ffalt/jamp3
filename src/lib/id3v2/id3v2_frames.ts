@@ -2,7 +2,6 @@ import {DataReader, MemoryWriterStream, WriterStream} from '../common/streams';
 import {BufferUtils} from '../common/buffer';
 import {ID3v2_FRAME_HEADER_LENGTHS} from './id3v2_consts';
 import {ID3v2Reader} from './id3v2_reader';
-import {buildID3v2} from './id3v2';
 import * as zlib from 'zlib';
 import {Id3v2RawWriter} from './id3v2_writer';
 import {
@@ -37,6 +36,7 @@ import {
 import {IID3V2} from './id3v2__types';
 import {IEncoding} from '../common/encodings';
 import {ITagID} from '../..';
+import {buildID3v2} from './id3v2_raw';
 
 interface IFrameDef {
 	title: string;

@@ -1,6 +1,5 @@
 import {IMP3} from './mp3__types';
 import {MP3Reader, MP3ReaderOptions} from './mp3_reader';
-import {buildID3v2} from '../id3v2/id3v2';
 import {IID3V2} from '../id3v2/id3v2__types';
 import {IID3V1} from '../id3v1/id3v1__types';
 import {filterBestMPEGChain} from './mp3_frames';
@@ -9,39 +8,23 @@ import fse from 'fs-extra';
 import {Readable} from 'stream';
 import {ITagID} from '../..';
 import {updateFile} from '../common/update-file';
+import {analyzeBitrateMode} from './mp3_bitrate';
+import {buildID3v2} from '../id3v2/id3v2_raw';
 
-export function analyzeBitrateMode(frames: Array<IMP3.FrameRawHeaderArray>): { encoded: string, bitRate: number, duration: number, count: number, audioBytes: number } {
-	const bitRates: { [bitRate: number]: number } = {};
-	let duration = 0;
-	let audioBytes = 0;
-	let count = 0;
-	frames.forEach(frame => {
-		const header: IMP3.FrameHeader = expandRawHeader(expandRawHeaderArray(frame));
-		bitRates[header.bitRate] = (bitRates[header.bitRate] || 0) + 1;
-		duration += header.time;
-		audioBytes += header.size;
-		count++;
-	});
-	let encoded = 'CBR';
-	const first: IMP3.FrameHeader | undefined = frames.length > 0 ? expandRawHeader(expandRawHeaderArray(frames[0])) : undefined;
-	let bitRate = first ? first.bitRate : 0;
-	const rates = Object.keys(bitRates).map(s => parseInt(s, 10));
-	if (rates.length > 1) {
-		encoded = 'VBR';
-		let sumBitrate = 0;
-		let countBitrate = 0;
-		rates.forEach(rate => {
-			sumBitrate += (rate * bitRates[rate]);
-			countBitrate += bitRates[rate];
-		});
-		bitRate = Math.trunc(sumBitrate / countBitrate);
-	}
-	return {encoded, bitRate, duration, count, audioBytes};
-}
-
+/**
+ * Class for
+ * - reading ID3v1/2 and MP3 information
+ * - removing ID3v1/2
+ *
+ * Basic usage example:
+ *
+ * ```ts
+ * [[include:snippet_mp3-read.ts]]
+ * ```
+ */
 export class MP3 {
 
-	async prepareResult(options: IMP3.ReadOptions, layout: IMP3.RawLayout): Promise<IMP3.Result> {
+	private async prepareResult(options: IMP3.ReadOptions, layout: IMP3.RawLayout): Promise<IMP3.Result> {
 		const id3v1s: Array<IID3V1.Tag> = <Array<IID3V1.Tag>>layout.tags.filter((o) => o.id === ITagID.ID3v1);
 		const result: IMP3.Result = {size: layout.size};
 		if (options.raw) {
@@ -142,12 +125,25 @@ export class MP3 {
 		return result;
 	}
 
+	/**
+	 * Reads a stream with given options
+	 * @param stream the stream to read (NodeJS.stream.Readable)
+	 * @param options define which information should be returned
+	 * @param streamSize if known, provide the stream size to speed up duration calculation (otherwise stream has to be parse in full)
+	 * @return a object returning parsed information
+	 */
 	async readStream(stream: Readable, options: IMP3.ReadOptions, streamSize?: number): Promise<IMP3.Result> {
 		const reader = new MP3Reader();
 		const layout = await reader.readStream(stream, Object.assign({streamSize}, options));
 		return await this.prepareResult(options, layout);
 	}
 
+	/**
+	 * Reads a file in given path with given options
+	 * @param filename the file to read
+	 * @param options define which information should be returned
+	 * @return a object returning parsed information
+	 */
 	async read(filename: string, options: IMP3.ReadOptions): Promise<IMP3.Result> {
 		const reader = new MP3Reader();
 		const stat = await fse.stat(filename);
@@ -155,7 +151,13 @@ export class MP3 {
 		return await this.prepareResult(options, layout);
 	}
 
-	async removeTags(filename: string, options: IMP3.RemoveTagsOptions): Promise<{ id3v2: boolean, id3v1: boolean } | undefined> {
+	/**
+	 * Removes ID3v1 and/or ID3v2 Tag from a file with given options
+	 * @param filename the file to clean
+	 * @param options define which tags should be removed
+	 * @return a object returning which tags have been removed
+	 */
+	async removeTags(filename: string, options: IMP3.RemoveTagsOptions): Promise<IMP3.RemoveResult | undefined> {
 		const stat = await fse.stat(filename);
 		const opts: MP3ReaderOptions = {
 			streamSize: stat.size,

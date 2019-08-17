@@ -5,7 +5,7 @@ import {BufferUtils} from '../../../src/lib/common/buffer';
 import {DataReader, MemoryWriterStream} from '../../../src/lib/common/streams';
 import {synchsafe, unsynchsafe} from '../../../src/lib/common/utils';
 import {ID3v2_ENCODINGS} from '../../../src/lib/id3v2/id3v2_consts';
-import {ID3v2_ValuePicTypes, IID3V2} from '../../../src/lib/id3v2/id3v2__types';
+import {IID3V2} from '../../../src/lib/id3v2/id3v2__types';
 import {
 	FrameAsciiValue,
 	FrameIdAscii,
@@ -21,6 +21,7 @@ import {
 	FrameUnknown,
 	IFrameImpl
 } from '../../../src/lib/id3v2/id3v2_frame';
+import {ID3v2_ValuePicTypes} from '../../../src/lib/id3v2/id3v2__consts';
 
 describe('SyncSaveInt', function() {
 	it('should calculate back & forth', function() {

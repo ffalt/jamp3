@@ -203,36 +203,47 @@ export namespace IID3V2 {
 		groupId?: number;
 	}
 
+	export interface TagHeaderFlagsV2 {
+		unsynchronisation?: boolean;
+		compression?: boolean;
+	}
+
+	export interface TagHeaderV2 {
+		sizeAsSyncSafe?: number; // just in case if size is written in wrong v2.2 format
+		flags: TagHeaderFlagsV2;
+	}
+
+	export interface TagHeaderFlagsV3 {
+		unsynchronisation?: boolean;
+		extendedheader?: boolean;
+		experimental?: boolean;
+	}
+
+	export interface TagHeaderV3 {
+		flags: TagHeaderFlagsV3;
+		extended?: TagHeaderExtendedVer3;
+	}
+
+	export interface TagHeaderFlagsV4 {
+		unsynchronisation?: boolean;
+		extendedheader?: boolean;
+		experimental?: boolean;
+		footer?: boolean;
+	}
+
+	export interface TagHeaderV4 {
+		flags: TagHeaderFlagsV4;
+		extended?: TagHeaderExtendedVer4;
+	}
+
 	export interface TagHeader {
 		ver: number;
 		rev: number;
 		size: number;
 		valid: boolean;
-		v2?: {
-			sizeAsSyncSafe?: number; // just in case if size is written in wrong v2.2 format
-			flags: {
-				unsynchronisation?: boolean;
-				compression?: boolean;
-			}
-		};
-		v3?: {
-			flags: {
-				unsynchronisation?: boolean;
-				extendedheader?: boolean;
-				experimental?: boolean;
-			}
-			extended?: TagHeaderExtendedVer3;
-		};
-		v4?: {
-			flags: {
-				unsynchronisation?: boolean;
-				extendedheader?: boolean;
-				experimental?: boolean;
-				footer?: boolean;
-			}
-			extended?: TagHeaderExtendedVer4;
-		};
-		// flags?: Flags;
+		v2?: TagHeaderV2;
+		v3?: TagHeaderV3;
+		v4?: TagHeaderV4;
 		flagBits?: Array<number>;
 	}
 
@@ -432,40 +443,4 @@ export namespace IID3V2 {
 		keepBackup?: boolean;
 	}
 }
-
-export const ID3v2_ValuePicTypes: { [name: string]: string; } = {
-	'0': 'Other',
-	'1': '32x32 pixels \'file icon\' (PNG only)',
-	'2': 'Other file icon',
-	'3': 'Cover (front)',
-	'4': 'Cover (back)',
-	'5': 'Leaflet page',
-	'6': 'Media (e.g. lable side of CD)',
-	'7': 'Lead artist/lead performer/soloist',
-	'8': 'Artist/performer',
-	'9': 'Conductor',
-	'10': 'Band/Orchestra',
-	'11': 'Composer',
-	'12': 'Lyricist/text writer',
-	'13': 'Recording Location',
-	'14': 'During recording',
-	'15': 'During performance',
-	'16': 'Movie/video screen capture',
-	'17': 'A bright coloured fish',
-	'18': 'Illustration',
-	'19': 'Band/artist logotype',
-	'20': 'Publisher/Studio logotype'
-};
-
-export const ID3v2_ValueRelativeVolumeAdjustment2ChannelTypes: { [name: string]: string; } = {
-	'0': 'Other',
-	'1': 'Master volume',
-	'2': 'Front right',
-	'3': 'Front left',
-	'4': 'Back right',
-	'5': 'Back left',
-	'6': 'Front centre',
-	'7': 'Back centre',
-	'8': 'Subwoofer'
-};
 

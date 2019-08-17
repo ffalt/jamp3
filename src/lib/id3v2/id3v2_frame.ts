@@ -2,8 +2,9 @@ import {Encodings, IEncoding} from '../common/encodings';
 import {DataReader, WriterStream} from '../common/streams';
 import {isBitSetAt, neededStoreBytes, removeZeroString} from '../common/utils';
 import {readSubFrames, writeSubFrames} from './id3v2_frames';
-import {ID3v2_ValuePicTypes, IID3V2} from './id3v2__types';
+import {IID3V2} from './id3v2__types';
 import {ID3v2} from './id3v2';
+import {ID3v2_ValuePicTypes} from './id3v2__consts';
 
 const ascii = Encodings['ascii'];
 const binary = Encodings['binary'];
