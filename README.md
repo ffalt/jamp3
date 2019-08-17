@@ -474,16 +474,23 @@ async function run(): Promise<void> {
     const tag: IID3V2.ID3v2Tag = {
         frames: [
             {
-                'id': 'TIT2',
-                'value': {'text': 'A title'}
+                id: 'TIT2',
+                value: {text: 'A title'},
+                head: {
+                    encoding: 'utf8'
+                }
             },
             {
-                'id': 'TALB',
-                'value': {'text': 'An album'}
-            },
+                id: 'TALB',
+                value: {text: 'An album'},
+                head: {
+                    encoding: 'ucs2'
+                }
+            }
         ]
     };
     const options: IID3V2.WriteOptions = {
+        defaultEncoding: 'utf8', // encoding used if not specified in frame header
         keepBackup: true, // keep a filename.mp3.bak copy of the original file
         paddingSize: 10 // add padding zeros between id3v2 and the audio (in bytes)
     };
