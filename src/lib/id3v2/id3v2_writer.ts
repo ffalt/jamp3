@@ -280,8 +280,7 @@ export class Id3v2RawWriter {
 	}
 
 	private async writeFrames(frames: Array<IID3V2.RawFrame>): Promise<void> {
-		for (const frame of frames
-			) {
+		for (const frame of frames) {
 			await this.writeFrame(frame);
 		}
 	}

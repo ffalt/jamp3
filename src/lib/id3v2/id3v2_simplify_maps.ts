@@ -253,7 +253,7 @@ export function simplifyFrame(frame: IID3V2.Frame, dropIDsList?: Array<string>):
 			return null;
 		}
 	} else if (id === 'LINK') {
-		const value = <IID3V2.FrameValue.Link>frame.value;
+		const value = <IID3V2.FrameValue.LinkedInfo>frame.value;
 		if (value && value.id) {
 			slug = 'LINK|' + value.id;
 		} else if (value) {

@@ -1,108 +1,13 @@
 import {IID3V2} from './id3v2__types';
 
-interface ID3V2Frames {
-	[key: string]: Array<IID3V2.Frame>;
-}
-
-interface ID3V2TextFrame extends IID3V2.Frame {
-	value: IID3V2.FrameValue.Text;
-}
-
-interface ID3V2NumberFrame extends IID3V2.Frame {
-	value: IID3V2.FrameValue.Number;
-}
-
-interface ID3V2IdTextFrame extends IID3V2.Frame {
-	value: IID3V2.FrameValue.IdText;
-}
-
-interface ID3V2TextListFrame extends IID3V2.Frame {
-	value: IID3V2.FrameValue.TextList;
-}
-
-interface ID3V2BoolValueFrame extends IID3V2.Frame {
-	value: IID3V2.FrameValue.Bool;
-}
-
-interface ID3V2LangDescTextValueFrame extends IID3V2.Frame {
-	value: IID3V2.FrameValue.LangDescText;
-}
-
-interface ID3V2PicValueFrame extends IID3V2.Frame {
-	value: IID3V2.FrameValue.Pic;
-}
-
-interface ID3V2IdBinValueFrame extends IID3V2.Frame {
-	value: IID3V2.FrameValue.IdBin;
-}
-
-interface ID3V2ChapterValueFrame extends IID3V2.Frame {
-	value: IID3V2.FrameValue.Chapter;
-}
-
-interface ID3V2EventTimingCodesFrame extends IID3V2.Frame {
-	value: IID3V2.FrameValue.EventTimingCodes;
-}
-
-interface ID3V2SynchronisedLyricsFrame extends IID3V2.Frame {
-	value: IID3V2.FrameValue.SynchronisedLyrics;
-}
-
-interface ID3V2RelativeAudioAdjustmentsFrame extends IID3V2.Frame {
-	value: IID3V2.FrameValue.RVA;
-}
-
-interface ID3V2RelativeAudioAdjustments2Frame extends IID3V2.Frame {
-	value: IID3V2.FrameValue.RVA2;
-}
-
-interface ID3V2UnknownFrame extends IID3V2.Frame {
-	value: IID3V2.FrameValue.Bin;
-}
-
-interface ID3V2GEOBFrame extends IID3V2.Frame {
-	value: IID3V2.FrameValue.GEOB;
-}
-
-interface ID3V2PopularimeterFrame extends IID3V2.Frame {
-	value: IID3V2.FrameValue.Popularimeter;
-}
-
-interface ID3V2AudioEncryptionFrame extends IID3V2.Frame {
-	value: IID3V2.FrameValue.AudioEncryption;
-}
-
-interface ID3V2LinkedInfoFrame extends IID3V2.Frame {
-	value: IID3V2.FrameValue.Link;
-}
-
-interface ID3V2LangTextFrame extends IID3V2.Frame {
-	value: IID3V2.FrameValue.LangText;
-}
-
-interface ID3V2ReplayGainAdjustmentFrame extends IID3V2.Frame {
-	value: IID3V2.FrameValue.ReplayGainAdjustment;
-}
-
-interface ID3V2ChapterTOCFrame extends IID3V2.Frame {
-	value: IID3V2.FrameValue.ChapterToc;
-}
-
-export interface ID3v2Builder {
-	buildFrames(): Array<IID3V2.Frame>;
-
-	version(): number;
-
-	rev(): number;
-}
 
 export class ID3V2RawBuilder {
 	constructor(private encoding?: string) {
 	}
 
-	private frameValues: ID3V2Frames = {};
+	private frameValues: IID3V2.Frames.Map = {};
 
-	build(): ID3V2Frames {
+	build(): IID3V2.Frames.Map {
 		return this.frameValues;
 	}
 
@@ -125,22 +30,22 @@ export class ID3V2RawBuilder {
 
 	text(key: string, text: string | undefined) {
 		if (text) {
-			const frame: ID3V2TextFrame = {id: key, value: {text}, head: this.head()};
+			const frame: IID3V2.Frames.TextFrame = {id: key, value: {text}, head: this.head()};
 			this.replace(key, frame);
 		}
 	}
 
 	number(key: string, num: number | undefined) {
 		if (num !== undefined) {
-			const frame: ID3V2NumberFrame = {id: key, value: {num}, head: this.head()};
+			const frame: IID3V2.Frames.NumberFrame = {id: key, value: {num}, head: this.head()};
 			this.replace(key, frame);
 		}
 	}
 
 	idText(key: string, id: string, value: string | undefined) {
 		if (value) {
-			const frame: ID3V2IdTextFrame = {id: key, value: {id, text: value}, head: this.head()};
-			const list = (<Array<ID3V2IdTextFrame>>(this.frameValues[key] || [])).filter(f => f.value.id !== id);
+			const frame: IID3V2.Frames.IdTextFrame = {id: key, value: {id, text: value}, head: this.head()};
+			const list = (<Array<IID3V2.Frames.IdTextFrame>>(this.frameValues[key] || [])).filter(f => f.value.id !== id);
 			this.frameValues[key] = list.concat([frame]);
 		}
 	}
@@ -148,15 +53,15 @@ export class ID3V2RawBuilder {
 	nrAndTotal(key: string, value: number | string | undefined, total: number | string | undefined) {
 		if (value) {
 			const text = value.toString() + (total ? '/' + total.toString() : '');
-			const frame: ID3V2TextFrame = {id: key, value: {text}, head: this.head()};
+			const frame: IID3V2.Frames.TextFrame = {id: key, value: {text}, head: this.head()};
 			this.replace(key, frame);
 		}
 	}
 
 	keyTextList(key: string, group: string, value?: string) {
 		if (value) {
-			const frames = <Array<ID3V2TextListFrame>>(this.frameValues[key] || []);
-			const frame: ID3V2TextListFrame = (frames.length > 0) ? frames[0] : {id: key, value: {list: []}, head: this.head()};
+			const frames = <Array<IID3V2.Frames.TextListFrame>>(this.frameValues[key] || []);
+			const frame: IID3V2.Frames.TextListFrame = (frames.length > 0) ? frames[0] : {id: key, value: {list: []}, head: this.head()};
 			frame.value.list.push(group);
 			frame.value.list.push(value);
 			this.replace(key, frame);
@@ -165,7 +70,7 @@ export class ID3V2RawBuilder {
 
 	bool(key: string, bool: boolean) {
 		if (bool !== undefined) {
-			const frame: ID3V2BoolValueFrame = {id: key, value: {bool}, head: this.head()};
+			const frame: IID3V2.Frames.BoolFrame = {id: key, value: {bool}, head: this.head()};
 			this.replace(key, frame);
 		}
 	}
@@ -174,15 +79,15 @@ export class ID3V2RawBuilder {
 		if (value) {
 			id = id || '';
 			lang = lang || '';
-			const list = (<Array<ID3V2LangDescTextValueFrame>>(this.frameValues[key] || []))
+			const list = (<Array<IID3V2.Frames.LangDescTextFrame>>(this.frameValues[key] || []))
 				.filter(f => f.value.id !== id);
-			const frame: ID3V2LangDescTextValueFrame = {id: key, value: {id, language: lang, text: value}, head: this.head()};
+			const frame: IID3V2.Frames.LangDescTextFrame = {id: key, value: {id, language: lang, text: value}, head: this.head()};
 			this.frameValues[key] = list.concat([frame]);
 		}
 	}
 
 	picture(key: string, pictureType: number, description: string, mimeType: string, binary: Buffer) {
-		const frame: ID3V2PicValueFrame = {
+		const frame: IID3V2.Frames.PicFrame = {
 			id: key,
 			value: {
 				description: description || '',
@@ -196,7 +101,7 @@ export class ID3V2RawBuilder {
 	}
 
 	idBin(key: string, id: string, binary: Buffer) {
-		const frame: ID3V2IdBinValueFrame = {
+		const frame: IID3V2.Frames.IdBinFrame = {
 			id: key,
 			value: {id, bin: binary},
 			head: this.head()
@@ -205,7 +110,7 @@ export class ID3V2RawBuilder {
 	}
 
 	chapter(key: string, chapterID: string, start: number, end: number, offset: number, offsetEnd: number, subframes?: Array<IID3V2.Frame>) {
-		const frame: ID3V2ChapterValueFrame = {
+		const frame: IID3V2.Frames.ChapterFrame = {
 			id: key,
 			value: {id: chapterID, start, end, offset, offsetEnd},
 			subframes, head: this.head()
@@ -217,7 +122,7 @@ export class ID3V2RawBuilder {
 		key: string, id: string, language: string, timestampFormat: number,
 		contentType: number, events: Array<{ timestamp: number; text: string; }>
 	) {
-		const frame: ID3V2SynchronisedLyricsFrame = {
+		const frame: IID3V2.Frames.SynchronisedLyricsFrame = {
 			id: key,
 			value: {id, language, timestampFormat, contentType, events},
 			head: this.head()
@@ -240,7 +145,7 @@ export class ID3V2RawBuilder {
 		bass?: number,
 		peakBass?: number
 	) {
-		const frame: ID3V2RelativeAudioAdjustmentsFrame = {
+		const frame: IID3V2.Frames.RelativeAudioAdjustmentsFrame = {
 			id: key,
 			value: {
 				right, left,
@@ -256,7 +161,7 @@ export class ID3V2RawBuilder {
 	}
 
 	relativeVolumeAdjustment2(key: string, id: string, channels: Array<{ type: number; adjustment: number; peak?: number }>) {
-		const frame: ID3V2RelativeAudioAdjustments2Frame = {
+		const frame: IID3V2.Frames.RelativeAudioAdjustments2Frame = {
 			id: key,
 			value: {
 				id,
@@ -268,7 +173,7 @@ export class ID3V2RawBuilder {
 	}
 
 	eventTimingCodes(key: string, timeStampFormat: number, events: Array<{ type: number; timestamp: number }>) {
-		const frame: ID3V2EventTimingCodesFrame = {
+		const frame: IID3V2.Frames.EventTimingCodesFrame = {
 			id: key,
 			value: {
 				format: timeStampFormat,
@@ -280,7 +185,7 @@ export class ID3V2RawBuilder {
 	}
 
 	unknown(key: string, binary: Buffer) {
-		const frame: ID3V2UnknownFrame = {
+		const frame: IID3V2.Frames.UnknownFrame = {
 			id: key,
 			value: {
 				bin: binary
@@ -291,7 +196,7 @@ export class ID3V2RawBuilder {
 	}
 
 	object(key: string, filename: string, mimeType: string, contentDescription: string, bin: Buffer) {
-		const frame: ID3V2GEOBFrame = {
+		const frame: IID3V2.Frames.GEOBFrame = {
 			id: key,
 			value: {
 				filename, mimeType, contentDescription, bin
@@ -302,7 +207,7 @@ export class ID3V2RawBuilder {
 	}
 
 	popularimeter(key: string, email: string, rating: number, count: number) {
-		const frame: ID3V2PopularimeterFrame = {
+		const frame: IID3V2.Frames.PopularimeterFrame = {
 			id: key,
 			value: {
 				email, rating, count
@@ -313,7 +218,7 @@ export class ID3V2RawBuilder {
 	}
 
 	audioEncryption(key: string, id: string, previewStart: number, previewLength: number, bin: Buffer) {
-		const frame: ID3V2AudioEncryptionFrame = {
+		const frame: IID3V2.Frames.AudioEncryptionFrame = {
 			id: key,
 			value: {
 				id, previewStart, previewLength, bin
@@ -324,7 +229,7 @@ export class ID3V2RawBuilder {
 	}
 
 	linkedInformation(key: string, id: string, url: string, additional: Array<string>) {
-		const frame: ID3V2LinkedInfoFrame = {
+		const frame: IID3V2.Frames.LinkedInfoFrame = {
 			id: key,
 			value: {
 				id, url, additional
@@ -335,7 +240,7 @@ export class ID3V2RawBuilder {
 	}
 
 	langText(key: string, language: string, text: string) {
-		const frame: ID3V2LangTextFrame = {
+		const frame: IID3V2.Frames.LangTextFrame = {
 			id: key,
 			value: {language, text},
 			head: this.head()
@@ -344,7 +249,7 @@ export class ID3V2RawBuilder {
 	}
 
 	replayGainAdjustment(key: string, peak: number, radioAdjustment: number, audiophileAdjustment: number) {
-		const frame: ID3V2ReplayGainAdjustmentFrame = {
+		const frame: IID3V2.Frames.ReplayGainAdjustmentFrame = {
 			id: key,
 			value: {peak, radioAdjustment, audiophileAdjustment},
 			head: this.head()
@@ -353,7 +258,7 @@ export class ID3V2RawBuilder {
 	}
 
 	chapterTOC(key: string, id: string, ordered: boolean, topLevel: boolean, children: Array<string>) {
-		const frame: ID3V2ChapterTOCFrame = {
+		const frame: IID3V2.Frames.ChapterTOCFrame = {
 			id: key,
 			value: {id, ordered, topLevel, children},
 			head: this.head()

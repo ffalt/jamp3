@@ -7,7 +7,6 @@ import {IID3V2} from './id3v2__types';
 import {fileRangeToBuffer} from '../common/utils';
 import {Readable} from 'stream';
 import {updateFile} from '../common/update-file';
-import {ID3v2Builder} from './id3v2_builder';
 import {ITagID} from '../common/types';
 import {rawHeaderOffSet} from '../mp3/mp3_frame';
 import {buildID3v2} from './id3v2_raw';
@@ -122,7 +121,7 @@ export class ID3v2 {
 	 * @param filename the file to write
 	 * @param options write options
 	 */
-	async writeBuilder(filename: string, builder: ID3v2Builder, options: IID3V2.WriteOptions): Promise<void> {
+	async writeBuilder(filename: string, builder: IID3V2.Builder, options: IID3V2.WriteOptions): Promise<void> {
 		await this.write(filename, {frames: builder.buildFrames()}, builder.version(), builder.rev(), options);
 	}
 
@@ -157,7 +156,7 @@ export class ID3v2 {
 				head.v2 = tag.head.v2;
 			}
 		}
-		const raw_frames = await writeToRawFrames(tag.frames, head);
+		const raw_frames = await writeToRawFrames(tag.frames, head, options.defaultEncoding);
 		const exists = await fse.pathExists(filename);
 		if (!exists) {
 			await this.writeTag(filename, raw_frames, head);

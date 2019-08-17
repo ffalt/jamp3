@@ -2029,7 +2029,7 @@ async function processRawFrame(frame: IID3V2.RawFrame, head: IID3V2.TagHeader): 
 	}
 }
 
-async function writeToRawFrame(frame: IID3V2.Frame, head: IID3V2.TagHeader): Promise<IID3V2.RawFrame> {
+async function writeToRawFrame(frame: IID3V2.Frame, head: IID3V2.TagHeader, defaultEncoding?: string): Promise<IID3V2.RawFrame> {
 	const frameHead: IID3V2.FrameHeader = frame.head || {
 		size: 0,
 		statusFlags: {},
@@ -2049,14 +2049,14 @@ async function writeToRawFrame(frame: IID3V2.Frame, head: IID3V2.TagHeader): Pro
 		if (orgDef.versions.indexOf(head.ver) < 0) {
 			const toWriteFrameID = ensureID3v2FrameVersionDef(frame.id, head.ver);
 			if (!toWriteFrameID) {
-				await orgDef.impl.write(frame, stream, head);
+				await orgDef.impl.write(frame, stream, head, defaultEncoding);
 			} else {
 				id = toWriteFrameID;
 				const toWriteFrameDef = matchFrame(toWriteFrameID);
-				await toWriteFrameDef.impl.write(frame, stream, head);
+				await toWriteFrameDef.impl.write(frame, stream, head, defaultEncoding);
 			}
 		} else {
-			await orgDef.impl.write(frame, stream, head);
+			await orgDef.impl.write(frame, stream, head, defaultEncoding);
 		}
 		data = stream.toBuffer();
 		if ((frameHead.formatFlags) && (frameHead.formatFlags.compressed)) {
@@ -2107,9 +2107,9 @@ export function isValidFrameId(id: string): boolean {
 	return id.length > 0;
 }
 
-export async function writeSubFrames(frames: Array<IID3V2.Frame>, stream: WriterStream, head: IID3V2.TagHeader): Promise<void> {
+export async function writeSubFrames(frames: Array<IID3V2.Frame>, stream: WriterStream, head: IID3V2.TagHeader, defaultEncoding?: string): Promise<void> {
 	const writer = new Id3v2RawWriter(stream, head, {paddingSize: 0});
-	const rawframes = await writeToRawFrames(frames, head);
+	const rawframes = await writeToRawFrames(frames, head, defaultEncoding);
 	for (const frame of rawframes) {
 		await writer.writeFrame(frame);
 	}
@@ -2123,10 +2123,10 @@ export async function readSubFrames(bin: Buffer, head: IID3V2.TagHeader): Promis
 	return t.frames;
 }
 
-export async function writeToRawFrames(frames: Array<IID3V2.Frame>, head: IID3V2.TagHeader): Promise<Array<IID3V2.RawFrame>> {
+export async function writeToRawFrames(frames: Array<IID3V2.Frame>, head: IID3V2.TagHeader, defaultEncoding?: string): Promise<Array<IID3V2.RawFrame>> {
 	const result: Array<IID3V2.RawFrame> = [];
 	for (const frame of frames) {
-		const raw = await writeToRawFrame(frame, head);
+		const raw = await writeToRawFrame(frame, head, defaultEncoding);
 		result.push(raw);
 	}
 	return result;

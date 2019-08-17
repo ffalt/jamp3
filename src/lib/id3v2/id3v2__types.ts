@@ -1,5 +1,4 @@
 import {ITag} from '../common/types';
-import {Id3v2WriterOptions} from './id3v2_writer';
 
 export namespace IID3V2 {
 
@@ -83,7 +82,7 @@ export namespace IID3V2 {
 			bin: Buffer;
 		}
 
-		export interface Link extends Base {
+		export interface LinkedInfo extends Base {
 			url: string;
 			id: string;
 			additional: Array<string>;
@@ -201,6 +200,104 @@ export namespace IID3V2 {
 		subframes?: Array<Frame>;
 		invalid?: string;
 		groupId?: number;
+	}
+
+	export namespace Frames {
+		export interface Map {
+			[key: string]: Array<Frame>;
+		}
+
+		export interface TextFrame extends Frame {
+			value: FrameValue.Text;
+		}
+
+		export interface NumberFrame extends Frame {
+			value: FrameValue.Number;
+		}
+
+		export interface IdTextFrame extends Frame {
+			value: FrameValue.IdText;
+		}
+
+		export interface TextListFrame extends Frame {
+			value: FrameValue.TextList;
+		}
+
+		export interface BoolFrame extends Frame {
+			value: FrameValue.Bool;
+		}
+
+		export interface LangDescTextFrame extends Frame {
+			value: FrameValue.LangDescText;
+		}
+
+		export interface PicFrame extends Frame {
+			value: FrameValue.Pic;
+		}
+
+		export interface IdBinFrame extends Frame {
+			value: FrameValue.IdBin;
+		}
+
+		export interface ChapterFrame extends Frame {
+			value: FrameValue.Chapter;
+		}
+
+		export interface EventTimingCodesFrame extends Frame {
+			value: FrameValue.EventTimingCodes;
+		}
+
+		export interface SynchronisedLyricsFrame extends Frame {
+			value: FrameValue.SynchronisedLyrics;
+		}
+
+		export interface RelativeAudioAdjustmentsFrame extends Frame {
+			value: FrameValue.RVA;
+		}
+
+		export interface RelativeAudioAdjustments2Frame extends Frame {
+			value: FrameValue.RVA2;
+		}
+
+		export interface UnknownFrame extends Frame {
+			value: FrameValue.Bin;
+		}
+
+		export interface GEOBFrame extends Frame {
+			value: FrameValue.GEOB;
+		}
+
+		export interface PopularimeterFrame extends Frame {
+			value: FrameValue.Popularimeter;
+		}
+
+		export interface AudioEncryptionFrame extends Frame {
+			value: FrameValue.AudioEncryption;
+		}
+
+		export interface LinkedInfoFrame extends Frame {
+			value: FrameValue.LinkedInfo;
+		}
+
+		export interface LangTextFrame extends Frame {
+			value: FrameValue.LangText;
+		}
+
+		export interface ReplayGainAdjustmentFrame extends Frame {
+			value: FrameValue.ReplayGainAdjustment;
+		}
+
+		export interface ChapterTOCFrame extends Frame {
+			value: FrameValue.ChapterToc;
+		}
+	}
+
+	export interface Builder {
+		buildFrames(): Array<Frame>;
+
+		version(): number;
+
+		rev(): number;
 	}
 
 	export interface TagHeaderFlagsV2 {
@@ -444,11 +541,16 @@ export namespace IID3V2 {
 	}
 
 	export interface RemoveOptions {
+		/** keep a filename.mp3.bak copy of the original file */
 		keepBackup?: boolean;
 	}
 
-	export interface WriteOptions extends Id3v2WriterOptions {
+	export interface WriteOptions {
+		/** encoding used if not specified in frame header */
+		defaultEncoding?: string;
+		/** padding zeros between id3v2 and the audio (in bytes) */
 		paddingSize?: number;
+		/** keep a filename.mp3.bak copy of the original file */
 		keepBackup?: boolean;
 	}
 }
