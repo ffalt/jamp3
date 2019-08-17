@@ -1,5 +1,6 @@
 node_modules
 local
+docs
 reports
 .nyc_output
 dist

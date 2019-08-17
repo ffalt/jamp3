@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/deplokay/config-schema.json",
-  "id": "jamp3-release",
+  "id": "jamp3-docs-release",
   "mode": "npm",
   "source": {
     "local": {
@@ -10,26 +10,25 @@
   "build": {
     "npm": {
       "cmd_name": "build:deploy",
-      "slim_package": true,
+      "slim_package": false,
       "component_names": [
-        "dist",
-        "bin",
-        "src",
-        "LICENSE",
-        "package.json",
-        "README.md"
+        ".nojekyll"
+      ],
+      "folder_names": [
+        "docs"
       ]
     }
   },
   "publish": {
     "folder": {
-      "path": "./local/deploy/current"
+      "path": "./local/deploy/current-docs"
     },
     "archive": {
-      "path": "./local/deploy/archives"
+      "path": "./local/deploy/archives-docs"
     },
     "branch": {
-      "branch": "releases"
+      "branch": "gh-pages",
+      "disableTag": true
     }
   }
 }
