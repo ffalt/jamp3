@@ -1,5 +1,5 @@
-<a name="0.3.11"></a>
-# 0.3.11 (2019/??/??)
+<a name="0.4.0"></a>
+# 0.4.0 (2019/??/??)
 ### Features
 * ID3v24Builder: add more frames, add encoding parameter
 * ID3v2.write(): move optional parameters into options object 
@@ -16,6 +16,7 @@
 ### BREAKING
 * ID3v24Builder: renamed functions (key=>initialKey, media=>mediaType, bmp=>bpm)
 * ID3v2.write(): changed api - options object is mandatory
+* MP3.read(): option id3v1IfNotid3v2 renamed to id3v1IfNotID3v2
 * ID3v2.Head: changed structure into version depended sub-objects 
 
 <a name="0.3.10"></a>

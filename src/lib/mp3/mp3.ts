@@ -47,7 +47,7 @@ export class MP3 {
 		if (options.raw) {
 			result.raw = layout;
 		}
-		if (options.id3v1 || options.id3v1IfNotid3v2) {
+		if (options.id3v1 || options.id3v1IfNotID3v2) {
 			const id3v1: IID3V1.Tag | undefined = id3v1s.length > 0 ? id3v1s[id3v1s.length - 1] : undefined;
 			if (id3v1 && id3v1.end === layout.size) {
 				result.id3v1 = id3v1;
@@ -136,7 +136,7 @@ export class MP3 {
 
 		const id3v2s: Array<IID3V2.RawTag> = <Array<IID3V2.RawTag>>layout.tags.filter(o => o.id === ITagID.ID3v2);
 		const id3v2raw: IID3V2.RawTag | undefined = id3v2s.length > 0 ? id3v2s[0] : undefined; // if there are more than one id3v2 tags, we take the first
-		if ((options.id3v2 || options.id3v1IfNotid3v2) && id3v2raw) {
+		if ((options.id3v2 || options.id3v1IfNotID3v2) && id3v2raw) {
 			result.id3v2 = await buildID3v2(id3v2raw);
 		}
 		return result;

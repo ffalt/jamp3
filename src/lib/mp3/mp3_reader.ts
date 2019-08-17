@@ -65,7 +65,7 @@ export class MP3Reader {
 					if (!this.options.detectDuplicateID3v2) {
 						this.scanid3v2 = false;
 					}
-					if (this.options.id3v1IfNotid3v2) {
+					if (this.options.id3v1IfNotID3v2) {
 						this.scanid3v1 = false;
 					}
 				} else {
@@ -238,8 +238,8 @@ export class MP3Reader {
 	private setOptions(options: MP3ReaderOptions): void {
 		this.options = options || {};
 		this.scanMpeg = options.mpeg || options.mpegQuick || false;
-		this.scanid3v1 = options.id3v1 || options.id3v1IfNotid3v2 || false;
-		this.scanid3v2 = options.id3v2 || options.id3v1IfNotid3v2 || false;
+		this.scanid3v1 = options.id3v1 || options.id3v1IfNotID3v2 || false;
+		this.scanid3v2 = options.id3v2 || options.id3v1IfNotID3v2 || false;
 		this.layout = {
 			headframes: [],
 			frameheaders: [],

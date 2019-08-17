@@ -20,7 +20,7 @@ export namespace IMP3 {
 		// read ID3 v1 tag
 		id3v1?: boolean;
 		// read ID3 v1 tag only if no ID3 v2 tag is found
-		id3v1IfNotid3v2?: boolean;
+		id3v1IfNotID3v2?: boolean;
 		// do not stop looking for id3v2, even if one is already found
 		detectDuplicateID3v2?: boolean;
 		// do not parse frames & return binary blobs
