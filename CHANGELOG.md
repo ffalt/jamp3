@@ -19,7 +19,8 @@
 * ID3v2.write(): changed api - options object is mandatory
 * MP3.read(): option id3v1IfNotid3v2 renamed to id3v1IfNotID3v2
 * ID3v2.Head: changed structure into version depended sub-objects 
-
+* simplifyTag: function access has been moved to static ID3v2.simplify()
+  
 <a name="0.3.10"></a>
 # 0.3.10 (2019/06/10)
 ### Bug Fixes
