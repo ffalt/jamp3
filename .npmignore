@@ -11,6 +11,7 @@
 .nyc_output/
 coverage/
 examples/
+docs/
 local/
 node_modules/
 test/
@@ -18,9 +19,12 @@ test/
 .DS_Store
 .npmignore
 .gitignore
+.nojekyll
+TODO.md
 tslint.json
 tsconfig.json
 deplokay.json
 renovate.json
+typedocconfig.json
 
 

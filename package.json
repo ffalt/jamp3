@@ -1,6 +1,6 @@
 {
   "name": "jamp3",
-  "version": "0.3.10",
+  "version": "0.4.0",
   "author": "ffalt",
   "license": "MIT",
   "description": "mp3, id3v1, id3v2 - reader & writer",
@@ -28,6 +28,7 @@
     "test:frames": "mocha --opts ./test/mocha.opts test/id3v2/frames/test.ts",
     "lint": "tslint --project tsconfig.json \"src/**/*.ts\"",
     "lint-fix": "tslint --fix --project tsconfig.json \"src/**/*.ts\"",
+    "docs": "typedoc --options ./typedocconfig.ts && cp ./.nojekyll ./docs",
     "coverage": "nyc npm run test",
     "deploy": "deplokay -c deplokay.json"
   },
@@ -54,6 +55,7 @@
     "tmp": "0.1.0",
     "ts-node": "8.3.0",
     "tslint": "5.18.0",
+    "typedoc": "^0.15.0",
     "typescript": "3.5.3"
   },
   "main": "dist/index.js",
