@@ -127,6 +127,18 @@ export class MP3Analyzer {
 				}
 			}
 		}
+		if (data.frames.audio.length > 0) {
+			const audiostart = rawHeaderOffSet(data.frames.audio[0]);
+			if (data.id3v2 && data.id3v2.head) {
+				const shouldaudiostart = data.id3v2.start + data.id3v2.head.size + 10; // 10 === id3v2 header
+				if (audiostart !== shouldaudiostart) {
+					info.msgs.push({msg: 'MP3: Unknown data found between ID3v2 and audio',  expected: shouldaudiostart, actual: audiostart});
+				}
+			} else if (audiostart !== 0) {
+				info.msgs.push({msg: 'MP3: Unknown data found before audio', expected: 0, actual: audiostart});
+			}
+		}
+
 		if (options.mpeg) {
 			if (data.frames.audio.length === 0) {
 				info.msgs.push({msg: 'MPEG: No frames found', expected: '>0', actual: 0});

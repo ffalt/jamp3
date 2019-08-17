@@ -7,13 +7,14 @@
 * ID3v1.remove(): remove id3v1
 * add library usage examples
 * rebuild mocha test options and calls
+* analyze: detect garbage data before audio data
  
 ### Bug Fixes
 * ID3v2.write in v2.2 no longer syncsafe the size field
 * ID3v2.read handles empty id3v2 tag (size:0) 
 
 ### BREAKING
-* ID3v24Builder: renamed functions
+* ID3v24Builder: renamed functions (key=>initialKey, media=>mediaType, bmp=>bpm)
 * ID3v2.write(): changed api - options object is mandatory
 * ID3v2.Head: changed structure into version depended sub-objects 
 
