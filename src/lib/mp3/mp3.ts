@@ -146,8 +146,7 @@ export class MP3 {
 	 */
 	async read(filename: string, options: IMP3.ReadOptions): Promise<IMP3.Result> {
 		const reader = new MP3Reader();
-		const stat = await fse.stat(filename);
-		const layout = await reader.read(filename, Object.assign({streamSize: stat.size}, options));
+		const layout = await reader.read(filename, options);
 		return await this.prepareResult(options, layout);
 	}
 

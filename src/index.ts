@@ -2,7 +2,6 @@ export {ID3v1} from './lib/id3v1/id3v1';
 export {ID3v2} from './lib/id3v2/id3v2';
 export {MP3} from './lib/mp3/mp3';
 export {MP3Analyzer, IMP3Analyzer} from './lib/mp3/mp3_analyzer';
-export {simplifyTag} from './lib/id3v2/id3v2_simplify';
 export {ITagID, ITag} from './lib/common/types';
 export {ID3V24TagBuilder} from './lib/id3v2/id3v2_builder24';
 export {IID3V2} from './lib/id3v2/id3v2__types';

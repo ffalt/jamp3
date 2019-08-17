@@ -434,6 +434,15 @@ export namespace IID3V2 {
 		WRITER?: string;
 	}
 
+	export interface Warning {
+		/** msg of warning */
+		msg: string;
+		/** expected value */
+		expected: number | string | boolean;
+		/** found value */
+		actual: number | string | boolean;
+	}
+
 	export interface RemoveOptions {
 		keepBackup?: boolean;
 	}

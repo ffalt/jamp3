@@ -11,6 +11,8 @@ import {ID3v2Builder} from './id3v2_builder';
 import {ITagID} from '../common/types';
 import {rawHeaderOffSet} from '../mp3/mp3_frame';
 import {buildID3v2} from './id3v2_raw';
+import {checkID3v2} from './id3v2_check';
+import {simplifyTag} from './id3v2_simplify';
 
 /**
  * Class for
@@ -25,6 +27,25 @@ import {buildID3v2} from './id3v2_raw';
  * ```
  */
 export class ID3v2 {
+
+	/**
+	 * Checks an ID3v2 Tag for warnings
+	 * @param tag the ID3v2 object to check
+	 * @return a list returning warning messages
+	 */
+	static check(tag: IID3V2.Tag): Array<IID3V2.Warning> {
+		return checkID3v2(tag);
+	}
+
+	/**
+	 * Checks an ID3v2 Tag for warnings
+	 * @param tag the ID3v2 object to simplify
+	 * @param dropIDsList a list of frame IDs to ignore, eg. 'APIC'
+	 * @return a simplified ID3v2 object
+	 */
+	static simplify(tag: IID3V2.Tag, dropIDsList?: Array<string>): IID3V2.TagSimplified {
+		return simplifyTag(tag, dropIDsList);
+	}
 
 	/**
 	 * Reads a filename & returns ID3v2 tag as Object

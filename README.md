@@ -150,14 +150,14 @@ Example as [typescript](examples/snippet_id3v1-write.ts) [javascript](examples/s
 #### reading ID3v2
 
 ```typescript
-import {ID3v2, simplifyTag} from 'jamp3';
+import {ID3v2} from 'jamp3';
 
 async function run(): Promise<void> {
     const id3v2 = new ID3v2();
     const filename = 'demo.mp3';
     const tag = await id3v2.read(filename);
     console.log('id3v2:', tag);
-    console.log(simplifyTag(tag)); // combine frames into one simple tag object
+    console.log(ID3v2.simplify(tag)); // combine frames into one simple tag object
 }
 
 run().catch(e => {
