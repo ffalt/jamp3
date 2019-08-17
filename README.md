@@ -537,7 +537,7 @@ Example as [typescript](examples/snippet_mp3-read.ts) [javascript](examples/snip
 
 Note: MP3 Duration
 
-if the mp3 does include a VBR/CBR header, the declared duration there is used for duration calculation
+if the mp3 does include a VBR/CBR header, the declared header values are used for duration calculation
 
 if the mp3 does NOT include a VBR/CBR header: 
   - with option {mpegQuick: true}: only a few audio frames are read and the duration is estimated 
