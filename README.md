@@ -955,6 +955,10 @@ Options:
 
 `npm run build` to build the nodejs version into dist/
 
+### Documentation
+
+`npm run docs` to build class documentation into docs/
+
 ### Test
 
 `npm run test` to run the the mocha tests
