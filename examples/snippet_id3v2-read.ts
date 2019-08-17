@@ -1,4 +1,4 @@
-import {ID3v2, simplifyTag} from '../src'; // 'jamp3';
+import {ID3v2, simplifyTag} from 'jamp3';
 
 async function run(): Promise<void> {
 	const id3v2 = new ID3v2();

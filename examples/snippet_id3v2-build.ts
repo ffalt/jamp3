@@ -1,4 +1,4 @@
-import {ID3v2, ID3V24TagBuilder, IID3V2} from '../src'; // 'jamp3';
+import {ID3v2, ID3V24TagBuilder, IID3V2} from 'jamp3';
 
 async function run(): Promise<void> {
 	const id3v2 = new ID3v2();

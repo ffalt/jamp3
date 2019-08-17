@@ -1,4 +1,4 @@
-import {IMP3, MP3, simplifyTag} from '../src'; // 'jamp3';
+import {IMP3, MP3} from 'jamp3';
 
 async function run(): Promise<void> {
 	const mp3 = new MP3();
