@@ -6,7 +6,6 @@ import tmp from 'tmp';
 import {ID3v2} from '../../../src/lib/id3v2/id3v2';
 import {ID3V24TagBuilder} from '../../../src/lib/id3v2/id3v2_builder24';
 import {toNonBinJson} from '../../common/common';
-import {BufferUtils} from '../../../src/lib/common/buffer';
 
 const testNumber = 5;
 const testString = 'räksmörgåsЪЭЯ😀';
@@ -139,6 +138,13 @@ async function fill24Builder(builder: ID3V24TagBuilder): Promise<void> {
 async function test24Builder(encoding: string): Promise<void> {
 	const builder = new ID3V24TagBuilder(encoding);
 	await fill24Builder(builder);
+	const warnings = ID3v2.check(builder.buildTag());
+	expect(warnings.length).to.equal(0, 'there are warnings: ' + toNonBinJson(warnings));
+}
+
+async function test24BuilderWrite(encoding: string): Promise<void> {
+	const builder = new ID3V24TagBuilder(encoding);
+	await fill24Builder(builder);
 	const file = tmp.fileSync();
 	try {
 		await fse.remove(file.name);
@@ -152,6 +158,8 @@ async function test24Builder(encoding: string): Promise<void> {
 			return;
 		}
 		expect(data.frames.length).to.equal(frames.length, 'frames.length does not match');
+		const warnings = ID3v2.check(data);
+		expect(warnings.length).to.equal(0, 'there are warnings: ' + toNonBinJson(warnings));
 		// console.log(toNonBinJson(data));
 		// await id3.writeBuilder('test-' + encoding + '.id3', builder, {keepBackup: false, paddingSize: 0});
 	} catch (e) {
@@ -161,12 +169,17 @@ async function test24Builder(encoding: string): Promise<void> {
 	file.removeCallback();
 }
 
-describe('ID3v24Builder', async () => {
+describe('Builder', async () => {
 
-	describe('encodings', async () => {
+	describe('v2.4', async () => {
 		for (const testValue of ['iso-8859-1', 'ucs2', 'utf16-be', 'utf8']) {
-			it(testValue, async () => {
-				await test24Builder(testValue);
+			describe(testValue, async () => {
+				it('should be valid', async () => {
+					await test24Builder(testValue);
+				});
+				it('should write', async () => {
+					await test24BuilderWrite(testValue);
+				});
 			});
 		}
 	});
