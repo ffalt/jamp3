@@ -147,7 +147,7 @@ export class MP3Analyzer {
 		if (data.id3v2 && data.id3v2.head) {
 			const shouldaudiostart = data.id3v2.start + data.id3v2.head.size + 10; // 10 === id3v2 header
 			if (audiostart !== shouldaudiostart) {
-				result.push({msg: 'MPEG: Unknown data found between ID3v2 and audio', expected: shouldaudiostart, actual: audiostart});
+				result.push({msg: 'MPEG: Unknown data found between ID3v2 and audio', expected: 0, actual: audiostart - shouldaudiostart});
 			}
 		} else if (audiostart !== 0) {
 			result.push({msg: 'MPEG: Unknown data found before audio', expected: 0, actual: audiostart});
