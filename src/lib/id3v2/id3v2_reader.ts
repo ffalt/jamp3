@@ -74,7 +74,6 @@ export class ID3v2Reader {
 		const headdata = await reader.read(4);
 		let size = headdata.readInt32BE(0);
 		if (size > 10) {
-			// TODO: ???????
 			size = 6;
 		}
 		// debug('readID3ExtendedHeader', 'exthead.size:', exthead.size);
@@ -129,7 +128,6 @@ export class ID3v2Reader {
 		let size = headdata.readInt32BE(0);
 		size = unsynchsafe(size);
 		if (size > 10) {
-			// TODO: ???????
 			size = 6;
 		}
 		// debug('readID3ExtendedHeader', 'exthead.size:', exthead.size);
