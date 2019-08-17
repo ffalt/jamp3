@@ -69,13 +69,10 @@ export interface IMPEGFrameChain {
 	count: number;
 }
 
-export function getBestMPEGChain(frames: Array<IMP3.FrameRawHeaderArray>, followMaxChain: number): IMPEGFrameChain | undefined {
-	if (frames.length === 0) {
-		return;
-	}
+function buildMPEGChains(frames: Array<IMP3.FrameRawHeaderArray>, maxCheckFrames: number, followMaxChain: number): Array<IMPEGFrameChain> {
 	const done: Array<Array<number>> = [];
-	const count = Math.min(50, frames.length);
 	const chains: Array<{ frame: Array<number>, pos: number, count: number }> = [];
+	const count = Math.min(maxCheckFrames, frames.length);
 	for (let i = 0; i < count; i++) {
 		const frame = frames[i];
 		if (done.indexOf(frame) < 0) {
@@ -91,10 +88,28 @@ export function getBestMPEGChain(frames: Array<IMP3.FrameRawHeaderArray>, follow
 			}
 		}
 	}
+	return chains;
+}
+
+function findBestMPEGChain(frames: Array<IMP3.FrameRawHeaderArray>, maxCheckFrames: number, followMaxChain: number): IMPEGFrameChain | undefined {
+	const chains = buildMPEGChains(frames, maxCheckFrames, followMaxChain);
 	const bestChains = chains.filter(chain => chain.count > 0).sort((a, b) => b.count - a.count);
-	let select = bestChains[0];
-	if (!select) {
-		select = chains[0];
+	return bestChains[0];
+}
+
+export function getBestMPEGChain(frames: Array<IMP3.FrameRawHeaderArray>, followMaxChain: number): IMPEGFrameChain | undefined {
+	if (frames.length === 0) {
+		return;
+	}
+	let select: IMPEGFrameChain | undefined;
+	let checkMaxFrames = 50;
+	// try finding a chain in the first {checkMaxFrames} frames
+	while (!select && checkMaxFrames < 500) {
+		select = findBestMPEGChain(frames, checkMaxFrames, followMaxChain);
+		if (checkMaxFrames > frames.length) {
+			break;
+		}
+		checkMaxFrames += 50;
 	}
 	return select;
 }
