@@ -433,7 +433,7 @@ Example result simplified:
 ```
 
 #### writing ID3v2 with Helper
-[Class Documentation](https://ffalt.github.io/jamp3/)
+[Class Documentation](https://ffalt.github.io/jamp3/classes/id3v24tagbuilder.html)
 
 ```typescript
 import {ID3v2, ID3V24TagBuilder, IID3V2} from 'jamp3';
