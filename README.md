@@ -461,7 +461,7 @@ run().catch(e => {
     console.error(e);
 });
 ```
-Example as [typescript](examples/snippet_id3v2-build.ts) [javascript](examples/snippet_build-read.js) 
+Example as [typescript](examples/snippet_id3v2-build.ts) [javascript](examples/snippet_id3v2-build.js) 
 
 #### writing ID3v2 Raw
 
