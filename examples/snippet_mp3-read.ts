@@ -5,7 +5,7 @@ async function run(): Promise<void> {
 	const filename = 'demo.mp3';
 	const options: IMP3.ReadOptions = {
 		mpeg: true, // read mpeg information
-		mpegQuick: true, // estimate mpeg information based on mpeg header (XING|Info) and stop reading if tags and header is found
+		mpegQuick: true, // estimate mpeg information based on mpeg header (XING|Info) and stop reading if tags and header are found
 		id3v2: true, // read ID3 v2 tag
 		id3v1: false,  // read ID3 v1 tag
 		id3v1IfNotID3v2: true,  // read ID3 v1 tag only if no ID3 v2 tag is found (stops reading otherwise)

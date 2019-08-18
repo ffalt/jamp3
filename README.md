@@ -1,5 +1,7 @@
 # jamp3
 
+*IMPORTANT: This README is for upcoming version 0.4*
+
 An id3 & mp3 library written in Typescript for NodeJS
 
 [![NPM](https://nodei.co/npm/jamp3.png?downloads=true&downloadRank=true&stars=true)](https://nodei.co/npm/jamp3/)
@@ -26,7 +28,11 @@ Motivation for this yet-another-id3-library:
 
 * Write support
 
-  ID3v2/ID3v1 write support is implemented. Note: Since this means possibly screwing up files, you should be either brave and at least backup your data, or, wait until this library majured a bit and write functions are documented. 
+  ID3v2/ID3v1 can be remove or written.
+
+  For ID3v2.4 an easy-to-use build helper is available. For more complex use, you can write other versions and even non-standard combinations of ID3v2 frames.
+  
+  There are not much reported issues, but be advised to make & keep backups of your audio files in case of bugs. 
 
 * Return ID3v2 frames as raw as needed
 
@@ -519,7 +525,7 @@ async function run(): Promise<void> {
     const filename = 'demo.mp3';
     const options: IMP3.ReadOptions = {
         mpeg: true, // read mpeg information
-        mpegQuick: true, // estimate mpeg information based on mpeg header (XING|Info) and stop reading if tags and header is found
+        mpegQuick: true, // estimate mpeg information based on mpeg header (XING|Info) and stop reading if tags and header are found
         id3v2: true, // read ID3 v2 tag
         id3v1: false,  // read ID3 v1 tag
         id3v1IfNotID3v2: true,  // read ID3 v1 tag only if no ID3 v2 tag is found (stops reading otherwise)
