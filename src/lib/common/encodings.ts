@@ -103,7 +103,7 @@ Encodings['utf8'] = {
 		return iconv.encode(s, 'utf8');
 	},
 	decode: (buf) => {
-		if ((buf[0] === 0xEF) && (buf[1] === 0xBB) && (buf[1] === 0xBF)) {
+		if ((buf[0] === 0xEF) && ((buf[1] === 0xBB) || (buf[1] === 0xBF))) {
 			buf = buf.slice(2);
 		} // strip non-standard utf-8 bom
 		return buf.toString('utf8');
