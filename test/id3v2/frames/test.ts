@@ -21,7 +21,7 @@ import {
 	FrameUnknown,
 	IFrameImpl
 } from '../../../src/lib/id3v2/id3v2_frame';
-import {ID3v2_ValuePicTypes} from '../../../src/lib/id3v2/id3v2__consts';
+import {ID3V2ValueTypes} from '../../../src/lib/id3v2/id3v2__consts';
 
 describe('SyncSaveInt', function() {
 	it('should calculate back & forth', function() {
@@ -225,8 +225,8 @@ describe('ID3v2Frames', () => {
 		});
 	});
 
-	const pictypes: Array<{ key: number, name: string }> = Object.keys(ID3v2_ValuePicTypes).map(key => {
-		return {key: parseInt(key, 10), name: ID3v2_ValuePicTypes[key]};
+	const pictypes: Array<{ key: number, name: string }> = Object.keys(ID3V2ValueTypes.pictureType).map(key => {
+		return {key: parseInt(key, 10), name: ID3V2ValueTypes.pictureType[key]};
 	});
 	describe('Pic', () => {
 		const val = FramePic;
