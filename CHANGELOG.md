@@ -1,5 +1,5 @@
 <a name="0.4.0"></a>
-# 0.4.0 (2019/??/??)
+# 0.4.0 (2019/08/28)
 ### Features
 * ID3v24Builder: add more frames, add encoding parameter
 * ID3v2.write(): move optional parameters into options object 
@@ -8,7 +8,9 @@
 * add library usage examples
 * rebuild mocha test options and calls
 * analyze: detect garbage data before audio data
- 
+* CLI: add id3v1 mass remover "id3v1-remove"
+* class documentation
+
 ### Bug Fixes
 * ID3v2.write in v2.2 no longer syncsafe the size field
 * ID3v2.read handles empty id3v2 tag (size:0) 
@@ -20,8 +22,9 @@
 * MP3.read(): option id3v1IfNotid3v2 renamed to id3v1IfNotID3v2
 * ID3v2.Head: changed structure into version depended sub-objects 
 * simplifyTag: function access has been moved to static ID3v2.simplify()
-  
-<a name="0.3.10"></a>
+* ID3v2 constants: values constants like Picture Type moved into public group object "ID3V2ValueTypes" 
+
+#<a name="0.3.10"></a>
 # 0.3.10 (2019/06/10)
 ### Bug Fixes
 * MP3.removeTags/ID3v2.updateTag: remove padding between id3v2 and audio

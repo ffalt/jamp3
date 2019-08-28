@@ -1,7 +1,5 @@
 # jamp3
 
-*IMPORTANT: This README is for upcoming version 0.4*
-
 An id3 & mp3 library written in Typescript for NodeJS
 
 [![NPM](https://nodei.co/npm/jamp3.png?downloads=true&downloadRank=true&stars=true)](https://nodei.co/npm/jamp3/)
