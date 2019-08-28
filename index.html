@@ -2390,8 +2390,14 @@ img {
 		<li class=" tsd-kind-class">
 			<a href="classes/mp3analyzer.html" class="tsd-kind-icon">MP3<wbr>Analyzer</a>
 		</li>
-		<li class=" tsd-kind-function">
-			<a href="globals.html#simplifytag" class="tsd-kind-icon">simplify<wbr>Tag</a>
+		<li class=" tsd-kind-object-literal">
+			<a href="globals.html#id3v2valuetypes" class="tsd-kind-icon">ID3<wbr>V2Value<wbr>Types</a>
+		</li>
+		<li class=" tsd-kind-object-literal tsd-is-not-exported">
+			<a href="globals.html#id3v2_valuepictypes" class="tsd-kind-icon">ID3v2_<wbr><wbr>Value<wbr>Pic<wbr>Types</a>
+		</li>
+		<li class=" tsd-kind-object-literal tsd-is-not-exported">
+			<a href="globals.html#id3v2_valuerelativevolumeadjustment2channeltypes" class="tsd-kind-icon">ID3v2_<wbr><wbr>Value<wbr>Relative<wbr>Volume<wbr>Adjustment2<wbr>Channel<wbr>Types</a>
 		</li>
 	</ul>
 </nav>
@@ -2420,7 +2426,9 @@ img {
 					<p>While reading the tag, you may want read the duration/bitrate/... of the audio stream.</p>
 				</li>
 				<li><p>Write support</p>
-					<p>ID3v2/ID3v1 write support is implemented. Note: Since this means possibly screwing up files, you should be either brave and at least backup your data, or, wait until this library majured a bit and write functions are documented. </p>
+					<p>ID3v2/ID3v1 can be remove or written.</p>
+					<p>For ID3v2.4 an easy-to-use build helper is available. For more complex use, you can write other versions and even non-standard combinations of ID3v2 frames.</p>
+					<p>There are not much reported issues, but be advised to make &amp; keep backups of your audio files in case of bugs. </p>
 				</li>
 				<li><p>Return ID3v2 frames as raw as needed</p>
 					<p>No mangling or combination into a simplified tag object (but there is a helper function to do just that).</p>
@@ -2465,9 +2473,11 @@ img {
 			<a href="#usage-as-library" id="usage-as-library" style="color: inherit; text-decoration: none;">
 				<h2>Usage as Library</h2>
 			</a>
+			<p><a href="https://ffalt.github.io/jamp3/">Class Documentation</a></p>
 			<a href="#id3v1" id="id3v1" style="color: inherit; text-decoration: none;">
 				<h3>ID3v1</h3>
 			</a>
+			<p><a href="https://ffalt.github.io/jamp3/classes/id3v1.html">Class Documentation</a></p>
 			<a href="#reading-id3v1" id="reading-id3v1" style="color: inherit; text-decoration: none;">
 				<h4>reading ID3v1</h4>
 			</a>
@@ -2530,17 +2540,18 @@ run().catch(<span class="hljs-function"><span class="hljs-params">e</span> =&gt;
 			<a href="#id3v2" id="id3v2" style="color: inherit; text-decoration: none;">
 				<h3>ID3v2</h3>
 			</a>
+			<p><a href="https://ffalt.github.io/jamp3/classes/id3v2.html">Class Documentation</a></p>
 			<a href="#reading-id3v2" id="reading-id3v2" style="color: inherit; text-decoration: none;">
 				<h4>reading ID3v2</h4>
 			</a>
-			<pre><code class="language-typescript"><span class="hljs-keyword">import</span> {ID3v2, simplifyTag} <span class="hljs-keyword">from</span> <span class="hljs-string">'jamp3'</span>;
+			<pre><code class="language-typescript"><span class="hljs-keyword">import</span> {ID3v2} <span class="hljs-keyword">from</span> <span class="hljs-string">'jamp3'</span>;
 
 <span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">run</span>(<span class="hljs-params"></span>): <span class="hljs-title">Promise</span>&lt;<span class="hljs-title">void</span>&gt; </span>{
     <span class="hljs-keyword">const</span> id3v2 = <span class="hljs-keyword">new</span> ID3v2();
     <span class="hljs-keyword">const</span> filename = <span class="hljs-string">'demo.mp3'</span>;
     <span class="hljs-keyword">const</span> tag = <span class="hljs-keyword">await</span> id3v2.read(filename);
     <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'id3v2:'</span>, tag);
-    <span class="hljs-built_in">console</span>.log(simplifyTag(tag)); <span class="hljs-comment">// combine frames into one simple tag object</span>
+    <span class="hljs-built_in">console</span>.log(ID3v2.simplify(tag)); <span class="hljs-comment">// combine frames into one simple tag object</span>
 }
 
 run().catch(<span class="hljs-function"><span class="hljs-params">e</span> =&gt;</span> {
@@ -2810,6 +2821,7 @@ run().catch(<span class="hljs-function"><span class="hljs-params">e</span> =&gt;
 			<a href="#writing-id3v2-with-helper" id="writing-id3v2-with-helper" style="color: inherit; text-decoration: none;">
 				<h4>writing ID3v2 with Helper</h4>
 			</a>
+			<p><a href="https://ffalt.github.io/jamp3/classes/id3v24tagbuilder.html">Class Documentation</a></p>
 			<pre><code class="language-typescript"><span class="hljs-keyword">import</span> {ID3v2, ID3V24TagBuilder, IID3V2} <span class="hljs-keyword">from</span> <span class="hljs-string">'jamp3'</span>;
 
 <span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">run</span>(<span class="hljs-params"></span>): <span class="hljs-title">Promise</span>&lt;<span class="hljs-title">void</span>&gt; </span>{
@@ -2834,7 +2846,7 @@ run().catch(<span class="hljs-function"><span class="hljs-params">e</span> =&gt;
 run().catch(<span class="hljs-function"><span class="hljs-params">e</span> =&gt;</span> {
     <span class="hljs-built_in">console</span>.error(e);
 });</code></pre>
-			<p>Example as <a href="examples/snippet_id3v2-build.ts">typescript</a> <a href="examples/snippet_build-read.js">javascript</a> </p>
+			<p>Example as <a href="examples/snippet_id3v2-build.ts">typescript</a> <a href="examples/snippet_id3v2-build.js">javascript</a> </p>
 			<a href="#writing-id3v2-raw" id="writing-id3v2-raw" style="color: inherit; text-decoration: none;">
 				<h4>writing ID3v2 Raw</h4>
 			</a>
@@ -2846,16 +2858,23 @@ run().catch(<span class="hljs-function"><span class="hljs-params">e</span> =&gt;
     <span class="hljs-keyword">const</span> tag: IID3V2.ID3v2Tag = {
         frames: [
             {
-                <span class="hljs-string">'id'</span>: <span class="hljs-string">'TIT2'</span>,
-                <span class="hljs-string">'value'</span>: {<span class="hljs-string">'text'</span>: <span class="hljs-string">'A title'</span>}
+                id: <span class="hljs-string">'TIT2'</span>,
+                value: {text: <span class="hljs-string">'A title'</span>},
+                head: {
+                    encoding: <span class="hljs-string">'utf8'</span>
+                }
             },
             {
-                <span class="hljs-string">'id'</span>: <span class="hljs-string">'TALB'</span>,
-                <span class="hljs-string">'value'</span>: {<span class="hljs-string">'text'</span>: <span class="hljs-string">'An album'</span>}
-            },
+                id: <span class="hljs-string">'TALB'</span>,
+                value: {text: <span class="hljs-string">'An album'</span>},
+                head: {
+                    encoding: <span class="hljs-string">'ucs2'</span>
+                }
+            }
         ]
     };
     <span class="hljs-keyword">const</span> options: IID3V2.WriteOptions = {
+        defaultEncoding: <span class="hljs-string">'utf8'</span>, <span class="hljs-comment">// encoding used if not specified in frame header</span>
         keepBackup: <span class="hljs-literal">true</span>, <span class="hljs-comment">// keep a filename.mp3.bak copy of the original file</span>
         paddingSize: <span class="hljs-number">10</span> <span class="hljs-comment">// add padding zeros between id3v2 and the audio (in bytes)</span>
     };
@@ -2871,6 +2890,7 @@ run().catch(<span class="hljs-function"><span class="hljs-params">e</span> =&gt;
 			<a href="#id3v1-id3v2-mpeg" id="id3v1-id3v2-mpeg" style="color: inherit; text-decoration: none;">
 				<h3>ID3v1, ID3v2, MPEG</h3>
 			</a>
+			<p><a href="https://ffalt.github.io/jamp3/classes/mp3.html">Class Documentation</a></p>
 			<a href="#reading-mp3" id="reading-mp3" style="color: inherit; text-decoration: none;">
 				<h4>reading MP3</h4>
 			</a>
@@ -2881,7 +2901,7 @@ run().catch(<span class="hljs-function"><span class="hljs-params">e</span> =&gt;
     <span class="hljs-keyword">const</span> filename = <span class="hljs-string">'demo.mp3'</span>;
     <span class="hljs-keyword">const</span> options: IMP3.ReadOptions = {
         mpeg: <span class="hljs-literal">true</span>, <span class="hljs-comment">// read mpeg information</span>
-        mpegQuick: <span class="hljs-literal">true</span>, <span class="hljs-comment">// estimate mpeg information based on mpeg header (XING|Info) and stop reading if tags and header is found</span>
+        mpegQuick: <span class="hljs-literal">true</span>, <span class="hljs-comment">// estimate mpeg information based on mpeg header (XING|Info) and stop reading if tags and header are found</span>
         id3v2: <span class="hljs-literal">true</span>, <span class="hljs-comment">// read ID3 v2 tag</span>
         id3v1: <span class="hljs-literal">false</span>,  <span class="hljs-comment">// read ID3 v1 tag</span>
         id3v1IfNotID3v2: <span class="hljs-literal">true</span>,  <span class="hljs-comment">// read ID3 v1 tag only if no ID3 v2 tag is found (stops reading otherwise)</span>
@@ -2896,37 +2916,36 @@ run().catch(<span class="hljs-function"><span class="hljs-params">e</span> =&gt;
 });</code></pre>
 			<p>Example as <a href="examples/snippet_mp3-read.ts">typescript</a> <a href="examples/snippet_mp3-read.js">javascript</a> </p>
 			<p>Note: MP3 Duration</p>
-			<p>if the mp3 does include a VBR/CBR header, the declared duration there is used
-			if the mp3 does include not a VBR/CBR header: </p>
+			<p>if the mp3 does include a VBR/CBR header, the declared header values are used for duration calculation</p>
+			<p>if the mp3 does NOT include a VBR/CBR header: </p>
 			<ul>
 				<li>with option {mpegQuick: true}: only a few audio frames are read and the duration is estimated </li>
 				<li>with option {mpegQuick: false}: all audio frames are read and the duration is calculated </li>
 			</ul>
 			<p>Example result:</p>
 			<pre><code class="language-json">{
-  &quot;size&quot;: 4096,
-  &quot;mpeg&quot;: {
-            &quot;durationEstimate&quot;: 1.044875, // only a few audioframes have been read to estimate duration
-            &quot;durationRead&quot;: 0,
-            &quot;channels&quot;: 2,
-            &quot;frameCount&quot;: 0,
-            &quot;frameCountDeclared&quot;: 0,
-            &quot;bitRate&quot;: 128000,
-            &quot;sampleRate&quot;: 44100,
-            &quot;sampleCount&quot;: 1152,
-            &quot;audioBytes&quot;: 0,
-            &quot;audioBytesDeclared&quot;: 0,
-            &quot;version&quot;: &quot;1 (ISO/IEC 11172-3)&quot;,
-            &quot;layer&quot;: &quot;MPEG audio layer 3&quot;,
-            &quot;encoded&quot;: &quot;CBR&quot;,
-            &quot;mode&quot;: &quot;joint&quot;
-          }
-  ,
-  &quot;id3v1&quot;: {
-      // see sections above for example ID3v1 output
-   },
-  &quot;id3v2&quot;: {
-      // see sections above for example ID3v2 output
+  <span class="hljs-attr">"size"</span>: <span class="hljs-number">4096</span>,
+  <span class="hljs-attr">"mpeg"</span>: {
+    <span class="hljs-attr">"durationEstimate"</span>: <span class="hljs-number">1.044875</span>, 
+    <span class="hljs-attr">"durationRead"</span>: <span class="hljs-number">0</span>,
+    <span class="hljs-attr">"channels"</span>: <span class="hljs-number">2</span>,
+    <span class="hljs-attr">"frameCount"</span>: <span class="hljs-number">0</span>,
+    <span class="hljs-attr">"frameCountDeclared"</span>: <span class="hljs-number">0</span>,
+    <span class="hljs-attr">"bitRate"</span>: <span class="hljs-number">128000</span>,
+    <span class="hljs-attr">"sampleRate"</span>: <span class="hljs-number">44100</span>,
+    <span class="hljs-attr">"sampleCount"</span>: <span class="hljs-number">1152</span>,
+    <span class="hljs-attr">"audioBytes"</span>: <span class="hljs-number">0</span>,
+    <span class="hljs-attr">"audioBytesDeclared"</span>: <span class="hljs-number">0</span>,
+    <span class="hljs-attr">"version"</span>: <span class="hljs-string">"1 (ISO/IEC 11172-3)"</span>,
+    <span class="hljs-attr">"layer"</span>: <span class="hljs-string">"MPEG audio layer 3"</span>,
+    <span class="hljs-attr">"encoded"</span>: <span class="hljs-string">"CBR"</span>,
+    <span class="hljs-attr">"mode"</span>: <span class="hljs-string">"joint"</span>
+  },
+  <span class="hljs-attr">"id3v1"</span>: { 
+      <span class="hljs-attr">"…"</span>: <span class="hljs-string">"see documentation above"</span>  
+  },
+  <span class="hljs-attr">"id3v2"</span>: {
+      <span class="hljs-attr">"…"</span>: <span class="hljs-string">"see documentation above"</span>  
   }
 }</code></pre>
 			<a href="#command-line-tools" id="command-line-tools" style="color: inherit; text-decoration: none;">
@@ -3314,6 +3333,10 @@ Options:
 				<h3>Build</h3>
 			</a>
 			<p><code>npm run build</code> to build the nodejs version into dist/</p>
+			<a href="#documentation" id="documentation" style="color: inherit; text-decoration: none;">
+				<h3>Documentation</h3>
+			</a>
+			<p><code>npm run docs</code> to build class documentation into docs/</p>
 			<a href="#test" id="test" style="color: inherit; text-decoration: none;">
 				<h3>Test</h3>
 			</a>
@@ -3352,41 +3375,383 @@ Options:
 						</ul>
 					</section>
 					<section class="tsd-index-section ">
-						<h3>Functions</h3>
+						<h3>Object literals</h3>
 						<ul class="tsd-index-list">
-							<li class="tsd-kind-function"><a href="globals.html#simplifytag" class="tsd-kind-icon">simplify<wbr>Tag</a></li>
+							<li class="tsd-kind-object-literal"><a href="globals.html#id3v2valuetypes" class="tsd-kind-icon">ID3<wbr>V2Value<wbr>Types</a></li>
+							<li class="tsd-kind-object-literal tsd-is-not-exported"><a href="globals.html#id3v2_valuepictypes" class="tsd-kind-icon">ID3v2_<wbr><wbr>Value<wbr>Pic<wbr>Types</a></li>
+							<li class="tsd-kind-object-literal tsd-is-not-exported"><a href="globals.html#id3v2_valuerelativevolumeadjustment2channeltypes" class="tsd-kind-icon">ID3v2_<wbr><wbr>Value<wbr>Relative<wbr>Volume<wbr>Adjustment2<wbr>Channel<wbr>Types</a></li>
 						</ul>
 					</section>
 				</div>
 			</section>
 		</section>
 		<section class="tsd-panel-group tsd-member-group ">
-			<h2>Functions</h2>
-			<section class="tsd-panel tsd-member tsd-kind-function">
-				<a name="simplifytag" class="tsd-anchor"></a>
-				<h3>simplify<wbr>Tag</h3>
-				<ul class="tsd-signatures tsd-kind-function">
-					<li class="tsd-signature tsd-kind-icon">simplify<wbr>Tag<span class="tsd-signature-symbol">(</span>tag<span class="tsd-signature-symbol">: </span><a href="interfaces/iid3v2.tag.html" class="tsd-signature-type">Tag</a>, dropIDsList<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Array</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="interfaces/iid3v2.tagsimplified.html" class="tsd-signature-type">TagSimplified</a></li>
-				</ul>
-				<ul class="tsd-descriptions">
-					<li class="tsd-description">
-						<aside class="tsd-sources">
-							<ul>
-								<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/c28c9ae/src/lib/id3v2/id3v2_simplify.ts#L5">id3v2/id3v2_simplify.ts:5</a></li>
-							</ul>
-						</aside>
-						<h4 class="tsd-parameters-title">Parameters</h4>
+			<h2>Object literals</h2>
+			<section class="tsd-panel tsd-member tsd-kind-object-literal">
+				<a name="id3v2valuetypes" class="tsd-anchor"></a>
+				<h3><span class="tsd-flag ts-flagConst">Const</span> ID3<wbr>V2Value<wbr>Types</h3>
+				<div class="tsd-signature tsd-kind-icon">ID3<wbr>V2Value<wbr>Types<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
+				<aside class="tsd-sources">
+					<ul>
+						<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/24e78de/src/lib/id3v2/id3v2__consts.ts#L37">id3v2/id3v2__consts.ts:37</a></li>
+					</ul>
+				</aside>
+				<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+					<a name="id3v2valuetypes.picturetype" class="tsd-anchor"></a>
+					<h3>picture<wbr>Type</h3>
+					<div class="tsd-signature tsd-kind-icon">picture<wbr>Type<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> =&nbsp;ID3v2_ValuePicTypes</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/24e78de/src/lib/id3v2/id3v2__consts.ts#L38">id3v2/id3v2__consts.ts:38</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
 						<ul class="tsd-parameters">
-							<li>
-								<h5>tag: <a href="interfaces/iid3v2.tag.html" class="tsd-signature-type">Tag</a></h5>
-							</li>
-							<li>
-								<h5><span class="tsd-flag ts-flagOptional">Optional</span> dropIDsList: <span class="tsd-signature-type">Array</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span></h5>
+							<li class="tsd-parameter-index-signature">
+								<h5><span class="tsd-signature-symbol">[</span>name: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">]: </span><span class="tsd-signature-type">string</span></h5>
 							</li>
 						</ul>
-						<h4 class="tsd-returns-title">Returns <a href="interfaces/iid3v2.tagsimplified.html" class="tsd-signature-type">TagSimplified</a></h4>
-					</li>
-				</ul>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
+					<a name="id3v2valuetypes.relativevolumeadjustment2channeltypes" class="tsd-anchor"></a>
+					<h3>relative<wbr>Volume<wbr>Adjustment2<wbr>Channel<wbr>Types</h3>
+					<div class="tsd-signature tsd-kind-icon">relative<wbr>Volume<wbr>Adjustment2<wbr>Channel<wbr>Types<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> =&nbsp;ID3v2_ValueRelativeVolumeAdjustment2ChannelTypes</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/24e78de/src/lib/id3v2/id3v2__consts.ts#L39">id3v2/id3v2__consts.ts:39</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-index-signature">
+								<h5><span class="tsd-signature-symbol">[</span>name: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">]: </span><span class="tsd-signature-type">string</span></h5>
+							</li>
+						</ul>
+					</div>
+				</section>
+			</section>
+			<section class="tsd-panel tsd-member tsd-kind-object-literal tsd-is-not-exported">
+				<a name="id3v2_valuepictypes" class="tsd-anchor"></a>
+				<h3><span class="tsd-flag ts-flagConst">Const</span> ID3v2_<wbr><wbr>Value<wbr>Pic<wbr>Types</h3>
+				<div class="tsd-signature tsd-kind-icon">ID3v2_<wbr><wbr>Value<wbr>Pic<wbr>Types<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
+				<aside class="tsd-sources">
+					<ul>
+						<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/24e78de/src/lib/id3v2/id3v2__consts.ts#L1">id3v2/id3v2__consts.ts:1</a></li>
+					</ul>
+				</aside>
+				<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal tsd-is-not-exported">
+					<a name="id3v2_valuepictypes.0" class="tsd-anchor"></a>
+					<h3>0</h3>
+					<div class="tsd-signature tsd-kind-icon">0<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;Other&quot;</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/24e78de/src/lib/id3v2/id3v2__consts.ts#L2">id3v2/id3v2__consts.ts:2</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal tsd-is-not-exported">
+					<a name="id3v2_valuepictypes.1" class="tsd-anchor"></a>
+					<h3>1</h3>
+					<div class="tsd-signature tsd-kind-icon">1<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;32x32 pixels &#x27;file icon&#x27; (PNG only)&quot;</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/24e78de/src/lib/id3v2/id3v2__consts.ts#L3">id3v2/id3v2__consts.ts:3</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal tsd-is-not-exported">
+					<a name="id3v2_valuepictypes.10" class="tsd-anchor"></a>
+					<h3>10</h3>
+					<div class="tsd-signature tsd-kind-icon">10<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;Band/Orchestra&quot;</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/24e78de/src/lib/id3v2/id3v2__consts.ts#L12">id3v2/id3v2__consts.ts:12</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal tsd-is-not-exported">
+					<a name="id3v2_valuepictypes.11" class="tsd-anchor"></a>
+					<h3>11</h3>
+					<div class="tsd-signature tsd-kind-icon">11<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;Composer&quot;</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/24e78de/src/lib/id3v2/id3v2__consts.ts#L13">id3v2/id3v2__consts.ts:13</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal tsd-is-not-exported">
+					<a name="id3v2_valuepictypes.12" class="tsd-anchor"></a>
+					<h3>12</h3>
+					<div class="tsd-signature tsd-kind-icon">12<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;Lyricist/text writer&quot;</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/24e78de/src/lib/id3v2/id3v2__consts.ts#L14">id3v2/id3v2__consts.ts:14</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal tsd-is-not-exported">
+					<a name="id3v2_valuepictypes.13" class="tsd-anchor"></a>
+					<h3>13</h3>
+					<div class="tsd-signature tsd-kind-icon">13<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;Recording Location&quot;</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/24e78de/src/lib/id3v2/id3v2__consts.ts#L15">id3v2/id3v2__consts.ts:15</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal tsd-is-not-exported">
+					<a name="id3v2_valuepictypes.14" class="tsd-anchor"></a>
+					<h3>14</h3>
+					<div class="tsd-signature tsd-kind-icon">14<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;During recording&quot;</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/24e78de/src/lib/id3v2/id3v2__consts.ts#L16">id3v2/id3v2__consts.ts:16</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal tsd-is-not-exported">
+					<a name="id3v2_valuepictypes.15" class="tsd-anchor"></a>
+					<h3>15</h3>
+					<div class="tsd-signature tsd-kind-icon">15<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;During performance&quot;</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/24e78de/src/lib/id3v2/id3v2__consts.ts#L17">id3v2/id3v2__consts.ts:17</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal tsd-is-not-exported">
+					<a name="id3v2_valuepictypes.16" class="tsd-anchor"></a>
+					<h3>16</h3>
+					<div class="tsd-signature tsd-kind-icon">16<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;Movie/video screen capture&quot;</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/24e78de/src/lib/id3v2/id3v2__consts.ts#L18">id3v2/id3v2__consts.ts:18</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal tsd-is-not-exported">
+					<a name="id3v2_valuepictypes.17" class="tsd-anchor"></a>
+					<h3>17</h3>
+					<div class="tsd-signature tsd-kind-icon">17<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;A bright coloured fish&quot;</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/24e78de/src/lib/id3v2/id3v2__consts.ts#L19">id3v2/id3v2__consts.ts:19</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal tsd-is-not-exported">
+					<a name="id3v2_valuepictypes.18" class="tsd-anchor"></a>
+					<h3>18</h3>
+					<div class="tsd-signature tsd-kind-icon">18<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;Illustration&quot;</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/24e78de/src/lib/id3v2/id3v2__consts.ts#L20">id3v2/id3v2__consts.ts:20</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal tsd-is-not-exported">
+					<a name="id3v2_valuepictypes.19" class="tsd-anchor"></a>
+					<h3>19</h3>
+					<div class="tsd-signature tsd-kind-icon">19<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;Band/artist logotype&quot;</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/24e78de/src/lib/id3v2/id3v2__consts.ts#L21">id3v2/id3v2__consts.ts:21</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal tsd-is-not-exported">
+					<a name="id3v2_valuepictypes.2" class="tsd-anchor"></a>
+					<h3>2</h3>
+					<div class="tsd-signature tsd-kind-icon">2<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;Other file icon&quot;</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/24e78de/src/lib/id3v2/id3v2__consts.ts#L4">id3v2/id3v2__consts.ts:4</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal tsd-is-not-exported">
+					<a name="id3v2_valuepictypes.20" class="tsd-anchor"></a>
+					<h3>20</h3>
+					<div class="tsd-signature tsd-kind-icon">20<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;Publisher/Studio logotype&quot;</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/24e78de/src/lib/id3v2/id3v2__consts.ts#L22">id3v2/id3v2__consts.ts:22</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal tsd-is-not-exported">
+					<a name="id3v2_valuepictypes.3" class="tsd-anchor"></a>
+					<h3>3</h3>
+					<div class="tsd-signature tsd-kind-icon">3<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;Cover (front)&quot;</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/24e78de/src/lib/id3v2/id3v2__consts.ts#L5">id3v2/id3v2__consts.ts:5</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal tsd-is-not-exported">
+					<a name="id3v2_valuepictypes.4" class="tsd-anchor"></a>
+					<h3>4</h3>
+					<div class="tsd-signature tsd-kind-icon">4<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;Cover (back)&quot;</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/24e78de/src/lib/id3v2/id3v2__consts.ts#L6">id3v2/id3v2__consts.ts:6</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal tsd-is-not-exported">
+					<a name="id3v2_valuepictypes.5" class="tsd-anchor"></a>
+					<h3>5</h3>
+					<div class="tsd-signature tsd-kind-icon">5<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;Leaflet page&quot;</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/24e78de/src/lib/id3v2/id3v2__consts.ts#L7">id3v2/id3v2__consts.ts:7</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal tsd-is-not-exported">
+					<a name="id3v2_valuepictypes.6" class="tsd-anchor"></a>
+					<h3>6</h3>
+					<div class="tsd-signature tsd-kind-icon">6<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;Media (e.g. lable side of CD)&quot;</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/24e78de/src/lib/id3v2/id3v2__consts.ts#L8">id3v2/id3v2__consts.ts:8</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal tsd-is-not-exported">
+					<a name="id3v2_valuepictypes.7" class="tsd-anchor"></a>
+					<h3>7</h3>
+					<div class="tsd-signature tsd-kind-icon">7<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;Lead artist/lead performer/soloist&quot;</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/24e78de/src/lib/id3v2/id3v2__consts.ts#L9">id3v2/id3v2__consts.ts:9</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal tsd-is-not-exported">
+					<a name="id3v2_valuepictypes.8" class="tsd-anchor"></a>
+					<h3>8</h3>
+					<div class="tsd-signature tsd-kind-icon">8<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;Artist/performer&quot;</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/24e78de/src/lib/id3v2/id3v2__consts.ts#L10">id3v2/id3v2__consts.ts:10</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal tsd-is-not-exported">
+					<a name="id3v2_valuepictypes.9" class="tsd-anchor"></a>
+					<h3>9</h3>
+					<div class="tsd-signature tsd-kind-icon">9<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;Conductor&quot;</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/24e78de/src/lib/id3v2/id3v2__consts.ts#L11">id3v2/id3v2__consts.ts:11</a></li>
+						</ul>
+					</aside>
+				</section>
+			</section>
+			<section class="tsd-panel tsd-member tsd-kind-object-literal tsd-is-not-exported">
+				<a name="id3v2_valuerelativevolumeadjustment2channeltypes" class="tsd-anchor"></a>
+				<h3><span class="tsd-flag ts-flagConst">Const</span> ID3v2_<wbr><wbr>Value<wbr>Relative<wbr>Volume<wbr>Adjustment2<wbr>Channel<wbr>Types</h3>
+				<div class="tsd-signature tsd-kind-icon">ID3v2_<wbr><wbr>Value<wbr>Relative<wbr>Volume<wbr>Adjustment2<wbr>Channel<wbr>Types<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
+				<aside class="tsd-sources">
+					<ul>
+						<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/24e78de/src/lib/id3v2/id3v2__consts.ts#L25">id3v2/id3v2__consts.ts:25</a></li>
+					</ul>
+				</aside>
+				<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal tsd-is-not-exported">
+					<a name="id3v2_valuerelativevolumeadjustment2channeltypes.0" class="tsd-anchor"></a>
+					<h3>0</h3>
+					<div class="tsd-signature tsd-kind-icon">0<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;Other&quot;</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/24e78de/src/lib/id3v2/id3v2__consts.ts#L26">id3v2/id3v2__consts.ts:26</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal tsd-is-not-exported">
+					<a name="id3v2_valuerelativevolumeadjustment2channeltypes.1" class="tsd-anchor"></a>
+					<h3>1</h3>
+					<div class="tsd-signature tsd-kind-icon">1<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;Master volume&quot;</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/24e78de/src/lib/id3v2/id3v2__consts.ts#L27">id3v2/id3v2__consts.ts:27</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal tsd-is-not-exported">
+					<a name="id3v2_valuerelativevolumeadjustment2channeltypes.2" class="tsd-anchor"></a>
+					<h3>2</h3>
+					<div class="tsd-signature tsd-kind-icon">2<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;Front right&quot;</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/24e78de/src/lib/id3v2/id3v2__consts.ts#L28">id3v2/id3v2__consts.ts:28</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal tsd-is-not-exported">
+					<a name="id3v2_valuerelativevolumeadjustment2channeltypes.3" class="tsd-anchor"></a>
+					<h3>3</h3>
+					<div class="tsd-signature tsd-kind-icon">3<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;Front left&quot;</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/24e78de/src/lib/id3v2/id3v2__consts.ts#L29">id3v2/id3v2__consts.ts:29</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal tsd-is-not-exported">
+					<a name="id3v2_valuerelativevolumeadjustment2channeltypes.4" class="tsd-anchor"></a>
+					<h3>4</h3>
+					<div class="tsd-signature tsd-kind-icon">4<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;Back right&quot;</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/24e78de/src/lib/id3v2/id3v2__consts.ts#L30">id3v2/id3v2__consts.ts:30</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal tsd-is-not-exported">
+					<a name="id3v2_valuerelativevolumeadjustment2channeltypes.5" class="tsd-anchor"></a>
+					<h3>5</h3>
+					<div class="tsd-signature tsd-kind-icon">5<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;Back left&quot;</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/24e78de/src/lib/id3v2/id3v2__consts.ts#L31">id3v2/id3v2__consts.ts:31</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal tsd-is-not-exported">
+					<a name="id3v2_valuerelativevolumeadjustment2channeltypes.6" class="tsd-anchor"></a>
+					<h3>6</h3>
+					<div class="tsd-signature tsd-kind-icon">6<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;Front centre&quot;</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/24e78de/src/lib/id3v2/id3v2__consts.ts#L32">id3v2/id3v2__consts.ts:32</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal tsd-is-not-exported">
+					<a name="id3v2_valuerelativevolumeadjustment2channeltypes.7" class="tsd-anchor"></a>
+					<h3>7</h3>
+					<div class="tsd-signature tsd-kind-icon">7<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;Back centre&quot;</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/24e78de/src/lib/id3v2/id3v2__consts.ts#L33">id3v2/id3v2__consts.ts:33</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal tsd-is-not-exported">
+					<a name="id3v2_valuerelativevolumeadjustment2channeltypes.8" class="tsd-anchor"></a>
+					<h3>8</h3>
+					<div class="tsd-signature tsd-kind-icon">8<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;Subwoofer&quot;</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/24e78de/src/lib/id3v2/id3v2__consts.ts#L34">id3v2/id3v2__consts.ts:34</a></li>
+						</ul>
+					</aside>
+				</section>
 			</section>
 		</section>
 		<footer class="with-border-bottom">

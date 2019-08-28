@@ -2402,6 +2402,12 @@ img {
 				<li class=" tsd-kind-method tsd-parent-kind-class">
 					<a href="id3v2.html#writebuilder" class="tsd-kind-icon">write<wbr>Builder</a>
 				</li>
+				<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-static">
+					<a href="id3v2.html#check" class="tsd-kind-icon">check</a>
+				</li>
+				<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-static">
+					<a href="id3v2.html#simplify" class="tsd-kind-icon">simplify</a>
+				</li>
 			</ul>
 		</li>
 		<li class=" tsd-kind-class">
@@ -2410,8 +2416,14 @@ img {
 		<li class=" tsd-kind-class">
 			<a href="mp3analyzer.html" class="tsd-kind-icon">MP3<wbr>Analyzer</a>
 		</li>
-		<li class=" tsd-kind-function">
-			<a href="../globals.html#simplifytag" class="tsd-kind-icon">simplify<wbr>Tag</a>
+		<li class=" tsd-kind-object-literal">
+			<a href="../globals.html#id3v2valuetypes" class="tsd-kind-icon">ID3<wbr>V2Value<wbr>Types</a>
+		</li>
+		<li class=" tsd-kind-object-literal tsd-is-not-exported">
+			<a href="../globals.html#id3v2_valuepictypes" class="tsd-kind-icon">ID3v2_<wbr><wbr>Value<wbr>Pic<wbr>Types</a>
+		</li>
+		<li class=" tsd-kind-object-literal tsd-is-not-exported">
+			<a href="../globals.html#id3v2_valuerelativevolumeadjustment2channeltypes" class="tsd-kind-icon">ID3v2_<wbr><wbr>Value<wbr>Relative<wbr>Volume<wbr>Adjustment2<wbr>Channel<wbr>Types</a>
 		</li>
 	</ul>
 </nav>
@@ -2428,7 +2440,7 @@ img {
 					</ul>
 				</div>
 				<p>Basic usage example:</p>
-				<pre><code class="language-ts"><span class="hljs-keyword">import</span> {ID3v2, simplifyTag} <span class="hljs-keyword">from</span> <span class="hljs-string">'jamp3'</span>;
+				<pre><code class="language-ts"><span class="hljs-keyword">import</span> {ID3v2} <span class="hljs-keyword">from</span> <span class="hljs-string">'jamp3'</span>;
 
 <span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">run</span>(<span class="hljs-params"></span>): <span class="hljs-title">Promise</span>&lt;<span class="hljs-title">void</span>&gt; </span>{
     <span class="hljs-keyword">const</span> id3v2 = <span class="hljs-keyword">new</span> ID3v2();
@@ -2436,7 +2448,7 @@ img {
     <span class="hljs-keyword">const</span> tag = <span class="hljs-keyword">await</span> id3v2.read(filename);
     <span class="hljs-keyword">if</span> (tag) {
         <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'id3v2:'</span>, tag);
-        <span class="hljs-built_in">console</span>.log(simplifyTag(tag)); <span class="hljs-comment">// combine frames into one simple tag object</span>
+        <span class="hljs-built_in">console</span>.log(ID3v2.simplify(tag)); <span class="hljs-comment">// combine frames into one simple tag object</span>
     } <span class="hljs-keyword">else</span> {
         <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'id3v2: None found'</span>);
     }
@@ -2469,6 +2481,8 @@ run().catch(<span class="hljs-function"><span class="hljs-params">e</span> =&gt;
 							<li class="tsd-kind-method tsd-parent-kind-class"><a href="id3v2.html#remove" class="tsd-kind-icon">remove</a></li>
 							<li class="tsd-kind-method tsd-parent-kind-class"><a href="id3v2.html#write" class="tsd-kind-icon">write</a></li>
 							<li class="tsd-kind-method tsd-parent-kind-class"><a href="id3v2.html#writebuilder" class="tsd-kind-icon">write<wbr>Builder</a></li>
+							<li class="tsd-kind-method tsd-parent-kind-class tsd-is-static"><a href="id3v2.html#check" class="tsd-kind-icon">check</a></li>
+							<li class="tsd-kind-method tsd-parent-kind-class tsd-is-static"><a href="id3v2.html#simplify" class="tsd-kind-icon">simplify</a></li>
 						</ul>
 					</section>
 				</div>
@@ -2486,7 +2500,7 @@ run().catch(<span class="hljs-function"><span class="hljs-params">e</span> =&gt;
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/c28c9ae/src/lib/id3v2/id3v2.ts#L34">id3v2/id3v2.ts:34</a></li>
+								<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/24e78de/src/lib/id3v2/id3v2.ts#L54">id3v2/id3v2.ts:54</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">
@@ -2518,7 +2532,7 @@ run().catch(<span class="hljs-function"><span class="hljs-params">e</span> =&gt;
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/c28c9ae/src/lib/id3v2/id3v2.ts#L60">id3v2/id3v2.ts:60</a></li>
+								<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/24e78de/src/lib/id3v2/id3v2.ts#L80">id3v2/id3v2.ts:80</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">
@@ -2550,7 +2564,7 @@ run().catch(<span class="hljs-function"><span class="hljs-params">e</span> =&gt;
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/c28c9ae/src/lib/id3v2/id3v2.ts#L47">id3v2/id3v2.ts:47</a></li>
+								<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/24e78de/src/lib/id3v2/id3v2.ts#L67">id3v2/id3v2.ts:67</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">
@@ -2582,7 +2596,7 @@ run().catch(<span class="hljs-function"><span class="hljs-params">e</span> =&gt;
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/c28c9ae/src/lib/id3v2/id3v2.ts#L74">id3v2/id3v2.ts:74</a></li>
+								<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/24e78de/src/lib/id3v2/id3v2.ts#L94">id3v2/id3v2.ts:94</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">
@@ -2620,12 +2634,12 @@ run().catch(<span class="hljs-function"><span class="hljs-params">e</span> =&gt;
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/c28c9ae/src/lib/id3v2/id3v2.ts#L116">id3v2/id3v2.ts:116</a></li>
+								<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/24e78de/src/lib/id3v2/id3v2.ts#L136">id3v2/id3v2.ts:136</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">
 							<div class="lead">
-								<p>Writes ID3v2 Tag from a ID3v2 object with given options</p>
+								<p>Writes ID3v2 Tag from an ID3v2 object with given options</p>
 							</div>
 						</div>
 						<h4 class="tsd-parameters-title">Parameters</h4>
@@ -2669,13 +2683,13 @@ run().catch(<span class="hljs-function"><span class="hljs-params">e</span> =&gt;
 				<a name="writebuilder" class="tsd-anchor"></a>
 				<h3>write<wbr>Builder</h3>
 				<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-					<li class="tsd-signature tsd-kind-icon">write<wbr>Builder<span class="tsd-signature-symbol">(</span>filename<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, builder<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">ID3v2Builder</span>, options<span class="tsd-signature-symbol">: </span><a href="../interfaces/iid3v2.writeoptions.html" class="tsd-signature-type">WriteOptions</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
+					<li class="tsd-signature tsd-kind-icon">write<wbr>Builder<span class="tsd-signature-symbol">(</span>filename<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, builder<span class="tsd-signature-symbol">: </span><a href="../interfaces/iid3v2.builder.html" class="tsd-signature-type">Builder</a>, options<span class="tsd-signature-symbol">: </span><a href="../interfaces/iid3v2.writeoptions.html" class="tsd-signature-type">WriteOptions</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
 				</ul>
 				<ul class="tsd-descriptions">
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/c28c9ae/src/lib/id3v2/id3v2.ts#L104">id3v2/id3v2.ts:104</a></li>
+								<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/24e78de/src/lib/id3v2/id3v2.ts#L124">id3v2/id3v2.ts:124</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">
@@ -2692,7 +2706,7 @@ run().catch(<span class="hljs-function"><span class="hljs-params">e</span> =&gt;
 								</div>
 							</li>
 							<li>
-								<h5>builder: <span class="tsd-signature-type">ID3v2Builder</span></h5>
+								<h5>builder: <a href="../interfaces/iid3v2.builder.html" class="tsd-signature-type">Builder</a></h5>
 							</li>
 							<li>
 								<h5>options: <a href="../interfaces/iid3v2.writeoptions.html" class="tsd-signature-type">WriteOptions</a></h5>
@@ -2702,6 +2716,76 @@ run().catch(<span class="hljs-function"><span class="hljs-params">e</span> =&gt;
 							</li>
 						</ul>
 						<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
+					</li>
+				</ul>
+			</section>
+			<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-static">
+				<a name="check" class="tsd-anchor"></a>
+				<h3><span class="tsd-flag ts-flagStatic">Static</span> check</h3>
+				<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-static">
+					<li class="tsd-signature tsd-kind-icon">check<span class="tsd-signature-symbol">(</span>tag<span class="tsd-signature-symbol">: </span><a href="../interfaces/iid3v2.tag.html" class="tsd-signature-type">Tag</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Array</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/iid3v2.warning.html" class="tsd-signature-type">Warning</a><span class="tsd-signature-symbol">&gt;</span></li>
+				</ul>
+				<ul class="tsd-descriptions">
+					<li class="tsd-description">
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/24e78de/src/lib/id3v2/id3v2.ts#L35">id3v2/id3v2.ts:35</a></li>
+							</ul>
+						</aside>
+						<div class="tsd-comment tsd-typography">
+							<div class="lead">
+								<p>Checks an ID3v2 Tag for warnings</p>
+							</div>
+						</div>
+						<h4 class="tsd-parameters-title">Parameters</h4>
+						<ul class="tsd-parameters">
+							<li>
+								<h5>tag: <a href="../interfaces/iid3v2.tag.html" class="tsd-signature-type">Tag</a></h5>
+								<div class="tsd-comment tsd-typography">
+									<p>the ID3v2 object to check</p>
+								</div>
+							</li>
+						</ul>
+						<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Array</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/iid3v2.warning.html" class="tsd-signature-type">Warning</a><span class="tsd-signature-symbol">&gt;</span></h4>
+						<p>a list returning warning messages</p>
+					</li>
+				</ul>
+			</section>
+			<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-static">
+				<a name="simplify" class="tsd-anchor"></a>
+				<h3><span class="tsd-flag ts-flagStatic">Static</span> simplify</h3>
+				<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-static">
+					<li class="tsd-signature tsd-kind-icon">simplify<span class="tsd-signature-symbol">(</span>tag<span class="tsd-signature-symbol">: </span><a href="../interfaces/iid3v2.tag.html" class="tsd-signature-type">Tag</a>, dropIDsList<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Array</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/iid3v2.tagsimplified.html" class="tsd-signature-type">TagSimplified</a></li>
+				</ul>
+				<ul class="tsd-descriptions">
+					<li class="tsd-description">
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/24e78de/src/lib/id3v2/id3v2.ts#L45">id3v2/id3v2.ts:45</a></li>
+							</ul>
+						</aside>
+						<div class="tsd-comment tsd-typography">
+							<div class="lead">
+								<p>Checks an ID3v2 Tag for warnings</p>
+							</div>
+						</div>
+						<h4 class="tsd-parameters-title">Parameters</h4>
+						<ul class="tsd-parameters">
+							<li>
+								<h5>tag: <a href="../interfaces/iid3v2.tag.html" class="tsd-signature-type">Tag</a></h5>
+								<div class="tsd-comment tsd-typography">
+									<p>the ID3v2 object to simplify</p>
+								</div>
+							</li>
+							<li>
+								<h5><span class="tsd-flag ts-flagOptional">Optional</span> dropIDsList: <span class="tsd-signature-type">Array</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span></h5>
+								<div class="tsd-comment tsd-typography">
+									<p>a list of frame IDs to ignore, eg. &#39;APIC&#39;</p>
+								</div>
+							</li>
+						</ul>
+						<h4 class="tsd-returns-title">Returns <a href="../interfaces/iid3v2.tagsimplified.html" class="tsd-signature-type">TagSimplified</a></h4>
+						<p>a simplified ID3v2 object</p>
 					</li>
 				</ul>
 			</section>

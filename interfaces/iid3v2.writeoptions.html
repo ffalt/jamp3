@@ -2376,6 +2376,9 @@ img {
 <nav class="tsd-navigation secondary">
 	<ul>
 		<li class=" tsd-kind-interface tsd-parent-kind-module">
+			<a href="iid3v2.builder.html" class="tsd-kind-icon">Builder</a>
+		</li>
+		<li class=" tsd-kind-interface tsd-parent-kind-module">
 			<a href="iid3v2.flags.html" class="tsd-kind-icon">Flags</a>
 		</li>
 		<li class=" tsd-kind-interface tsd-parent-kind-module">
@@ -2432,13 +2435,19 @@ img {
 		<li class=" tsd-kind-interface tsd-parent-kind-module">
 			<a href="iid3v2.tagsimplified.html" class="tsd-kind-icon">Tag<wbr>Simplified</a>
 		</li>
+		<li class=" tsd-kind-interface tsd-parent-kind-module">
+			<a href="iid3v2.warning.html" class="tsd-kind-icon">Warning</a>
+		</li>
 		<li class="current tsd-kind-interface tsd-parent-kind-module">
 			<a href="iid3v2.writeoptions.html" class="tsd-kind-icon">Write<wbr>Options</a>
 			<ul>
 				<li class=" tsd-kind-property tsd-parent-kind-interface">
+					<a href="iid3v2.writeoptions.html#defaultencoding" class="tsd-kind-icon">default<wbr>Encoding</a>
+				</li>
+				<li class=" tsd-kind-property tsd-parent-kind-interface">
 					<a href="iid3v2.writeoptions.html#keepbackup" class="tsd-kind-icon">keep<wbr>Backup</a>
 				</li>
-				<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-overwrite">
+				<li class=" tsd-kind-property tsd-parent-kind-interface">
 					<a href="iid3v2.writeoptions.html#paddingsize" class="tsd-kind-icon">padding<wbr>Size</a>
 				</li>
 			</ul>
@@ -2451,12 +2460,7 @@ img {
 			<h3>Hierarchy</h3>
 			<ul class="tsd-hierarchy">
 				<li>
-					<span class="tsd-signature-type">Id3v2WriterOptions</span>
-					<ul class="tsd-hierarchy">
-						<li>
-							<span class="target">WriteOptions</span>
-						</li>
-					</ul>
+					<span class="target">WriteOptions</span>
 				</li>
 			</ul>
 		</section>
@@ -2467,8 +2471,9 @@ img {
 					<section class="tsd-index-section ">
 						<h3>Properties</h3>
 						<ul class="tsd-index-list">
+							<li class="tsd-kind-property tsd-parent-kind-interface"><a href="iid3v2.writeoptions.html#defaultencoding" class="tsd-kind-icon">default<wbr>Encoding</a></li>
 							<li class="tsd-kind-property tsd-parent-kind-interface"><a href="iid3v2.writeoptions.html#keepbackup" class="tsd-kind-icon">keep<wbr>Backup</a></li>
-							<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-overwrite"><a href="iid3v2.writeoptions.html#paddingsize" class="tsd-kind-icon">padding<wbr>Size</a></li>
+							<li class="tsd-kind-property tsd-parent-kind-interface"><a href="iid3v2.writeoptions.html#paddingsize" class="tsd-kind-icon">padding<wbr>Size</a></li>
 						</ul>
 					</section>
 				</div>
@@ -2477,25 +2482,49 @@ img {
 		<section class="tsd-panel-group tsd-member-group ">
 			<h2>Properties</h2>
 			<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+				<a name="defaultencoding" class="tsd-anchor"></a>
+				<h3><span class="tsd-flag ts-flagOptional">Optional</span> default<wbr>Encoding</h3>
+				<div class="tsd-signature tsd-kind-icon">default<wbr>Encoding<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></div>
+				<aside class="tsd-sources">
+					<ul>
+						<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/24e78de/src/lib/id3v2/id3v2__types.ts#L550">id3v2/id3v2__types.ts:550</a></li>
+					</ul>
+				</aside>
+				<div class="tsd-comment tsd-typography">
+					<div class="lead">
+						<p>encoding used if not specified in frame header</p>
+					</div>
+				</div>
+			</section>
+			<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
 				<a name="keepbackup" class="tsd-anchor"></a>
 				<h3><span class="tsd-flag ts-flagOptional">Optional</span> keep<wbr>Backup</h3>
 				<div class="tsd-signature tsd-kind-icon">keep<wbr>Backup<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">false</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">true</span></div>
 				<aside class="tsd-sources">
 					<ul>
-						<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/c28c9ae/src/lib/id3v2/id3v2__types.ts#L443">id3v2/id3v2__types.ts:443</a></li>
+						<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/24e78de/src/lib/id3v2/id3v2__types.ts#L554">id3v2/id3v2__types.ts:554</a></li>
 					</ul>
 				</aside>
+				<div class="tsd-comment tsd-typography">
+					<div class="lead">
+						<p>keep a filename.mp3.bak copy of the original file</p>
+					</div>
+				</div>
 			</section>
-			<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-overwrite">
+			<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
 				<a name="paddingsize" class="tsd-anchor"></a>
 				<h3><span class="tsd-flag ts-flagOptional">Optional</span> padding<wbr>Size</h3>
 				<div class="tsd-signature tsd-kind-icon">padding<wbr>Size<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span></div>
 				<aside class="tsd-sources">
-					<p>Overrides Id3v2WriterOptions.paddingSize</p>
 					<ul>
-						<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/c28c9ae/src/lib/id3v2/id3v2__types.ts#L442">id3v2/id3v2__types.ts:442</a></li>
+						<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/24e78de/src/lib/id3v2/id3v2__types.ts#L552">id3v2/id3v2__types.ts:552</a></li>
 					</ul>
 				</aside>
+				<div class="tsd-comment tsd-typography">
+					<div class="lead">
+						<p>padding zeros between id3v2 and the audio (in bytes)</p>
+					</div>
+				</div>
 			</section>
 		</section>
 		<footer class="with-border-bottom">

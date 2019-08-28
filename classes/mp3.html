@@ -2401,8 +2401,14 @@ img {
 		<li class=" tsd-kind-class">
 			<a href="mp3analyzer.html" class="tsd-kind-icon">MP3<wbr>Analyzer</a>
 		</li>
-		<li class=" tsd-kind-function">
-			<a href="../globals.html#simplifytag" class="tsd-kind-icon">simplify<wbr>Tag</a>
+		<li class=" tsd-kind-object-literal">
+			<a href="../globals.html#id3v2valuetypes" class="tsd-kind-icon">ID3<wbr>V2Value<wbr>Types</a>
+		</li>
+		<li class=" tsd-kind-object-literal tsd-is-not-exported">
+			<a href="../globals.html#id3v2_valuepictypes" class="tsd-kind-icon">ID3v2_<wbr><wbr>Value<wbr>Pic<wbr>Types</a>
+		</li>
+		<li class=" tsd-kind-object-literal tsd-is-not-exported">
+			<a href="../globals.html#id3v2_valuerelativevolumeadjustment2channeltypes" class="tsd-kind-icon">ID3v2_<wbr><wbr>Value<wbr>Relative<wbr>Volume<wbr>Adjustment2<wbr>Channel<wbr>Types</a>
 		</li>
 	</ul>
 </nav>
@@ -2425,7 +2431,7 @@ img {
     <span class="hljs-keyword">const</span> filename = <span class="hljs-string">'demo.mp3'</span>;
     <span class="hljs-keyword">const</span> options: IMP3.ReadOptions = {
         mpeg: <span class="hljs-literal">true</span>, <span class="hljs-comment">// read mpeg information</span>
-        mpegQuick: <span class="hljs-literal">true</span>, <span class="hljs-comment">// estimate mpeg information based on mpeg header (XING|Info) and stop reading if tags and header is found</span>
+        mpegQuick: <span class="hljs-literal">true</span>, <span class="hljs-comment">// estimate mpeg information based on mpeg header (XING|Info) and stop reading if tags and header are found</span>
         id3v2: <span class="hljs-literal">true</span>, <span class="hljs-comment">// read ID3 v2 tag</span>
         id3v1: <span class="hljs-literal">false</span>,  <span class="hljs-comment">// read ID3 v1 tag</span>
         id3v1IfNotID3v2: <span class="hljs-literal">true</span>,  <span class="hljs-comment">// read ID3 v1 tag only if no ID3 v2 tag is found (stops reading otherwise)</span>
@@ -2476,7 +2482,7 @@ run().catch(<span class="hljs-function"><span class="hljs-params">e</span> =&gt;
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/c28c9ae/src/lib/mp3/mp3.ts#L147">mp3/mp3.ts:147</a></li>
+								<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/24e78de/src/lib/mp3/mp3.ts#L147">mp3/mp3.ts:147</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">
@@ -2514,7 +2520,7 @@ run().catch(<span class="hljs-function"><span class="hljs-params">e</span> =&gt;
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/c28c9ae/src/lib/mp3/mp3.ts#L135">mp3/mp3.ts:135</a></li>
+								<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/24e78de/src/lib/mp3/mp3.ts#L135">mp3/mp3.ts:135</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">
@@ -2539,7 +2545,7 @@ run().catch(<span class="hljs-function"><span class="hljs-params">e</span> =&gt;
 							<li>
 								<h5><span class="tsd-flag ts-flagOptional">Optional</span> streamSize: <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span></h5>
 								<div class="tsd-comment tsd-typography">
-									<p>if known, provide the stream size to speed up duration calculation (otherwise stream has to be parse in full)</p>
+									<p>if known, provide the stream size to speed up duration calculation (otherwise stream may have to be parsed in full)</p>
 								</div>
 							</li>
 						</ul>
@@ -2558,7 +2564,7 @@ run().catch(<span class="hljs-function"><span class="hljs-params">e</span> =&gt;
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/c28c9ae/src/lib/mp3/mp3.ts#L160">mp3/mp3.ts:160</a></li>
+								<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/24e78de/src/lib/mp3/mp3.ts#L159">mp3/mp3.ts:159</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">
