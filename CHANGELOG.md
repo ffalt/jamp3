@@ -24,7 +24,7 @@
 * simplifyTag: function access has been moved to static ID3v2.simplify()
 * ID3v2 constants: values constants like Picture Type moved into public group object "ID3V2ValueTypes" 
 
-#<a name="0.3.10"></a>
+<a name="0.3.10"></a>
 # 0.3.10 (2019/06/10)
 ### Bug Fixes
 * MP3.removeTags/ID3v2.updateTag: remove padding between id3v2 and audio
