@@ -15,7 +15,8 @@
   "bin": {
     "mp3-analyze": "./bin/analyzeMP3.js",
     "id3v2-dump": "./bin/dumpID3v2.js",
-    "id3v1-dump": "./bin/dumpID3v1.js"
+    "id3v1-dump": "./bin/dumpID3v1.js",
+    "id3v1-remove": "./bin/removeID3v1.js"
   },
   "scripts": {
     "build": "tsc -m commonjs --outDir dist",
