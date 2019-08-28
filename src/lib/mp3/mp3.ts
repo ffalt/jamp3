@@ -129,7 +129,7 @@ export class MP3 {
 	 * Reads a stream with given options
 	 * @param stream the stream to read (NodeJS.stream.Readable)
 	 * @param options define which information should be returned
-	 * @param streamSize if known, provide the stream size to speed up duration calculation (otherwise stream has to be parse in full)
+	 * @param streamSize if known, provide the stream size to speed up duration calculation (otherwise stream may have to be parsed in full)
 	 * @return a object returning parsed information
 	 */
 	async readStream(stream: Readable, options: IMP3.ReadOptions, streamSize?: number): Promise<IMP3.Result> {

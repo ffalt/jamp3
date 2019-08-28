@@ -126,7 +126,7 @@ export class ID3v2 {
 	}
 
 	/**
-	 * Writes ID3v2 Tag from a ID3v2 object with given options
+	 * Writes ID3v2 Tag from an ID3v2 object with given options
 	 * @param filename the file to write
 	 * @param tag the ID3v2 object to write
 	 * @param version the ID3v2.v version to write
