@@ -30,7 +30,7 @@ Motivation for this yet-another-id3-library:
 
   For ID3v2.4 an easy-to-use build helper is available. For more complex use, you can write other versions and even non-standard combinations of ID3v2 frames.
   
-  There are not much reported issues, but be advised to make & keep backups of your audio files in case of bugs. 
+  There haven't been many reported issues, but be advised to make & keep backups of your audio files in case of bugs. 
 
 * Return ID3v2 frames as raw as needed
 
