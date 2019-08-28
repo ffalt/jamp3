@@ -3,8 +3,7 @@ import {DataReader, WriterStream} from '../common/streams';
 import {isBitSetAt, neededStoreBytes, removeZeroString} from '../common/utils';
 import {readSubFrames, writeSubFrames} from './id3v2_frames';
 import {IID3V2} from './id3v2__types';
-import {ID3v2} from './id3v2';
-import {ID3v2_ValuePicTypes} from './id3v2__consts';
+import {ID3V2ValueTypes} from './id3v2__consts';
 
 const ascii = Encodings['ascii'];
 const binary = Encodings['binary'];
@@ -293,7 +292,7 @@ export const FramePic: IFrameImpl = {
 	},
 	simplify: (value: IID3V2.FrameValue.Pic) => {
 		if (value) {
-			return '<pic ' + (ID3v2_ValuePicTypes[value.pictureType] || 'unknown') + ';' + value.mimeType + ';' +
+			return '<pic ' + (ID3V2ValueTypes.pictureType[value.pictureType] || 'unknown') + ';' + value.mimeType + ';' +
 				(value.bin ? value.bin.length + 'bytes' : value.url) + '>';
 		}
 		return null;

@@ -8,5 +8,4 @@ export {IID3V2} from './lib/id3v2/id3v2__types';
 export {IID3V1} from './lib/id3v1/id3v1__types';
 export {ID3v1_GENRES} from './lib/id3v1/id3v1_consts';
 export {IMP3} from './lib/mp3/mp3__types';
-export {ID3v2_ValueRelativeVolumeAdjustment2ChannelTypes} from './lib/id3v2/id3v2__consts';
-export {ID3v2_ValuePicTypes} from './lib/id3v2/id3v2__consts';
+export {ID3V2ValueTypes} from './lib/id3v2/id3v2__consts';

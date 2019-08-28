@@ -1,4 +1,4 @@
-export const ID3v2_ValuePicTypes: { [name: string]: string; } = {
+const ID3v2_ValuePicTypes: { [name: string]: string; } = {
 	'0': 'Other',
 	'1': '32x32 pixels \'file icon\' (PNG only)',
 	'2': 'Other file icon',
@@ -22,7 +22,7 @@ export const ID3v2_ValuePicTypes: { [name: string]: string; } = {
 	'20': 'Publisher/Studio logotype'
 };
 
-export const ID3v2_ValueRelativeVolumeAdjustment2ChannelTypes: { [name: string]: string; } = {
+const ID3v2_ValueRelativeVolumeAdjustment2ChannelTypes: { [name: string]: string; } = {
 	'0': 'Other',
 	'1': 'Master volume',
 	'2': 'Front right',
@@ -32,4 +32,9 @@ export const ID3v2_ValueRelativeVolumeAdjustment2ChannelTypes: { [name: string]:
 	'6': 'Front centre',
 	'7': 'Back centre',
 	'8': 'Subwoofer'
+};
+
+export const ID3V2ValueTypes = {
+	pictureType: ID3v2_ValuePicTypes,
+	relativeVolumeAdjustment2ChannelTypes: ID3v2_ValueRelativeVolumeAdjustment2ChannelTypes
 };
