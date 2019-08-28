@@ -1,7 +1,16 @@
 import {ITag} from '../common/types';
 
 export namespace IID3V1 {
-	export interface Value {
+
+	export interface RemoveOptions {
+		keepBackup?: boolean;
+	}
+
+	export interface WriteOptions {
+		keepBackup?: boolean;
+	}
+
+	export interface ID3v1Tag {
 		title?: string;
 		artist?: string;
 		comment?: string;
@@ -12,7 +21,7 @@ export namespace IID3V1 {
 	}
 
 	export interface Tag extends ITag {
-		value: Value;
+		value: ID3v1Tag;
 		version?: number;
 	}
 }

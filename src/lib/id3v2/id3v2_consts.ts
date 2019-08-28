@@ -100,22 +100,22 @@ export const ID3v2_FRAME_FLAGS2: {
 		'compressed',
 		'encrypted',
 		'unsynchronised',
-		'data_length_indicator'
+		'dataLengthIndicator'
 	]
 };
 export const ID3v2_FRAME_FLAGS1: {
 	[ver: number]: Array<string>;
 } = {
 	3: [
-		'tag_alter_preservation',
-		'file_alter_preservation',
-		'read_only'
+		'tagAlterPreservation',
+		'fileAlterPreservation',
+		'readOnly'
 	],
 	4: [
 		'reserved',
-		'tag_alter_preservation',
-		'file_alter_preservation',
-		'read_only'
+		'tagAlterPreservation',
+		'fileAlterPreservation',
+		'readOnly'
 	]
 };
 

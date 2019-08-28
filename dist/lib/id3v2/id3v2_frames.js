@@ -19,11 +19,11 @@ const streams_1 = require("../common/streams");
 const buffer_1 = require("../common/buffer");
 const id3v2_consts_1 = require("./id3v2_consts");
 const id3v2_reader_1 = require("./id3v2_reader");
-const id3v2_1 = require("./id3v2");
 const zlib = __importStar(require("zlib"));
 const id3v2_writer_1 = require("./id3v2_writer");
 const id3v2_frame_1 = require("./id3v2_frame");
 const __1 = require("../..");
+const id3v2_raw_1 = require("./id3v2_raw");
 function validCharKeyCode(c) {
     return ((c >= 48) && (c < 58)) || ((c >= 65) && (c < 91));
 }
@@ -834,7 +834,7 @@ exports.FrameDefs = {
         impl: id3v2_frame_1.FrameAsciiValue
     },
     'WPAY': {
-        title: 'Payment',
+        title: 'Payment URL',
         versions: [3, 4],
         impl: id3v2_frame_1.FrameAsciiValue
     },
@@ -956,7 +956,7 @@ exports.FrameDefs = {
     'USER': {
         title: 'Terms of use',
         versions: [3, 4],
-        impl: id3v2_frame_1.FrameUnknown
+        impl: id3v2_frame_1.FrameLangText
     },
     'OWNE': {
         title: 'Ownership',
@@ -1035,19 +1035,19 @@ exports.FrameDefs = {
         impl: id3v2_frame_1.FrameText
     },
     'PCST': {
-        title: 'iTunes podcast marker',
+        title: 'Podcast Marker',
         versions: [3, 4],
         impl: id3v2_frame_1.FramePCST
     },
     'TDES': {
-        title: 'iTunes podcast description',
+        title: 'Podcast Description',
         versions: [3, 4],
         impl: id3v2_frame_1.FrameText
     },
     'TKWD': {
-        title: 'iTunes podcast keywords',
+        title: 'Podcast Keywords',
         versions: [3, 4],
-        impl: id3v2_frame_1.FrameUnknown
+        impl: id3v2_frame_1.FrameText
     },
     'TGID': {
         title: 'Podcast URL',
@@ -1056,6 +1056,11 @@ exports.FrameDefs = {
     },
     'WFED': {
         title: 'Podcast feed URL',
+        versions: [3, 4],
+        impl: id3v2_frame_1.FrameText
+    },
+    'GRP1': {
+        title: 'Work',
         versions: [3, 4],
         impl: id3v2_frame_1.FrameText
     },
@@ -1194,12 +1199,12 @@ function processRawFrame(frame, head) {
                 });
             });
         }
-        else if ((frame.formatFlags) && (frame.formatFlags.data_length_indicator)) {
+        else if ((frame.formatFlags) && (frame.formatFlags.dataLengthIndicator)) {
             frame.data = frame.data.slice(4);
         }
     });
 }
-function writeToRawFrame(frame, head) {
+function writeToRawFrame(frame, head, defaultEncoding) {
     return __awaiter(this, void 0, void 0, function* () {
         const frameHead = frame.head || {
             size: 0,
@@ -1221,16 +1226,16 @@ function writeToRawFrame(frame, head) {
             if (orgDef.versions.indexOf(head.ver) < 0) {
                 const toWriteFrameID = ensureID3v2FrameVersionDef(frame.id, head.ver);
                 if (!toWriteFrameID) {
-                    yield orgDef.impl.write(frame, stream, head);
+                    yield orgDef.impl.write(frame, stream, head, defaultEncoding);
                 }
                 else {
                     id = toWriteFrameID;
                     const toWriteFrameDef = matchFrame(toWriteFrameID);
-                    yield toWriteFrameDef.impl.write(frame, stream, head);
+                    yield toWriteFrameDef.impl.write(frame, stream, head, defaultEncoding);
                 }
             }
             else {
-                yield orgDef.impl.write(frame, stream, head);
+                yield orgDef.impl.write(frame, stream, head, defaultEncoding);
             }
             data = stream.toBuffer();
             if ((frameHead.formatFlags) && (frameHead.formatFlags.compressed)) {
@@ -1244,13 +1249,13 @@ function writeToRawFrame(frame, head) {
                 }
                 data = buffer_1.BufferUtils.concatBuffer(uncompressedStream.toBuffer(), zlib.deflateSync(data));
             }
-            else if ((frameHead.formatFlags) && (frameHead.formatFlags.data_length_indicator)) {
+            else if ((frameHead.formatFlags) && (frameHead.formatFlags.dataLengthIndicator)) {
                 const dataLengthStream = new streams_1.MemoryWriterStream();
                 dataLengthStream.writeSyncSafeInt(data.length);
                 data = buffer_1.BufferUtils.concatBuffer(dataLengthStream.toBuffer(), data);
             }
         }
-        if (frameHead.formatFlags.grouping) {
+        if (frameHead.formatFlags && frameHead.formatFlags.grouping) {
             if (frame.groupId === undefined) {
                 return Promise.reject(Error('Missing frame groupId but flag is set'));
             }
@@ -1258,7 +1263,7 @@ function writeToRawFrame(frame, head) {
             buf[0] = frame.groupId;
             data = buffer_1.BufferUtils.concatBuffer(buf, data);
         }
-        return { id: id, start: 0, end: 0, size: data.length, data: data, statusFlags: frameHead.statusFlags, formatFlags: frameHead.formatFlags };
+        return { id: id, start: 0, end: 0, size: data.length, data: data, statusFlags: frameHead.statusFlags || {}, formatFlags: frameHead.formatFlags || {} };
     });
 }
 function isKnownFrameId(id) {
@@ -1281,10 +1286,10 @@ function isValidFrameId(id) {
     return id.length > 0;
 }
 exports.isValidFrameId = isValidFrameId;
-function writeSubFrames(frames, stream, head) {
+function writeSubFrames(frames, stream, head, defaultEncoding) {
     return __awaiter(this, void 0, void 0, function* () {
-        const writer = new id3v2_writer_1.Id3v2RawWriter(stream, head);
-        const rawframes = yield writeToRawFrames(frames, head);
+        const writer = new id3v2_writer_1.Id3v2RawWriter(stream, head, { paddingSize: 0 });
+        const rawframes = yield writeToRawFrames(frames, head, defaultEncoding);
         for (const frame of rawframes) {
             yield writer.writeFrame(frame);
         }
@@ -1296,16 +1301,16 @@ function readSubFrames(bin, head) {
         const subtag = { id: __1.ITagID.ID3v2, head, frames: [], start: 0, end: 0 };
         const reader = new id3v2_reader_1.ID3v2Reader();
         const buffer = yield reader.readFrames(bin, subtag);
-        const t = yield id3v2_1.buildID3v2(subtag);
+        const t = yield id3v2_raw_1.buildID3v2(subtag);
         return t.frames;
     });
 }
 exports.readSubFrames = readSubFrames;
-function writeToRawFrames(frames, head) {
+function writeToRawFrames(frames, head, defaultEncoding) {
     return __awaiter(this, void 0, void 0, function* () {
         const result = [];
         for (const frame of frames) {
-            const raw = yield writeToRawFrame(frame, head);
+            const raw = yield writeToRawFrame(frame, head, defaultEncoding);
             result.push(raw);
         }
         return result;
@@ -1329,12 +1334,11 @@ function upgrade23DateFramesTov24Date(dateFrames) {
     if (time && time.value && time.value.hasOwnProperty('text')) {
         result.push(time.value.text);
     }
-    const frame = {
+    return {
         id: 'TDRC',
         title: 'Recording time',
         value: { text: result.join('-') }
     };
-    return frame;
 }
 exports.upgrade23DateFramesTov24Date = upgrade23DateFramesTov24Date;
 function ensureID3v2FrameVersionDef(id, dest) {

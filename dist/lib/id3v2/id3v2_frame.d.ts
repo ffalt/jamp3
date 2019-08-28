@@ -7,11 +7,12 @@ export interface IFrameImpl {
         encoding?: IEncoding;
         subframes?: Array<IID3V2.Frame>;
     }>;
-    write: (frame: IID3V2.Frame, stream: WriterStream, head: IID3V2.TagHeader) => Promise<void>;
+    write: (frame: IID3V2.Frame, stream: WriterStream, head: IID3V2.TagHeader, defaultEncoding?: string) => Promise<void>;
     simplify: (value: any) => string | null;
 }
 export declare const FrameIdAscii: IFrameImpl;
 export declare const FrameLangDescText: IFrameImpl;
+export declare const FrameLangText: IFrameImpl;
 export declare const FrameIdBin: IFrameImpl;
 export declare const FrameCTOC: IFrameImpl;
 export declare const FrameCHAP: IFrameImpl;

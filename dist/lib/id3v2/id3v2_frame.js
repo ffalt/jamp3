@@ -11,12 +11,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const encodings_1 = require("../common/encodings");
 const utils_1 = require("../common/utils");
 const id3v2_frames_1 = require("./id3v2_frames");
-const id3v2__types_1 = require("./id3v2__types");
+const id3v2__consts_1 = require("./id3v2__consts");
 const ascii = encodings_1.Encodings['ascii'];
 const binary = encodings_1.Encodings['binary'];
 const utf8 = encodings_1.Encodings['utf-8'];
-function getWriteTextEncoding(frame, head) {
-    return frame.head ? encodings_1.Encodings[frame.head.encoding || 'utf-8'] || utf8 : utf8;
+function getWriteTextEncoding(frame, head, defaultEncoding) {
+    let encoding = (frame.head ? frame.head.encoding : undefined) || defaultEncoding;
+    if (!encoding || !encodings_1.Encodings[encoding]) {
+        encoding = (head.ver === 4) ? 'utf-8' : 'ucs2';
+    }
+    return encodings_1.Encodings[encoding] || ascii;
 }
 exports.FrameIdAscii = {
     parse: (reader) => __awaiter(this, void 0, void 0, function* () {
@@ -46,12 +50,34 @@ exports.FrameLangDescText = {
         const value = { id, language, text };
         return { value, encoding: enc };
     }),
-    write: (frame, stream, head) => __awaiter(this, void 0, void 0, function* () {
+    write: (frame, stream, head, defaultEncoding) => __awaiter(this, void 0, void 0, function* () {
         const value = frame.value;
-        const enc = getWriteTextEncoding(frame, head);
+        const enc = getWriteTextEncoding(frame, head, defaultEncoding);
         stream.writeEncoding(enc);
         stream.writeAsciiString(value.language || '', 3);
         stream.writeStringTerminated(value.id || '', enc);
+        stream.writeString(value.text, enc);
+    }),
+    simplify: (value) => {
+        if (value && value.text && value.text.length > 0) {
+            return value.text;
+        }
+        return null;
+    }
+};
+exports.FrameLangText = {
+    parse: (reader) => __awaiter(this, void 0, void 0, function* () {
+        const enc = reader.readEncoding();
+        const language = utils_1.removeZeroString(reader.readString(3, ascii)).trim();
+        const text = reader.readStringTerminated(enc);
+        const value = { language, text };
+        return { value, encoding: enc };
+    }),
+    write: (frame, stream, head, defaultEncoding) => __awaiter(this, void 0, void 0, function* () {
+        const value = frame.value;
+        const enc = getWriteTextEncoding(frame, head, defaultEncoding);
+        stream.writeEncoding(enc);
+        stream.writeAsciiString(value.language || '', 3);
         stream.writeString(value.text, enc);
     }),
     simplify: (value) => {
@@ -103,7 +129,7 @@ exports.FrameCTOC = {
         const value = { id, ordered, topLevel, children };
         return { value, encoding: ascii, subframes };
     }),
-    write: (frame, stream, head) => __awaiter(this, void 0, void 0, function* () {
+    write: (frame, stream, head, defaultEncoding) => __awaiter(this, void 0, void 0, function* () {
         const value = frame.value;
         stream.writeStringTerminated(value.id, ascii);
         stream.writeByte((value.ordered ? 1 : 0) + ((value.topLevel ? 1 : 0) * 2));
@@ -112,7 +138,7 @@ exports.FrameCTOC = {
             stream.writeStringTerminated(childId, ascii);
         });
         if (frame.subframes) {
-            yield id3v2_frames_1.writeSubFrames(frame.subframes, stream, head);
+            yield id3v2_frames_1.writeSubFrames(frame.subframes, stream, head, defaultEncoding);
         }
     }),
     simplify: (value) => {
@@ -134,7 +160,7 @@ exports.FrameCHAP = {
         const value = { id, start, end, offset, offsetEnd };
         return { value, encoding: ascii, subframes };
     }),
-    write: (frame, stream, head) => __awaiter(this, void 0, void 0, function* () {
+    write: (frame, stream, head, defaultEncoding) => __awaiter(this, void 0, void 0, function* () {
         const value = frame.value;
         const enc = encodings_1.Encodings['ascii'];
         stream.writeStringTerminated(value.id, enc);
@@ -143,7 +169,7 @@ exports.FrameCHAP = {
         stream.writeUInt4Byte(value.offset);
         stream.writeUInt4Byte(value.offsetEnd);
         if (frame.subframes) {
-            yield id3v2_frames_1.writeSubFrames(frame.subframes, stream, head);
+            yield id3v2_frames_1.writeSubFrames(frame.subframes, stream, head, defaultEncoding);
         }
     }),
     simplify: (value) => {
@@ -157,7 +183,7 @@ exports.FramePic = {
     parse: (reader, frame, head) => __awaiter(this, void 0, void 0, function* () {
         const enc = reader.readEncoding();
         let mimeType;
-        if (head.ver === 2) {
+        if (head.ver <= 2) {
             mimeType = reader.readString(3, ascii);
         }
         else {
@@ -174,11 +200,11 @@ exports.FramePic = {
         }
         return { value, encoding: enc };
     }),
-    write: (frame, stream, head) => __awaiter(this, void 0, void 0, function* () {
+    write: (frame, stream, head, defaultEncoding) => __awaiter(this, void 0, void 0, function* () {
         const value = frame.value;
-        const enc = getWriteTextEncoding(frame, head);
+        const enc = getWriteTextEncoding(frame, head, defaultEncoding);
         stream.writeEncoding(enc);
-        if (head.ver === 2) {
+        if (head.ver <= 2) {
             if (value.url) {
                 stream.writeString('-->', ascii);
             }
@@ -200,7 +226,7 @@ exports.FramePic = {
     }),
     simplify: (value) => {
         if (value) {
-            return '<pic ' + (id3v2__types_1.ID3v2_ValuePicTypes[value.pictureType] || 'unknown') + ';' + value.mimeType + ';' +
+            return '<pic ' + (id3v2__consts_1.ID3V2ValueTypes.pictureType[value.pictureType] || 'unknown') + ';' + value.mimeType + ';' +
                 (value.bin ? value.bin.length + 'bytes' : value.url) + '>';
         }
         return null;
@@ -216,9 +242,9 @@ exports.FrameText = {
         const value = { text };
         return { value, encoding: enc };
     }),
-    write: (frame, stream, head) => __awaiter(this, void 0, void 0, function* () {
+    write: (frame, stream, head, defaultEncoding) => __awaiter(this, void 0, void 0, function* () {
         const value = frame.value;
-        const enc = getWriteTextEncoding(frame, head);
+        const enc = getWriteTextEncoding(frame, head, defaultEncoding);
         stream.writeEncoding(enc);
         stream.writeString(value.text, enc);
     }),
@@ -245,9 +271,9 @@ exports.FrameTextConcatList = {
         const value = { text };
         return { value, encoding: enc };
     }),
-    write: (frame, stream, head) => __awaiter(this, void 0, void 0, function* () {
+    write: (frame, stream, head, defaultEncoding) => __awaiter(this, void 0, void 0, function* () {
         const value = frame.value;
-        const enc = getWriteTextEncoding(frame, head);
+        const enc = getWriteTextEncoding(frame, head, defaultEncoding);
         stream.writeEncoding(enc);
         stream.writeString(value.text, enc);
     }),
@@ -271,9 +297,9 @@ exports.FrameTextList = {
         const value = { list };
         return { value, encoding: enc };
     }),
-    write: (frame, stream, head) => __awaiter(this, void 0, void 0, function* () {
+    write: (frame, stream, head, defaultEncoding) => __awaiter(this, void 0, void 0, function* () {
         const value = frame.value;
-        const enc = getWriteTextEncoding(frame, head);
+        const enc = getWriteTextEncoding(frame, head, defaultEncoding);
         stream.writeEncoding(enc);
         value.list.forEach((entry, index) => {
             stream.writeString(entry, enc);
@@ -314,9 +340,9 @@ exports.FrameIdText = {
         const value = { id, text };
         return { value, encoding: enc };
     }),
-    write: (frame, stream, head) => __awaiter(this, void 0, void 0, function* () {
+    write: (frame, stream, head, defaultEncoding) => __awaiter(this, void 0, void 0, function* () {
         const value = frame.value;
-        const enc = getWriteTextEncoding(frame, head);
+        const enc = getWriteTextEncoding(frame, head, defaultEncoding);
         stream.writeEncoding(enc);
         stream.writeStringTerminated(value.id, enc);
         stream.writeString(value.text, enc);
@@ -539,9 +565,9 @@ exports.FramePartOfCompilation = {
         const value = { bool: i === '1' };
         return { value, encoding: enc };
     }),
-    write: (frame, stream, head) => __awaiter(this, void 0, void 0, function* () {
+    write: (frame, stream, head, defaultEncoding) => __awaiter(this, void 0, void 0, function* () {
         const value = frame.value;
-        const enc = getWriteTextEncoding(frame, head);
+        const enc = getWriteTextEncoding(frame, head, defaultEncoding);
         stream.writeEncoding(enc);
         stream.writeStringTerminated(value.bool ? '1' : '0', enc);
     }),
@@ -659,9 +685,9 @@ exports.FrameSYLT = {
         const value = { language, timestampFormat, contentType, id, events };
         return { value, encoding: enc };
     }),
-    write: (frame, stream, head) => __awaiter(this, void 0, void 0, function* () {
+    write: (frame, stream, head, defaultEncoding) => __awaiter(this, void 0, void 0, function* () {
         const value = frame.value;
-        const enc = getWriteTextEncoding(frame, head);
+        const enc = getWriteTextEncoding(frame, head, defaultEncoding);
         stream.writeEncoding(enc);
         stream.writeAsciiString(value.language, 3);
         stream.writeByte(value.timestampFormat);
@@ -686,9 +712,9 @@ exports.FrameGEOB = {
         const value = { mimeType, filename, contentDescription, bin };
         return { value, encoding: enc };
     }),
-    write: (frame, stream, head) => __awaiter(this, void 0, void 0, function* () {
+    write: (frame, stream, head, defaultEncoding) => __awaiter(this, void 0, void 0, function* () {
         const value = frame.value;
-        const enc = getWriteTextEncoding(frame, head);
+        const enc = getWriteTextEncoding(frame, head, defaultEncoding);
         stream.writeEncoding(enc);
         stream.writeStringTerminated(value.mimeType, ascii);
         stream.writeStringTerminated(value.filename, enc);

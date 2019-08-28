@@ -8,19 +8,102 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const id3v2_frames_1 = require("../id3v2/id3v2_frames");
 const mp3_1 = require("./mp3");
 const mp3_frame_1 = require("./mp3_frame");
 const __1 = require("../..");
+const id3v2_check_1 = require("../id3v2/id3v2_check");
 class MP3Analyzer {
-    analyseID3v2(id3v2) {
+    analyzeID3v2(data) {
+        if (!data.id3v2) {
+            return [];
+        }
+        return id3v2_check_1.checkID3v2(data.id3v2);
+    }
+    analyzeID3v1(data) {
         const result = [];
-        id3v2.frames.forEach(frame => {
-            const def = id3v2_frames_1.findId3v2FrameDef(frame.id);
-            if (def && id3v2.head && def.versions.indexOf(id3v2.head.ver) < 0) {
-                result.push({ msg: 'ID3v2: invalid version for frame ' + frame.id, expected: def.versions.join('|'), actual: id3v2.head.ver });
+        const lastframe = data.frames && data.frames.audio.length > 0 ? data.frames.audio[data.frames.audio.length - 1] : undefined;
+        if (data.raw && lastframe) {
+            const audioEnd = mp3_frame_1.rawHeaderOffSet(lastframe) + mp3_frame_1.rawHeaderSize(lastframe);
+            let id3v1s = data.raw.tags.filter(t => t.id === __1.ITagID.ID3v1 && t.start >= audioEnd);
+            if (id3v1s.length > 0) {
+                if (id3v1s.length > 1) {
+                    id3v1s = id3v1s.filter(t => {
+                        return t.value && t.value.title && t.value.title[0] !== 'E' && t.value.title[1] !== 'X' && t.end !== data.size;
+                    });
+                }
+                if (id3v1s.length > 1) {
+                    result.push({ msg: 'ID3v1: Multiple tags', expected: 1, actual: id3v1s.length });
+                }
+                if (id3v1s.length > 0) {
+                    const id3v1 = id3v1s[id3v1s.length - 1];
+                    if (id3v1.end !== data.size) {
+                        result.push({ msg: 'ID3v1: Invalid tag position, not at end of file', expected: (data.size - 128), actual: id3v1.start });
+                    }
+                }
             }
+        }
+        return result;
+    }
+    analyzeMPEG(data) {
+        const result = [];
+        if (!data.frames || data.frames.audio.length === 0) {
+            result.push({ msg: 'MPEG: No frames found', expected: '>0', actual: 0 });
+            return result;
+        }
+        let nextdata = mp3_frame_1.rawHeaderOffSet(data.frames.audio[0]) + mp3_frame_1.rawHeaderSize(data.frames.audio[0]);
+        data.frames.audio.slice(1).forEach((f, index) => {
+            if (nextdata !== mp3_frame_1.rawHeaderOffSet(f)) {
+                result.push({ msg: 'MPEG: stream error at position ' + nextdata + ', gap after frame ' + (index + 1), expected: 0, actual: mp3_frame_1.rawHeaderOffSet(f) - nextdata });
+            }
+            nextdata = mp3_frame_1.rawHeaderOffSet(f) + mp3_frame_1.rawHeaderSize(f);
         });
+        const audiostart = mp3_frame_1.rawHeaderOffSet(data.frames.audio[0]);
+        if (data.id3v2 && data.id3v2.head) {
+            const shouldaudiostart = data.id3v2.start + data.id3v2.head.size + 10;
+            if (audiostart !== shouldaudiostart) {
+                result.push({ msg: 'MPEG: Unknown data found between ID3v2 and audio', expected: 0, actual: audiostart - shouldaudiostart });
+            }
+        }
+        else if (audiostart !== 0) {
+            result.push({ msg: 'MPEG: Unknown data found before audio', expected: 0, actual: audiostart });
+        }
+        return result;
+    }
+    analyzeXING(data, ignoreXingOffOne) {
+        if (!data.mpeg || !data.frames) {
+            return [];
+        }
+        const head = data.frames.headers[0];
+        const result = [];
+        if (!head) {
+            if (data.mpeg.encoded === 'VBR') {
+                result.push({ msg: 'XING: VBR detected, but no VBR head frame found', expected: 'VBR Header', actual: 'nothing' });
+            }
+            return result;
+        }
+        if (head.mode === 'Xing' && data.mpeg.encoded === 'CBR') {
+            result.push({ msg: 'XING: Wrong MPEG head frame for CBR', expected: 'Info', actual: 'Xing' });
+        }
+        if (head.mode === 'Info' && data.mpeg.encoded === 'VBR') {
+            result.push({ msg: 'XING: Wrong head frame for VBR', expected: 'Xing', actual: 'Info' });
+        }
+        if (!ignoreXingOffOne &&
+            (data.mpeg.frameCount - data.mpeg.frameCountDeclared === 1) &&
+            (data.mpeg.audioBytes - data.mpeg.audioBytesDeclared === head.header.size)) {
+            result.push({ msg: 'XING: Wrong ' + head.mode + ' declaration (frameCount and audioBytes must include the ' + head.mode + ' Header itself)', expected: data.mpeg.frameCount, actual: data.mpeg.frameCountDeclared });
+        }
+        else {
+            if (data.mpeg.frameCount !== data.mpeg.frameCountDeclared) {
+                if (!ignoreXingOffOne || Math.abs(data.mpeg.frameCount - data.mpeg.frameCountDeclared) !== 1) {
+                    result.push({ msg: 'XING: Wrong number of frames declared in ' + head.mode + ' Header', expected: data.mpeg.frameCount, actual: data.mpeg.frameCountDeclared });
+                }
+            }
+            if (data.mpeg.audioBytes !== data.mpeg.audioBytesDeclared) {
+                if (!ignoreXingOffOne || data.mpeg.audioBytes + head.header.size - data.mpeg.audioBytesDeclared === 0) {
+                    result.push({ msg: 'XING: Wrong number of data bytes declared in ' + head.mode + ' Header', expected: data.mpeg.audioBytes, actual: data.mpeg.audioBytesDeclared });
+                }
+            }
+        }
         return result;
     }
     read(filename, options) {
@@ -43,77 +126,23 @@ class MP3Analyzer {
                 frames: data.mpeg.frameCount,
                 id3v1: !!data.id3v1,
                 id3v2: !!data.id3v2,
-                msgs: [],
+                warnings: [],
                 tags: {
                     id3v1: data.id3v1,
                     id3v2: data.id3v2,
                 }
             };
-            if (head && options.xing) {
-                if (head.mode === 'Xing' && data.mpeg.encoded === 'CBR') {
-                    info.msgs.push({ msg: 'XING: Wrong MPEG head frame for CBR', expected: 'Info', actual: 'Xing' });
-                }
-                if (head.mode === 'Info' && data.mpeg.encoded === 'VBR') {
-                    info.msgs.push({ msg: 'XING: Wrong head frame for VBR', expected: 'Xing', actual: 'Info' });
-                }
-                if (!options.ignoreXingOffOne &&
-                    (data.mpeg.frameCount - data.mpeg.frameCountDeclared === 1) &&
-                    (data.mpeg.audioBytes - data.mpeg.audioBytesDeclared === head.header.size)) {
-                    info.msgs.push({ msg: 'XING: Wrong ' + head.mode + ' declaration (frameCount and audioBytes must include the ' + head.mode + ' Header itself)', expected: data.mpeg.frameCount, actual: data.mpeg.frameCountDeclared });
-                }
-                else {
-                    if (data.mpeg.frameCount !== data.mpeg.frameCountDeclared) {
-                        if (!options.ignoreXingOffOne || Math.abs(data.mpeg.frameCount - data.mpeg.frameCountDeclared) !== 1) {
-                            info.msgs.push({ msg: 'XING: Wrong number of frames declared in ' + head.mode + ' Header', expected: data.mpeg.frameCount, actual: data.mpeg.frameCountDeclared });
-                        }
-                    }
-                    if (data.mpeg.audioBytes !== data.mpeg.audioBytesDeclared) {
-                        if (!options.ignoreXingOffOne || data.mpeg.audioBytes + head.header.size - data.mpeg.audioBytesDeclared === 0) {
-                            info.msgs.push({ msg: 'XING: Wrong number of data bytes declared in ' + head.mode + ' Header', expected: data.mpeg.audioBytes, actual: data.mpeg.audioBytesDeclared });
-                        }
-                    }
-                }
-            }
-            if (!head && data.mpeg.encoded === 'VBR') {
-                info.msgs.push({ msg: 'XING: VBR detected, but no VBR head frame found', expected: 'VBR Header', actual: 'nothing' });
-            }
-            const lastframe = data.frames.audio.length > 0 ? data.frames.audio[data.frames.audio.length - 1] : undefined;
-            if (data.raw && lastframe) {
-                const audioEnd = mp3_frame_1.rawHeaderOffSet(lastframe) + mp3_frame_1.rawHeaderSize(lastframe);
-                let id3v1s = data.raw.tags.filter(t => t.id === __1.ITagID.ID3v1 && t.start >= audioEnd);
-                if (options.id3v1 && id3v1s.length > 0) {
-                    if (id3v1s.length > 1) {
-                        id3v1s = id3v1s.filter(t => {
-                            return t.value && t.value.title && t.value.title[0] !== 'E' && t.value.title[1] !== 'X' && t.end !== data.size;
-                        });
-                    }
-                    if (id3v1s.length > 1) {
-                        info.msgs.push({ msg: 'ID3v1: Multiple tags', expected: 1, actual: id3v1s.length });
-                    }
-                    if (id3v1s.length > 0) {
-                        const id3v1 = id3v1s[id3v1s.length - 1];
-                        if (id3v1.end !== data.size) {
-                            info.msgs.push({ msg: 'ID3v1: Invalid tag position, not at end of file', expected: (data.size - 128), actual: id3v1.start });
-                        }
-                    }
-                }
-            }
             if (options.mpeg) {
-                if (data.frames.audio.length === 0) {
-                    info.msgs.push({ msg: 'MPEG: No frames found', expected: '>0', actual: 0 });
-                }
-                else {
-                    let nextdata = mp3_frame_1.rawHeaderOffSet(data.frames.audio[0]) + mp3_frame_1.rawHeaderSize(data.frames.audio[0]);
-                    data.frames.audio.slice(1).forEach((f, index) => {
-                        if (nextdata !== mp3_frame_1.rawHeaderOffSet(f)) {
-                            info.msgs.push({ msg: 'MPEG: stream error at position ' + nextdata + ', gap after frame ' + (index + 1), expected: 0, actual: mp3_frame_1.rawHeaderOffSet(f) - nextdata });
-                        }
-                        nextdata = mp3_frame_1.rawHeaderOffSet(f) + mp3_frame_1.rawHeaderSize(f);
-                    });
-                }
+                info.warnings = info.warnings.concat(this.analyzeMPEG(data));
+            }
+            if (options.xing) {
+                info.warnings = info.warnings.concat(this.analyzeXING(data, !!options.ignoreXingOffOne));
+            }
+            if (options.id3v1) {
+                info.warnings = info.warnings.concat(this.analyzeID3v1(data));
             }
             if (options.id3v2 && data.id3v2) {
-                info.msgs = info.msgs.concat(this.analyseID3v2(data.id3v2));
+                info.warnings = info.warnings.concat(this.analyzeID3v2(data));
             }
             return info;
         });

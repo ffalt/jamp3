@@ -26,7 +26,11 @@ Motivation for this yet-another-id3-library:
 
 * Write support
 
-  ID3v2/ID3v1 write support is implemented. Note: Since this means possibly screwing up files, you should be either brave and at least backup your data, or, wait until this library majured a bit and write functions are documented. 
+  ID3v2/ID3v1 can be remove or written.
+
+  For ID3v2.4 an easy-to-use build helper is available. For more complex use, you can write other versions and even non-standard combinations of ID3v2 frames.
+  
+  There are not much reported issues, but be advised to make & keep backups of your audio files in case of bugs. 
 
 * Return ID3v2 frames as raw as needed
 
@@ -71,34 +75,31 @@ npm -g i jamp3
 
 ## Usage as Library
 
+[Class Documentation](https://ffalt.github.io/jamp3/)
+
 ### ID3v1
 
-Example usage:
+[Class Documentation](https://ffalt.github.io/jamp3/classes/id3v1.html)
 
-```javascript
-const ID3v1 = require('jamp3').ID3v1;
-// or typescript: import {ID3v1} from 'jamp3';
+#### reading ID3v1
 
-const id3v1 = new ID3v1();
+```typescript
+import {ID3v1} from 'jamp3';
 
-// with promises
-id3v1.read(filename)
-  .then(tag => {
+async function run(): Promise<void> {
+    const id3v1 = new ID3v1();
+    const filename = 'demo.mp3';
+    const tag = await id3v1.read(filename);
     console.log(tag);
-  })
-  .catch(e => {
-    console.error(e);
-  });
-
-// or async/await
-async function read(filename) {
-  const tag = await id3v1.read(filename);
-  console.log(tag);
 }
+
+run().catch(e => {
+    console.error(e);
+});
 ```
+Example as [typescript](examples/snippet_id3v1-read.ts) [javascript](examples/snippet_id3v1-read.js) 
 
 Example result:
-
 ```json
 {
   "id": "ID3v1",
@@ -115,44 +116,67 @@ Example result:
 }
 ```
 
-### ID3v2
+#### writing ID3v1
 
-Example usage:
+```typescript
+import {ID3v1, IID3V1} from 'jamp3';
 
-```javascript
-const ID3v2 = require('jamp3').ID3v2;
-const simplifyTag = require('jamp3').simplifyTag;
-// or typescript: import {ID3v1, simplifyTag} from 'jamp3';
-
-const id3v2 = new ID3v2();
-
-// with promises
-id3v2.read(filename)
-  .then(tag => {
-    console.log(tag);
-    console.log(simplifyTag(tag)); // combine frames into one simple tag object
-  })
-  .catch(e => {
-    console.error(e);
-  });
-
-// or async/await
-async function read(filename) {
-  const tag = await id3v2.read(filename);
-  console.log(tag);
-  console.log(simplifyTag(tag)); // combine frames into one simple tag object
+async function run(): Promise<void> {
+    const id3v1 = new ID3v1();
+    const filename = 'demo.mp3';
+    const newTag: IID3V1.ID3v1Tag = {
+        title: 'A Title', // max length 30
+        artist: 'B Artist', // max length 30
+        album: 'C Artist', // max length 30
+        year: '2019', // length 4
+        comment: 'D Comment', // max length 28 (v1.1) / 30 (v1.0)
+        track: 5, // only in v1.1
+        genreIndex: 1
+    };
+    const options: IID3V1.WriteOptions = {
+        keepBackup: true // keep a filename.mp3.bak copy of the original file
+    };
+    const version = 1;  // version: 1 = v1.1; 0 = v1.0
+    await id3v1.write(filename, newTag, version, options);
+    console.log('id3v1.1 written');
 }
 
+run().catch(e => {
+    console.error(e);
+});
 ```
+Example as [typescript](examples/snippet_id3v1-write.ts) [javascript](examples/snippet_id3v1-write.js) 
+
+### ID3v2
+
+[Class Documentation](https://ffalt.github.io/jamp3/classes/id3v2.html)
+
+#### reading ID3v2
+
+```typescript
+import {ID3v2} from 'jamp3';
+
+async function run(): Promise<void> {
+    const id3v2 = new ID3v2();
+    const filename = 'demo.mp3';
+    const tag = await id3v2.read(filename);
+    console.log('id3v2:', tag);
+    console.log(ID3v2.simplify(tag)); // combine frames into one simple tag object
+}
+
+run().catch(e => {
+    console.error(e);
+});
+```
+Example as [typescript](examples/snippet_id3v2-read.ts) [javascript](examples/snippet_id3v2-read.js) 
 
 Example result:
-
 ```json
 {
   "id": "ID3v2",
   "start": 0,
   "end": 4096,
-  "head": {"ver":3,"rev":0,"size":4086,"valid":true,"flags":{"unsynchronisation":false,"extendedheader":false,"experimental":false}},
+  "head": {"ver":3,"rev":0,"size":4086,"flagBits":[0,0,0,0,0,0,0,0],"valid":true,"v3":{"flags":{"unsynchronisation":false,"extendedheader":false,"experimental":false}}},
   "frames": [
     {
       "head": {"encoding":"ucs2","size":35},
@@ -383,7 +407,6 @@ Example result:
 ```
 
 Example result simplified:
-
 ```json
 {
     "ALBUM": "Pieces of Africa",
@@ -413,194 +436,142 @@ Example result simplified:
 }
 ```
 
+#### writing ID3v2 with Helper
+[Class Documentation](https://ffalt.github.io/jamp3/classes/id3v24tagbuilder.html)
+
+```typescript
+import {ID3v2, ID3V24TagBuilder, IID3V2} from 'jamp3';
+
+async function run(): Promise<void> {
+    const id3v2 = new ID3v2();
+    const filename = 'demo.mp3';
+
+    const builder = new ID3V24TagBuilder(ID3V24TagBuilder.encodings.utf8);
+    builder
+        .album('An album')
+        .artist('An artist')
+        .artistSort('artist, An')
+        .title('A title');
+
+    const options: IID3V2.WriteOptions = {
+        keepBackup: true, // keep a filename.mp3.bak copy of the original file
+        paddingSize: 10 // add padding zeros between id3v2 and the audio (in bytes)
+    };
+    await id3v2.writeBuilder(filename, builder, options);
+    console.log('id3v2.4 written');
+}
+
+run().catch(e => {
+    console.error(e);
+});
+```
+Example as [typescript](examples/snippet_id3v2-build.ts) [javascript](examples/snippet_id3v2-build.js) 
+
+#### writing ID3v2 Raw
+
+```typescript
+import {ID3v2, IID3V2} from 'jamp3';
+
+async function run(): Promise<void> {
+    const id3v2 = new ID3v2();
+    const filename = 'demo.mp3';
+    const tag: IID3V2.ID3v2Tag = {
+        frames: [
+            {
+                id: 'TIT2',
+                value: {text: 'A title'},
+                head: {
+                    encoding: 'utf8'
+                }
+            },
+            {
+                id: 'TALB',
+                value: {text: 'An album'},
+                head: {
+                    encoding: 'ucs2'
+                }
+            }
+        ]
+    };
+    const options: IID3V2.WriteOptions = {
+        defaultEncoding: 'utf8', // encoding used if not specified in frame header
+        keepBackup: true, // keep a filename.mp3.bak copy of the original file
+        paddingSize: 10 // add padding zeros between id3v2 and the audio (in bytes)
+    };
+    const version = 4;  // version: 2 = v2.2; 3 = v2.3; 4 = v2.4
+    await id3v2.write(filename, tag, version, 0, options);
+    console.log('id3v2.4 written');
+}
+
+run().catch(e => {
+    console.error(e);
+});
+```
+Example as [typescript](examples/snippet_id3v2-write.ts) [javascript](examples/snippet_id3v2-write.js) 
+
 ### ID3v1, ID3v2, MPEG
 
-Example usage:
+[Class Documentation](https://ffalt.github.io/jamp3/classes/mp3.html)
 
-```javascript
+#### reading MP3
 
-const options = {
-  mpeg?: boolean; // read mpeg information 
-  mpegQuick?: boolean; // estimate mpeg information based on mpeg header (XING|Info) and stop reading if tags and header is found
-  id3v2?: boolean; // read ID3 v2 tag
-  id3v1?: boolean;  // read ID3 v1 tag
-  id3v1IfNotid3v2?: boolean;  // read ID3 v1 tag only if no ID3 v2 tag is found (stops reading otherwise)
-  raw?: boolean; // do not parse frames & return all frames as binary blobs
-} 
+```typescript
+import {IMP3, MP3} from 'jamp3';
 
-const MP3 = require('jamp3').MP3;
-// or typescript: import {ID3v1} from 'jamp3';
-
-const mp3 = new MP3();
-
-// with promises
-mp3.read(filename, options)
-  .then(result => {
-   console.log(result);
-  })
-  .catch(e => {
-   console.error(e);
-  });
-
-// or async/await
-async function read(filename, options) {
-  const result = await mp3.read(filename, options);
-  console.log(result);
+async function run(): Promise<void> {
+    const mp3 = new MP3();
+    const filename = 'demo.mp3';
+    const options: IMP3.ReadOptions = {
+        mpeg: true, // read mpeg information
+        mpegQuick: true, // estimate mpeg information based on mpeg header (XING|Info) and stop reading if tags and header are found
+        id3v2: true, // read ID3 v2 tag
+        id3v1: false,  // read ID3 v1 tag
+        id3v1IfNotID3v2: true,  // read ID3 v1 tag only if no ID3 v2 tag is found (stops reading otherwise)
+        raw: false // do not parse frames & return all frames as binary blobs
+    };
+    const data = await mp3.read(filename, options);
+    console.log('mp3:', data);
 }
+
+run().catch(e => {
+    console.error(e);
+});
 ```
+Example as [typescript](examples/snippet_mp3-read.ts) [javascript](examples/snippet_mp3-read.js) 
+
+Note: MP3 Duration
+
+if the mp3 does include a VBR/CBR header, the declared header values are used for duration calculation
+
+if the mp3 does NOT include a VBR/CBR header: 
+  - with option {mpegQuick: true}: only a few audio frames are read and the duration is estimated 
+  - with option {mpegQuick: false}: all audio frames are read and the duration is calculated 
 
 Example result:
-
 ```json
 {
   "size": 4096,
   "mpeg": {
-    "durationEstimate": 0.156,
-    "durationRead": 0.182,
+    "durationEstimate": 1.044875, 
+    "durationRead": 0,
     "channels": 2,
-    "frameCount": 7,
-    "frameCountDeclared": 6,
-    "bitRate": 125714,
+    "frameCount": 0,
+    "frameCountDeclared": 0,
+    "bitRate": 128000,
     "sampleRate": 44100,
     "sampleCount": 1152,
-    "audioBytes": 2869,
-    "audioBytesDeclared": 2869,
+    "audioBytes": 0,
+    "audioBytesDeclared": 0,
     "version": "1 (ISO/IEC 11172-3)",
     "layer": "MPEG audio layer 3",
-    "encoded": "VBR",
+    "encoded": "CBR",
     "mode": "joint"
   },
-  "id3v1": {
-    "id": "ID3v1",
-    "start": 3968,
-    "end": 4096,
-    "version": 1,
-    "value": {
-      "title": "TITLE1234567890123456789012345",
-      "artist": "ARTIST123456789012345678901234",
-      "album": "ALBUM1234567890123456789012345",
-      "year": "2001",
-      "comment": "COMMENT123456789012345678901",
-      "track": 1,
-      "genreIndex": 13
-    }
+  "id3v1": { 
+      "…": "see documentation above"  
   },
   "id3v2": {
-    "id": "ID3v2",
-    "start": 0,
-    "end": 1099,
-    "head": {"ver":4,"rev":0,"size":1089,"valid":true,"flags":{"unsynchronisation":false,"extendedheader":false,"experimental":false,"footer":false}},
-    "frames": [
-      {
-        "id": "TENC",
-        "head": {"encoding":"iso-8859-1","statusFlags":{"reserved":false,"tag_alter_preservation":true,"file_alter_preservation":false,"read_only":false},"formatFlags":{"reserved":false,"grouping":false,"reserved2":false,"reserved3":false,"compressed":false,"encrypted":false,"unsynchronised":false,"data_length_indicator":false},"size":32},
-        "value": {
-          "text": "ENCODER234567890123456789012345"
-        },
-        "title": "Encoded by"
-      },
-      {
-        "id": "WXXX",
-        "head": {"encoding":"iso-8859-1","statusFlags":{"reserved":false,"tag_alter_preservation":false,"file_alter_preservation":false,"read_only":false},"formatFlags":{"reserved":false,"grouping":false,"reserved2":false,"reserved3":false,"compressed":false,"encrypted":false,"unsynchronised":false,"data_length_indicator":false},"size":33},
-        "value": {
-          "id": "",
-          "text": "URL2345678901234567890123456789"
-        },
-        "title": "User defined URL link frame"
-      },
-      {
-        "id": "TCOP",
-        "head": {"encoding":"iso-8859-1","statusFlags":{"reserved":false,"tag_alter_preservation":false,"file_alter_preservation":false,"read_only":false},"formatFlags":{"reserved":false,"grouping":false,"reserved2":false,"reserved3":false,"compressed":false,"encrypted":false,"unsynchronised":false,"data_length_indicator":false},"size":32},
-        "value": {
-          "text": "COPYRIGHT2345678901234567890123"
-        },
-        "title": "Copyright message"
-      },
-      {
-        "id": "TOPE",
-        "head": {"encoding":"iso-8859-1","statusFlags":{"reserved":false,"tag_alter_preservation":false,"file_alter_preservation":false,"read_only":false},"formatFlags":{"reserved":false,"grouping":false,"reserved2":false,"reserved3":false,"compressed":false,"encrypted":false,"unsynchronised":false,"data_length_indicator":false},"size":32},
-        "value": {
-          "text": "ORIGARTIST234567890123456789012"
-        },
-        "title": "Original artist"
-      },
-      {
-        "id": "TCOM",
-        "head": {"encoding":"iso-8859-1","statusFlags":{"reserved":false,"tag_alter_preservation":false,"file_alter_preservation":false,"read_only":false},"formatFlags":{"reserved":false,"grouping":false,"reserved2":false,"reserved3":false,"compressed":false,"encrypted":false,"unsynchronised":false,"data_length_indicator":false},"size":32},
-        "value": {
-          "text": "COMPOSER23456789012345678901234"
-        },
-        "title": "Composer"
-      },
-      {
-        "id": "COMM",
-        "head": {"encoding":"iso-8859-1","statusFlags":{"reserved":false,"tag_alter_preservation":false,"file_alter_preservation":false,"read_only":false},"formatFlags":{"reserved":false,"grouping":false,"reserved2":false,"reserved3":false,"compressed":false,"encrypted":false,"unsynchronised":false,"data_length_indicator":false},"size":33},
-        "value": {
-          "id": "",
-          "language": "",
-          "text": "COMMENT123456789012345678901"
-        },
-        "title": "Comments"
-      },
-      {
-        "id": "TPE1",
-        "head": {"encoding":"iso-8859-1","statusFlags":{"reserved":false,"tag_alter_preservation":false,"file_alter_preservation":false,"read_only":false},"formatFlags":{"reserved":false,"grouping":false,"reserved2":false,"reserved3":false,"compressed":false,"encrypted":false,"unsynchronised":false,"data_length_indicator":false},"size":31},
-        "value": {
-          "text": "ARTIST123456789012345678901234"
-        },
-        "title": "Artist"
-      },
-      {
-        "id": "TALB",
-        "head": {"encoding":"iso-8859-1","statusFlags":{"reserved":false,"tag_alter_preservation":false,"file_alter_preservation":false,"read_only":false},"formatFlags":{"reserved":false,"grouping":false,"reserved2":false,"reserved3":false,"compressed":false,"encrypted":false,"unsynchronised":false,"data_length_indicator":false},"size":31},
-        "value": {
-          "text": "ALBUM1234567890123456789012345"
-        },
-        "title": "Album"
-      },
-      {
-        "id": "COMM",
-        "head": {"encoding":"iso-8859-1","statusFlags":{"reserved":false,"tag_alter_preservation":false,"file_alter_preservation":false,"read_only":false},"formatFlags":{"reserved":false,"grouping":false,"reserved2":false,"reserved3":false,"compressed":false,"encrypted":false,"unsynchronised":false,"data_length_indicator":false},"size":46},
-        "value": {
-          "id": "ID3v1 Comment",
-          "language": "XXX",
-          "text": "COMMENT123456789012345678901"
-        },
-        "title": "Comments"
-      },
-      {
-        "id": "TRCK",
-        "head": {"encoding":"iso-8859-1","statusFlags":{"reserved":false,"tag_alter_preservation":false,"file_alter_preservation":false,"read_only":false},"formatFlags":{"reserved":false,"grouping":false,"reserved2":false,"reserved3":false,"compressed":false,"encrypted":false,"unsynchronised":false,"data_length_indicator":false},"size":2},
-        "value": {
-          "text": "1"
-        },
-        "title": "Track number"
-      },
-      {
-        "id": "TYER",
-        "head": {"encoding":"iso-8859-1","statusFlags":{"reserved":false,"tag_alter_preservation":false,"file_alter_preservation":false,"read_only":false},"formatFlags":{"reserved":false,"grouping":false,"reserved2":false,"reserved3":false,"compressed":false,"encrypted":false,"unsynchronised":false,"data_length_indicator":false},"size":5},
-        "value": {
-          "text": "2001"
-        },
-        "title": "Year"
-      },
-      {
-        "id": "TCON",
-        "head": {"encoding":"iso-8859-1","statusFlags":{"reserved":false,"tag_alter_preservation":false,"file_alter_preservation":false,"read_only":false},"formatFlags":{"reserved":false,"grouping":false,"reserved2":false,"reserved3":false,"compressed":false,"encrypted":false,"unsynchronised":false,"data_length_indicator":false},"size":8},
-        "value": {
-          "text": "(13)Pop"
-        },
-        "title": "Genre"
-      },
-      {
-        "id": "TIT2",
-        "head": {"encoding":"iso-8859-1","statusFlags":{"reserved":false,"tag_alter_preservation":false,"file_alter_preservation":false,"read_only":false},"formatFlags":{"reserved":false,"grouping":false,"reserved2":false,"reserved3":false,"compressed":false,"encrypted":false,"unsynchronised":false,"data_length_indicator":false},"size":31},
-        "value": {
-          "text": "TITLE1234567890123456789012345"
-        },
-        "title": "Title"
-      }
-    ]
+      "…": "see documentation above"  
   }
 }
 ```
@@ -994,6 +965,10 @@ Options:
 ### Build
 
 `npm run build` to build the nodejs version into dist/
+
+### Documentation
+
+`npm run docs` to build class documentation into docs/
 
 ### Test
 

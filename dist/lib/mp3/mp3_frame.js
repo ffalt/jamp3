@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const mp3_consts_1 = require("./mp3_consts");
 const utils_1 = require("../common/utils");
-function colapseRawHeader(header) {
+function collapseRawHeader(header) {
     return [
         header.offset,
         header.size,
@@ -10,7 +10,7 @@ function colapseRawHeader(header) {
         header.back
     ];
 }
-exports.colapseRawHeader = colapseRawHeader;
+exports.collapseRawHeader = collapseRawHeader;
 function rawHeaderOffSet(header) {
     return header[0];
 }
@@ -58,7 +58,7 @@ function expandMPEGFrameFlags(front, back, offset) {
         const slot_size = mp3_consts_1.mpeg_slot_size[layerIdx];
         const bps = samples / 8.0;
         const size = Math.floor(((bps * bitrate) / samprate)) + ((padded) ? slot_size : 0);
-        const result = {
+        return {
             offset,
             front,
             back,
@@ -76,7 +76,6 @@ function expandMPEGFrameFlags(front, back, offset) {
             original,
             privatebit
         };
-        return result;
     }
     return null;
 }
@@ -196,7 +195,7 @@ class MPEGFrameReader {
         return offset;
     }
     readFrame(chunk, offset, header) {
-        const frame = { header: colapseRawHeader(header) };
+        const frame = { header: collapseRawHeader(header) };
         let off = 0;
         const length = offset + Math.min(40, chunk.length - 4 - offset);
         for (let i = offset; i < length; i++) {

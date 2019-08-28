@@ -1,6 +1,6 @@
 /// <reference types="node" />
 import { IMP3 } from './mp3__types';
-export declare function colapseRawHeader(header: IMP3.FrameRawHeader): IMP3.FrameRawHeaderArray;
+export declare function collapseRawHeader(header: IMP3.FrameRawHeader): IMP3.FrameRawHeaderArray;
 export declare function rawHeaderOffSet(header: IMP3.FrameRawHeaderArray): number;
 export declare function rawHeaderSize(header: IMP3.FrameRawHeaderArray): number;
 export declare function rawHeaderVersionIdx(header: IMP3.FrameRawHeaderArray): number;

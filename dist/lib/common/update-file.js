@@ -14,19 +14,21 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const mp3_reader_1 = require("../mp3/mp3_reader");
 const fs_extra_1 = __importDefault(require("fs-extra"));
 const streams_1 = require("./streams");
-function updateFile(filename, opts, keepBackup, canProcess, process) {
+function updateFile(filename, options, keepBackup, canProcess, process) {
     return __awaiter(this, void 0, void 0, function* () {
         const reader = new mp3_reader_1.MP3Reader();
-        const layout = yield reader.read(filename, opts);
+        const layout = yield reader.read(filename, options);
         if (!canProcess(layout)) {
             return;
         }
-        let exists = yield fs_extra_1.default.pathExists(filename + '.tempmp3');
+        const tmpFile = filename + '.tempmp3';
+        const bakFile = filename + '.bak';
+        let exists = yield fs_extra_1.default.pathExists(tmpFile);
         if (exists) {
-            yield fs_extra_1.default.remove(filename + '.tempmp3');
+            yield fs_extra_1.default.remove(tmpFile);
         }
         const fileWriterStream = new streams_1.FileWriterStream();
-        yield fileWriterStream.open(filename + '.tempmp3');
+        yield fileWriterStream.open(tmpFile);
         try {
             yield process(layout, fileWriterStream);
         }
@@ -35,10 +37,10 @@ function updateFile(filename, opts, keepBackup, canProcess, process) {
             return Promise.reject(e);
         }
         yield fileWriterStream.close();
-        exists = yield fs_extra_1.default.pathExists(filename + '.bak');
+        exists = yield fs_extra_1.default.pathExists(bakFile);
         if (keepBackup) {
             if (!exists) {
-                yield fs_extra_1.default.rename(filename, filename + '.bak');
+                yield fs_extra_1.default.rename(filename, bakFile);
             }
             else {
                 yield fs_extra_1.default.remove(filename);
@@ -46,13 +48,13 @@ function updateFile(filename, opts, keepBackup, canProcess, process) {
         }
         else {
             if (exists) {
-                yield fs_extra_1.default.remove(filename + '.bak');
+                yield fs_extra_1.default.remove(bakFile);
             }
-            yield fs_extra_1.default.rename(filename, filename + '.bak');
+            yield fs_extra_1.default.rename(filename, bakFile);
         }
-        yield fs_extra_1.default.rename(filename + '.tempmp3', filename);
+        yield fs_extra_1.default.rename(tmpFile, filename);
         if (!keepBackup) {
-            yield fs_extra_1.default.remove(filename + '.bak');
+            yield fs_extra_1.default.remove(bakFile);
         }
     });
 }

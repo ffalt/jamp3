@@ -30,6 +30,36 @@ class ID3v1 {
             return yield reader.readStream(stream);
         });
     }
+    remove(filename, options) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const stat = yield fs_extra_1.default.stat(filename);
+            let removed = false;
+            yield update_file_1.updateFile(filename, { id3v1: true }, !!options.keepBackup, () => true, (layout, fileWriter) => __awaiter(this, void 0, void 0, function* () {
+                let finish = stat.size;
+                for (const t of layout.tags) {
+                    if (t.id === __1.ITagID.ID3v1) {
+                        removed = true;
+                        if (finish > t.start) {
+                            finish = t.start;
+                        }
+                    }
+                }
+                yield fileWriter.copyRange(filename, 0, finish);
+            }));
+            return removed;
+        });
+    }
+    write(filename, tag, version, options) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const exists = yield fs_extra_1.default.pathExists(filename);
+            if (!exists) {
+                yield this.writeTag(filename, tag, version);
+            }
+            else {
+                yield this.replaceTag(filename, tag, version, !!options.keepBackup);
+            }
+        });
+    }
     writeTag(filename, tag, version) {
         return __awaiter(this, void 0, void 0, function* () {
             const stream = new streams_1.FileWriterStream();
@@ -61,17 +91,6 @@ class ID3v1 {
                 const writer = new id3v1_writer_1.ID3v1Writer();
                 yield writer.write(fileWriter, tag, version);
             }));
-        });
-    }
-    write(filename, tag, version, keepBackup) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const exists = yield fs_extra_1.default.pathExists(filename);
-            if (!exists) {
-                yield this.writeTag(filename, tag, version);
-            }
-            else {
-                yield this.replaceTag(filename, tag, version, !!keepBackup);
-            }
         });
     }
 }

@@ -8,59 +8,108 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const streams_1 = require("../common/streams");
 const utils_1 = require("../common/utils");
 const id3v2_consts_1 = require("./id3v2_consts");
 const buffer_1 = require("../common/buffer");
 class Id3v2RawWriter {
-    constructor(stream, head, frames, paddingSize) {
+    constructor(stream, head, options, frames) {
         this.stream = stream;
         this.head = head;
         this.frames = frames || [];
-        this.paddingSize = paddingSize === undefined ? 0 : paddingSize;
+        this.paddingSize = options.paddingSize === undefined ? 0 : options.paddingSize;
     }
     writeHeader(frames) {
         return __awaiter(this, void 0, void 0, function* () {
             let framesSize = 0;
-            const frameHeadSize = id3v2_consts_1.ID3v2_FRAME_HEADER_LENGTHS.MARKER[this.head.ver] + id3v2_consts_1.ID3v2_FRAME_HEADER_LENGTHS.SIZE[this.head.ver] + id3v2_consts_1.ID3v2_FRAME_HEADER_LENGTHS.FLAGS[this.head.ver];
+            const frameHeadSize = id3v2_consts_1.ID3v2_FRAME_HEADER_LENGTHS.MARKER[this.head.ver] +
+                id3v2_consts_1.ID3v2_FRAME_HEADER_LENGTHS.SIZE[this.head.ver] +
+                id3v2_consts_1.ID3v2_FRAME_HEADER_LENGTHS.FLAGS[this.head.ver];
             for (const frame of frames) {
                 framesSize = framesSize + frame.size + frameHeadSize;
             }
             this.stream.writeAscii('ID3');
             this.stream.writeByte(this.head.ver);
             this.stream.writeByte(this.head.rev);
-            if (this.head.flags && this.head.flags.unsynchronisation) {
-                this.head.flags.unsynchronisation = false;
-            }
-            if (this.head.flags && this.head.flags.extended) {
-                this.head.flags.extended = false;
-            }
-            const flagarray = utils_1.unflags(id3v2_consts_1.ID3v2_HEADER_FLAGS[this.head.ver], this.head.flags);
-            this.stream.writeBitsByte(flagarray);
-            const extendedHeaderSize = 0;
             const footerSize = 0;
-            const tagSize = extendedHeaderSize + framesSize + (footerSize || this.paddingSize);
-            this.stream.writeSyncSafeInt(tagSize);
-        });
-    }
-    writeExtHeader() {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (!this.head.extended) {
-                return;
+            let extendedHeaderBuffer;
+            let flagBits;
+            if (this.head.ver <= 2) {
+                this.head.v2 = this.head.v2 || { flags: {} };
+                this.head.v2.flags.unsynchronisation = false;
+                flagBits = utils_1.unflags(id3v2_consts_1.ID3v2_HEADER_FLAGS[2], this.head.v2.flags);
             }
-            if (this.head.ver === 3) {
-                if (!this.head.extended.ver3) {
-                    return;
+            else if (this.head.ver === 3) {
+                this.head.v3 = this.head.v3 || { flags: {} };
+                this.head.v3.flags.unsynchronisation = false;
+                if (this.head.v3.extended) {
+                    extendedHeaderBuffer = yield this.writeExtHeaderV3(this.head.v3.extended);
+                    this.head.v3.flags.extendedheader = true;
                 }
-                this.stream.writeUInt4Byte(this.head.extended.size);
-                this.stream.writeBitsByte(utils_1.unflags(id3v2_consts_1.ID3v2_EXTHEADER[3].FLAGS1, this.head.extended.ver3.flags1));
-                this.stream.writeBitsByte(utils_1.unflags(id3v2_consts_1.ID3v2_EXTHEADER[3].FLAGS2, this.head.extended.ver3.flags2));
-                this.stream.writeUInt4Byte(this.head.extended.ver3.sizeOfPadding || 0);
-                if (this.head.extended.ver3.flags1.crc) {
-                    this.stream.writeUInt4Byte(this.head.extended.ver3.crcData || 0);
+                else {
+                    this.head.v3.flags.extendedheader = false;
                 }
+                flagBits = utils_1.unflags(id3v2_consts_1.ID3v2_HEADER_FLAGS[this.head.ver], this.head.v3.flags);
             }
             else if (this.head.ver === 4) {
-                return Promise.reject(Error('TODO extended header v2.4'));
+                this.head.v4 = this.head.v4 || { flags: {} };
+                this.head.v4.flags.unsynchronisation = false;
+                if (this.head.v4.extended) {
+                    extendedHeaderBuffer = yield this.writeExtHeaderV4(this.head.v4.extended);
+                    this.head.v4.flags.extendedheader = true;
+                }
+                else {
+                    this.head.v4.flags.extendedheader = false;
+                }
+                flagBits = utils_1.unflags(id3v2_consts_1.ID3v2_HEADER_FLAGS[this.head.ver], this.head.v4.flags);
+            }
+            else {
+                flagBits = utils_1.unflags(id3v2_consts_1.ID3v2_HEADER_FLAGS[this.head.ver], {});
+            }
+            this.head.flagBits = flagBits;
+            this.stream.writeBitsByte(flagBits);
+            const tagSize = (extendedHeaderBuffer ? extendedHeaderBuffer.length : 0) + framesSize + footerSize + this.paddingSize;
+            if (this.head.ver > 2) {
+                this.stream.writeSyncSafeInt(tagSize);
+            }
+            else {
+                this.stream.writeUInt4Byte(tagSize);
+            }
+            if (extendedHeaderBuffer) {
+                this.stream.writeBuffer(extendedHeaderBuffer);
+            }
+        });
+    }
+    writeExtHeaderV3(extended) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const result = new streams_1.MemoryWriterStream();
+            result.writeUInt4Byte(extended.size);
+            result.writeBitsByte(utils_1.unflags(id3v2_consts_1.ID3v2_EXTHEADER[3].FLAGS1, extended.flags1));
+            result.writeBitsByte(utils_1.unflags(id3v2_consts_1.ID3v2_EXTHEADER[3].FLAGS2, extended.flags2));
+            result.writeUInt4Byte(this.paddingSize || 0);
+            if (extended.flags1.crc) {
+                result.writeUInt4Byte(extended.crcData || 0);
+            }
+            return result.toBuffer();
+        });
+    }
+    writeExtHeaderV4(extended) {
+        return __awaiter(this, void 0, void 0, function* () {
+            console.log('WARNING: extended header 2.4 not implemented');
+            return Promise.reject(Error('TODO extended header v2.4'));
+        });
+    }
+    writeFrames(frames) {
+        return __awaiter(this, void 0, void 0, function* () {
+            for (const frame of frames) {
+                yield this.writeFrame(frame);
+            }
+        });
+    }
+    writeEnd() {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (this.paddingSize > 0) {
+                this.stream.writeBuffer(buffer_1.BufferUtils.zeroBuffer(this.paddingSize));
             }
         });
     }
@@ -88,24 +137,9 @@ class Id3v2RawWriter {
             this.stream.writeBuffer(frame.data);
         });
     }
-    writeFrames(frames) {
-        return __awaiter(this, void 0, void 0, function* () {
-            for (const frame of frames) {
-                yield this.writeFrame(frame);
-            }
-        });
-    }
-    writeEnd() {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (this.paddingSize > 0) {
-                this.stream.writeBuffer(buffer_1.BufferUtils.zeroBuffer(this.paddingSize));
-            }
-        });
-    }
     write() {
         return __awaiter(this, void 0, void 0, function* () {
             yield this.writeHeader(this.frames);
-            yield this.writeExtHeader();
             yield this.writeFrames(this.frames);
             yield this.writeEnd();
         });
@@ -113,12 +147,12 @@ class Id3v2RawWriter {
 }
 exports.Id3v2RawWriter = Id3v2RawWriter;
 class ID3v2Writer {
-    write(stream, frames, head, paddingSize) {
+    write(stream, frames, head, options) {
         return __awaiter(this, void 0, void 0, function* () {
             if (head.ver === 0 || head.ver > 4) {
                 return Promise.reject(Error('Unsupported Version'));
             }
-            const writer = new Id3v2RawWriter(stream, head, frames, paddingSize);
+            const writer = new Id3v2RawWriter(stream, head, options, frames);
             yield writer.write();
         });
     }

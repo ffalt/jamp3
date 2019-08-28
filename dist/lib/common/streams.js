@@ -96,7 +96,9 @@ class ReaderStream {
             this.pos += this.buffersLength;
             this.buffers = [];
             this.streamOnData = this.onSkip;
-            yield this.resume();
+            while (!this.streamEnd) {
+                yield this.resume();
+            }
         });
     }
     close() {

@@ -3,7 +3,7 @@ import {isValidFrameBinId} from './id3v2_frames';
 import {bitarray, flags, removeZeroString, unsynchsafe} from '../common/utils';
 import {Markers} from '../common/marker';
 import {BufferUtils} from '../common/buffer';
-import {ID3v2_FRAME_FLAGS1, ID3v2_FRAME_FLAGS2, ID3v2_FRAME_HEADER_LENGTHS, ID3v2_EXTHEADER, ID3v2_HEADER_FLAGS, ID3v2_HEADER, ID3v2_FRAME_HEADER, ID3v2_MARKER} from './id3v2_consts';
+import {ID3v2_EXTHEADER, ID3v2_FRAME_FLAGS1, ID3v2_FRAME_FLAGS2, ID3v2_FRAME_HEADER, ID3v2_FRAME_HEADER_LENGTHS, ID3v2_HEADER, ID3v2_MARKER} from './id3v2_consts';
 import {IID3V2} from './id3v2__types';
 import {Readable} from 'stream';
 import {ITagID} from '../..';
@@ -18,18 +18,25 @@ export class ID3v2Reader {
 		if (!header || !header.valid) {
 			return {rest: data};
 		}
-		if (!header.flags || !header.flags.extendedheader) {
-			return {header};
+		if (header.v3 && header.v3.flags.extendedheader) {
+			const extended = await this.readID3ExtendedHeaderV3(reader);
+			header.v3.extended = extended.exthead;
+			return {header, rest: extended.rest};
+		} else if (header.v4 && header.v4.flags.extendedheader) {
+			const extended = await this.readID3ExtendedHeaderV4(reader);
+			header.v4.extended = extended.exthead;
+			return {header, rest: extended.rest};
 		}
-		const extended = await this.readID3ExtendedHeader(reader, header.ver);
-		header.extended = extended ? extended.exthead : undefined;
-		return {header, rest: extended ? extended.rest : undefined};
+		return {header};
 	}
 
 	private async readRawTag(head: IID3V2.TagHeader, reader: ReaderStream): Promise<{ rest?: Buffer, tag?: IID3V2.RawTag }> {
 		const tag: IID3V2.RawTag = {id: ITagID.ID3v2, frames: [], start: 0, end: 0, head: head || {ver: 0, rev: 0, size: 0, valid: false}};
-		const data = await reader.read(tag.head.size);
-		const rest = await this.readFrames(data, tag);
+		let rest: Buffer | undefined;
+		if (tag.head.size > 0) {
+			const data = await reader.read(tag.head.size);
+			rest = await this.readFrames(data, tag);
+		}
 		return {rest, tag};
 	}
 
@@ -50,8 +57,6 @@ export class ID3v2Reader {
 		if (reader.end) {
 			return {};
 		}
-
-
 		const index = await reader.scan(ID3v2_MARKER_BUFFER);
 		if (index < 0) {
 			return {};
@@ -65,84 +70,89 @@ export class ID3v2Reader {
 		return result;
 	}
 
-	private async readID3ExtendedHeader(reader: ReaderStream, ver: number): Promise<{ rest?: Buffer, exthead: IID3V2.TagHeaderExtended }> {
+	private async readID3ExtendedHeaderV3(reader: ReaderStream): Promise<{ rest?: Buffer, exthead: IID3V2.TagHeaderExtendedVer3 }> {
 		const headdata = await reader.read(4);
-		const exthead: IID3V2.TagHeaderExtended = {
-			size: headdata.readInt32BE(0)
-		};
-		if (ID3v2_EXTHEADER.SYNCSAVEINT.indexOf(ver) >= 0) {
-			exthead.size = unsynchsafe(exthead.size);
-		}
-		if (exthead.size > 10) {
-			exthead.size = 6;
+		let size = headdata.readInt32BE(0);
+		if (size > 10) {
+			size = 6;
 		}
 		// debug('readID3ExtendedHeader', 'exthead.size:', exthead.size);
-		const data = await reader.read(exthead.size);
-		if (ver === 3) {
-			/** ID3v2.3
-			 3.2.   ID3v2 extended header
+		const data = await reader.read(size);
+		/** ID3v2.3
+		 3.2.   ID3v2 extended header
 
-			 The extended header contains information that is not vital to the
-			 correct parsing of the tag information, hence the extended header is
-			 optional.
+		 The extended header contains information that is not vital to the
+		 correct parsing of the tag information, hence the extended header is
+		 optional.
 
-			 Extended header size   $xx xx xx xx
-			 Extended Flags         $xx xx
-			 Size of padding        $xx xx xx xx
+		 Extended header size   $xx xx xx xx
+		 Extended Flags         $xx xx
+		 Size of padding        $xx xx xx xx
 
-			 Where the 'Extended header size', currently 6 or 10 bytes, excludes
-			 itself. The 'Size of padding' is simply the total tag size excluding
-			 the frames and the headers, in other words the padding. The extended
-			 header is considered separate from the header proper, and as such is
-			 subject to unsynchronisation.
+		 Where the 'Extended header size', currently 6 or 10 bytes, excludes
+		 itself. The 'Size of padding' is simply the total tag size excluding
+		 the frames and the headers, in other words the padding. The extended
+		 header is considered separate from the header proper, and as such is
+		 subject to unsynchronisation.
 
-			 The extended flags are a secondary flag set which describes further
-			 attributes of the tag. These attributes are currently defined as
-			 follows
+		 The extended flags are a secondary flag set which describes further
+		 attributes of the tag. These attributes are currently defined as
+		 follows
 
-			 %x0000000 00000000
+		 %x0000000 00000000
 
-			 x - CRC data present
+		 x - CRC data present
 
-			 If this flag is set four bytes of CRC-32 data is appended to the
-			 extended header. The CRC should be calculated before
-			 unsynchronisation on the data between the extended header and the
-			 padding, i.e. the frames and only the frames.
+		 If this flag is set four bytes of CRC-32 data is appended to the
+		 extended header. The CRC should be calculated before
+		 unsynchronisation on the data between the extended header and the
+		 padding, i.e. the frames and only the frames.
 
-			 Total frame CRC        $xx xx xx xx
+		 Total frame CRC        $xx xx xx xx
 
-			 */
-			const ver3: IID3V2.TagHeaderExtendedVer3 = {
-				flags1: flags(ID3v2_EXTHEADER[3].FLAGS1, bitarray(data[0])),
-				flags2: flags(ID3v2_EXTHEADER[3].FLAGS2, bitarray(data[1])),
-				sizeOfPadding: data.readUInt32BE(2)
+		 */
+		const exthead: IID3V2.TagHeaderExtendedVer3 = {
+			size,
+			flags1: flags(ID3v2_EXTHEADER[3].FLAGS1, bitarray(data[0])),
+			flags2: flags(ID3v2_EXTHEADER[3].FLAGS2, bitarray(data[1])),
+			sizeOfPadding: data.readUInt32BE(2)
+		};
+		if (exthead.flags1.crc && data.length > 6) {
+			exthead.crcData = data.readUInt32BE(6);
+		}
+		return {exthead};
+	}
+
+	private async readID3ExtendedHeaderV4(reader: ReaderStream): Promise<{ rest?: Buffer, exthead: IID3V2.TagHeaderExtendedVer4 }> {
+		const headdata = await reader.read(4);
+		let size = headdata.readInt32BE(0);
+		size = unsynchsafe(size);
+		if (size > 10) {
+			size = 6;
+		}
+		// debug('readID3ExtendedHeader', 'exthead.size:', exthead.size);
+		const data = await reader.read(size);
+		const exthead: IID3V2.TagHeaderExtendedVer4 = {
+			size,
+			flags: flags(ID3v2_EXTHEADER[4].FLAGS, bitarray(data[0]))
+		};
+		let pos = 1;
+		if (exthead.flags.crc) {
+			const crcSize = data[pos];
+			pos++;
+			exthead.crc32 = unsynchsafe(data.readInt32BE(pos));
+			pos += crcSize;
+		}
+		if (exthead.flags.restrictions) {
+			pos++;
+			const r = bitarray(data[pos]);
+			exthead.restrictions = {
+				tagSize: r[0].toString() + r[1].toString(),
+				textEncoding: r[2].toString(),
+				textSize: r[3].toString() + r[4].toString(),
+				imageEncoding: r[5].toString(),
+				imageSize: r[6].toString() + r[7].toString()
 			};
-			if (ver3.flags1.crc && data.length > 6) {
-				ver3.crcData = data.readUInt32BE(6);
-			}
-			exthead.ver3 = ver3;
-		} else if (ver === 4) {
-			const ver4: IID3V2.TagHeaderExtendedVer4 = {
-				flags: flags(ID3v2_EXTHEADER[4].FLAGS, bitarray(data[0]))
-			};
-			let pos = 1;
-			if (ver4.flags.crc) {
-				const size = data[pos];
-				pos++;
-				ver4.crc32 = unsynchsafe(data.readInt32BE(pos));
-				pos += size;
-			}
-			if (ver4.flags.restrictions) {
-				pos++;
-				const r = bitarray(data[pos]);
-				ver4.restrictions = {
-					tagSize: r[0].toString() + r[1].toString(),
-					textEncoding: r[2].toString(),
-					textSize: r[3].toString() + r[4].toString(),
-					imageEncoding: r[5].toString(),
-					imageSize: r[6].toString() + r[7].toString()
-				};
-			}
 		}
 		return {exthead};
 	}
@@ -153,26 +163,43 @@ export class ID3v2Reader {
 		) {
 			return null;
 		}
+		const flagBits = bitarray(buffer[5]);
 		const head: IID3V2.TagHeader = {
 			ver: buffer[offset + 3],
 			rev: buffer[offset + 4],
 			size: buffer.readInt32BE(offset + 6),
+			flagBits,
 			valid: false
 		};
-
-		if (ID3v2_HEADER.SYNCSAVEINT.indexOf(head.ver) >= 0) {
+		if (head.ver === 4) {
 			head.size = unsynchsafe(head.size);
-		} else {
-			head.syncSaveSize = unsynchsafe(head.size);
-		} // keep this if someone is writing v2 with syncsaveint
-
-		if (ID3v2_HEADER_FLAGS[head.ver]) {
-			head.flags = flags(ID3v2_HEADER_FLAGS[head.ver], bitarray(buffer[5]));
-			head.valid = head.size > 0;
-			// debug('readID3v2Header', 'head.size', head.size, 'head.ver', head.ver);
-		} else {
-			head.flagBits = bitarray(buffer[5]);
+			head.v4 = {
+				flags: {
+					unsynchronisation: flagBits[0] === 1,
+					extendedheader: flagBits[1] === 1,
+					experimental: flagBits[2] === 1,
+					footer: flagBits[3] === 1
+				}
+			};
+		} else if (head.ver === 3) {
+			head.size = unsynchsafe(head.size);
+			head.v3 = {
+				flags: {
+					unsynchronisation: flagBits[0] === 1,
+					extendedheader: flagBits[1] === 1,
+					experimental: flagBits[2] === 1
+				}
+			};
+		} else if (head.ver <= 2) {
+			head.v2 = {
+				sizeAsSyncSafe: unsynchsafe(head.size), // keep this if someone is writing v2 with syncsafeint
+				flags: {
+					unsynchronisation: flagBits[0] === 1,
+					compression: flagBits[1] === 1,
+				}
+			};
 		}
+		head.valid = head.size >= 0 && head.ver <= 4;
 		return head;
 	}
 
@@ -185,8 +212,7 @@ export class ID3v2Reader {
 		const reader = new ReaderStream();
 		try {
 			await reader.openStream(stream);
-			const tag = await this.readReaderStream(reader);
-			return tag;
+			return await this.readReaderStream(reader);
 		} catch (e) {
 			return Promise.reject(e);
 		}
@@ -255,7 +281,7 @@ export class ID3v2Reader {
 					skip = 0;
 					// debug('readFrames', 'frame ' + frame.id + ' with size === ' + frame.size);
 					if (frame.size > 0) {
-						if (tag.head.ver === 3 && tag.head.flags && tag.head.flags.unsynchronisation) {
+						if (tag.head.v3 && tag.head.v3.flags.unsynchronisation) {
 							frame.data = reader.readUnsyncedBuffer(frame.size);
 						} else {
 							frame.data = reader.readBuffer(frame.size);

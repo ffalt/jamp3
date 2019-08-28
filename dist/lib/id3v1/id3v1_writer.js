@@ -17,19 +17,19 @@ class Id3v1RawWriter {
     write() {
         return __awaiter(this, void 0, void 0, function* () {
             this.stream.writeAscii('TAG');
-            this.stream.writeFixedAsciiString(this.tag.value.title || '', 30);
-            this.stream.writeFixedAsciiString(this.tag.value.artist || '', 30);
-            this.stream.writeFixedAsciiString(this.tag.value.album || '', 30);
-            this.stream.writeFixedAsciiString(this.tag.value.year || '', 4);
+            this.stream.writeFixedAsciiString(this.tag.title || '', 30);
+            this.stream.writeFixedAsciiString(this.tag.artist || '', 30);
+            this.stream.writeFixedAsciiString(this.tag.album || '', 30);
+            this.stream.writeFixedAsciiString(this.tag.year || '', 4);
             if (this.version === 0) {
-                this.stream.writeFixedAsciiString(this.tag.value.comment || '', 30);
+                this.stream.writeFixedAsciiString(this.tag.comment || '', 30);
             }
             else {
-                this.stream.writeFixedAsciiString(this.tag.value.comment || '', 28);
+                this.stream.writeFixedAsciiString(this.tag.comment || '', 28);
                 this.stream.writeByte(0);
-                this.stream.writeByte(this.tag.value.track || 0);
+                this.stream.writeByte(this.tag.track || 0);
             }
-            this.stream.writeByte(this.tag.value.genreIndex || 0);
+            this.stream.writeByte(this.tag.genreIndex || 0);
         });
     }
 }

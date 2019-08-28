@@ -77,8 +77,7 @@ class ID3v1Reader {
             const reader = new streams_1.ReaderStream();
             try {
                 yield reader.openStream(stream);
-                const tag = yield this.readReaderStream(reader);
-                return tag;
+                return yield this.readReaderStream(reader);
             }
             catch (e) {
                 return Promise.reject(e);

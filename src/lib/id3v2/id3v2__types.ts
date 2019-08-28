@@ -18,6 +18,11 @@ export namespace IID3V2 {
 			text: string;
 		}
 
+		export interface LangText extends Base {
+			language: string;
+			text: string;
+		}
+
 		export interface Pic extends Base {
 			description: string;
 			pictureType: number;
@@ -77,7 +82,7 @@ export namespace IID3V2 {
 			bin: Buffer;
 		}
 
-		export interface Link extends Base {
+		export interface LinkedInfo extends Base {
 			url: string;
 			id: string;
 			additional: Array<string>;
@@ -161,7 +166,7 @@ export namespace IID3V2 {
 	export interface FormatFlags {
 		[name: string]: boolean | undefined;
 
-		data_length_indicator?: boolean;
+		dataLengthIndicator?: boolean;
 		unsynchronised?: boolean;
 		compressed?: boolean;
 		encrypted?: boolean;
@@ -182,9 +187,9 @@ export namespace IID3V2 {
 
 	export interface FrameHeader {
 		encoding?: string;
-		statusFlags: Flags;
-		formatFlags: FormatFlags;
-		size: number;
+		statusFlags?: Flags;
+		formatFlags?: FormatFlags;
+		size?: number;
 	}
 
 	export interface Frame {
@@ -197,24 +202,150 @@ export namespace IID3V2 {
 		groupId?: number;
 	}
 
+	export namespace Frames {
+		export interface Map {
+			[key: string]: Array<Frame>;
+		}
+
+		export interface TextFrame extends Frame {
+			value: FrameValue.Text;
+		}
+
+		export interface NumberFrame extends Frame {
+			value: FrameValue.Number;
+		}
+
+		export interface IdTextFrame extends Frame {
+			value: FrameValue.IdText;
+		}
+
+		export interface TextListFrame extends Frame {
+			value: FrameValue.TextList;
+		}
+
+		export interface BoolFrame extends Frame {
+			value: FrameValue.Bool;
+		}
+
+		export interface LangDescTextFrame extends Frame {
+			value: FrameValue.LangDescText;
+		}
+
+		export interface PicFrame extends Frame {
+			value: FrameValue.Pic;
+		}
+
+		export interface IdBinFrame extends Frame {
+			value: FrameValue.IdBin;
+		}
+
+		export interface ChapterFrame extends Frame {
+			value: FrameValue.Chapter;
+		}
+
+		export interface EventTimingCodesFrame extends Frame {
+			value: FrameValue.EventTimingCodes;
+		}
+
+		export interface SynchronisedLyricsFrame extends Frame {
+			value: FrameValue.SynchronisedLyrics;
+		}
+
+		export interface RelativeAudioAdjustmentsFrame extends Frame {
+			value: FrameValue.RVA;
+		}
+
+		export interface RelativeAudioAdjustments2Frame extends Frame {
+			value: FrameValue.RVA2;
+		}
+
+		export interface UnknownFrame extends Frame {
+			value: FrameValue.Bin;
+		}
+
+		export interface GEOBFrame extends Frame {
+			value: FrameValue.GEOB;
+		}
+
+		export interface PopularimeterFrame extends Frame {
+			value: FrameValue.Popularimeter;
+		}
+
+		export interface AudioEncryptionFrame extends Frame {
+			value: FrameValue.AudioEncryption;
+		}
+
+		export interface LinkedInfoFrame extends Frame {
+			value: FrameValue.LinkedInfo;
+		}
+
+		export interface LangTextFrame extends Frame {
+			value: FrameValue.LangText;
+		}
+
+		export interface ReplayGainAdjustmentFrame extends Frame {
+			value: FrameValue.ReplayGainAdjustment;
+		}
+
+		export interface ChapterTOCFrame extends Frame {
+			value: FrameValue.ChapterToc;
+		}
+	}
+
+	export interface Builder {
+		buildFrames(): Array<Frame>;
+
+		version(): number;
+
+		rev(): number;
+	}
+
+	export interface TagHeaderFlagsV2 {
+		unsynchronisation?: boolean;
+		compression?: boolean;
+	}
+
+	export interface TagHeaderV2 {
+		sizeAsSyncSafe?: number; // just in case if size is written in wrong v2.2 format
+		flags: TagHeaderFlagsV2;
+	}
+
+	export interface TagHeaderFlagsV3 {
+		unsynchronisation?: boolean;
+		extendedheader?: boolean;
+		experimental?: boolean;
+	}
+
+	export interface TagHeaderV3 {
+		flags: TagHeaderFlagsV3;
+		extended?: TagHeaderExtendedVer3;
+	}
+
+	export interface TagHeaderFlagsV4 {
+		unsynchronisation?: boolean;
+		extendedheader?: boolean;
+		experimental?: boolean;
+		footer?: boolean;
+	}
+
+	export interface TagHeaderV4 {
+		flags: TagHeaderFlagsV4;
+		extended?: TagHeaderExtendedVer4;
+	}
+
 	export interface TagHeader {
 		ver: number;
 		rev: number;
 		size: number;
 		valid: boolean;
-		syncSaveSize?: number;
-		flags?: Flags;
+		v2?: TagHeaderV2;
+		v3?: TagHeaderV3;
+		v4?: TagHeaderV4;
 		flagBits?: Array<number>;
-		extended?: TagHeaderExtended;
-	}
-
-	export interface TagHeaderExtended {
-		size: number;
-		ver3?: TagHeaderExtendedVer3;
-		ver4?: TagHeaderExtendedVer4;
 	}
 
 	export interface TagHeaderExtendedVer3 {
+		size: number;
 		flags1: Flags;
 		flags2: Flags;
 		crcData?: number;
@@ -222,6 +353,7 @@ export namespace IID3V2 {
 	}
 
 	export interface TagHeaderExtendedVer4 {
+		size: number;
 		flags: Flags;
 		restrictions?: {
 			tagSize: string;
@@ -234,6 +366,11 @@ export namespace IID3V2 {
 	}
 
 	export interface Tag extends ITag {
+		head?: TagHeader;
+		frames: Array<Frame>;
+	}
+
+	export interface ID3v2Tag {
 		head?: TagHeader;
 		frames: Array<Frame>;
 	}
@@ -254,6 +391,8 @@ export namespace IID3V2 {
 	}
 
 	export interface TagSimplified {
+		[name: string]: string | undefined;
+
 		ACOUSTID_FINGERPRINT?: string;
 		ACOUSTID_ID?: string;
 		ALBUM?: string;
@@ -391,40 +530,28 @@ export namespace IID3V2 {
 		WORK?: string;
 		WRITER?: string;
 	}
-}
-export const ID3v2_ValuePicTypes: { [name: string]: string; } = {
-	'0': 'Other',
-	'1': '32x32 pixels \'file icon\' (PNG only)',
-	'2': 'Other file icon',
-	'3': 'Cover (front)',
-	'4': 'Cover (back)',
-	'5': 'Leaflet page',
-	'6': 'Media (e.g. lable side of CD)',
-	'7': 'Lead artist/lead performer/soloist',
-	'8': 'Artist/performer',
-	'9': 'Conductor',
-	'10': 'Band/Orchestra',
-	'11': 'Composer',
-	'12': 'Lyricist/text writer',
-	'13': 'Recording Location',
-	'14': 'During recording',
-	'15': 'During performance',
-	'16': 'Movie/video screen capture',
-	'17': 'A bright coloured fish',
-	'18': 'Illustration',
-	'19': 'Band/artist logotype',
-	'20': 'Publisher/Studio logotype'
-};
 
-export const ID3v2_ValueRelativeVolumeAdjustment2ChannelTypes: { [name: string]: string; } = {
-	'0': 'Other',
-	'1': 'Master volume',
-	'2': 'Front right',
-	'3': 'Front left',
-	'4': 'Back right',
-	'5': 'Back left',
-	'6': 'Front centre',
-	'7': 'Back centre',
-	'8': 'Subwoofer'
-};
+	export interface Warning {
+		/** msg of warning */
+		msg: string;
+		/** expected value */
+		expected: number | string | boolean;
+		/** found value */
+		actual: number | string | boolean;
+	}
+
+	export interface RemoveOptions {
+		/** keep a filename.mp3.bak copy of the original file */
+		keepBackup?: boolean;
+	}
+
+	export interface WriteOptions {
+		/** encoding used if not specified in frame header */
+		defaultEncoding?: string;
+		/** padding zeros between id3v2 and the audio (in bytes) */
+		paddingSize?: number;
+		/** keep a filename.mp3.bak copy of the original file */
+		keepBackup?: boolean;
+	}
+}
 

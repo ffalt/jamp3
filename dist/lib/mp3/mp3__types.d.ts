@@ -3,17 +3,12 @@ import { IID3V2 } from '../id3v2/id3v2__types';
 import { IID3V1 } from '../id3v1/id3v1__types';
 import { ITag } from '../common/types';
 export declare namespace IMP3 {
-    interface RemoveTagsOptions {
-        id3v2: boolean;
-        id3v1: boolean;
-        keepBackup?: boolean;
-    }
     interface ReadOptions {
         mpeg?: boolean;
         mpegQuick?: boolean;
         id3v2?: boolean;
         id3v1?: boolean;
-        id3v1IfNotid3v2?: boolean;
+        id3v1IfNotID3v2?: boolean;
         detectDuplicateID3v2?: boolean;
         raw?: boolean;
     }
@@ -33,11 +28,20 @@ export declare namespace IMP3 {
         version: string;
         layer: string;
     }
+    interface RemoveTagsOptions {
+        id3v2: boolean;
+        id3v1: boolean;
+        keepBackup?: boolean;
+    }
+    interface RemoveResult {
+        id3v2: boolean;
+        id3v1: boolean;
+    }
     interface Result {
         size: number;
-        mpeg?: MPEG;
         id3v2?: IID3V2.Tag;
         id3v1?: IID3V1.Tag;
+        mpeg?: MPEG;
         frames?: {
             headers: Array<IMP3.Frame>;
             audio: Array<IMP3.FrameRawHeaderArray>;
@@ -105,15 +109,15 @@ export declare namespace IMP3 {
             quality: boolean;
         };
     }
-    type FrameRawHeaderArray = Array<number>;
-    interface RawFrame {
-        header: FrameRawHeaderArray;
+    interface Frame {
+        header: FrameHeader;
         mode?: string;
         xing?: Xing;
         vbri?: VBRI;
     }
-    interface Frame {
-        header: FrameHeader;
+    type FrameRawHeaderArray = Array<number>;
+    interface RawFrame {
+        header: FrameRawHeaderArray;
         mode?: string;
         xing?: Xing;
         vbri?: VBRI;

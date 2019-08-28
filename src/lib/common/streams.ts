@@ -88,7 +88,9 @@ export class ReaderStream {
 		this.pos += this.buffersLength;
 		this.buffers = [];
 		this.streamOnData = this.onSkip;
-		await this.resume();
+		while (!this.streamEnd) {
+			await this.resume();
+		}
 	}
 
 	close() {

@@ -2,17 +2,41 @@ import {DataReader, MemoryWriterStream, WriterStream} from '../common/streams';
 import {BufferUtils} from '../common/buffer';
 import {ID3v2_FRAME_HEADER_LENGTHS} from './id3v2_consts';
 import {ID3v2Reader} from './id3v2_reader';
-import {buildID3v2} from './id3v2';
 import * as zlib from 'zlib';
 import {Id3v2RawWriter} from './id3v2_writer';
 import {
-	FrameAENC, FrameAsciiValue, FrameCHAP, FrameCTOC, FrameETCO, FrameGEOB, FrameIdAscii, FrameIdBin, FrameIdText,
-	FrameLangDescText, FrameLINK, FrameMusicCDId, FramePartOfCompilation, FramePCST,
-	FramePic, FramePlayCounter, FramePopularimeter, FrameRelativeVolumeAdjustment, FrameRelativeVolumeAdjustment2, FrameRGAD, FrameSYLT, FrameText, FrameTextConcatList, FrameTextList, FrameUnknown, IFrameImpl
+	FrameAENC,
+	FrameAsciiValue,
+	FrameCHAP,
+	FrameCTOC,
+	FrameETCO,
+	FrameGEOB,
+	FrameIdAscii,
+	FrameIdBin,
+	FrameIdText,
+	FrameLangDescText,
+	FrameLangText,
+	FrameLINK,
+	FrameMusicCDId,
+	FramePartOfCompilation,
+	FramePCST,
+	FramePic,
+	FramePlayCounter,
+	FramePopularimeter,
+	FrameRelativeVolumeAdjustment,
+	FrameRelativeVolumeAdjustment2,
+	FrameRGAD,
+	FrameSYLT,
+	FrameText,
+	FrameTextConcatList,
+	FrameTextList,
+	FrameUnknown,
+	IFrameImpl
 } from './id3v2_frame';
 import {IID3V2} from './id3v2__types';
 import {IEncoding} from '../common/encodings';
 import {ITagID} from '../..';
+import {buildID3v2} from './id3v2_raw';
 
 interface IFrameDef {
 	title: string;
@@ -1226,7 +1250,7 @@ export const FrameDefs: { [id: string]: IFrameDef } = {
 		/*
 		 The 'Payment' frame is a URL pointing at a webpage that will handle the process of paying for this file.
 		 */
-		title: 'Payment',
+		title: 'Payment URL',
 		versions: [3, 4],
 		impl: FrameAsciiValue
 	},
@@ -1560,7 +1584,7 @@ export const FrameDefs: { [id: string]: IFrameDef } = {
 		 */
 		title: 'Terms of use',
 		versions: [3, 4],
-		impl: FrameUnknown
+		impl: FrameLangText
 	},
 	'OWNE': {
 		/*
@@ -1817,19 +1841,19 @@ export const FrameDefs: { [id: string]: IFrameDef } = {
 		/*
 		 Itunes - Indicates a podcast.
 		 */
-		title: 'iTunes podcast marker',
+		title: 'Podcast Marker',
 		versions: [3, 4],
 		impl: FramePCST
 	},
 	'TDES': {
-		title: 'iTunes podcast description',
+		title: 'Podcast Description',
 		versions: [3, 4],
 		impl: FrameText
 	},
 	'TKWD': {
-		title: 'iTunes podcast keywords',
+		title: 'Podcast Keywords',
 		versions: [3, 4],
-		impl: FrameUnknown
+		impl: FrameText
 	},
 	'TGID': {
 		title: 'Podcast URL',
@@ -1838,6 +1862,11 @@ export const FrameDefs: { [id: string]: IFrameDef } = {
 	},
 	'WFED': {
 		title: 'Podcast feed URL',
+		versions: [3, 4],
+		impl: FrameText
+	},
+	'GRP1': {
+		title: 'Work',
 		versions: [3, 4],
 		impl: FrameText
 	},
@@ -1989,7 +2018,7 @@ async function processRawFrame(frame: IID3V2.RawFrame, head: IID3V2.TagHeader): 
 				});
 			});
 		});
-	} else if ((frame.formatFlags) && (frame.formatFlags.data_length_indicator)) {
+	} else if ((frame.formatFlags) && (frame.formatFlags.dataLengthIndicator)) {
 		/*
 		 p - Data length indicator
 			 The data length indicator is the value one would write
@@ -2000,7 +2029,7 @@ async function processRawFrame(frame: IID3V2.RawFrame, head: IID3V2.TagHeader): 
 	}
 }
 
-async function writeToRawFrame(frame: IID3V2.Frame, head: IID3V2.TagHeader): Promise<IID3V2.RawFrame> {
+async function writeToRawFrame(frame: IID3V2.Frame, head: IID3V2.TagHeader, defaultEncoding?: string): Promise<IID3V2.RawFrame> {
 	const frameHead: IID3V2.FrameHeader = frame.head || {
 		size: 0,
 		statusFlags: {},
@@ -2020,14 +2049,14 @@ async function writeToRawFrame(frame: IID3V2.Frame, head: IID3V2.TagHeader): Pro
 		if (orgDef.versions.indexOf(head.ver) < 0) {
 			const toWriteFrameID = ensureID3v2FrameVersionDef(frame.id, head.ver);
 			if (!toWriteFrameID) {
-				await orgDef.impl.write(frame, stream, head);
+				await orgDef.impl.write(frame, stream, head, defaultEncoding);
 			} else {
 				id = toWriteFrameID;
 				const toWriteFrameDef = matchFrame(toWriteFrameID);
-				await toWriteFrameDef.impl.write(frame, stream, head);
+				await toWriteFrameDef.impl.write(frame, stream, head, defaultEncoding);
 			}
 		} else {
-			await orgDef.impl.write(frame, stream, head);
+			await orgDef.impl.write(frame, stream, head, defaultEncoding);
 		}
 		data = stream.toBuffer();
 		if ((frameHead.formatFlags) && (frameHead.formatFlags.compressed)) {
@@ -2039,14 +2068,14 @@ async function writeToRawFrame(frame: IID3V2.Frame, head: IID3V2.TagHeader): Pro
 				uncompressedStream.writeUInt3Byte(data.length);
 			}
 			data = BufferUtils.concatBuffer(uncompressedStream.toBuffer(), zlib.deflateSync(data));
-		} else if ((frameHead.formatFlags) && (frameHead.formatFlags.data_length_indicator)) {
+		} else if ((frameHead.formatFlags) && (frameHead.formatFlags.dataLengthIndicator)) {
 			const dataLengthStream = new MemoryWriterStream();
 			dataLengthStream.writeSyncSafeInt(data.length);
 			data = BufferUtils.concatBuffer(dataLengthStream.toBuffer(), data);
 		}
 	}
 
-	if (frameHead.formatFlags.grouping) {
+	if (frameHead.formatFlags && frameHead.formatFlags.grouping) {
 		if (frame.groupId === undefined) {
 			return Promise.reject(Error('Missing frame groupId but flag is set'));
 		}
@@ -2055,7 +2084,7 @@ async function writeToRawFrame(frame: IID3V2.Frame, head: IID3V2.TagHeader): Pro
 		data = BufferUtils.concatBuffer(buf, data);
 	}
 
-	return {id: id, start: 0, end: 0, size: data.length, data: data, statusFlags: frameHead.statusFlags, formatFlags: frameHead.formatFlags};
+	return {id: id, start: 0, end: 0, size: data.length, data: data, statusFlags: frameHead.statusFlags || {}, formatFlags: frameHead.formatFlags || {}};
 }
 
 export function isKnownFrameId(id: string): boolean {
@@ -2078,9 +2107,9 @@ export function isValidFrameId(id: string): boolean {
 	return id.length > 0;
 }
 
-export async function writeSubFrames(frames: Array<IID3V2.Frame>, stream: WriterStream, head: IID3V2.TagHeader): Promise<void> {
-	const writer = new Id3v2RawWriter(stream, head);
-	const rawframes = await writeToRawFrames(frames, head);
+export async function writeSubFrames(frames: Array<IID3V2.Frame>, stream: WriterStream, head: IID3V2.TagHeader, defaultEncoding?: string): Promise<void> {
+	const writer = new Id3v2RawWriter(stream, head, {paddingSize: 0});
+	const rawframes = await writeToRawFrames(frames, head, defaultEncoding);
 	for (const frame of rawframes) {
 		await writer.writeFrame(frame);
 	}
@@ -2094,10 +2123,10 @@ export async function readSubFrames(bin: Buffer, head: IID3V2.TagHeader): Promis
 	return t.frames;
 }
 
-export async function writeToRawFrames(frames: Array<IID3V2.Frame>, head: IID3V2.TagHeader): Promise<Array<IID3V2.RawFrame>> {
+export async function writeToRawFrames(frames: Array<IID3V2.Frame>, head: IID3V2.TagHeader, defaultEncoding?: string): Promise<Array<IID3V2.RawFrame>> {
 	const result: Array<IID3V2.RawFrame> = [];
 	for (const frame of frames) {
-		const raw = await writeToRawFrame(frame, head);
+		const raw = await writeToRawFrame(frame, head, defaultEncoding);
 		result.push(raw);
 	}
 	return result;
@@ -2120,12 +2149,11 @@ export function upgrade23DateFramesTov24Date(dateFrames: Array<IID3V2.Frame>): I
 	if (time && time.value && time.value.hasOwnProperty('text')) {
 		result.push((<IID3V2.FrameValue.Text>time.value).text);
 	}
-	const frame: IID3V2.Frame = {
+	return {
 		id: 'TDRC',
 		title: 'Recording time',
 		value: {text: result.join('-')}
 	};
-	return frame;
 }
 
 export function ensureID3v2FrameVersionDef(id: string, dest: number): string | null {

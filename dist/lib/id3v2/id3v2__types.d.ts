@@ -13,6 +13,10 @@ export declare namespace IID3V2 {
             id: string;
             text: string;
         }
+        interface LangText extends Base {
+            language: string;
+            text: string;
+        }
         interface Pic extends Base {
             description: string;
             pictureType: number;
@@ -63,7 +67,7 @@ export declare namespace IID3V2 {
             previewLength: number;
             bin: Buffer;
         }
-        interface Link extends Base {
+        interface LinkedInfo extends Base {
             url: string;
             id: string;
             additional: Array<string>;
@@ -131,7 +135,7 @@ export declare namespace IID3V2 {
     }
     interface FormatFlags {
         [name: string]: boolean | undefined;
-        data_length_indicator?: boolean;
+        dataLengthIndicator?: boolean;
         unsynchronised?: boolean;
         compressed?: boolean;
         encrypted?: boolean;
@@ -149,9 +153,9 @@ export declare namespace IID3V2 {
     }
     interface FrameHeader {
         encoding?: string;
-        statusFlags: Flags;
-        formatFlags: FormatFlags;
-        size: number;
+        statusFlags?: Flags;
+        formatFlags?: FormatFlags;
+        size?: number;
     }
     interface Frame {
         id: string;
@@ -162,28 +166,125 @@ export declare namespace IID3V2 {
         invalid?: string;
         groupId?: number;
     }
+    namespace Frames {
+        interface Map {
+            [key: string]: Array<Frame>;
+        }
+        interface TextFrame extends Frame {
+            value: FrameValue.Text;
+        }
+        interface NumberFrame extends Frame {
+            value: FrameValue.Number;
+        }
+        interface IdTextFrame extends Frame {
+            value: FrameValue.IdText;
+        }
+        interface TextListFrame extends Frame {
+            value: FrameValue.TextList;
+        }
+        interface BoolFrame extends Frame {
+            value: FrameValue.Bool;
+        }
+        interface LangDescTextFrame extends Frame {
+            value: FrameValue.LangDescText;
+        }
+        interface PicFrame extends Frame {
+            value: FrameValue.Pic;
+        }
+        interface IdBinFrame extends Frame {
+            value: FrameValue.IdBin;
+        }
+        interface ChapterFrame extends Frame {
+            value: FrameValue.Chapter;
+        }
+        interface EventTimingCodesFrame extends Frame {
+            value: FrameValue.EventTimingCodes;
+        }
+        interface SynchronisedLyricsFrame extends Frame {
+            value: FrameValue.SynchronisedLyrics;
+        }
+        interface RelativeAudioAdjustmentsFrame extends Frame {
+            value: FrameValue.RVA;
+        }
+        interface RelativeAudioAdjustments2Frame extends Frame {
+            value: FrameValue.RVA2;
+        }
+        interface UnknownFrame extends Frame {
+            value: FrameValue.Bin;
+        }
+        interface GEOBFrame extends Frame {
+            value: FrameValue.GEOB;
+        }
+        interface PopularimeterFrame extends Frame {
+            value: FrameValue.Popularimeter;
+        }
+        interface AudioEncryptionFrame extends Frame {
+            value: FrameValue.AudioEncryption;
+        }
+        interface LinkedInfoFrame extends Frame {
+            value: FrameValue.LinkedInfo;
+        }
+        interface LangTextFrame extends Frame {
+            value: FrameValue.LangText;
+        }
+        interface ReplayGainAdjustmentFrame extends Frame {
+            value: FrameValue.ReplayGainAdjustment;
+        }
+        interface ChapterTOCFrame extends Frame {
+            value: FrameValue.ChapterToc;
+        }
+    }
+    interface Builder {
+        buildFrames(): Array<Frame>;
+        version(): number;
+        rev(): number;
+    }
+    interface TagHeaderFlagsV2 {
+        unsynchronisation?: boolean;
+        compression?: boolean;
+    }
+    interface TagHeaderV2 {
+        sizeAsSyncSafe?: number;
+        flags: TagHeaderFlagsV2;
+    }
+    interface TagHeaderFlagsV3 {
+        unsynchronisation?: boolean;
+        extendedheader?: boolean;
+        experimental?: boolean;
+    }
+    interface TagHeaderV3 {
+        flags: TagHeaderFlagsV3;
+        extended?: TagHeaderExtendedVer3;
+    }
+    interface TagHeaderFlagsV4 {
+        unsynchronisation?: boolean;
+        extendedheader?: boolean;
+        experimental?: boolean;
+        footer?: boolean;
+    }
+    interface TagHeaderV4 {
+        flags: TagHeaderFlagsV4;
+        extended?: TagHeaderExtendedVer4;
+    }
     interface TagHeader {
         ver: number;
         rev: number;
         size: number;
         valid: boolean;
-        syncSaveSize?: number;
-        flags?: Flags;
+        v2?: TagHeaderV2;
+        v3?: TagHeaderV3;
+        v4?: TagHeaderV4;
         flagBits?: Array<number>;
-        extended?: TagHeaderExtended;
-    }
-    interface TagHeaderExtended {
-        size: number;
-        ver3?: TagHeaderExtendedVer3;
-        ver4?: TagHeaderExtendedVer4;
     }
     interface TagHeaderExtendedVer3 {
+        size: number;
         flags1: Flags;
         flags2: Flags;
         crcData?: number;
         sizeOfPadding: number;
     }
     interface TagHeaderExtendedVer4 {
+        size: number;
         flags: Flags;
         restrictions?: {
             tagSize: string;
@@ -195,6 +296,10 @@ export declare namespace IID3V2 {
         crc32?: number;
     }
     interface Tag extends ITag {
+        head?: TagHeader;
+        frames: Array<Frame>;
+    }
+    interface ID3v2Tag {
         head?: TagHeader;
         frames: Array<Frame>;
     }
@@ -212,6 +317,7 @@ export declare namespace IID3V2 {
         formatFlags: FormatFlags;
     }
     interface TagSimplified {
+        [name: string]: string | undefined;
         ACOUSTID_FINGERPRINT?: string;
         ACOUSTID_ID?: string;
         ALBUM?: string;
@@ -349,10 +455,17 @@ export declare namespace IID3V2 {
         WORK?: string;
         WRITER?: string;
     }
+    interface Warning {
+        msg: string;
+        expected: number | string | boolean;
+        actual: number | string | boolean;
+    }
+    interface RemoveOptions {
+        keepBackup?: boolean;
+    }
+    interface WriteOptions {
+        defaultEncoding?: string;
+        paddingSize?: number;
+        keepBackup?: boolean;
+    }
 }
-export declare const ID3v2_ValuePicTypes: {
-    [name: string]: string;
-};
-export declare const ID3v2_ValueRelativeVolumeAdjustment2ChannelTypes: {
-    [name: string]: string;
-};

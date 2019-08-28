@@ -36,7 +36,7 @@ export class ID3v1Reader {
 		const tag: IID3V1.Tag = {id: ITagID.ID3v1, start: 0, end: 0, version: 0, value: {}};
 		const reader = new DataReader(data);
 		reader.position = 3;
-		const value: IID3V1.Value = {};
+		const value: IID3V1.ID3v1Tag = {};
 		value.title = reader.readFixedAutodectectString(30);
 		value.artist = reader.readFixedAutodectectString(30);
 		value.album = reader.readFixedAutodectectString(30);
@@ -86,8 +86,7 @@ export class ID3v1Reader {
 		const reader = new ReaderStream();
 		try {
 			await reader.openStream(stream);
-			const tag = await this.readReaderStream(reader);
-			return tag;
+			return await this.readReaderStream(reader);
 		} catch (e) {
 			return Promise.reject(e);
 		}

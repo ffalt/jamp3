@@ -1,13 +1,21 @@
 import {
 	mpeg_bitrates,
-	mpeg_channel_count, mpeg_channel_mode_jointstereoIdx, mpeg_channel_mode_types, mpeg_channel_modes,
-	mpeg_emphasis, mpeg_frame_samples, mpeg_layer_joint_extension, mpeg_layer_names_long,
-	mpeg_slot_size, mpeg_srates, mpeg_version_names_long
+	mpeg_channel_count,
+	mpeg_channel_mode_jointstereoIdx,
+	mpeg_channel_mode_types,
+	mpeg_channel_modes,
+	mpeg_emphasis,
+	mpeg_frame_samples,
+	mpeg_layer_joint_extension,
+	mpeg_layer_names_long,
+	mpeg_slot_size,
+	mpeg_srates,
+	mpeg_version_names_long
 } from './mp3_consts';
 import {IMP3} from './mp3__types';
 import {isBit} from '../common/utils';
 
-export function colapseRawHeader(header: IMP3.FrameRawHeader): IMP3.FrameRawHeaderArray {
+export function collapseRawHeader(header: IMP3.FrameRawHeader): IMP3.FrameRawHeaderArray {
 	return [
 		header.offset,
 		header.size,
@@ -84,7 +92,7 @@ export function expandMPEGFrameFlags(front: number, back: number, offset: number
 		 then truncate this number to an integer, and after that multiply it with the slot size.
 		 */
 		const size = Math.floor(((bps * bitrate) / samprate)) + ((padded) ? slot_size : 0);
-		const result: IMP3.FrameRawHeader = {
+		return {
 			offset,
 			front,
 			back,
@@ -102,7 +110,6 @@ export function expandMPEGFrameFlags(front: number, back: number, offset: number
 			original,
 			privatebit
 		};
-		return result;
 	}
 	return null;
 }
@@ -397,7 +404,7 @@ export class MPEGFrameReader {
 	}
 
 	public readFrame(chunk: Buffer, offset: number, header: IMP3.FrameRawHeader): { offset: number, frame: IMP3.RawFrame } {
-		const frame: IMP3.RawFrame = {header: colapseRawHeader(header)};
+		const frame: IMP3.RawFrame = {header: collapseRawHeader(header)};
 		let off = 0;
 		const length = offset + Math.min(40, chunk.length - 4 - offset);
 		for (let i = offset; i < length; i++) {

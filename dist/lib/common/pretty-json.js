@@ -4,7 +4,7 @@ function quoteJSONProperty(str) {
     if (typeof str !== 'string') {
         str = str.toString();
     }
-    return str.match(/^\".*\"$/) ? str : '"' + str.replace(/"/g, '\\"') + '"';
+    return str.match(/^".*"$/) ? str : '"' + str.replace(/"/g, '\\"') + '"';
 }
 function prettyJSONify(obj, level, flat, flatNodes, space) {
     if (flat) {

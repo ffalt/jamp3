@@ -32,7 +32,7 @@ function onFile(filename) {
         const tag = yield id3v2.read(filename);
         let dump;
         if (tag) {
-            dump = { filename, tag: commander_1.default.full ? tag : __1.simplifyTag(tag) };
+            dump = { filename, tag: commander_1.default.full ? tag : __1.ID3v2.simplify(tag) };
         }
         else {
             dump = { error: 'No tag found', filename };

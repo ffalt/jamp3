@@ -1,7 +1,4 @@
 "use strict";
-function __export(m) {
-    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-}
 Object.defineProperty(exports, "__esModule", { value: true });
 var id3v1_1 = require("./lib/id3v1/id3v1");
 exports.ID3v1 = id3v1_1.ID3v1;
@@ -11,10 +8,12 @@ var mp3_1 = require("./lib/mp3/mp3");
 exports.MP3 = mp3_1.MP3;
 var mp3_analyzer_1 = require("./lib/mp3/mp3_analyzer");
 exports.MP3Analyzer = mp3_analyzer_1.MP3Analyzer;
-var id3v2_simplify_1 = require("./lib/id3v2/id3v2_simplify");
-exports.simplifyTag = id3v2_simplify_1.simplifyTag;
-__export(require("./lib/common/types"));
-__export(require("./lib/id3v2/id3v2_builder"));
-__export(require("./lib/id3v2/id3v2__types"));
-__export(require("./lib/id3v1/id3v1_consts"));
+var types_1 = require("./lib/common/types");
+exports.ITagID = types_1.ITagID;
+var id3v2_builder24_1 = require("./lib/id3v2/id3v2_builder24");
+exports.ID3V24TagBuilder = id3v2_builder24_1.ID3V24TagBuilder;
+var id3v1_consts_1 = require("./lib/id3v1/id3v1_consts");
+exports.ID3v1_GENRES = id3v1_consts_1.ID3v1_GENRES;
+var id3v2__consts_1 = require("./lib/id3v2/id3v2__consts");
+exports.ID3V2ValueTypes = id3v2__consts_1.ID3V2ValueTypes;
 //# sourceMappingURL=index.js.map

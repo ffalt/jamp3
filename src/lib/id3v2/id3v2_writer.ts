@@ -1,20 +1,24 @@
-import {WriterStream} from '../common/streams';
+import {MemoryWriterStream, WriterStream} from '../common/streams';
 import {unflags} from '../common/utils';
 import {ID3v2_FRAME_FLAGS1, ID3v2_FRAME_FLAGS2, ID3v2_FRAME_HEADER_LENGTHS, ID3v2_EXTHEADER, ID3v2_HEADER_FLAGS, ID3v2_FRAME_HEADER} from './id3v2_consts';
 import {IID3V2} from './id3v2__types';
 import {BufferUtils} from '../common/buffer';
 
+export interface Id3v2RawWriterOptions {
+	paddingSize?: number;
+}
+
 export class Id3v2RawWriter {
-	paddingSize: number;
 	stream: WriterStream;
 	frames: Array<IID3V2.RawFrame>;
 	head: IID3V2.TagHeader;
+	paddingSize: number;
 
-	constructor(stream: WriterStream, head: IID3V2.TagHeader, frames?: Array<IID3V2.RawFrame>, paddingSize?: number) {
+	constructor(stream: WriterStream, head: IID3V2.TagHeader, options: Id3v2RawWriterOptions, frames?: Array<IID3V2.RawFrame>) {
 		this.stream = stream;
 		this.head = head;
 		this.frames = frames || [];
-		this.paddingSize = paddingSize === undefined ? 0 : paddingSize;
+		this.paddingSize = options.paddingSize === undefined ? 0 : options.paddingSize;
 	}
 
 	private async writeHeader(frames: Array<IID3V2.RawFrame>): Promise<void> {
@@ -61,7 +65,9 @@ export class Id3v2RawWriter {
 
 		let framesSize = 0;
 		const frameHeadSize =
-			ID3v2_FRAME_HEADER_LENGTHS.MARKER[this.head.ver] + ID3v2_FRAME_HEADER_LENGTHS.SIZE[this.head.ver] + ID3v2_FRAME_HEADER_LENGTHS.FLAGS[this.head.ver];
+			ID3v2_FRAME_HEADER_LENGTHS.MARKER[this.head.ver] +
+			ID3v2_FRAME_HEADER_LENGTHS.SIZE[this.head.ver] +
+			ID3v2_FRAME_HEADER_LENGTHS.FLAGS[this.head.ver];
 		for (const frame of frames) {
 			framesSize = framesSize + frame.size + frameHeadSize;
 		}
@@ -70,179 +76,245 @@ export class Id3v2RawWriter {
 		// ID3V2HEADER_FLAGS
 		this.stream.writeByte(this.head.ver);  // ID3v2 version
 		this.stream.writeByte(this.head.rev); // ID3v2 rev version
-		// TODO: currently no support for unsynchronised writing
-		if (this.head.flags && this.head.flags.unsynchronisation) {
-			this.head.flags.unsynchronisation = false;
-		}
-		// TODO: currently no support for extended header writing
-		if (this.head.flags && this.head.flags.extended) {
-			this.head.flags.extended = false;
-		}
 
-		const flagarray = unflags(ID3v2_HEADER_FLAGS[this.head.ver], this.head.flags);
-		this.stream.writeBitsByte(flagarray); // ID3v2 flags
-
-		const extendedHeaderSize = 0;
 		const footerSize = 0;
-		const tagSize = extendedHeaderSize + framesSize + (footerSize || this.paddingSize);
-		this.stream.writeSyncSafeInt(tagSize);
+		let extendedHeaderBuffer: Buffer | undefined;
+		let flagBits: Array<number>;
+
+		// TODO: currently no support for writing footer
+		// TODO: currently no support for unsynchronised writing
+		if (this.head.ver <= 2) {
+			this.head.v2 = this.head.v2 || {flags: {}};
+			this.head.v2.flags.unsynchronisation = false;
+			flagBits = unflags(ID3v2_HEADER_FLAGS[2], this.head.v2.flags as any);
+		} else if (this.head.ver === 3) {
+			this.head.v3 = this.head.v3 || {flags: {}};
+			this.head.v3.flags.unsynchronisation = false;
+			if (this.head.v3.extended) {
+				extendedHeaderBuffer = await this.writeExtHeaderV3(this.head.v3.extended);
+				this.head.v3.flags.extendedheader = true;
+			} else {
+				this.head.v3.flags.extendedheader = false;
+			}
+			flagBits = unflags(ID3v2_HEADER_FLAGS[this.head.ver], this.head.v3.flags as any);
+		} else if (this.head.ver === 4) {
+			this.head.v4 = this.head.v4 || {flags: {}};
+			this.head.v4.flags.unsynchronisation = false;
+			if (this.head.v4.extended) {
+				extendedHeaderBuffer = await this.writeExtHeaderV4(this.head.v4.extended);
+				this.head.v4.flags.extendedheader = true;
+			} else {
+				this.head.v4.flags.extendedheader = false;
+			}
+			flagBits = unflags(ID3v2_HEADER_FLAGS[this.head.ver], this.head.v4.flags as any);
+		} else {
+			flagBits = unflags(ID3v2_HEADER_FLAGS[this.head.ver], {});
+		}
+		this.head.flagBits = flagBits;
+		this.stream.writeBitsByte(flagBits); // ID3v2 flags
+
+		const tagSize = (extendedHeaderBuffer ? extendedHeaderBuffer.length : 0) + framesSize + footerSize + this.paddingSize;
+		if (this.head.ver > 2) {
+			this.stream.writeSyncSafeInt(tagSize);
+		} else {
+			this.stream.writeUInt4Byte(tagSize);
+		}
+		if (extendedHeaderBuffer) {
+			this.stream.writeBuffer(extendedHeaderBuffer);
+		}
 	}
 
-	private async writeExtHeader(): Promise<void> {
-		if (!this.head.extended) {
-			return;
+	private async writeExtHeaderV3(extended: IID3V2.TagHeaderExtendedVer3): Promise<Buffer> {
+		/** ID3v2.3
+		 3.2.   ID3v2 extended header
+
+		 The extended header contains information that is not vital to the
+		 correct parsing of the tag information, hence the extended header is
+		 optional.
+
+		 Extended header size   $xx xx xx xx
+		 Extended Flags         $xx xx
+		 Size of padding        $xx xx xx xx
+
+		 Where the 'Extended header size', currently 6 or 10 bytes, excludes
+		 itself. The 'Size of padding' is simply the total tag size excluding
+		 the frames and the headers, in other words the padding. The extended
+		 header is considered separate from the header proper, and as such is
+		 subject to unsynchronisation.
+
+		 The extended flags are a secondary flag set which describes further
+		 attributes of the tag. These attributes are currently defined as
+		 follows
+
+		 %x0000000 00000000
+		 x - CRC data present
+
+		 If this flag is set four bytes of CRC-32 data is appended to the
+		 extended header. The CRC should be calculated before
+		 unsynchronisation on the data between the extended header and the
+		 padding, i.e. the frames and only the frames.
+
+		 Total frame CRC        $xx xx xx xx
+
+		 */
+		const result = new MemoryWriterStream();
+		result.writeUInt4Byte(extended.size);
+		result.writeBitsByte(unflags(ID3v2_EXTHEADER[3].FLAGS1, extended.flags1));
+		result.writeBitsByte(unflags(ID3v2_EXTHEADER[3].FLAGS2, extended.flags2));
+		result.writeUInt4Byte(this.paddingSize || 0);
+		if (extended.flags1.crc) {
+			result.writeUInt4Byte(extended.crcData || 0);
 		}
-		if (this.head.ver === 3) {
-			/** ID3v2.3
-			 3.2.   ID3v2 extended header
+		return result.toBuffer();
+	}
 
-			 The extended header contains information that is not vital to the
-			 correct parsing of the tag information, hence the extended header is
-			 optional.
+	private async writeExtHeaderV4(extended: IID3V2.TagHeaderExtendedVer4): Promise<Buffer> {
+		console.log('WARNING: extended header 2.4 not implemented');
+		/**
+		 ID3v2.4
+		 3.2. Extended header
 
-			 Extended header size   $xx xx xx xx
-			 Extended Flags         $xx xx
-			 Size of padding        $xx xx xx xx
+		 The extended header contains information that can provide further
+		 insight in the structure of the tag, but is not vital to the correct
+		 parsing of the tag information; hence the extended header is
+		 optional.
 
-			 Where the 'Extended header size', currently 6 or 10 bytes, excludes
-			 itself. The 'Size of padding' is simply the total tag size excluding
-			 the frames and the headers, in other words the padding. The extended
-			 header is considered separate from the header proper, and as such is
-			 subject to unsynchronisation.
+		 Extended header size   4 * %0xxxxxxx
+		 Number of flag bytes       $01
+		 Extended Flags             $xx
 
-			 The extended flags are a secondary flag set which describes further
-			 attributes of the tag. These attributes are currently defined as
-			 follows
+		 Where the 'Extended header size' is the size of the whole extended
+		 header, stored as a 32 bit synchsafe integer. An extended header can
+		 thus never have a size of fewer than six bytes.
 
-			 %x0000000 00000000
-			 x - CRC data present
+		 The extended flags field, with its size described by 'number of flag
+		 bytes', is defined as:
 
-			 If this flag is set four bytes of CRC-32 data is appended to the
-			 extended header. The CRC should be calculated before
-			 unsynchronisation on the data between the extended header and the
-			 padding, i.e. the frames and only the frames.
+		 %0bcd0000
 
-			 Total frame CRC        $xx xx xx xx
+		 Each flag that is set in the extended header has data attached, which
+		 comes in the order in which the flags are encountered (i.e. the data
+		 for flag 'b' comes before the data for flag 'c'). Unset flags cannot
+		 have any attached data. All unknown flags MUST be unset and their
+		 corresponding data removed when a tag is modified.
 
-			 */
-			if (!this.head.extended.ver3) {
-				return;
-			}
-			this.stream.writeUInt4Byte(this.head.extended.size);
-			this.stream.writeBitsByte(unflags(ID3v2_EXTHEADER[3].FLAGS1, this.head.extended.ver3.flags1));
-			this.stream.writeBitsByte(unflags(ID3v2_EXTHEADER[3].FLAGS2, this.head.extended.ver3.flags2));
-			this.stream.writeUInt4Byte(this.head.extended.ver3.sizeOfPadding || 0);
-			if (this.head.extended.ver3.flags1.crc) {
-				this.stream.writeUInt4Byte(this.head.extended.ver3.crcData || 0);
-			}
-		} else if (this.head.ver === 4) {
-			/**
-			 ID3v2.4
-			 3.2. Extended header
-
-			 The extended header contains information that can provide further
-			 insight in the structure of the tag, but is not vital to the correct
-			 parsing of the tag information; hence the extended header is
-			 optional.
-
-			 Extended header size   4 * %0xxxxxxx
-			 Number of flag bytes       $01
-			 Extended Flags             $xx
-
-			 Where the 'Extended header size' is the size of the whole extended
-			 header, stored as a 32 bit synchsafe integer. An extended header can
-			 thus never have a size of fewer than six bytes.
-
-			 The extended flags field, with its size described by 'number of flag
-			 bytes', is defined as:
-
-			 %0bcd0000
-
-			 Each flag that is set in the extended header has data attached, which
-			 comes in the order in which the flags are encountered (i.e. the data
-			 for flag 'b' comes before the data for flag 'c'). Unset flags cannot
-			 have any attached data. All unknown flags MUST be unset and their
-			 corresponding data removed when a tag is modified.
-
-			 Every set flag's data starts with a length byte, which contains a
-			 value between 0 and 128 ($00 - $7f), followed by data that has the
-			 field length indicated by the length byte. If a flag has no attached
-			 data, the value $00 is used as length byte.
+		 Every set flag's data starts with a length byte, which contains a
+		 value between 0 and 128 ($00 - $7f), followed by data that has the
+		 field length indicated by the length byte. If a flag has no attached
+		 data, the value $00 is used as length byte.
 
 
-			 b - Tag is an update
+		 b - Tag is an update
 
-			 If this flag is set, the present tag is an update of a tag found
-			 earlier in the present file or stream. If frames defined as unique
-			 are found in the present tag, they are to override any
-			 corresponding ones found in the earlier tag. This flag has no
-			 corresponding data.
+		 If this flag is set, the present tag is an update of a tag found
+		 earlier in the present file or stream. If frames defined as unique
+		 are found in the present tag, they are to override any
+		 corresponding ones found in the earlier tag. This flag has no
+		 corresponding data.
 
-			 Flag data length      $00
+		 Flag data length      $00
 
-			 c - CRC data present
+		 c - CRC data present
 
-			 If this flag is set, a CRC-32 [ISO-3309] data is included in the
-			 extended header. The CRC is calculated on all the data between the
-			 header and footer as indicated by the header's tag length field,
-			 minus the extended header. Note that this includes the padding (if
-			 there is any), but excludes the footer. The CRC-32 is stored as an
-			 35 bit synchsafe integer, leaving the upper four bits always
-			 zeroed.
+		 If this flag is set, a CRC-32 [ISO-3309] data is included in the
+		 extended header. The CRC is calculated on all the data between the
+		 header and footer as indicated by the header's tag length field,
+		 minus the extended header. Note that this includes the padding (if
+		 there is any), but excludes the footer. The CRC-32 is stored as an
+		 35 bit synchsafe integer, leaving the upper four bits always
+		 zeroed.
 
-			 Flag data length       $05
-			 Total frame CRC    5 * %0xxxxxxx
+		 Flag data length       $05
+		 Total frame CRC    5 * %0xxxxxxx
 
-			 d - Tag restrictions
+		 d - Tag restrictions
 
-			 For some applications it might be desired to restrict a tag in more
-			 ways than imposed by the ID3v2 specification. Note that the
-			 presence of these restrictions does not affect how the tag is
-			 decoded, merely how it was restricted before encoding. If this flag
-			 is set the tag is restricted as follows:
+		 For some applications it might be desired to restrict a tag in more
+		 ways than imposed by the ID3v2 specification. Note that the
+		 presence of these restrictions does not affect how the tag is
+		 decoded, merely how it was restricted before encoding. If this flag
+		 is set the tag is restricted as follows:
 
-			 Flag data length       $01
-			 Restrictions           %ppqrrstt
+		 Flag data length       $01
+		 Restrictions           %ppqrrstt
 
-			 p - Tag size restrictions
+		 p - Tag size restrictions
 
-			 00   No more than 128 frames and 1 MB total tag size.
-			 01   No more than 64 frames and 128 KB total tag size.
-			 10   No more than 32 frames and 40 KB total tag size.
-			 11   No more than 32 frames and 4 KB total tag size.
+		 00   No more than 128 frames and 1 MB total tag size.
+		 01   No more than 64 frames and 128 KB total tag size.
+		 10   No more than 32 frames and 40 KB total tag size.
+		 11   No more than 32 frames and 4 KB total tag size.
 
-			 q - Text encoding restrictions
+		 q - Text encoding restrictions
 
-			 0    No restrictions
-			 1    Strings are only encoded with ISO-8859-1 [ISO-8859-1] or
-			 UTF-8 [UTF-8].
+		 0    No restrictions
+		 1    Strings are only encoded with ISO-8859-1 [ISO-8859-1] or
+		 UTF-8 [UTF-8].
 
-			 r - Text fields size restrictions
+		 r - Text fields size restrictions
 
-			 00   No restrictions
-			 01   No string is longer than 1024 characters.
-			 10   No string is longer than 128 characters.
-			 11   No string is longer than 30 characters.
+		 00   No restrictions
+		 01   No string is longer than 1024 characters.
+		 10   No string is longer than 128 characters.
+		 11   No string is longer than 30 characters.
 
-			 Note that nothing is said about how many bytes is used to
-			 represent those characters, since it is encoding dependent. If a
-			 text frame consists of more than one string, the sum of the
-			 strungs is restricted as stated.
+		 Note that nothing is said about how many bytes is used to
+		 represent those characters, since it is encoding dependent. If a
+		 text frame consists of more than one string, the sum of the
+		 strungs is restricted as stated.
 
-			 s - Image encoding restrictions
+		 s - Image encoding restrictions
 
-			 0   No restrictions
-			 1   Images are encoded only with PNG [PNG] or JPEG [JFIF].
+		 0   No restrictions
+		 1   Images are encoded only with PNG [PNG] or JPEG [JFIF].
 
-			 t - Image size restrictions
+		 t - Image size restrictions
 
-			 00  No restrictions
-			 01  All images are 256x256 pixels or smaller.
-			 10  All images are 64x64 pixels or smaller.
-			 11  All images are exactly 64x64 pixels, unless required
-			 otherwise.
-			 */
-			return Promise.reject(Error('TODO extended header v2.4'));
+		 00  No restrictions
+		 01  All images are 256x256 pixels or smaller.
+		 10  All images are 64x64 pixels or smaller.
+		 11  All images are exactly 64x64 pixels, unless required
+		 otherwise.
+		 */
+		return Promise.reject(Error('TODO extended header v2.4'));
+	}
+
+	private async writeFrames(frames: Array<IID3V2.RawFrame>): Promise<void> {
+		for (const frame of frames) {
+			await this.writeFrame(frame);
+		}
+	}
+
+	private async writeEnd(): Promise<void> {
+		/**
+		 3.3.   Padding
+
+		 It is OPTIONAL to include padding after the final frame (at the end
+		 of the ID3 tag), making the size of all the frames together smaller
+		 than the size given in the tag header. A possible purpose of this
+		 padding is to allow for adding a few additional frames or enlarge
+		 existing frames within the tag without having to rewrite the entire
+		 file. The value of the padding bytes must be $00. A tag MUST NOT have
+		 any padding between the frames or between the tag header and the
+		 frames. Furthermore it MUST NOT have any padding when a tag footer is
+		 added to the tag.
+
+
+		 3.4.   ID3v2 footer
+
+		 To speed up the process of locating an ID3v2 tag when searching from
+		 the end of a file, a footer can be added to the tag. It is REQUIRED
+		 to add a footer to an appended tag, i.e. a tag located after all
+		 audio data. The footer is a copy of the header, but with a different
+		 identifier.
+
+		 ID3v2 identifier           "3DI"
+		 ID3v2 version              $04 00
+		 ID3v2 flags                %abcd0000
+		 ID3v2 size             4 * %0xxxxxxx
+		 */
+		if (this.paddingSize > 0) {
+			this.stream.writeBuffer(BufferUtils.zeroBuffer(this.paddingSize));
 		}
 	}
 
@@ -468,45 +540,6 @@ export class Id3v2RawWriter {
 		this.stream.writeBuffer(frame.data);
 	}
 
-	private async writeFrames(frames: Array<IID3V2.RawFrame>): Promise<void> {
-		for (const frame of frames) {
-			await this.writeFrame(frame);
-		}
-	}
-
-	private async writeEnd(): Promise<void> {
-		/**
-		 3.3.   Padding
-
-		 It is OPTIONAL to include padding after the final frame (at the end
-		 of the ID3 tag), making the size of all the frames together smaller
-		 than the size given in the tag header. A possible purpose of this
-		 padding is to allow for adding a few additional frames or enlarge
-		 existing frames within the tag without having to rewrite the entire
-		 file. The value of the padding bytes must be $00. A tag MUST NOT have
-		 any padding between the frames or between the tag header and the
-		 frames. Furthermore it MUST NOT have any padding when a tag footer is
-		 added to the tag.
-
-
-		 3.4.   ID3v2 footer
-
-		 To speed up the process of locating an ID3v2 tag when searching from
-		 the end of a file, a footer can be added to the tag. It is REQUIRED
-		 to add a footer to an appended tag, i.e. a tag located after all
-		 audio data. The footer is a copy of the header, but with a different
-		 identifier.
-
-		 ID3v2 identifier           "3DI"
-		 ID3v2 version              $04 00
-		 ID3v2 flags                %abcd0000
-		 ID3v2 size             4 * %0xxxxxxx
-		 */
-		if (this.paddingSize > 0) {
-			this.stream.writeBuffer(BufferUtils.zeroBuffer(this.paddingSize));
-		}
-	}
-
 	async write(): Promise<void> {
 		/**
 		 Overall tag structure:
@@ -528,19 +561,23 @@ export class Id3v2RawWriter {
 		 In general, padding and footer are mutually exclusive.
 		 */
 		await this.writeHeader(this.frames);
-		await this.writeExtHeader();
 		await this.writeFrames(this.frames);
 		await this.writeEnd();
 	}
 }
 
+
+export interface Id3v2WriterOptions extends Id3v2RawWriterOptions {
+	paddingSize?: number;
+}
+
 export class ID3v2Writer {
 
-	async write(stream: WriterStream, frames: Array<IID3V2.RawFrame>, head: IID3V2.TagHeader, paddingSize: number): Promise<void> {
+	async write(stream: WriterStream, frames: Array<IID3V2.RawFrame>, head: IID3V2.TagHeader, options: Id3v2WriterOptions): Promise<void> {
 		if (head.ver === 0 || head.ver > 4) {
 			return Promise.reject(Error('Unsupported Version'));
 		}
-		const writer = new Id3v2RawWriter(stream, head, frames, paddingSize);
+		const writer = new Id3v2RawWriter(stream, head, options, frames);
 		await writer.write();
 	}
 }

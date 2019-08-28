@@ -13,7 +13,8 @@ export declare class ID3v2Reader {
         rest?: Buffer;
         tag?: IID3V2.RawTag;
     }>;
-    private readID3ExtendedHeader;
+    private readID3ExtendedHeaderV3;
+    private readID3ExtendedHeaderV4;
     readID3v2Header(buffer: Buffer, offset: number): IID3V2.TagHeader | null;
     readReaderStream(reader: ReaderStream): Promise<IID3V2.RawTag | undefined>;
     readStream(stream: Readable): Promise<IID3V2.RawTag | undefined>;

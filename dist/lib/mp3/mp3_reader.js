@@ -7,6 +7,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const streams_1 = require("../common/streams");
 const id3v1_reader_1 = require("../id3v1/id3v1_reader");
@@ -14,9 +17,10 @@ const id3v2_reader_1 = require("../id3v2/id3v2_reader");
 const mp3_frame_1 = require("./mp3_frame");
 const buffer_1 = require("../common/buffer");
 const mp3_frames_1 = require("./mp3_frames");
+const fs_extra_1 = __importDefault(require("fs-extra"));
 class MP3Reader {
     constructor() {
-        this.opts = {};
+        this.options = {};
         this.layout = {
             frameheaders: [],
             headframes: [],
@@ -56,7 +60,6 @@ class MP3Reader {
             const id3Header = this.id3v2reader.readID3v2Header(chunk, i);
             if (id3Header && id3Header.valid) {
                 const start = this.stream.pos - chunk.length + i;
-                const end = this.stream.pos;
                 this.stream.unshift(chunk.slice(i));
                 const result = yield this.id3v2reader.readTag(this.stream);
                 if (result) {
@@ -65,10 +68,10 @@ class MP3Reader {
                         this.layout.tags.push(result.tag);
                         result.tag.start = start;
                         result.tag.end = this.stream.pos - rest.length;
-                        if (!this.opts.detectDuplicateID3v2) {
+                        if (!this.options.detectDuplicateID3v2) {
                             this.scanid3v2 = false;
                         }
-                        if (this.opts.id3v1IfNotid3v2) {
+                        if (this.options.id3v1IfNotID3v2) {
                             this.scanid3v1 = false;
                         }
                     }
@@ -90,7 +93,7 @@ class MP3Reader {
                 this.layout.headframes.push(a.frame);
             }
             this.layout.frameheaders.push(a.frame.header);
-            if (this.opts.mpegQuick) {
+            if (this.options.mpegQuick) {
                 this.hasMPEGHeadFrame = this.hasMPEGHeadFrame || !!a.frame.mode;
                 if (this.layout.frameheaders.length % 50 === 0) {
                     if (this.hasMPEGHeadFrame) {
@@ -120,7 +123,7 @@ class MP3Reader {
                 return true;
             }
             if (!this.scanMpeg && !this.scanid3v2 && !this.scanid3v1) {
-                if (this.opts.streamSize !== undefined) {
+                if (this.options.streamSize !== undefined) {
                     return false;
                 }
                 yield this.stream.consumeToEnd();
@@ -190,9 +193,10 @@ class MP3Reader {
                         }
                         const header = this.mpegFramereader.readMPEGFrameHeader(chunk, i);
                         if (header) {
+                            this.scanid3v2 = false;
                             if (!this.scanMPEGFrame) {
                                 header.offset = this.stream.pos - chunk.length + i;
-                                this.layout.frameheaders.push(mp3_frame_1.colapseRawHeader(header));
+                                this.layout.frameheaders.push(mp3_frame_1.collapseRawHeader(header));
                             }
                             else {
                                 if (demandData()) {
@@ -239,19 +243,19 @@ class MP3Reader {
                     return Promise.reject(e);
                 }
             }
-            if (this.opts.streamSize !== undefined) {
-                this.layout.size = this.opts.streamSize;
+            if (this.options.streamSize !== undefined) {
+                this.layout.size = this.options.streamSize;
             }
             else {
                 this.layout.size = this.stream.pos;
             }
         });
     }
-    setOptions(opts) {
-        this.opts = opts || {};
-        this.scanMpeg = opts.mpeg || opts.mpegQuick || false;
-        this.scanid3v1 = opts.id3v1 || opts.id3v1IfNotid3v2 || false;
-        this.scanid3v2 = opts.id3v2 || opts.id3v1IfNotid3v2 || false;
+    setOptions(options) {
+        this.options = options || {};
+        this.scanMpeg = options.mpeg || options.mpegQuick || false;
+        this.scanid3v1 = options.id3v1 || options.id3v1IfNotID3v2 || false;
+        this.scanid3v2 = options.id3v2 || options.id3v1IfNotID3v2 || false;
         this.layout = {
             headframes: [],
             frameheaders: [],
@@ -259,9 +263,12 @@ class MP3Reader {
             size: 0
         };
     }
-    read(filename, opts) {
+    read(filename, options) {
         return __awaiter(this, void 0, void 0, function* () {
-            this.setOptions(opts);
+            this.setOptions(options);
+            if (!options.streamSize) {
+                options.streamSize = (yield fs_extra_1.default.stat(filename)).size;
+            }
             yield this.stream.open(filename);
             try {
                 yield this.scan();
@@ -274,9 +281,9 @@ class MP3Reader {
             return this.layout;
         });
     }
-    readStream(stream, opts) {
+    readStream(stream, options) {
         return __awaiter(this, void 0, void 0, function* () {
-            this.setOptions(opts);
+            this.setOptions(options);
             yield this.stream.openStream(stream);
             yield this.scan();
             return this.layout;

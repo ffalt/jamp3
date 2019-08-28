@@ -56,9 +56,9 @@ function toPlain(report) {
         features.push('ID3v2');
     }
     sl.push(features.join(', '));
-    if (report.msgs.length > 0) {
+    if (report.warnings.length > 0) {
         sl.push('WARNINGS:');
-        report.msgs.forEach(msg => {
+        report.warnings.forEach(msg => {
             sl.push(msg.msg + ' (expected: ' + msg.expected + ', actual: ' + msg.actual + ')');
         });
     }
@@ -68,7 +68,7 @@ function onFile(filename) {
     return __awaiter(this, void 0, void 0, function* () {
         const probe = new mp3_analyzer_1.MP3Analyzer();
         const info = yield probe.read(filename, options);
-        if (!commander_1.default.warnings || info.msgs.length > 0) {
+        if (!commander_1.default.warnings || info.warnings.length > 0) {
             if (commander_1.default.dest) {
                 result.push(info);
             }

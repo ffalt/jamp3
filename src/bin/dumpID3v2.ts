@@ -1,4 +1,4 @@
-import {ID3v2, simplifyTag} from '..';
+import {ID3v2} from '..';
 import fse from 'fs-extra';
 import {collectFiles} from '../lib/common/utils';
 import {toPrettyJsonWithBin} from '../lib/common/pretty-json';
@@ -29,7 +29,7 @@ async function onFile(filename: string): Promise<void> {
 	const tag = await id3v2.read(filename);
 	let dump: IDumpResult;
 	if (tag) {
-		dump = {filename, tag: program.full ? tag : simplifyTag(tag)};
+		dump = {filename, tag: program.full ? tag : ID3v2.simplify(tag)};
 	} else {
 		dump = {error: 'No tag found', filename};
 	}

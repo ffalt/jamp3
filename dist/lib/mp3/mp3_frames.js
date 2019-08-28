@@ -47,13 +47,10 @@ function getNextMatch(offset, pos, frames) {
     }
     return -1;
 }
-function getBestMPEGChain(frames, followMaxChain) {
-    if (frames.length === 0) {
-        return;
-    }
+function buildMPEGChains(frames, maxCheckFrames, followMaxChain) {
     const done = [];
-    const count = Math.min(50, frames.length);
     const chains = [];
+    const count = Math.min(maxCheckFrames, frames.length);
     for (let i = 0; i < count; i++) {
         const frame = frames[i];
         if (done.indexOf(frame) < 0) {
@@ -69,9 +66,25 @@ function getBestMPEGChain(frames, followMaxChain) {
             }
         }
     }
-    let select = chains.filter(chain => chain.count > 0)[0];
-    if (!select) {
-        select = chains[0];
+    return chains;
+}
+function findBestMPEGChain(frames, maxCheckFrames, followMaxChain) {
+    const chains = buildMPEGChains(frames, maxCheckFrames, followMaxChain);
+    const bestChains = chains.filter(chain => chain.count > 0).sort((a, b) => b.count - a.count);
+    return bestChains[0];
+}
+function getBestMPEGChain(frames, followMaxChain) {
+    if (frames.length === 0) {
+        return;
+    }
+    let select;
+    let checkMaxFrames = 50;
+    while (!select && checkMaxFrames < 500) {
+        select = findBestMPEGChain(frames, checkMaxFrames, followMaxChain);
+        if (checkMaxFrames > frames.length) {
+            break;
+        }
+        checkMaxFrames += 50;
     }
     return select;
 }

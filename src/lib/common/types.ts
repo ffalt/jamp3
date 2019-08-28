@@ -6,5 +6,5 @@ export enum ITagID {
 export interface ITag {
 	id: ITagID;
 	start: number;
-	end: number;
+	end: number; // end of tag (excluding padding)
 }

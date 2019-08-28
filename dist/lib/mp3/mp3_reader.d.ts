@@ -5,7 +5,7 @@ export interface MP3ReaderOptions extends IMP3.ReadOptions {
     streamSize?: number;
 }
 export declare class MP3Reader {
-    private opts;
+    private options;
     private layout;
     private id3v2reader;
     private id3v1reader;
@@ -23,6 +23,6 @@ export declare class MP3Reader {
     private processChunk;
     private scan;
     private setOptions;
-    read(filename: string, opts: MP3ReaderOptions): Promise<IMP3.RawLayout>;
-    readStream(stream: Readable, opts: MP3ReaderOptions): Promise<IMP3.RawLayout>;
+    read(filename: string, options: MP3ReaderOptions): Promise<IMP3.RawLayout>;
+    readStream(stream: Readable, options: MP3ReaderOptions): Promise<IMP3.RawLayout>;
 }
