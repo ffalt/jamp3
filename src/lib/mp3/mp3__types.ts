@@ -24,6 +24,13 @@ export namespace IMP3 {
 		raw?: boolean;
 	}
 
+	export interface MPEGFrames {
+		/** mpeg header frames (like XING, etc.) */
+		headers: Array<IMP3.Frame>;
+		/** mpeg audio frames as array */
+		audio: Array<IMP3.FrameRawHeaderArray>;
+	}
+
 	export interface MPEG {
 		durationEstimate: number;
 		durationRead: number;
@@ -68,12 +75,7 @@ export namespace IMP3 {
 		/** mpeg information */
 		mpeg?: MPEG;
 		/** mpeg frames */
-		frames?: {
-			/** mpeg header frames (like XING, etc.) */
-			headers: Array<IMP3.Frame>;
-			/** mpeg audio frames as array */
-			audio: Array<IMP3.FrameRawHeaderArray>;
-		};
+		frames?: MPEGFrames;
 		/** raw parse result */
 		raw?: RawLayout;
 	}
