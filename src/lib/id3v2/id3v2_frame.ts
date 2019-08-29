@@ -906,7 +906,7 @@ export const FrameETCO: IFrameImpl = {
 		const value = <IID3V2.FrameValue.EventTimingCodes>frame.value;
 		stream.writeByte(value.format);
 		(value.events || []).forEach(event => {
-			stream.writeUByte(event.type);
+			stream.writeByte(event.type);
 			stream.writeUInt4Byte(event.timestamp);
 		});
 	},
