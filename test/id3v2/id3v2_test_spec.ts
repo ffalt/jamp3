@@ -4,7 +4,7 @@ import {loadSpec, toNonBinJson} from '../common/common';
 import Debug from 'debug';
 import chaiExclude from 'chai-exclude';
 
-import {IID3V2} from '../../src/lib/id3v2/id3v2__types';
+import {IID3V2} from '../../src/lib/id3v2/id3v2.types';
 import {ID3v2} from '../../src/lib/id3v2/id3v2';
 
 use(chaiExclude);

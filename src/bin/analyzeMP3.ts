@@ -1,4 +1,4 @@
-import {IMP3Analyzer, MP3Analyzer} from '../lib/mp3/mp3_analyzer';
+import {IMP3Analyzer, MP3Analyzer} from '../lib/mp3/mp3.analyzer';
 import {collectFiles} from '../lib/common/utils';
 import program from 'commander';
 import fse from 'fs-extra';

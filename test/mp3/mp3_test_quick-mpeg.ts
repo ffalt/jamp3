@@ -3,7 +3,7 @@ import {expect, should} from 'chai';
 import Debug from 'debug';
 
 import {ITestSpec} from '../common/test-spec';
-import {rawHeaderSize} from '../../src/lib/mp3/mp3_frame';
+import {rawHeaderSize} from '../../src/lib/mp3/mp3.mpeg.frame';
 import {MP3} from '../../src/lib/mp3/mp3';
 
 const debug = Debug('mp3-test');

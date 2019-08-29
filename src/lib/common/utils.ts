@@ -144,3 +144,8 @@ export async function collectFiles(dir: string, ext: Array<string>, recursive: b
 		}
 	}
 }
+
+export function validCharKeyCode(c: number): boolean {
+	// /0-9 A-Z/
+	return ((c >= 48) && (c < 58)) || ((c >= 65) && (c < 91));
+}

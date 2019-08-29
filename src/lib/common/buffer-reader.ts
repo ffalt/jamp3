@@ -1,7 +1,7 @@
 import {Encodings, IEncoding} from './encodings';
 import {BufferUtils} from './buffer';
-import {ID3v2_UnifiedENCODINGS} from '../id3v2/id3v2_consts';
-import {removeUnsync} from '../id3v2/id3v2_frames';
+import {ID3v2_UnifiedENCODINGS} from '../id3v2/id3v2.header.consts';
+import {removeUnsync} from '../id3v2/frames/id3v2.frame.unsync';
 
 export class BufferReader {
 	protected ascii = Encodings['ascii'];

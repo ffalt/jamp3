@@ -5,11 +5,12 @@ import chaiExclude from 'chai-exclude';
 import Debug from 'debug';
 
 import {ID3v2} from '../../src/lib/id3v2/id3v2';
-import {IID3V2} from '../../src/lib/id3v2/id3v2__types';
+import {IID3V2} from '../../src/lib/id3v2/id3v2.types';
 import {MP3} from '../../src/lib/mp3/mp3';
 import {BufferUtils} from '../../src/lib/common/buffer';
-import {ensureID3v2FrameVersionDef, matchFrame} from '../../src/lib/id3v2/id3v2_frames';
-import {rawHeaderOffSet} from '../../src/lib/mp3/mp3_frame';
+import {rawHeaderOffSet} from '../../src/lib/mp3/mp3.mpeg.frame';
+import {matchFrame} from '../../src/lib/id3v2/frames/id3v2.frame.match';
+import {ensureID3v2FrameVersionDef} from '../../src/lib/id3v2/frames/id3v2.frame.version';
 
 use(chaiExclude);
 const debug = Debug('id3v2-compare');

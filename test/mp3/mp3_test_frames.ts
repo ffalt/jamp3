@@ -3,10 +3,10 @@ import {expect, should} from 'chai';
 import Debug from 'debug';
 
 import {MP3} from '../../src/lib/mp3/mp3';
-import {IMP3} from '../../src/lib/mp3/mp3__types';
+import {IMP3} from '../../src/lib/mp3/mp3.types';
 import {ITestSpec, ITestSpecFrame} from '../common/test-spec';
-import {filterBestMPEGChain} from '../../src/lib/mp3/mp3_frames';
-import {expandRawHeader, expandRawHeaderArray, rawHeaderOffSet} from '../../src/lib/mp3/mp3_frame';
+import {filterBestMPEGChain} from '../../src/lib/mp3/mp3.mpeg.chain';
+import {expandRawHeader, expandRawHeaderArray, rawHeaderOffSet} from '../../src/lib/mp3/mp3.mpeg.frame';
 
 const debug = Debug('mp3-test');
 

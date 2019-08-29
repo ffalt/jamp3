@@ -1,17 +1,17 @@
 import fse from 'fs-extra';
-import {ID3v2Reader} from './id3v2_reader';
-import {ID3v2Writer} from './id3v2_writer';
-import {writeToRawFrames} from './id3v2_frames';
-import {IID3V2} from './id3v2__types';
+import {ID3v2Reader} from './id3v2.reader';
+import {ID3v2Writer} from './id3v2.writer';
+import {IID3V2} from './id3v2.types';
 import {fileRangeToBuffer} from '../common/utils';
 import {Readable} from 'stream';
 import {updateFile} from '../common/update-file';
 import {ITagID} from '../common/types';
-import {rawHeaderOffSet} from '../mp3/mp3_frame';
-import {buildID3v2} from './id3v2_raw';
-import {checkID3v2} from './id3v2_check';
-import {simplifyTag} from './id3v2_simplify';
+import {rawHeaderOffSet} from '../mp3/mp3.mpeg.frame';
+import {checkID3v2} from './id3v2.check';
+import {simplifyTag} from './id3v2.simplify';
 import {FileWriterStream} from '../common/stream-writer-file';
+import {writeRawFrames} from './frames/id3v2.frame.write';
+import {buildID3v2} from './frames/id3v2.frame.read';
 
 /**
  * Class for
@@ -156,7 +156,7 @@ export class ID3v2 {
 				head.v2 = tag.head.v2;
 			}
 		}
-		const raw_frames = await writeToRawFrames(tag.frames, head, options.defaultEncoding);
+		const raw_frames = await writeRawFrames(tag.frames, head, options.defaultEncoding);
 		const exists = await fse.pathExists(filename);
 		if (!exists) {
 			await this.writeTag(filename, raw_frames, head);

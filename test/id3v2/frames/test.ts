@@ -3,26 +3,24 @@ import {describe, it, run} from 'mocha';
 
 import {BufferUtils} from '../../../src/lib/common/buffer';
 import {synchsafe, unsynchsafe} from '../../../src/lib/common/utils';
-import {ID3v2_ENCODINGS} from '../../../src/lib/id3v2/id3v2_consts';
-import {IID3V2} from '../../../src/lib/id3v2/id3v2__types';
-import {
-	FrameAsciiValue,
-	FrameIdAscii,
-	FrameIdBin,
-	FrameIdText,
-	FrameLangDescText,
-	FrameMusicCDId,
-	FramePartOfCompilation,
-	FramePic,
-	FramePlayCounter,
-	FramePopularimeter,
-	FrameText,
-	FrameUnknown,
-	IFrameImpl
-} from '../../../src/lib/id3v2/id3v2_frame';
-import {ID3V2ValueTypes} from '../../../src/lib/id3v2/id3v2__consts';
+import {ID3v2_ENCODINGS} from '../../../src/lib/id3v2/id3v2.header.consts';
+import {IID3V2} from '../../../src/lib/id3v2/id3v2.types';
+import {ID3V2ValueTypes} from '../../../src/lib/id3v2/id3v2.consts';
 import {MemoryWriterStream} from '../../../src/lib/common/stream-writer-memory';
 import {BufferReader} from '../../../src/lib/common/buffer-reader';
+import {IFrameImpl} from '../../../src/lib/id3v2/frames/id3v2.frame';
+import {FrameIdAscii} from '../../../src/lib/id3v2/frames/implementations/id3v2.frame.id-ascii';
+import {FrameIdBin} from '../../../src/lib/id3v2/frames/implementations/id3v2.frame.id-bin';
+import {FrameText} from '../../../src/lib/id3v2/frames/implementations/id3v2.frame.text';
+import {FrameLangDescText} from '../../../src/lib/id3v2/frames/implementations/id3v2.frame.lang-desc-text';
+import {FramePic} from '../../../src/lib/id3v2/frames/implementations/id3v2.frame.pic';
+import {FrameAscii} from '../../../src/lib/id3v2/frames/implementations/id3v2.frame.ascii';
+import {FrameIdText} from '../../../src/lib/id3v2/frames/implementations/id3v2.frame.id-text';
+import {FramePlayCount} from '../../../src/lib/id3v2/frames/implementations/id3v2.frame.playcount';
+import {FrameMusicCDId} from '../../../src/lib/id3v2/frames/implementations/id3v2.frame.musiccdid';
+import {FramePopularimeter} from '../../../src/lib/id3v2/frames/implementations/id3v2.frame.popularimeter';
+import {FrameBooleanString} from '../../../src/lib/id3v2/frames/implementations/id3v2.frame.boolstring';
+import {FrameUnknown} from '../../../src/lib/id3v2/frames/implementations/id3v2.frame.unknown';
 
 describe('SyncSaveInt', function() {
 	it('should calculate back & forth', function() {
@@ -70,7 +68,7 @@ describe('ID3v2Frames', () => {
 	};
 
 	describe('AsciiValue', () => {
-		const val = FrameAsciiValue;
+		const val = FrameAscii;
 		testValues.forEach(testValue => {
 			it('should write back & forth: ' + testValue, async () => {
 				const testval: IID3V2.FrameValue.Ascii = {text: testValue};
@@ -188,7 +186,7 @@ describe('ID3v2Frames', () => {
 	});
 
 	describe('PartOfCompilation', () => {
-		const val = FramePartOfCompilation;
+		const val = FrameBooleanString;
 		[false, true].forEach(testValue => {
 			encs.forEach(enc => {
 				describe('Endcoding: ' + enc, () => {
@@ -216,7 +214,7 @@ describe('ID3v2Frames', () => {
 	});
 
 	describe('PlayCounter', () => {
-		const val = FramePlayCounter;
+		const val = FramePlayCount;
 		ints.forEach(testValue => {
 			it('should write back & forth: ' + testValue, async () => {
 				const testval: IID3V2.FrameValue.Number = {num: testValue};

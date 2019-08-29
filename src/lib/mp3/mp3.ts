@@ -1,13 +1,13 @@
 import fse from 'fs-extra';
 import {Readable} from 'stream';
 
-import {IMP3} from './mp3__types';
-import {MP3Reader, MP3ReaderOptions} from './mp3_reader';
-import {IID3V2} from '../id3v2/id3v2__types';
-import {rawHeaderOffSet} from './mp3_frame';
+import {IMP3} from './mp3.types';
+import {MP3Reader, MP3ReaderOptions} from './mp3.reader';
+import {IID3V2} from '../id3v2/id3v2.types';
+import {rawHeaderOffSet} from './mp3.mpeg.frame';
 import {ITagID} from '../..';
 import {updateFile} from '../common/update-file';
-import {prepareResult} from './mp3_result';
+import {prepareResult} from './mp3.result';
 
 /**
  * Class for

@@ -1,4 +1,4 @@
-import {MP3Reader, MP3ReaderOptions} from '../mp3/mp3_reader';
+import {MP3Reader, MP3ReaderOptions} from '../mp3/mp3.reader';
 import fse from 'fs-extra';
 import {IMP3} from '../..';
 import {FileWriterStream} from './stream-writer-file';

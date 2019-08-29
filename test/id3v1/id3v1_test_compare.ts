@@ -5,7 +5,7 @@ import tmp from 'tmp';
 import Debug from 'debug';
 
 import {ID3v1} from '../../src/lib/id3v1/id3v1';
-import {IID3V1} from '../../src/lib/id3v1/id3v1__types';
+import {IID3V1} from '../../src/lib/id3v1/id3v1.types';
 import {ITagID} from '../../src/lib/common/types';
 import {loadSpec, wait} from '../common/common';
 

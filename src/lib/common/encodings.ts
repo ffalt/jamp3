@@ -111,3 +111,7 @@ Encodings['utf8'] = {
 };
 Encodings['utf-8'] = Encodings['utf8'];
 
+export const ascii = Encodings['ascii'];
+export const binary = Encodings['binary'];
+export const utf8 = Encodings['utf-8'];
+
