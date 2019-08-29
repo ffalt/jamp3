@@ -1,11 +1,12 @@
+import {Readable} from 'stream';
+import fse from 'fs-extra';
+
 import {IMP3} from './mp3.types';
 import {ID3v1Reader} from '../id3v1/id3v1.reader';
 import {ID3v2Reader} from '../id3v2/id3v2.reader';
 import {collapseRawHeader, MPEGFrameReader} from './mp3.mpeg.frame';
 import {BufferUtils} from '../common/buffer';
 import {getBestMPEGChain} from './mp3.mpeg.chain';
-import {Readable} from 'stream';
-import fse from 'fs-extra';
 import {ReaderStream} from '../common/stream-reader';
 
 export interface MP3ReaderOptions extends IMP3.ReadOptions {
@@ -55,7 +56,7 @@ export class MP3Reader {
 		if (id3Header && id3Header.valid) {
 			const start = this.stream.pos - chunk.length + i;
 			this.stream.unshift(chunk.slice(i));
-			const result = await this.id3v2reader.readTag(this.stream);
+			const result = await this.id3v2reader.readReaderStream(this.stream);
 			if (result) {
 				let rest = result.rest || BufferUtils.zeroBuffer(0);
 				if (result.tag && result.tag.head.valid) {

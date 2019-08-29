@@ -1,13 +1,8 @@
-import {bitarray, flags, removeZeroString, unsynchsafe} from '../common/utils';
+import {bitarray, flags, unsynchsafe} from '../common/utils';
 import {Markers} from '../common/marker';
-import {BufferUtils} from '../common/buffer';
-import {ID3v2_EXTHEADER, ID3v2_FRAME_FLAGS1, ID3v2_FRAME_FLAGS2, ID3v2_FRAME_HEADER, ID3v2_FRAME_HEADER_LENGTHS, ID3v2_HEADER, ID3v2_MARKER} from './id3v2.header.consts';
+import {ID3v2_EXTHEADER, ID3v2_HEADER} from './id3v2.header.consts';
 import {IID3V2} from './id3v2.types';
-import {Readable} from 'stream';
-import {ITagID} from '../..';
 import {ReaderStream} from '../common/stream-reader';
-import {BufferReader} from '../common/buffer-reader';
-import {isValidFrameBinId} from './frames/id3v2.frame.match';
 
 export class ID3v2HeaderReader {
 

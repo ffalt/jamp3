@@ -1,7 +1,6 @@
 import {bitarray, flags, removeZeroString, unsynchsafe} from '../common/utils';
-import {Markers} from '../common/marker';
 import {BufferUtils} from '../common/buffer';
-import {ID3v2_EXTHEADER, ID3v2_FRAME_FLAGS1, ID3v2_FRAME_FLAGS2, ID3v2_FRAME_HEADER, ID3v2_FRAME_HEADER_LENGTHS, ID3v2_HEADER, ID3v2_MARKER} from './id3v2.header.consts';
+import {ID3v2_FRAME_FLAGS1, ID3v2_FRAME_FLAGS2, ID3v2_FRAME_HEADER, ID3v2_FRAME_HEADER_LENGTHS, ID3v2_MARKER} from './id3v2.header.consts';
 import {IID3V2} from './id3v2.types';
 import {Readable} from 'stream';
 import {ITagID} from '../..';
@@ -33,7 +32,7 @@ export class ID3v2Reader {
 		if (index < 0) {
 			return {};
 		}
-		const result = await this.readTag(reader);
+		const result = await this.readReaderStream(reader);
 		if (!result.tag) {
 			return this.scan(reader);
 		}
@@ -42,12 +41,12 @@ export class ID3v2Reader {
 		return result;
 	}
 
-	private async readReaderStream(reader: ReaderStream): Promise<IID3V2.RawTag | undefined> {
+	private async scanReaderStream(reader: ReaderStream): Promise<IID3V2.RawTag | undefined> {
 		const result = await this.scan(reader);
 		return result.tag;
 	}
 
-	public async readTag(reader: ReaderStream): Promise<{ rest?: Buffer, tag?: IID3V2.RawTag }> {
+	public async readReaderStream(reader: ReaderStream): Promise<{ rest?: Buffer, tag?: IID3V2.RawTag }> {
 		const head = await this.headerReader.readHeader(reader);
 		if (!head) {
 			return {};
@@ -62,7 +61,7 @@ export class ID3v2Reader {
 		const reader = new ReaderStream();
 		try {
 			await reader.openStream(stream);
-			return await this.readReaderStream(reader);
+			return await this.scanReaderStream(reader);
 		} catch (e) {
 			return Promise.reject(e);
 		}
@@ -72,7 +71,7 @@ export class ID3v2Reader {
 		const reader = new ReaderStream();
 		try {
 			await reader.open(filename);
-			const tag = await this.readReaderStream(reader);
+			const tag = await this.scanReaderStream(reader);
 			reader.close();
 			return tag;
 		} catch (e) {
