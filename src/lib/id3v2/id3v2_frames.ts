@@ -1,4 +1,3 @@
-import {DataReader, MemoryWriterStream, WriterStream} from '../common/streams';
 import {BufferUtils} from '../common/buffer';
 import {ID3v2_FRAME_HEADER_LENGTHS} from './id3v2_consts';
 import {ID3v2Reader} from './id3v2_reader';
@@ -37,6 +36,9 @@ import {IID3V2} from './id3v2__types';
 import {IEncoding} from '../common/encodings';
 import {ITagID} from '../..';
 import {buildID3v2} from './id3v2_raw';
+import {WriterStream} from '../common/stream-writer';
+import {MemoryWriterStream} from '../common/stream-writer-memory';
+import {BufferReader} from '../common/buffer-reader';
 
 interface IFrameDef {
 	title: string;
@@ -2222,7 +2224,7 @@ export async function readID3v2Frame(rawFrame: IID3V2.RawFrame, head: IID3V2.Tag
 	let result: { value: IID3V2.FrameValue.Base, encoding?: IEncoding, subframes?: Array<IID3V2.Frame> } | undefined;
 	try {
 		await processRawFrame(rawFrame, head);
-		const reader = new DataReader(rawFrame.data);
+		const reader = new BufferReader(rawFrame.data);
 		result = await f.impl.parse(reader, rawFrame, head);
 		if (frame.head) {
 			frame.head.encoding = result.encoding ? result.encoding.name : undefined;

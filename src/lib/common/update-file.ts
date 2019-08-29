@@ -1,7 +1,7 @@
 import {MP3Reader, MP3ReaderOptions} from '../mp3/mp3_reader';
 import fse from 'fs-extra';
-import {FileWriterStream} from './streams';
 import {IMP3} from '../..';
+import {FileWriterStream} from './stream-writer-file';
 
 export async function updateFile(
 	filename: string, options: MP3ReaderOptions, keepBackup: boolean,

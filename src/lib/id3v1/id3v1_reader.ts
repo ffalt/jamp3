@@ -1,4 +1,3 @@
-import {DataReader, ReaderStream} from '../common/streams';
 import {Markers} from '../common/marker';
 import {ID3v1_MARKER} from './id3v1_consts';
 import {IID3V1} from './id3v1__types';
@@ -6,6 +5,8 @@ import {BufferUtils} from '../common/buffer';
 import {Readable} from 'stream';
 import Debug from 'debug';
 import {ITagID} from '../..';
+import {ReaderStream} from '../common/stream-reader';
+import {BufferReader} from '../common/buffer-reader';
 
 const debug = Debug('id3v1-reader');
 
@@ -34,7 +35,7 @@ export class ID3v1Reader {
 			return null;
 		}
 		const tag: IID3V1.Tag = {id: ITagID.ID3v1, start: 0, end: 0, version: 0, value: {}};
-		const reader = new DataReader(data);
+		const reader = new BufferReader(data);
 		reader.position = 3;
 		const value: IID3V1.ID3v1Tag = {};
 		value.title = reader.readFixedAutodectectString(30);

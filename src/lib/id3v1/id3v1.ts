@@ -4,8 +4,8 @@ import {IID3V1} from './id3v1__types';
 import {Readable} from 'stream';
 import fse from 'fs-extra';
 import {ITagID} from '../..';
-import {FileWriterStream} from '../common/streams';
 import {updateFile} from '../common/update-file';
+import {FileWriterStream} from '../common/stream-writer-file';
 
 /**
  * Class for

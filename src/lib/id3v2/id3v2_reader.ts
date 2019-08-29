@@ -1,4 +1,3 @@
-import {DataReader, ReaderStream} from '../common/streams';
 import {isValidFrameBinId} from './id3v2_frames';
 import {bitarray, flags, removeZeroString, unsynchsafe} from '../common/utils';
 import {Markers} from '../common/marker';
@@ -7,6 +6,8 @@ import {ID3v2_EXTHEADER, ID3v2_FRAME_FLAGS1, ID3v2_FRAME_FLAGS2, ID3v2_FRAME_HEA
 import {IID3V2} from './id3v2__types';
 import {Readable} from 'stream';
 import {ITagID} from '../..';
+import {ReaderStream} from '../common/stream-reader';
+import {BufferReader} from '../common/buffer-reader';
 
 const ID3v2_MARKER_BUFFER = BufferUtils.fromString(ID3v2_MARKER);
 
@@ -235,7 +236,7 @@ export class ID3v2Reader {
 		const marker = ID3v2_FRAME_HEADER_LENGTHS.MARKER[tag.head.ver];
 		const sizebytes = ID3v2_FRAME_HEADER_LENGTHS.SIZE[tag.head.ver];
 		const flagsbytes = ID3v2_FRAME_HEADER_LENGTHS.FLAGS[tag.head.ver];
-		const reader = new DataReader(data);
+		const reader = new BufferReader(data);
 		let finish = false;
 		let scanpos = reader.position;
 		let skip = 0;

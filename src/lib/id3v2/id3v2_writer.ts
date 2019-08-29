@@ -1,8 +1,9 @@
-import {MemoryWriterStream, WriterStream} from '../common/streams';
 import {unflags} from '../common/utils';
 import {ID3v2_FRAME_FLAGS1, ID3v2_FRAME_FLAGS2, ID3v2_FRAME_HEADER_LENGTHS, ID3v2_EXTHEADER, ID3v2_HEADER_FLAGS, ID3v2_FRAME_HEADER} from './id3v2_consts';
 import {IID3V2} from './id3v2__types';
 import {BufferUtils} from '../common/buffer';
+import {WriterStream} from '../common/stream-writer';
+import {MemoryWriterStream} from '../common/stream-writer-memory';
 
 export interface Id3v2RawWriterOptions {
 	paddingSize?: number;

@@ -2,7 +2,6 @@ import fse from 'fs-extra';
 import {ID3v2Reader} from './id3v2_reader';
 import {ID3v2Writer} from './id3v2_writer';
 import {writeToRawFrames} from './id3v2_frames';
-import {FileWriterStream} from '../common/streams';
 import {IID3V2} from './id3v2__types';
 import {fileRangeToBuffer} from '../common/utils';
 import {Readable} from 'stream';
@@ -12,6 +11,7 @@ import {rawHeaderOffSet} from '../mp3/mp3_frame';
 import {buildID3v2} from './id3v2_raw';
 import {checkID3v2} from './id3v2_check';
 import {simplifyTag} from './id3v2_simplify';
+import {FileWriterStream} from '../common/stream-writer-file';
 
 /**
  * Class for

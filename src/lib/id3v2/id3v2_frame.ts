@@ -1,9 +1,10 @@
 import {Encodings, IEncoding} from '../common/encodings';
-import {DataReader, WriterStream} from '../common/streams';
 import {isBitSetAt, neededStoreBytes, removeZeroString} from '../common/utils';
 import {readSubFrames, writeSubFrames} from './id3v2_frames';
 import {IID3V2} from './id3v2__types';
 import {ID3V2ValueTypes} from './id3v2__consts';
+import {WriterStream} from '../common/stream-writer';
+import {BufferReader} from '../common/buffer-reader';
 
 const ascii = Encodings['ascii'];
 const binary = Encodings['binary'];
@@ -18,7 +19,7 @@ function getWriteTextEncoding(frame: IID3V2.Frame, head: IID3V2.TagHeader, defau
 }
 
 export interface IFrameImpl {
-	parse: (reader: DataReader, frame: IID3V2.RawFrame, head: IID3V2.TagHeader) => Promise<{ value: IID3V2.FrameValue.Base, encoding?: IEncoding, subframes?: Array<IID3V2.Frame> }>;
+	parse: (reader: BufferReader, frame: IID3V2.RawFrame, head: IID3V2.TagHeader) => Promise<{ value: IID3V2.FrameValue.Base, encoding?: IEncoding, subframes?: Array<IID3V2.Frame> }>;
 	write: (frame: IID3V2.Frame, stream: WriterStream, head: IID3V2.TagHeader, defaultEncoding?: string) => Promise<void>;
 	simplify: (value: any) => string | null;
 }

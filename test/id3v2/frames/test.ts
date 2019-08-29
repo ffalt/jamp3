@@ -2,7 +2,6 @@ import {expect, should} from 'chai';
 import {describe, it, run} from 'mocha';
 
 import {BufferUtils} from '../../../src/lib/common/buffer';
-import {DataReader, MemoryWriterStream} from '../../../src/lib/common/streams';
 import {synchsafe, unsynchsafe} from '../../../src/lib/common/utils';
 import {ID3v2_ENCODINGS} from '../../../src/lib/id3v2/id3v2_consts';
 import {IID3V2} from '../../../src/lib/id3v2/id3v2__types';
@@ -22,6 +21,8 @@ import {
 	IFrameImpl
 } from '../../../src/lib/id3v2/id3v2_frame';
 import {ID3V2ValueTypes} from '../../../src/lib/id3v2/id3v2__consts';
+import {MemoryWriterStream} from '../../../src/lib/common/stream-writer-memory';
+import {BufferReader} from '../../../src/lib/common/buffer-reader';
 
 describe('SyncSaveInt', function() {
 	it('should calculate back & forth', function() {
@@ -36,7 +37,7 @@ async function writebackandforth(val: IFrameImpl, testobj: { encoding?: string, 
 	const stream = new MemoryWriterStream();
 	const frame: IID3V2.Frame = {id: 'test', value: testobj.value, head: {size: 0, statusFlags: {}, formatFlags: {}, encoding: testobj.encoding ? testobj.encoding : undefined}};
 	await val.write(frame, stream, head);
-	const reader = new DataReader(stream.toBuffer());
+	const reader = new BufferReader(stream.toBuffer());
 	const result = await val.parse(reader, {id: 'test', start: 0, end: 0, size: 0, statusFlags: {}, formatFlags: {}, data: stream.toBuffer()}, head);
 	should().exist(result);
 	if (!result) {

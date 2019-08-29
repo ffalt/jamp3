@@ -1,5 +1,4 @@
 import {IMP3} from './mp3__types';
-import {ReaderStream} from '../common/streams';
 import {ID3v1Reader} from '../id3v1/id3v1_reader';
 import {ID3v2Reader} from '../id3v2/id3v2_reader';
 import {collapseRawHeader, MPEGFrameReader} from './mp3_frame';
@@ -7,6 +6,7 @@ import {BufferUtils} from '../common/buffer';
 import {getBestMPEGChain} from './mp3_frames';
 import {Readable} from 'stream';
 import fse from 'fs-extra';
+import {ReaderStream} from '../common/stream-reader';
 
 export interface MP3ReaderOptions extends IMP3.ReadOptions {
 	streamSize?: number;
