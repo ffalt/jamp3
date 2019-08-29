@@ -15,7 +15,7 @@ export class BufferReader {
 	}
 
 	readStringTerminated(enc: IEncoding): string {
-		const i = BufferUtils.scanBufferText(this.data, enc.terminator, this.position);
+		const i = BufferUtils.scanBufferTextPos(this.data, enc.terminator, this.position);
 		const buf = this.data.slice(this.position, i);
 		const result = (buf.length === 0) ? '' : enc.decode(buf);
 		this.position = i + enc.terminator.length;

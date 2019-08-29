@@ -1,23 +1,28 @@
 export class BufferUtils {
 
-	public static scanBufferText(buffer: Buffer, search: Array<number> | Buffer, start: number): number {
+	static scanBufferTextCharPos(buffer: Buffer, char: number, start: number): number {
+		const len = buffer.length;
+		for (let i = start || 0; i < len; i++) {
+			if (buffer[i] === char) {
+				return i;
+			}
+		}
+		return buffer.length;
+	}
+
+	public static scanBufferTextPos(buffer: Buffer, search: Array<number> | Buffer, start: number): number {
 		const slen = search.length;
 		const len = buffer.length;
 		if (slen === 1) {
-			const c = search[0];
-			for (let i = start || 0; i < len; i++) {
-				if (buffer[i] === c) {
-					return i;
+			return BufferUtils.scanBufferTextCharPos(buffer, search[0], start);
+		}
+		for (let i = start || 0; i < len; i = i + slen) {
+			for (let j = 0; j < slen; j++) {
+				if (buffer[i + j] !== search[j]) {
+					break;
 				}
-			}
-		} else {
-			for (let i = start || 0; i < len; i = i + slen) {
-				for (let j = 0; j < slen; j++) {
-					if (buffer[i + j] !== search[j]) {
-						break;
-					} else if (j === slen - 1) {
-						return i;
-					}
+				if (j === slen - 1) {
+					return i;
 				}
 			}
 		}
