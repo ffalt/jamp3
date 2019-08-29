@@ -22,151 +22,16 @@ export class Id3v2RawWriter {
 		this.paddingSize = options.paddingSize === undefined ? 0 : options.paddingSize;
 	}
 
-	private async writeHeader(frames: Array<IID3V2.RawFrame>): Promise<void> {
-		/**
-		 3.1.   ID3v2 header
-
-		 The first part of the ID3v2 tag is the 10 byte tag header, laid out
-		 as follows:
-
-		 ID3v2/file identifier      "ID3"
-		 ID3v2 version              $04 00
-		 ID3v2 flags                %abcd0000
-		 ID3v2 size             4 * %0xxxxxxx
-
-		 The first three bytes of the tag are always "ID3", to indicate that this is an ID3v2 tag, directly followed by the two version bytes. The
-		 first byte of ID3v2 version is its major version, while the second byte is its revision number. In this case this is ID3v2.4.0. All
-		 revisions are backwards compatible while major versions are not. If software with ID3v2.4.0 and below support should encounter version
-		 five or higher it should simply ignore the whole tag. Version or revision will never be $FF.
-
-		 The version is followed by the ID3v2 flags field, of which currently four flags are used.
-
-		 a - Unsynchronisation
-		 Bit 7 in the 'ID3v2 flags' indicates whether or not unsynchronisation is applied on all frames (see section 6.1 for details); a set bit indicates usage.
-
-		 b - Extended header
-		 The second bit (bit 6) indicates whether or not the header is followed by an extended header. The extended header is described in
-		 section 3.2. A set bit indicates the presence of an extended header.
-
-		 c - Experimental indicator
-		 The third bit (bit 5) is used as an 'experimental indicator'. This flag SHALL always be set when the tag is in an experimental stage.
-
-		 d - Footer present
-		 Bit 4 indicates that a footer (section 3.4) is present at the very end of the tag. A set bit indicates the presence of a footer.
-		 All the other flags MUST be cleared. If one of these undefined flags are set, the tag might not be readable for a parser that does not know the flags function.
-
-		 The ID3v2 tag size is stored as a 32 bit synchsafe integer (section 6.2), making a total of 28 effective bits (representing up to 256MB).
-		 The ID3v2 tag size is the sum of the byte length of the extended header, the padding and the frames after unsynchronisation. If a
-		 footer is present this equals to ('total size' - 20) bytes, otherwise ('total size' - 10) bytes.
-
-		 An ID3v2 tag can be detected with the following pattern:
-		 $49 44 33 yy yy xx zz zz zz zz
-		 Where yy is less than $FF, xx is the 'flags' byte and zz is less than $80.
-		 */
-
-		let framesSize = 0;
-		const frameHeadSize =
-			ID3v2_FRAME_HEADER_LENGTHS.MARKER[this.head.ver] +
-			ID3v2_FRAME_HEADER_LENGTHS.SIZE[this.head.ver] +
-			ID3v2_FRAME_HEADER_LENGTHS.FLAGS[this.head.ver];
-		for (const frame of frames) {
-			framesSize = framesSize + frame.size + frameHeadSize;
+	private async buildHeaderFlagsV4(): Promise<{ flagBits: Array<number>, extendedHeaderBuffer?: Buffer }> {
+		this.head.v4 = this.head.v4 || {flags: {}};
+		this.head.v4.flags.unsynchronisation = false;
+		this.head.v4.flags.extendedheader = !!this.head.v4.extended;
+		const flagBits = unflags(ID3v2_HEADER_FLAGS[this.head.ver], this.head.v4.flags as any);
+		if (this.head.v4.extended) {
+			const extendedHeaderBuffer = await this.writeExtHeaderV4(this.head.v4.extended);
+			return {flagBits, extendedHeaderBuffer};
 		}
-
-		this.stream.writeAscii('ID3'); // ID3v2/file identifier
-		// ID3V2HEADER_FLAGS
-		this.stream.writeByte(this.head.ver);  // ID3v2 version
-		this.stream.writeByte(this.head.rev); // ID3v2 rev version
-
-		const footerSize = 0;
-		let extendedHeaderBuffer: Buffer | undefined;
-		let flagBits: Array<number>;
-
-		// TODO: currently no support for writing footer
-		// TODO: currently no support for unsynchronised writing
-		if (this.head.ver <= 2) {
-			this.head.v2 = this.head.v2 || {flags: {}};
-			this.head.v2.flags.unsynchronisation = false;
-			flagBits = unflags(ID3v2_HEADER_FLAGS[2], this.head.v2.flags as any);
-		} else if (this.head.ver === 3) {
-			this.head.v3 = this.head.v3 || {flags: {}};
-			this.head.v3.flags.unsynchronisation = false;
-			if (this.head.v3.extended) {
-				extendedHeaderBuffer = await this.writeExtHeaderV3(this.head.v3.extended);
-				this.head.v3.flags.extendedheader = true;
-			} else {
-				this.head.v3.flags.extendedheader = false;
-			}
-			flagBits = unflags(ID3v2_HEADER_FLAGS[this.head.ver], this.head.v3.flags as any);
-		} else if (this.head.ver === 4) {
-			this.head.v4 = this.head.v4 || {flags: {}};
-			this.head.v4.flags.unsynchronisation = false;
-			if (this.head.v4.extended) {
-				extendedHeaderBuffer = await this.writeExtHeaderV4(this.head.v4.extended);
-				this.head.v4.flags.extendedheader = true;
-			} else {
-				this.head.v4.flags.extendedheader = false;
-			}
-			flagBits = unflags(ID3v2_HEADER_FLAGS[this.head.ver], this.head.v4.flags as any);
-		} else {
-			flagBits = unflags(ID3v2_HEADER_FLAGS[this.head.ver], {});
-		}
-		this.head.flagBits = flagBits;
-		this.stream.writeBitsByte(flagBits); // ID3v2 flags
-
-		const tagSize = (extendedHeaderBuffer ? extendedHeaderBuffer.length : 0) + framesSize + footerSize + this.paddingSize;
-		if (this.head.ver > 2) {
-			this.stream.writeSyncSafeInt(tagSize);
-		} else {
-			this.stream.writeUInt4Byte(tagSize);
-		}
-		if (extendedHeaderBuffer) {
-			this.stream.writeBuffer(extendedHeaderBuffer);
-		}
-	}
-
-	private async writeExtHeaderV3(extended: IID3V2.TagHeaderExtendedVer3): Promise<Buffer> {
-		/** ID3v2.3
-		 3.2.   ID3v2 extended header
-
-		 The extended header contains information that is not vital to the
-		 correct parsing of the tag information, hence the extended header is
-		 optional.
-
-		 Extended header size   $xx xx xx xx
-		 Extended Flags         $xx xx
-		 Size of padding        $xx xx xx xx
-
-		 Where the 'Extended header size', currently 6 or 10 bytes, excludes
-		 itself. The 'Size of padding' is simply the total tag size excluding
-		 the frames and the headers, in other words the padding. The extended
-		 header is considered separate from the header proper, and as such is
-		 subject to unsynchronisation.
-
-		 The extended flags are a secondary flag set which describes further
-		 attributes of the tag. These attributes are currently defined as
-		 follows
-
-		 %x0000000 00000000
-		 x - CRC data present
-
-		 If this flag is set four bytes of CRC-32 data is appended to the
-		 extended header. The CRC should be calculated before
-		 unsynchronisation on the data between the extended header and the
-		 padding, i.e. the frames and only the frames.
-
-		 Total frame CRC        $xx xx xx xx
-
-		 */
-		const result = new MemoryWriterStream();
-		result.writeUInt4Byte(extended.size);
-		result.writeBitsByte(unflags(ID3v2_EXTHEADER[3].FLAGS1, extended.flags1));
-		result.writeBitsByte(unflags(ID3v2_EXTHEADER[3].FLAGS2, extended.flags2));
-		result.writeUInt4Byte(this.paddingSize || 0);
-		if (extended.flags1.crc) {
-			result.writeUInt4Byte(extended.crcData || 0);
-		}
-		return result.toBuffer();
+		return {flagBits};
 	}
 
 	private async writeExtHeaderV4(extended: IID3V2.TagHeaderExtendedVer4): Promise<Buffer> {
@@ -278,6 +143,157 @@ export class Id3v2RawWriter {
 		 otherwise.
 		 */
 		return Promise.reject(Error('TODO extended header v2.4'));
+	}
+
+	private async buildHeaderFlagsV3(): Promise<{ flagBits: Array<number>, extendedHeaderBuffer?: Buffer }> {
+		this.head.v3 = this.head.v3 || {flags: {}};
+		this.head.v3.flags.unsynchronisation = false;
+		this.head.v3.flags.extendedheader = !!this.head.v3.extended;
+		const flagBits = unflags(ID3v2_HEADER_FLAGS[this.head.ver], this.head.v3.flags as any);
+		if (this.head.v3.extended) {
+			const extendedHeaderBuffer = await this.writeExtHeaderV3(this.head.v3.extended);
+			return {flagBits, extendedHeaderBuffer};
+		}
+		return {flagBits};
+	}
+
+	private async writeExtHeaderV3(extended: IID3V2.TagHeaderExtendedVer3): Promise<Buffer> {
+		/** ID3v2.3
+		 3.2.   ID3v2 extended header
+
+		 The extended header contains information that is not vital to the
+		 correct parsing of the tag information, hence the extended header is
+		 optional.
+
+		 Extended header size   $xx xx xx xx
+		 Extended Flags         $xx xx
+		 Size of padding        $xx xx xx xx
+
+		 Where the 'Extended header size', currently 6 or 10 bytes, excludes
+		 itself. The 'Size of padding' is simply the total tag size excluding
+		 the frames and the headers, in other words the padding. The extended
+		 header is considered separate from the header proper, and as such is
+		 subject to unsynchronisation.
+
+		 The extended flags are a secondary flag set which describes further
+		 attributes of the tag. These attributes are currently defined as
+		 follows
+
+		 %x0000000 00000000
+		 x - CRC data present
+
+		 If this flag is set four bytes of CRC-32 data is appended to the
+		 extended header. The CRC should be calculated before
+		 unsynchronisation on the data between the extended header and the
+		 padding, i.e. the frames and only the frames.
+
+		 Total frame CRC        $xx xx xx xx
+
+		 */
+		const result = new MemoryWriterStream();
+		result.writeUInt4Byte(extended.size);
+		result.writeBitsByte(unflags(ID3v2_EXTHEADER[3].FLAGS1, extended.flags1));
+		result.writeBitsByte(unflags(ID3v2_EXTHEADER[3].FLAGS2, extended.flags2));
+		result.writeUInt4Byte(this.paddingSize || 0);
+		if (extended.flags1.crc) {
+			result.writeUInt4Byte(extended.crcData || 0);
+		}
+		return result.toBuffer();
+	}
+
+	private async buildHeaderFlagsV2(): Promise<{ flagBits: Array<number>, extendedHeaderBuffer?: Buffer }> {
+		this.head.v2 = this.head.v2 || {flags: {}};
+		this.head.v2.flags.unsynchronisation = false;
+		const flagBits = unflags(ID3v2_HEADER_FLAGS[2], this.head.v2.flags as any);
+		return {flagBits};
+	}
+
+	private async buildHeaderFlags(): Promise<{ flagBits: Array<number>, extendedHeaderBuffer?: Buffer }> {
+		if (this.head.ver <= 2) {
+			return this.buildHeaderFlagsV2();
+		} else if (this.head.ver === 3) {
+			return await this.buildHeaderFlagsV3();
+		} else if (this.head.ver === 4) {
+			return await this.buildHeaderFlagsV4();
+		} else {
+			return {flagBits: unflags(ID3v2_HEADER_FLAGS[this.head.ver], {})};
+		}
+	}
+
+	private calculateTagSize(frames: Array<IID3V2.RawFrame>, extendedHeaderSize: number): number {
+		let framesSize = 0;
+		const frameHeadSize =
+			ID3v2_FRAME_HEADER_LENGTHS.MARKER[this.head.ver] +
+			ID3v2_FRAME_HEADER_LENGTHS.SIZE[this.head.ver] +
+			ID3v2_FRAME_HEADER_LENGTHS.FLAGS[this.head.ver];
+		for (const frame of frames) {
+			framesSize = framesSize + frame.size + frameHeadSize;
+		}
+		const footerSize = 0;
+		return extendedHeaderSize + framesSize + footerSize + this.paddingSize;
+	}
+
+	private async writeHeader(frames: Array<IID3V2.RawFrame>): Promise<void> {
+		// TODO: currently no support for writing footer
+		// TODO: currently no support for unsynchronised writing
+
+		/**
+		 3.1.   ID3v2 header
+
+		 The first part of the ID3v2 tag is the 10 byte tag header, laid out
+		 as follows:
+
+		 ID3v2/file identifier      "ID3"
+		 ID3v2 version              $04 00
+		 ID3v2 flags                %abcd0000
+		 ID3v2 size             4 * %0xxxxxxx
+
+		 The first three bytes of the tag are always "ID3", to indicate that this is an ID3v2 tag, directly followed by the two version bytes. The
+		 first byte of ID3v2 version is its major version, while the second byte is its revision number. In this case this is ID3v2.4.0. All
+		 revisions are backwards compatible while major versions are not. If software with ID3v2.4.0 and below support should encounter version
+		 five or higher it should simply ignore the whole tag. Version or revision will never be $FF.
+
+		 The version is followed by the ID3v2 flags field, of which currently four flags are used.
+
+		 a - Unsynchronisation
+		 Bit 7 in the 'ID3v2 flags' indicates whether or not unsynchronisation is applied on all frames (see section 6.1 for details); a set bit indicates usage.
+
+		 b - Extended header
+		 The second bit (bit 6) indicates whether or not the header is followed by an extended header. The extended header is described in
+		 section 3.2. A set bit indicates the presence of an extended header.
+
+		 c - Experimental indicator
+		 The third bit (bit 5) is used as an 'experimental indicator'. This flag SHALL always be set when the tag is in an experimental stage.
+
+		 d - Footer present
+		 Bit 4 indicates that a footer (section 3.4) is present at the very end of the tag. A set bit indicates the presence of a footer.
+		 All the other flags MUST be cleared. If one of these undefined flags are set, the tag might not be readable for a parser that does not know the flags function.
+
+		 The ID3v2 tag size is stored as a 32 bit synchsafe integer (section 6.2), making a total of 28 effective bits (representing up to 256MB).
+		 The ID3v2 tag size is the sum of the byte length of the extended header, the padding and the frames after unsynchronisation. If a
+		 footer is present this equals to ('total size' - 20) bytes, otherwise ('total size' - 10) bytes.
+
+		 An ID3v2 tag can be detected with the following pattern:
+		 $49 44 33 yy yy xx zz zz zz zz
+		 Where yy is less than $FF, xx is the 'flags' byte and zz is less than $80.
+		 */
+
+		this.stream.writeAscii('ID3'); // ID3v2/file identifier
+		// ID3V2HEADER_FLAGS
+		this.stream.writeByte(this.head.ver);  // ID3v2 version
+		this.stream.writeByte(this.head.rev); // ID3v2 rev version
+		const versionHead = await this.buildHeaderFlags();
+		this.head.flagBits = versionHead.flagBits;
+		this.stream.writeBitsByte(versionHead.flagBits); // ID3v2 flags
+		const tagSize = this.calculateTagSize(frames, versionHead.extendedHeaderBuffer ? versionHead.extendedHeaderBuffer.length : 0);
+		if (this.head.ver > 2) {
+			this.stream.writeSyncSafeInt(tagSize);
+		} else {
+			this.stream.writeUInt4Byte(tagSize);
+		}
+		if (versionHead.extendedHeaderBuffer) {
+			this.stream.writeBuffer(versionHead.extendedHeaderBuffer);
+		}
 	}
 
 	private async writeFrames(frames: Array<IID3V2.RawFrame>): Promise<void> {
