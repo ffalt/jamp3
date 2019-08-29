@@ -36,9 +36,7 @@ export class WriterStream {
 	}
 
 	writeSyncSafeInt(int: number) {
-		const buf = BufferUtils.zeroBuffer(4);
-		buf.writeUIntBE(synchsafe(int), 0, 4);
-		this.wstream.write(buf);
+		this.writeUInt(synchsafe(int), 4);
 	}
 
 	writeUInt(int: number, byteLength: number) {
@@ -47,40 +45,26 @@ export class WriterStream {
 		this.wstream.write(buf);
 	}
 
-	writeUByte(int: number) {
-		const buf = BufferUtils.zeroBuffer(1);
-		buf.writeUInt8(int, 0);
-		this.wstream.write(buf);
-	}
-
 	writeUInt2Byte(int: number) {
-		const buf = BufferUtils.zeroBuffer(2);
-		buf.writeUIntBE(int, 0, 2);
-		this.wstream.write(buf);
-	}
-
-	writeSInt2Byte(int: number) {
-		const buf = BufferUtils.zeroBuffer(2);
-		buf.writeIntBE(int, 0, 2);
-		this.wstream.write(buf);
+		this.writeUInt(int, 2);
 	}
 
 	writeUInt3Byte(int: number) {
-		const buf = BufferUtils.zeroBuffer(3);
-		buf.writeUIntBE(int, 0, 3);
-		this.wstream.write(buf);
+		this.writeUInt(int, 3);
 	}
 
 	writeUInt4Byte(int: number) {
-		const buf = BufferUtils.zeroBuffer(4);
-		buf.writeUIntBE(int, 0, 4);
-		this.wstream.write(buf);
+		this.writeUInt(int, 4);
 	}
 
 	writeSInt(int: number, byteLength: number) {
 		const buf = BufferUtils.zeroBuffer(byteLength);
 		buf.writeIntBE(int, 0, byteLength);
 		this.wstream.write(buf);
+	}
+
+	writeSInt2Byte(int: number) {
+		this.writeSInt(int, 2);
 	}
 
 	writeEncoding(enc: IEncoding) {
