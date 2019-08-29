@@ -3,98 +3,49 @@ import {COMMMap, DateUpgradeMap, FramesMap, PRIVMap, SplitFrameMap, TXXXMap, UFI
 import {ensureID3v2FrameVersionDef, upgrade23DateFramesTov24Date} from './frames/id3v2.frame.version';
 import {matchFrame} from './frames/id3v2.frame.match';
 
-export function simplifyFrame(frame: IID3V2.Frame, dropIDsList?: Array<string>): Array<{ slug: string; text: string; }> | null {
-	const id = ensureID3v2FrameVersionDef(frame.id, 4) || frame.id;
-	if (dropIDsList && dropIDsList.indexOf(frame.id) >= 0) {
-		return null;
+function slugIDValue(id: string, value: { id: string }, mapping: { [id: string]: string }): string | undefined {
+	if (value && value.id) {
+		return mapping[value.id] || mapping[value.id.toUpperCase()] || (id + '|' + value.id);
 	}
-	let slug = FramesMap[id];
-	if (id === 'UFID') {
-		const value = <IID3V2.FrameValue.IdText>frame.value;
-		if (value && value.id) {
-			slug = UFIDMap[value.id] || ('UFID|' + value.id);
-		} else if (value) {
-			slug = id;
-		} else {
-			return null;
-		}
-	} else if (id === 'TXXX') {
-		const value = <IID3V2.FrameValue.IdText>frame.value;
-		if (value && value.id) {
-			slug = TXXXMap[value.id] || TXXXMap[value.id.toUpperCase()] || ('TXXX|' + value.id);
-		} else if (value) {
-			slug = id;
-		} else {
-			return null;
-		}
-	} else if (id === 'COMM') {
-		const value = <IID3V2.FrameValue.LangDescText>frame.value;
-		if (value && value.id) {
-			slug = COMMMap[value.id] || ('COMM|' + value.id);
-		} else if (value) {
-			slug = id;
-		} else {
-			return null;
-		}
-	} else if (id === 'PRIV') {
-		const value = <IID3V2.FrameValue.IdBin>frame.value;
-		if (value && value.id) {
-			slug = PRIVMap[value.id] || ('PRIV|' + value.id);
-		} else if (value) {
-			slug = id;
-		} else {
-			return null;
-		}
-	} else if (id === 'WXXX') {
-		const value = <IID3V2.FrameValue.IdText>frame.value;
-		if (value && value.id) {
-			slug = 'WXXX|' + value.id;
-		} else if (value) {
-			slug = id;
-		} else {
-			return null;
-		}
-	} else if (id === 'LINK') {
-		const value = <IID3V2.FrameValue.LinkedInfo>frame.value;
-		if (value && value.id) {
-			slug = 'LINK|' + value.id;
-		} else if (value) {
-			slug = id;
-		} else {
-			return null;
-		}
-	} else if (id === 'TIPL' || id === 'TMCL') {
-		const value = <IID3V2.FrameValue.TextList>frame.value;
-		const knownSections: { [key: string]: string } = {
-			'arranger': 'ARRANGER',
-			'engineer': 'ENGINEER',
-			'DJ-mix': 'DJMIXER',
-			'mix': 'MIXER',
-			'producer': 'PRODUCER',
-			'instrument': 'PERFORMER'
-		};
-		const list = [];
-		let i = 0;
-		while (i < value.list.length - 1) {
-			slug = knownSections[value.list[i]];
-			const val = knownSections[value.list[i]];
-			if (val) {
-				if (slug) {
-					list.push({slug, text: val});
-				} else {
-					list.push({slug: id + '|' + value.list[i], text: val});
-				}
+	if (value) {
+		return id;
+	}
+}
+
+export function simplifyInvolvedPeopleList(id: string, frame: IID3V2.Frame): Array<{ slug: string; text: string; }> | undefined {
+	const value = <IID3V2.FrameValue.TextList>frame.value;
+	const knownSections: { [key: string]: string } = {
+		'arranger': 'ARRANGER',
+		'engineer': 'ENGINEER',
+		'DJ-mix': 'DJMIXER',
+		'mix': 'MIXER',
+		'producer': 'PRODUCER',
+		'instrument': 'PERFORMER'
+	};
+	const list = [];
+	let i = 0;
+	while (i < value.list.length - 1) {
+		const slug = knownSections[value.list[i]];
+		const val = knownSections[value.list[i]];
+		if (val) {
+			if (slug) {
+				list.push({slug, text: val});
+			} else {
+				list.push({slug: id + '|' + value.list[i], text: val});
 			}
-			i += 2;
 		}
-		return list;
+		i += 2;
 	}
-	if (!slug) {
-		return null;
-	}
+	return list;
+}
+
+function simplifyValue(id: string, slug: string, frame: IID3V2.Frame): Array<{ slug: string; text: string; }> | undefined {
 	const frameDef = matchFrame(id);
 	const text = frameDef.impl.simplify(frame.value);
-	if (text && SplitFrameMap[id]) {
+	if (!text) {
+		return;
+	}
+	if (SplitFrameMap[id]) {
 		const names = SplitFrameMap[id];
 		const split = text.split('/');
 		const result = [];
@@ -106,10 +57,33 @@ export function simplifyFrame(frame: IID3V2.Frame, dropIDsList?: Array<string>):
 		}
 		return result;
 	}
-	if (text) {
-		return [{slug, text}];
+	return [{slug, text}];
+}
+
+export function simplifyFrame(frame: IID3V2.Frame, dropIDsList?: Array<string>): Array<{ slug: string; text: string; }> | undefined {
+	const id = ensureID3v2FrameVersionDef(frame.id, 4) || frame.id;
+	if (dropIDsList && dropIDsList.indexOf(frame.id) >= 0) {
+		return;
 	}
-	return null;
+	let slug: string | undefined = FramesMap[id];
+	if (id === 'UFID') {
+		slug = slugIDValue(id, frame.value as IID3V2.FrameValue.IdText, UFIDMap);
+	} else if (id === 'TXXX') {
+		slug = slugIDValue(id, frame.value as IID3V2.FrameValue.IdText, TXXXMap);
+	} else if (id === 'COMM') {
+		slug = slugIDValue(id, frame.value as IID3V2.FrameValue.LangDescText, COMMMap);
+	} else if (id === 'PRIV') {
+		slug = slugIDValue(id, frame.value as IID3V2.FrameValue.IdBin, PRIVMap);
+	} else if (id === 'WXXX') {
+		slug = slugIDValue(id, frame.value as IID3V2.FrameValue.IdText, {});
+	} else if (id === 'LINK') {
+		slug = slugIDValue(id, frame.value as IID3V2.FrameValue.LinkedInfo, {});
+	} else if (id === 'TIPL' || id === 'TMCL') {
+		return simplifyInvolvedPeopleList(id, frame);
+	}
+	if (slug) {
+		return simplifyValue(id, slug, frame);
+	}
 }
 
 export function simplifyTag(tag: IID3V2.Tag, dropIDsList?: Array<string>): IID3V2.TagSimplified {
