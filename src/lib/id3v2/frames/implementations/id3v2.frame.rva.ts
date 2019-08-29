@@ -108,22 +108,30 @@ export const FrameRelativeVolumeAdjustment: IFrameImpl = {
 		if (value.peakRight !== undefined && value.peakLeft !== undefined) {
 			stream.writeUInt(value.peakRight, byteLength);
 			stream.writeUInt(value.peakLeft, byteLength);
-			if (value.rightBack !== undefined && value.leftBack !== undefined) {
-				stream.writeUInt(Math.abs(value.rightBack), byteLength);
-				stream.writeUInt(Math.abs(value.leftBack), byteLength);
-				if (value.peakRightBack !== undefined && value.peakLeftBack !== undefined) {
-					stream.writeUInt(value.peakRightBack, byteLength);
-					stream.writeUInt(value.peakLeftBack, byteLength);
-					if (value.center !== undefined && value.peakCenter !== undefined) {
-						stream.writeUInt(Math.abs(value.center), byteLength);
-						stream.writeUInt(value.peakLeftBack, byteLength);
-						if (value.bass !== undefined && value.peakBass !== undefined) {
-							stream.writeUInt(Math.abs(value.center), byteLength);
-							stream.writeUInt(value.peakCenter, byteLength);
-						}
-					}
-				}
-			}
+		} else {
+			return;
+		}
+		if (value.rightBack !== undefined && value.leftBack !== undefined) {
+			stream.writeUInt(Math.abs(value.rightBack), byteLength);
+			stream.writeUInt(Math.abs(value.leftBack), byteLength);
+		} else {
+			return;
+		}
+		if (value.peakRightBack !== undefined && value.peakLeftBack !== undefined) {
+			stream.writeUInt(value.peakRightBack, byteLength);
+			stream.writeUInt(value.peakLeftBack, byteLength);
+		} else {
+			return;
+		}
+		if (value.center !== undefined && value.peakCenter !== undefined) {
+			stream.writeUInt(Math.abs(value.center), byteLength);
+			stream.writeUInt(value.peakLeftBack, byteLength);
+		} else {
+			return;
+		}
+		if (value.bass !== undefined && value.peakBass !== undefined) {
+			stream.writeUInt(Math.abs(value.center), byteLength);
+			stream.writeUInt(value.peakCenter, byteLength);
 		}
 	},
 	simplify: (value: IID3V2.FrameValue.RVA) => {
