@@ -51,7 +51,7 @@ export class MP3Reader {
 	}
 
 	private async readID3V2(chunk: Buffer, i: number): Promise<boolean> {
-		const id3Header = this.id3v2reader.readID3v2Header(chunk, i);
+		const id3Header = this.id3v2reader.headerReader.readID3v2Header(chunk, i);
 		if (id3Header && id3Header.valid) {
 			const start = this.stream.pos - chunk.length + i;
 			this.stream.unshift(chunk.slice(i));
