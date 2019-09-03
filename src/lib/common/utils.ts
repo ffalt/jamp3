@@ -62,16 +62,7 @@ export function log2(x: number): number {
 }
 
 export function bitarray(byte: number): Array<number> {
-	const b = []; // The binary representation
-	b[0] = ((byte & 128) === 128 ? 1 : 0);
-	b[1] = ((byte & 64) === 64 ? 1 : 0);
-	b[2] = ((byte & 32) === 32 ? 1 : 0);
-	b[3] = ((byte & 16) === 16 ? 1 : 0);
-	b[4] = ((byte & 8) === 8 ? 1 : 0);
-	b[5] = ((byte & 4) === 4 ? 1 : 0);
-	b[6] = ((byte & 2) === 2 ? 1 : 0);
-	b[7] = ((byte & 1) === 1 ? 1 : 0);
-	return b;
+	return [128, 64, 32, 16, 8, 4, 2, 1].map(offset => (byte & offset) === offset ? 1 : 0);
 }
 
 export function unbitarray(bitsarray: Array<number>): number {
