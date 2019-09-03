@@ -1,14 +1,12 @@
 import fs from 'fs';
 import {BufferUtils} from './buffer';
 import {synchsafe, unbitarray} from './utils';
-import {Encodings, IEncoding} from './encodings';
+import {ascii, IEncoding} from './encodings';
 
 const MemoryStream = require('memory-stream'); // TODO: type Memorystream
 
 export class WriterStream {
 	protected wstream: fs.WriteStream;
-	protected ascii = Encodings['ascii'];
-	protected utf8 = Encodings['utf8'];
 
 	constructor() {
 		this.wstream = new MemoryStream();
@@ -111,12 +109,12 @@ export class WriterStream {
 	}
 
 	writeFixedAsciiString(val: string, size: number) {
-		const buf = this.ascii.encode(val.slice(0, size)).slice(0, size);
+		const buf = ascii.encode(val.slice(0, size)).slice(0, size);
 		this.writeFixedBuffer(buf, size);
 	}
 
-	writeFixedUTF8String(val: string, size: number) {
-		const buf = this.utf8.encode(val.slice(0, size)).slice(0, size);
-		this.writeFixedBuffer(buf, size);
-	}
+	// writeFixedUTF8String(val: string, size: number) {
+	// 	const buf = utf8.encode(val.slice(0, size)).slice(0, size);
+	// 	this.writeFixedBuffer(buf, size);
+	// }
 }

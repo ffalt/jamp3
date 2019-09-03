@@ -1,12 +1,9 @@
-import {Encodings, IEncoding} from './encodings';
+import {ascii, utf8, IEncoding, Encodings} from './encodings';
 import {BufferUtils} from './buffer';
 import {ID3v2_UnifiedENCODINGS} from '../id3v2/id3v2.header.consts';
 import {removeUnsync} from '../id3v2/frames/id3v2.frame.unsync';
 
 export class BufferReader {
-	protected ascii = Encodings['ascii'];
-	protected utf8 = Encodings['utf8'];
-
 	data: Buffer;
 	position = 0;
 
@@ -80,7 +77,7 @@ export class BufferReader {
 		const encid = this.data[this.position].toString();
 		const encoding = ID3v2_UnifiedENCODINGS[encid] || 'ascii';
 		this.position += 1;
-		return Encodings[encoding] || this.ascii;
+		return Encodings[encoding] || ascii;
 	}
 
 	readStringBuffer(amount: number): Buffer {
@@ -95,21 +92,21 @@ export class BufferReader {
 		return buf;
 	}
 
-	readFixedAsciiString(amount: number): string {
-		const buf = this.readStringBuffer(amount);
-		return this.ascii.decode(buf);
-	}
-
-	readFixedUTF8String(amount: number): string {
-		const buf = this.readStringBuffer(amount);
-		return this.utf8.decode(buf);
-	}
+	// readFixedAsciiString(amount: number): string {
+	// 	const buf = this.readStringBuffer(amount);
+	// 	return ascii.decode(buf);
+	// }
+	//
+	// readFixedUTF8String(amount: number): string {
+	// 	const buf = this.readStringBuffer(amount);
+	// 	return utf8.decode(buf);
+	// }
 
 	readFixedAutodectectString(amount: number): string {
 		const buf = this.readStringBuffer(amount);
-		let result = this.utf8.decode(buf);
+		let result = utf8.decode(buf);
 		if (result.indexOf('�') >= 0) {
-			result = this.ascii.decode(buf);
+			result = ascii.decode(buf);
 		}
 		return result;
 	}
