@@ -25,6 +25,32 @@ export function upgrade23DateFramesTov24Date(dateFrames: Array<IID3V2.Frame>): I
 	};
 }
 
+function downgradeFrame(id: string, dest: number): string | null {
+	const downgradeKey = Object.keys(FrameDefs).find(key => FrameDefs[key].upgrade === id);
+	if (!downgradeKey) {
+		// debug('ensureID3v2FrameVersionDef', 'Missing v2.' + def.versions + ' -> v2.' + dest + ' mapping', id);
+		return null;
+	}
+	const fdown = FrameDefs[downgradeKey];
+	if (fdown.versions.includes(dest)) {
+		return downgradeKey;
+	}
+	return (fdown.versions[0] > dest) ? ensureID3v2FrameVersionDef(downgradeKey, dest) : null;
+
+}
+
+function upgradeFrame(upgradeKey: string | undefined, dest: number): string | null {
+	if (!upgradeKey) {
+		// debug('ensureID3v2FrameVersionDef', 'Missing v2.' + def.versions + ' -> v2.' + dest + ' mapping', id);
+		return null;
+	}
+	const fup = FrameDefs[upgradeKey];
+	if (fup.versions.includes(dest)) {
+		return upgradeKey;
+	}
+	return (fup.versions[0] < dest) ? ensureID3v2FrameVersionDef(upgradeKey, dest) : null;
+}
+
 export function ensureID3v2FrameVersionDef(id: string, dest: number): string | null {
 	const def = FrameDefs[id];
 	if (!def) {
@@ -35,25 +61,7 @@ export function ensureID3v2FrameVersionDef(id: string, dest: number): string | n
 		return id;
 	}
 	if (def.versions[0] > dest) {
-		const downgradeKey = Object.keys(FrameDefs).find(key => FrameDefs[key].upgrade === id);
-		if (!downgradeKey) {
-			// debug('ensureID3v2FrameVersionDef', 'Missing v2.' + def.versions + ' -> v2.' + dest + ' mapping', id);
-			return null;
-		}
-		const fdown = FrameDefs[downgradeKey];
-		if (fdown.versions.includes(dest)) {
-			return downgradeKey;
-		}
-		return (fdown.versions[0] > dest) ? ensureID3v2FrameVersionDef(downgradeKey, dest) : null;
+		return downgradeFrame(id, dest);
 	}
-	if (!def.upgrade) {
-		// debug('ensureID3v2FrameVersionDef', 'Missing v2.' + def.versions + ' -> v2.' + dest + ' mapping', id);
-		return null;
-	}
-	const upgradeKey = def.upgrade;
-	const fup = FrameDefs[upgradeKey];
-	if (fup.versions.includes(dest)) {
-		return upgradeKey;
-	}
-	return (fup.versions[0] < dest) ? ensureID3v2FrameVersionDef(upgradeKey, dest) : null;
+	return upgradeFrame(def.upgrade, dest);
 }
