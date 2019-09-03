@@ -1,41 +1,7 @@
 import {IID3V2} from './id3v2.types';
+import {ID3V2FramesCollect} from './id3v2.builder.collect';
 
-export class ID3V2RawBuilder {
-	private frameValues: IID3V2.Frames.Map = {};
-
-	constructor(private encoding?: string) {
-	}
-
-	private replace(key: string, frame: IID3V2.Frame) {
-		this.frameValues[key] = [frame];
-	}
-
-	private replaceFrame<T>(key: string, value: T): void {
-		this.replace(key, {id: key, value, head: this.head()});
-	}
-
-	private add(key: string, frame: IID3V2.Frame) {
-		this.frameValues[key] = (this.frameValues[key] || []).concat([frame]);
-	}
-
-	private addFrame<T>(key: string, value: T): void {
-		this.add(key, {id: key, value, head: this.head()});
-	}
-
-	private head(): IID3V2.FrameHeader {
-		return {
-			size: 0,
-			statusFlags: {},
-			formatFlags: {},
-			encoding: this.encoding
-		};
-	}
-
-	build(): IID3V2.Frames.Map {
-		return this.frameValues;
-	}
-
-	// frame types as functions
+export class ID3V2RawBuilder extends ID3V2FramesCollect {
 
 	audioEncryption(key: string, id: string, previewStart: number, previewLength: number, bin: Buffer) {
 		this.addFrame<IID3V2.FrameValue.AudioEncryption>(key, {id, previewStart, previewLength, bin});
@@ -71,20 +37,13 @@ export class ID3V2RawBuilder {
 
 	idLangText(key: string, value: string | undefined, lang: string | undefined, id: string | undefined) {
 		if (value) {
-			id = id || '';
-			lang = lang || '';
-			const list = (<Array<IID3V2.Frames.LangDescTextFrame>>(this.frameValues[key] || []))
-				.filter(f => f.value.id !== id);
-			const frame: IID3V2.Frames.LangDescTextFrame = {id: key, value: {id, language: lang, text: value}, head: this.head()};
-			this.frameValues[key] = list.concat([frame]);
+			this.addIDFrame<IID3V2.FrameValue.LangDescText>(key, {id: id || '', language: lang || '', text: value});
 		}
 	}
 
 	idText(key: string, id: string, value: string | undefined) {
 		if (value) {
-			const frame: IID3V2.Frames.IdTextFrame = {id: key, value: {id, text: value}, head: this.head()};
-			const list = (<Array<IID3V2.Frames.IdTextFrame>>(this.frameValues[key] || [])).filter(f => f.value.id !== id);
-			this.frameValues[key] = list.concat([frame]);
+			this.addIDFrame<IID3V2.FrameValue.IdText>(key, {id: id || '', text: value});
 		}
 	}
 
