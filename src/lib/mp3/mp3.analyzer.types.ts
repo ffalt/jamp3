@@ -5,14 +5,7 @@ import {IID3V1, IID3V2} from '../..';
  */
 export namespace IMP3Analyzer {
 
-	export interface Warning {
-		/** msg of warning */
-		msg: string;
-		/** expected value */
-		expected: number | string | boolean;
-		/** found value */
-		actual: number | string | boolean;
-	}
+	export import Warning = IID3V2.Warning;
 
 	export interface Options {
 		/** test for mpeg warnings */
