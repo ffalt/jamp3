@@ -46,10 +46,10 @@ export class FileWriterStream extends WriterStream {
 	}
 
 	async copyRange(filename: string, start: number, finish: number): Promise<void> {
-		this.pipeStream(fs.createReadStream(filename, {start, end: finish}));
+		return this.pipeStream(fs.createReadStream(filename, {start, end: finish}));
 	}
 
 	async copyFrom(filename: string, position: number): Promise<void> {
-		this.pipeStream(fs.createReadStream(filename, {start: position}));
+		return this.pipeStream(fs.createReadStream(filename, {start: position}));
 	}
 }
