@@ -1,8 +1,9 @@
-import {MP3Analyzer} from '../lib/mp3/mp3.analyzer';
-import {collectFiles} from '../lib/common/utils';
 import program from 'commander';
 import fse from 'fs-extra';
+
+import {MP3Analyzer} from '../lib/mp3/mp3.analyzer';
 import {IMP3Analyzer} from '../lib/mp3/mp3.analyzer.types';
+import {runTool} from '../lib/common/tool';
 
 const pack = require('../../package.json');
 
@@ -71,28 +72,12 @@ async function onFile(filename: string): Promise<void> {
 	}
 }
 
+
 async function run(): Promise<void> {
-	let input = program.input;
-	if (!input) {
-		if (program.args[0]) {
-			input = program.args[0];
-			// if (program.args[1]) {
-			// 	destfile = program.args[1];
-			// }
-		}
-	}
 	if (program.ignoreXingOffOne) {
 		options.ignoreXingOffOne = program.ignoreXingOffOne;
 	}
-	if (!input || input.length === 0) {
-		return Promise.reject(Error('must specify a filename/directory'));
-	}
-	const stat = await fse.stat(input);
-	if (stat.isDirectory()) {
-		await collectFiles(input, ['.mp3'], program.recursive, onFile);
-	} else {
-		await onFile(input);
-	}
+	await runTool(program, onFile);
 	if (program.dest) {
 		if (program.format === 'plain') {
 			await fse.writeFile(program.dest, result.map(r => toPlain(r)).join('\n'));
