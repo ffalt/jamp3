@@ -11,8 +11,7 @@ export class ID3V2RawBuilder {
 	}
 
 	private replaceFrame<T>(key: string, value: T): void {
-		const frame = {id: key, value, head: this.head()};
-		this.replace(key, frame);
+		this.replace(key, {id: key, value, head: this.head()});
 	}
 
 	private add(key: string, frame: IID3V2.Frame) {
@@ -20,8 +19,7 @@ export class ID3V2RawBuilder {
 	}
 
 	private addFrame<T>(key: string, value: T): void {
-		const frame = {id: key, value, head: this.head()};
-		this.add(key, frame);
+		this.add(key, {id: key, value, head: this.head()});
 	}
 
 	private head(): IID3V2.FrameHeader {
