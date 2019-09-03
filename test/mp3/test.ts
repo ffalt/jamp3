@@ -37,7 +37,7 @@ describe('MP3', async () => {
 				describe(filename.slice(root.root.length), () => {
 					it('should load & compare to spec', async () => {
 						await testSpec(filename);
-					});
+					}).timeout(10000);
 					it('should load tags & save tags & compare tags', async () => {
 						await testLoadSaveCompare(filename);
 					}).timeout(200000);
