@@ -28,45 +28,32 @@ export function upgrade23DateFramesTov24Date(dateFrames: Array<IID3V2.Frame>): I
 export function ensureID3v2FrameVersionDef(id: string, dest: number): string | null {
 	const def = FrameDefs[id];
 	if (!def) {
-		// TODO: matcher
+		// TODO: matcher?
 		return null;
 	}
-	if (def.versions.indexOf(dest) >= 0) {
+	if (def.versions.includes(dest)) {
 		return id;
 	}
 	if (def.versions[0] > dest) {
-		const downgradeKey = Object.keys(FrameDefs).find(key => {
-			return FrameDefs[key].upgrade === id;
-		});
+		const downgradeKey = Object.keys(FrameDefs).find(key => FrameDefs[key].upgrade === id);
 		if (!downgradeKey) {
 			// debug('ensureID3v2FrameVersionDef', 'Missing v2.' + def.versions + ' -> v2.' + dest + ' mapping', id);
 			return null;
 		}
-		const f2 = FrameDefs[downgradeKey];
-		if (f2.versions.indexOf(dest) < 0) {
-			if (f2.versions[0] > dest) {
-				return ensureID3v2FrameVersionDef(downgradeKey, dest);
-			} else {
-				return null;
-			}
-		} else {
+		const fdown = FrameDefs[downgradeKey];
+		if (fdown.versions.includes(dest)) {
 			return downgradeKey;
 		}
-	} else {
-		if (!def.upgrade) {
-			// debug('ensureID3v2FrameVersionDef', 'Missing v2.' + def.versions + ' -> v2.' + dest + ' mapping', id);
-			return null;
-		}
-		const upgradeKey = def.upgrade;
-		const f2 = FrameDefs[upgradeKey];
-		if (f2.versions.indexOf(dest) < 0) {
-			if (f2.versions[0] < dest) {
-				return ensureID3v2FrameVersionDef(upgradeKey, dest);
-			} else {
-				return null;
-			}
-		} else {
-			return upgradeKey;
-		}
+		return (fdown.versions[0] > dest) ? ensureID3v2FrameVersionDef(downgradeKey, dest) : null;
 	}
+	if (!def.upgrade) {
+		// debug('ensureID3v2FrameVersionDef', 'Missing v2.' + def.versions + ' -> v2.' + dest + ' mapping', id);
+		return null;
+	}
+	const upgradeKey = def.upgrade;
+	const fup = FrameDefs[upgradeKey];
+	if (fup.versions.includes(dest)) {
+		return upgradeKey;
+	}
+	return (fup.versions[0] < dest) ? ensureID3v2FrameVersionDef(upgradeKey, dest) : null;
 }
