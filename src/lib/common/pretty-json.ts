@@ -29,7 +29,7 @@ function arrayToString(obj: Array<any>, level: number, options: { flatNodes: Arr
 }
 
 export function prettyJSONify(obj: any, level: number, flat: boolean, options: { flatNodes: Array<string>, space: string }): string {
-	if (flat) {
+	if (flat || obj instanceof Buffer) {
 		return JSON.stringify(obj);
 	}
 	if (obj instanceof Array) {
@@ -37,9 +37,6 @@ export function prettyJSONify(obj: any, level: number, flat: boolean, options: {
 	}
 	if (typeof obj !== 'object') {
 		return JSON.stringify(obj, null, options.space);
-	}
-	if (obj instanceof Buffer) {
-		return JSON.stringify(obj);
 	}
 	return objToString(obj, level, options);
 }
