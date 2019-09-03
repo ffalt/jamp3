@@ -29,8 +29,7 @@ export class FileWriterStream extends WriterStream {
 		});
 	}
 
-	async copyRange(filename: string, start: number, finish: number): Promise<void> {
-		const readstream = fs.createReadStream(filename, {start, end: finish});
+	private async pipeStream(readstream: fs.ReadStream): Promise<void> {
 		return new Promise<void>((resolve, reject) => {
 			readstream.on('error', (err) => {
 				return reject(err);
@@ -46,20 +45,11 @@ export class FileWriterStream extends WriterStream {
 		});
 	}
 
+	async copyRange(filename: string, start: number, finish: number): Promise<void> {
+		this.pipeStream(fs.createReadStream(filename, {start, end: finish}));
+	}
+
 	async copyFrom(filename: string, position: number): Promise<void> {
-		const readstream = fs.createReadStream(filename, {start: position});
-		return new Promise<void>((resolve, reject) => {
-			readstream.on('error', (err) => {
-				return reject(err);
-			});
-			readstream.on('end', (err) => {
-				if (err) {
-					reject(err);
-				} else {
-					resolve();
-				}
-			});
-			readstream.pipe(this.wstream, {end: false});
-		});
+		this.pipeStream(fs.createReadStream(filename, {start: position}));
 	}
 }

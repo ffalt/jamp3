@@ -36,7 +36,6 @@ function downgradeFrame(id: string, dest: number): string | null {
 		return downgradeKey;
 	}
 	return (fdown.versions[0] > dest) ? ensureID3v2FrameVersionDef(downgradeKey, dest) : null;
-
 }
 
 function upgradeFrame(upgradeKey: string | undefined, dest: number): string | null {
