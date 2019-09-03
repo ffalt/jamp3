@@ -1,3 +1,14 @@
+<a name="0.4.1"></a>
+# 0.4.1 (2019/?/?)
+### Features
+* CodeClimate: reduce duplication
+* CodeClimate: smaller source files
+* CodeClimate: reduce cognitive complexity
+* CodeClimate: file naming scheme
+ 
+### Bug Fixes
+* ID3V2.FrameTextConcatList value was not written in parts
+
 <a name="0.4.0"></a>
 # 0.4.0 (2019/08/28)
 ### Features
