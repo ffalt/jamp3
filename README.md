@@ -27,7 +27,7 @@ Motivation for this yet-another-id3-library:
 
 * Write support
 
-  ID3v2/ID3v1 can be remove or written.
+  ID3v2/ID3v1 can be removed or written.
 
   For ID3v2.4 an easy-to-use build helper is available. For more complex use, you can write other versions and even non-standard combinations of ID3v2 frames.
   

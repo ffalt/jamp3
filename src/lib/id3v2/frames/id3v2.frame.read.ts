@@ -33,7 +33,7 @@ async function processRawFrame(frame: IID3V2.RawFrame, head: IID3V2.TagHeader): 
 						frame.data = result;
 						resolve();
 					}
-					reject('Uncompressing frame failed');
+					reject('Decompressing frame failed');
 				});
 			});
 		});
