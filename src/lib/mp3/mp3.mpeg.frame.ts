@@ -5,6 +5,7 @@ import {
 } from './mp3.mpeg.consts';
 import {IMP3} from './mp3.types';
 import {isBit} from '../common/utils';
+import {BufferReader} from '../common/buffer-reader';
 
 export function collapseRawHeader(header: IMP3.FrameRawHeader): IMP3.FrameRawHeaderArray {
 	return [
@@ -287,42 +288,25 @@ export class MPEGFrameReader {
 		 24        2        Frames per table entry as Big-Endian WORD    845
 		 26        TOC entries for seeking as Big-Endian integral. From size per table entry and number of entries, you can calculate the length of this field.
 		 */
-		frame.mode = data.slice(offset, offset + 4).toString();
-		offset += 4;
-		const version = data.readIntBE(offset, 2);
-		offset += 2;
-		const delay = data.readIntBE(offset, 2);
-		offset += 2;
-		const quality = data.readIntBE(offset, 2);
-		offset += 2;
-		const bytes = data.readIntBE(offset, 4);
-		offset += 4;
-		const frames = data.readIntBE(offset, 4);
-		offset += 4;
-		const toc_entries = data.readIntBE(offset, 2);
-		offset += 2;
-		const toc_scale = data.readIntBE(offset, 2);
-		offset += 2;
-		const toc_entry_size = data.readIntBE(offset, 2);
-		offset += 2;
-		const toc_frames = data.readIntBE(offset, 2);
-		offset += 2;
+		const reader = new BufferReader(data);
+		reader.position = offset;
+		frame.mode = reader.readFixedAsciiString(4);
+		const version = reader.readSInt(2);
+		const delay = reader.readSInt(2);
+		const quality = reader.readSInt(2);
+		const bytes = reader.readSInt(4);
+		const frames = reader.readSInt(4);
+		const toc_entries = reader.readSInt(2);
+		const toc_scale = reader.readSInt(2);
+		const toc_entry_size = reader.readSInt(2);
+		const toc_frames = reader.readSInt(2);
 		const toc_size = toc_entries * toc_entry_size;
-		const toc = data.slice(offset, offset + toc_size);
-		offset += toc_size;
+		const toc = reader.readBuffer(toc_size);
 		frame.vbri = {
-			version,
-			delay,
-			quality,
-			bytes,
-			frames,
-			toc_entries,
-			toc_scale,
-			toc_entry_size,
-			toc_frames,
-			toc
+			version, delay, quality, bytes, frames,
+			toc_entries, toc_scale, toc_entry_size, toc_frames, toc
 		};
-		return offset;
+		return reader.position;
 	}
 
 	private readXing(data: Buffer, frame: IMP3.RawFrame, offset: number): number {
@@ -362,10 +346,10 @@ export class MPEGFrameReader {
 
 		 There exists the LAME extension to this header, which is used by the common LAME Encoder, http://gabriel.mp3-tech.org/mp3infotag.html#versionstring
 		 */
-		frame.mode = data.slice(offset, offset + 4).toString();
-
-		offset += 4;
-		const field = data.readInt32BE(offset);
+		const reader = new BufferReader(data);
+		reader.position = offset;
+		frame.mode = reader.readFixedAsciiString(4);
+		const field = reader.readSInt(4);
 		frame.xing = {
 			fields: {
 				frames: isBit(field, 1),
@@ -374,24 +358,19 @@ export class MPEGFrameReader {
 				quality: isBit(field, 8)
 			}
 		};
-		offset += 4;
 		if (frame.xing.fields.frames) {
-			frame.xing.frames = data.readInt32BE(offset);
-			offset += 4;
+			frame.xing.frames = reader.readSInt(4);
 		}
 		if (frame.xing.fields.bytes) {
-			frame.xing.bytes = data.readInt32BE(offset);
-			offset += 4;
+			frame.xing.bytes = reader.readSInt(4);
 		}
 		if (frame.xing.fields.toc) {
-			frame.xing.toc = data.slice(offset, offset + 100);
-			offset += 100;
+			frame.xing.toc = reader.readBuffer(100);
 		}
 		if (frame.xing.fields.quality) {
-			frame.xing.quality = data.readInt32BE(offset);
-			offset += 4;
+			frame.xing.quality = reader.readSInt(4);
 		}
-		return offset;
+		return reader.position;
 	}
 
 	public readFrame(chunk: Buffer, offset: number, header: IMP3.FrameRawHeader): { offset: number, frame: IMP3.RawFrame } {

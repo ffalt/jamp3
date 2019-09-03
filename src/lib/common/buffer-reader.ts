@@ -92,11 +92,11 @@ export class BufferReader {
 		return buf;
 	}
 
-	// readFixedAsciiString(amount: number): string {
-	// 	const buf = this.readStringBuffer(amount);
-	// 	return ascii.decode(buf);
-	// }
-	//
+	readFixedAsciiString(amount: number): string {
+		const buf = this.readStringBuffer(amount);
+		return ascii.decode(buf);
+	}
+
 	// readFixedUTF8String(amount: number): string {
 	// 	const buf = this.readStringBuffer(amount);
 	// 	return utf8.decode(buf);
