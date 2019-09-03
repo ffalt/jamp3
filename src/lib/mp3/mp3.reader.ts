@@ -34,54 +34,12 @@ export class MP3Reader {
 	constructor() {
 	}
 
-	private async readID3V1(chunk: Buffer, i: number): Promise<boolean> {
-		const tag = this.id3v1reader.readTag(chunk.slice(i, i + 128));
-		if (!tag) {
-			return false;
+	private readFullMPEGFrame(chunk: Buffer, pos: number, header: IMP3.FrameRawHeader): boolean {
+		if (this.demandData(chunk, pos)) {
+			return true;
 		}
-		tag.start = this.stream.pos - chunk.length + i;
-		tag.end = tag.start + 128;
-		this.layout.tags.push(tag);
-		if (!this.stream.end || chunk.length - 128 - i > 0) {
-			// we need to rewind and scan, there are several unfortunate other tags which may be detected as valid td3v1, e.g. "APETAGEX", "TAG+", "CUSTOMTAG" or just a equal looking stream position
-			this.stream.unshift(chunk.slice(i + 1));
-		} else {
-			this.stream.unshift(chunk.slice(i + 128));
-		}
-		return true;
-	}
-
-	private async readID3V2(chunk: Buffer, i: number): Promise<boolean> {
-		const id3Header = this.id3v2reader.headerReader.readID3v2Header(chunk, i);
-		if (id3Header && id3Header.valid) {
-			const start = this.stream.pos - chunk.length + i;
-			this.stream.unshift(chunk.slice(i));
-			const result = await this.id3v2reader.readReaderStream(this.stream);
-			if (result) {
-				let rest = result.rest || BufferUtils.zeroBuffer(0);
-				if (result.tag && result.tag.head.valid) {
-					this.layout.tags.push(result.tag);
-					result.tag.start = start;
-					result.tag.end = this.stream.pos - rest.length;
-					if (!this.options.detectDuplicateID3v2) {
-						this.scanid3v2 = false;
-					}
-					if (this.options.id3v1IfNotID3v2) {
-						this.scanid3v1 = false;
-					}
-				} else {
-					rest = rest.slice(1);
-				}
-				this.stream.unshift(rest);
-				return true;
-			}
-		}
-		return false;
-	}
-
-	private readMPEGFrame(chunk: Buffer, i: number, header: IMP3.FrameRawHeader) {
-		header.offset = this.stream.pos - chunk.length + i;
-		const a = this.mpegFramereader.readFrame(chunk, i, header);
+		header.offset = this.stream.pos - chunk.length + pos;
+		const a = this.mpegFramereader.readFrame(chunk, pos, header);
 		if (a.frame) {
 			if (a.frame.vbri || a.frame.xing) {
 				this.layout.headframes.push(a.frame);
@@ -101,6 +59,76 @@ export class MP3Reader {
 				}
 			}
 		}
+		return false;
+	}
+
+	private readMPEGFrame(chunk: Buffer, pos: number): boolean {
+		if (this.demandData(chunk, pos)) {
+			return true;
+		}
+		const header = this.mpegFramereader.readMPEGFrameHeader(chunk, pos);
+		if (header) {
+			this.scanid3v2 = false; // no more scanning for id3v2 after audio start
+			if (!this.scanMPEGFrame) {
+				header.offset = this.stream.pos - chunk.length + pos;
+				this.layout.frameheaders.push(collapseRawHeader(header));
+			} else {
+				return this.readFullMPEGFrame(chunk, pos, header);
+			}
+		}
+		return false;
+	}
+
+	private readID3V1(chunk: Buffer, pos: number): boolean {
+		if (this.demandData(chunk, pos)) {
+			return true;
+		}
+		const tag = this.id3v1reader.readTag(chunk.slice(pos, pos + 128));
+		if (!tag) {
+			return false;
+		}
+		tag.start = this.stream.pos - chunk.length + pos;
+		tag.end = tag.start + 128;
+		this.layout.tags.push(tag);
+		if (!this.stream.end || chunk.length - 128 - pos > 0) {
+			// we need to rewind and scan, there are several unfortunate other tags which may be detected as valid td3v1, e.g. "APETAGEX", "TAG+", "CUSTOMTAG" or just a equal looking stream position
+			this.stream.unshift(chunk.slice(pos + 1));
+		} else {
+			this.stream.unshift(chunk.slice(pos + 128));
+		}
+		return true;
+	}
+
+	private async readID3V2(chunk: Buffer, pos: number): Promise<boolean> {
+		if (this.demandData(chunk, pos)) {
+			return true;
+		}
+		const id3Header = this.id3v2reader.headerReader.readID3v2Header(chunk, pos);
+		if (!id3Header || !id3Header.valid) {
+			return false;
+		}
+		const start = this.stream.pos - chunk.length + pos;
+		this.stream.unshift(chunk.slice(pos));
+		const result = await this.id3v2reader.readReaderStream(this.stream);
+		if (result) {
+			let rest = result.rest || BufferUtils.zeroBuffer(0);
+			if (result.tag && result.tag.head.valid) {
+				this.layout.tags.push(result.tag);
+				result.tag.start = start;
+				result.tag.end = this.stream.pos - rest.length;
+				if (!this.options.detectDuplicateID3v2) {
+					this.scanid3v2 = false;
+				}
+				if (this.options.id3v1IfNotID3v2) {
+					this.scanid3v1 = false;
+				}
+			} else {
+				rest = rest.slice(1);
+			}
+			this.stream.unshift(rest);
+			return true;
+		}
+		return false;
 	}
 
 	private async processChunkToEnd(chunk: Buffer): Promise<boolean> {
@@ -115,7 +143,7 @@ export class MP3Reader {
 
 	private async processChunkID3v1(chunk: Buffer): Promise<boolean> {
 		let pos = 0;
-		if (!this.stream.end && this.stream.buffersLength > 200) {
+		if (!this.stream.end && (this.stream.buffersLength > 200)) {
 			this.stream.skip(this.stream.buffersLength - 200);
 			chunk = this.stream.get(200);
 			pos = 0;
@@ -124,10 +152,8 @@ export class MP3Reader {
 			const c1 = chunk[pos];
 			const c2 = chunk[pos + 1];
 			const c3 = chunk[pos + 2];
-			if (c1 === 84 && c2 === 65 && c3 === 71) {
-				if (this.demandData(chunk, pos) || await this.readID3V1(chunk, pos)) {
-					return true;
-				}
+			if ((c1 === 84) && (c2 === 65) && (c3 === 71) && this.readID3V1(chunk, pos)) {
+				return true;
 			}
 			pos++;
 		}
@@ -140,31 +166,12 @@ export class MP3Reader {
 			const c1 = chunk[pos];
 			const c2 = chunk[pos + 1];
 			const c3 = chunk[pos + 2];
-			if (this.scanid3v2 && c1 === 73 && c2 === 68 && c3 === 51) {
-				if (this.demandData(chunk, pos) || await this.readID3V2(chunk, pos)) {
-					return true;
-				}
-			} else if (this.scanMpeg && c1 === 255) {
-				if (this.demandData(chunk, pos)) {
-					return true;
-				}
-				const header = this.mpegFramereader.readMPEGFrameHeader(chunk, pos);
-				if (header) {
-					this.scanid3v2 = false; // no more scanning for id3v2 after audio start
-					if (!this.scanMPEGFrame) {
-						header.offset = this.stream.pos - chunk.length + pos;
-						this.layout.frameheaders.push(collapseRawHeader(header));
-					} else {
-						if (this.demandData(chunk, pos)) {
-							return true;
-						}
-						this.readMPEGFrame(chunk, pos, header);
-					}
-				}
-			} else if (this.scanid3v1 && c1 === 84 && c2 === 65 && c3 === 71) {
-				if (this.demandData(chunk, pos) || await this.readID3V1(chunk, pos)) {
-					return true;
-				}
+			if (this.scanid3v2 && c1 === 73 && c2 === 68 && c3 === 51 && (await this.readID3V2(chunk, pos))) {
+				return true;
+			} else if (this.scanMpeg && c1 === 255 && this.readMPEGFrame(chunk, pos)) {
+				return true;
+			} else if (this.scanid3v1 && c1 === 84 && c2 === 65 && c3 === 71 && this.readID3V1(chunk, pos)) {
+				return true;
 			}
 			pos++;
 		}
@@ -177,14 +184,10 @@ export class MP3Reader {
 			const c1 = chunk[pos];
 			const c2 = chunk[pos + 1];
 			const c3 = chunk[pos + 2];
-			if (c1 === 73 && c2 === 68 && c3 === 51) {
-				if (this.demandData(chunk, pos) || await this.readID3V2(chunk, pos)) {
-					return true;
-				}
-			} else if (c1 === 84 && c2 === 65 && c3 === 71) {
-				if (this.demandData(chunk, pos) || await this.readID3V1(chunk, pos)) {
-					return true;
-				}
+			if ((c1 === 73 && c2 === 68 && c3 === 51) && (await this.readID3V2(chunk, pos))) {
+				return true;
+			} else if ((c1 === 84 && c2 === 65 && c3 === 71) && this.readID3V1(chunk, pos)) {
+				return true;
 			}
 			pos++;
 		}
