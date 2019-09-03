@@ -119,17 +119,19 @@ export class ID3v2 {
 	 * @param options write options
 	 */
 	async write(filename: string, tag: IID3V2.ID3v2Tag, version: number, rev: number, options: IID3V2.WriteOptions): Promise<void> {
-		if (typeof options !== 'object') {
-			throw Error('Invalid options object, update your code'); // function api change
-		}
 		const opts = Object.assign({keepBackup: false, paddingSize: 100}, options);
-		const head: IID3V2.TagHeader = {
-			ver: version,
-			rev: rev,
-			size: 0,
-			valid: true,
-			flagBits: tag.head ? tag.head.flagBits : undefined
-		};
+		const head = await this.buildHead(tag, version, rev);
+		const raw_frames = await writeRawFrames(tag.frames, head, options.defaultEncoding);
+		const exists = await fse.pathExists(filename);
+		if (!exists) {
+			await this.writeTag(filename, raw_frames, head);
+		} else {
+			await this.replaceTag(filename, raw_frames, head, opts);
+		}
+	}
+
+	private async buildHead(tag: IID3V2.ID3v2Tag, version: number, rev: number): Promise<IID3V2.TagHeader> {
+		const head: IID3V2.TagHeader = {ver: version, rev: rev, size: 0, valid: true, flagBits: tag.head ? tag.head.flagBits : undefined};
 		if (tag.head) {
 			if (version === 4 && tag.head.v4) {
 				head.v4 = tag.head.v4;
@@ -141,13 +143,7 @@ export class ID3v2 {
 				head.v2 = tag.head.v2;
 			}
 		}
-		const raw_frames = await writeRawFrames(tag.frames, head, options.defaultEncoding);
-		const exists = await fse.pathExists(filename);
-		if (!exists) {
-			await this.writeTag(filename, raw_frames, head);
-		} else {
-			await this.replaceTag(filename, raw_frames, head, opts);
-		}
+		return head;
 	}
 
 	private async writeTag(filename: string, frames: Array<IID3V2.RawFrame>, head: IID3V2.TagHeader): Promise<void> {
