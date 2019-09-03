@@ -81,78 +81,77 @@ export class ID3v2Reader {
 	}
 
 	public async readFrames(data: Buffer, tag: IID3V2.RawTag): Promise<Buffer> {
-		const marker = ID3v2_FRAME_HEADER_LENGTHS.MARKER[tag.head.ver];
-		const sizebytes = ID3v2_FRAME_HEADER_LENGTHS.SIZE[tag.head.ver];
-		const flagsbytes = ID3v2_FRAME_HEADER_LENGTHS.FLAGS[tag.head.ver];
+		const markerLength = ID3v2_FRAME_HEADER_LENGTHS.MARKER[tag.head.ver];
 		const reader = new BufferReader(data);
 		let finish = false;
-		let scanpos = reader.position;
 		let skip = 0;
 		while (!finish) {
-			scanpos = reader.position;
-			let idbin = reader.readBuffer(marker);
-			if (idbin[0] === 0) {
-				// found a zero byte, game over
-				reader.position = reader.position - marker;
+			let idbin = reader.readBuffer(markerLength);
+			if (idbin[0] === 0) { // found a zero byte, game over
+				reader.position -= markerLength;
 				return reader.rest();
 			}
-			while (reader.unread() > 0 && (!isValidFrameBinId(idbin))) {
-				reader.position = reader.position - (marker - 1);
+			while (reader.hasData() && (!isValidFrameBinId(idbin))) {
+				reader.position -= (markerLength - 1);
 				skip++;
-				idbin = reader.readBuffer(marker);
+				idbin = reader.readBuffer(markerLength);
 			}
-			if (reader.unread() > 0 && isValidFrameBinId(idbin)) {
-				if (reader.unread() < sizebytes) {
+			if (reader.hasData() && isValidFrameBinId(idbin)) {
+				if (reader.unread() < ID3v2_FRAME_HEADER_LENGTHS.SIZE[tag.head.ver]) {
 					return reader.rest();
 				}
-				skip = this.readFrame(reader, idbin, tag, sizebytes, flagsbytes, skip, marker);
+				skip = this.readFrame(reader, idbin, tag, skip);
 			} else {
 				finish = true;
 			}
 		}
 		if (skip > 0) {
-			reader.position -= (skip + marker);
+			reader.position -= (skip + markerLength);
 		}
 		return reader.rest();
 	}
 
-	private readFrame(reader: BufferReader, idbin: Buffer, tag: IID3V2.RawTag, sizebytes: number, flagsbytes: number, skip: number, marker: number) {
+	private defaultRawFrame(idbin: Buffer, tag: IID3V2.RawTag): IID3V2.RawFrame {
+		return {
+			id: removeZeroString(idbin.toString('ascii').trim()),
+			size: 0, start: tag.start, end: tag.end,
+			data: BufferUtils.zeroBuffer(0),
+			statusFlags: {}, formatFlags: {}
+		};
+	}
+
+	private readFrame(reader: BufferReader, idbin: Buffer, tag: IID3V2.RawTag, skip: number): number {
+		const markerLength = ID3v2_FRAME_HEADER_LENGTHS.MARKER[tag.head.ver];
 		const pos = reader.position;
-		const frame: IID3V2.RawFrame = {id: removeZeroString(idbin.toString('ascii').trim()), size: 0, start: tag.start, end: tag.end, data: BufferUtils.zeroBuffer(0), statusFlags: {}, formatFlags: {}};
-		frame.size = reader.readUInt(sizebytes);
-		if (ID3v2_FRAME_HEADER.SYNCSAVEINT.indexOf(tag.head.ver) >= 0) {
+		const frame: IID3V2.RawFrame = this.defaultRawFrame(idbin, tag);
+		frame.size = reader.readUInt(ID3v2_FRAME_HEADER_LENGTHS.SIZE[tag.head.ver]);
+		if (ID3v2_FRAME_HEADER.SYNCSAVEINT.includes(tag.head.ver)) {
 			frame.size = unsynchsafe(frame.size);
 		}
-		if (flagsbytes > 0) {
+		if (ID3v2_FRAME_HEADER_LENGTHS.FLAGS[tag.head.ver] > 0) {
 			frame.statusFlags = flags(ID3v2_FRAME_FLAGS1[tag.head.ver], bitarray(reader.readByte()));
 			frame.formatFlags = flags(ID3v2_FRAME_FLAGS2[tag.head.ver], bitarray(reader.readByte()));
 		}
-		let frameheaderValid = (!frame.statusFlags.reserved && !frame.formatFlags.reserved2 && !frame.formatFlags.reserved3);
-		if (frameheaderValid && frame.size > reader.unread()) {
-			// debug('readFrames', 'not enough data for frame.size ' + frame.size + ' with end of declared rest size', reader.unread());
-			frameheaderValid = false;
+		let valid = (!frame.statusFlags.reserved && !frame.formatFlags.reserved2 && !frame.formatFlags.reserved3);
+		if (valid && frame.size > reader.unread()) {
+			valid = false;
 		}
-		if (frameheaderValid) {
+		if (valid) {
 			if (skip > 0 && tag.frames.length > 0) {
 				const lastFrame = tag.frames[tag.frames.length - 1];
-				// debug('readFrames', 'appending', skip, 'bytes to last frame', lastFrame.id);
-				lastFrame.data = BufferUtils.concatBuffer(lastFrame.data, reader.data.slice(pos - skip - marker, pos - marker));
+				lastFrame.data = BufferUtils.concatBuffer(lastFrame.data, reader.data.slice(pos - skip - markerLength, pos - markerLength));
 				lastFrame.size = lastFrame.data.length;
 			}
 			skip = 0;
-			// debug('readFrames', 'frame ' + frame.id + ' with size === ' + frame.size);
 			if (frame.size > 0) {
-				if (tag.head.v3 && tag.head.v3.flags.unsynchronisation) {
-					frame.data = reader.readUnsyncedBuffer(frame.size);
-				} else {
-					frame.data = reader.readBuffer(frame.size);
-				}
+				frame.data = (tag.head.v3 && tag.head.v3.flags.unsynchronisation) ?
+					reader.readUnsyncedBuffer(frame.size) :
+					reader.readBuffer(frame.size);
 			}
 			tag.frames.push(frame);
 		} else {
-			reader.position = pos - (marker - 1);
+			reader.position = pos - (markerLength - 1);
 			skip++;
-			// debug('readFrames', 'frame ' + frame.id + ' header invalid, go back to pos', reader.position);
 		}
 		return skip;
 	}
