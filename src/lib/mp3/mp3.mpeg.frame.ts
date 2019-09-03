@@ -1,16 +1,7 @@
 import {
-	mpeg_bitrates,
-	mpeg_channel_count,
-	mpeg_channel_mode_jointstereoIdx,
-	mpeg_channel_mode_types,
-	mpeg_channel_modes,
-	mpeg_emphasis,
-	mpeg_frame_samples,
-	mpeg_layer_joint_extension,
-	mpeg_layer_names_long,
-	mpeg_slot_size,
-	mpeg_srates,
-	mpeg_version_names_long
+	mpeg_bitrates, mpeg_channel_count, mpeg_channel_mode_jointstereoIdx, mpeg_channel_mode_types,
+	mpeg_channel_modes, mpeg_emphasis, mpeg_frame_samples, mpeg_layer_joint_extension,
+	mpeg_layer_names_long, mpeg_slot_size, mpeg_srates, mpeg_version_names_long
 } from './mp3.mpeg.consts';
 import {IMP3} from './mp3.types';
 import {isBit} from '../common/utils';
