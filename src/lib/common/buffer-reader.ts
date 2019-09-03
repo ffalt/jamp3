@@ -106,18 +106,11 @@ export class BufferReader {
 	}
 
 	readFixedAutodectectString(amount: number): string {
-		let buf = this.data.slice(this.position, this.position + amount);
-		for (let i = 0; i < buf.length; i++) {
-			if (buf[i] === 0) {
-				buf = buf.slice(0, i);
-				break;
-			}
-		}
+		const buf = this.readStringBuffer(amount);
 		let result = this.utf8.decode(buf);
 		if (result.indexOf('�') >= 0) {
 			result = this.ascii.decode(buf);
 		}
-		this.position += amount;
 		return result;
 	}
 
