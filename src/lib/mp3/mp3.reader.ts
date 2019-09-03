@@ -103,108 +103,119 @@ export class MP3Reader {
 		}
 	}
 
-	private async processChunk(chunk: Buffer): Promise<boolean> {
-		let i = 0;
-		const demandData = (): boolean => {
-			if (!this.stream.end && (chunk.length - i) < 200) {
-				// check if enough in chunk to read the frame header
-				this.stream.unshift(chunk.slice(i));
-				return true;
-			}
+	private async processChunkToEnd(chunk: Buffer): Promise<boolean> {
+		if (this.options.streamSize !== undefined) {
 			return false;
-		};
-		if (demandData()) {
+		}
+		// we are done here, but scroll to end to get full stream size
+		// TODO: better way to get the stream size?
+		await this.stream.consumeToEnd();
+		return false;
+	}
+
+	private async processChunkID3v1(chunk: Buffer): Promise<boolean> {
+		let pos = 0;
+		if (!this.stream.end && this.stream.buffersLength > 200) {
+			this.stream.skip(this.stream.buffersLength - 200);
+			chunk = this.stream.get(200);
+			pos = 0;
+		}
+		while (chunk.length - pos >= 4) {
+			const c1 = chunk[pos];
+			const c2 = chunk[pos + 1];
+			const c3 = chunk[pos + 2];
+			if (c1 === 84 && c2 === 65 && c3 === 71) {
+				if (this.demandData(chunk, pos) || await this.readID3V1(chunk, pos)) {
+					return true;
+				}
+			}
+			pos++;
+		}
+		return false;
+	}
+
+	private async processChunkID3v1AndID3v2AndMpeg(chunk: Buffer): Promise<boolean> {
+		let pos = 0;
+		while (chunk.length - pos >= 4) {
+			const c1 = chunk[pos];
+			const c2 = chunk[pos + 1];
+			const c3 = chunk[pos + 2];
+			if (this.scanid3v2 && c1 === 73 && c2 === 68 && c3 === 51) {
+				if (this.demandData(chunk, pos) || await this.readID3V2(chunk, pos)) {
+					return true;
+				}
+			} else if (this.scanMpeg && c1 === 255) {
+				if (this.demandData(chunk, pos)) {
+					return true;
+				}
+				const header = this.mpegFramereader.readMPEGFrameHeader(chunk, pos);
+				if (header) {
+					this.scanid3v2 = false; // no more scanning for id3v2 after audio start
+					if (!this.scanMPEGFrame) {
+						header.offset = this.stream.pos - chunk.length + pos;
+						this.layout.frameheaders.push(collapseRawHeader(header));
+					} else {
+						if (this.demandData(chunk, pos)) {
+							return true;
+						}
+						this.readMPEGFrame(chunk, pos, header);
+					}
+				}
+			} else if (this.scanid3v1 && c1 === 84 && c2 === 65 && c3 === 71) {
+				if (this.demandData(chunk, pos) || await this.readID3V1(chunk, pos)) {
+					return true;
+				}
+			}
+			pos++;
+		}
+		return false;
+	}
+
+	private async processChunkID3v1AndID3v2(chunk: Buffer): Promise<boolean> {
+		let pos = 0;
+		while (chunk.length - pos >= 4) {
+			const c1 = chunk[pos];
+			const c2 = chunk[pos + 1];
+			const c3 = chunk[pos + 2];
+			if (c1 === 73 && c2 === 68 && c3 === 51) {
+				if (this.demandData(chunk, pos) || await this.readID3V2(chunk, pos)) {
+					return true;
+				}
+			} else if (c1 === 84 && c2 === 65 && c3 === 71) {
+				if (this.demandData(chunk, pos) || await this.readID3V1(chunk, pos)) {
+					return true;
+				}
+			}
+			pos++;
+		}
+		return false;
+	}
+
+	private demandData(chunk: Buffer, pos: number): boolean {
+		if (!this.stream.end && (chunk.length - pos) < 200) {
+			// check if enough in chunk to read the frame header
+			this.stream.unshift(chunk.slice(pos));
+			return true;
+		}
+		return false;
+	}
+
+	private async processChunk(chunk: Buffer): Promise<boolean> {
+		if (this.demandData(chunk, 0)) {
 			return true;
 		}
 		if (!this.scanMpeg && !this.scanid3v2 && !this.scanid3v1) {
-			if (this.options.streamSize !== undefined) {
-				return false;
-			}
-			// we are done here, but scroll to end to get full stream size
-			// TODO: better way to get the stream size?
-			await this.stream.consumeToEnd();
-			return false;
+			return this.processChunkToEnd(chunk);
 		} else if (!this.scanMpeg && !this.scanid3v2) {
-			if (!this.stream.end && this.stream.buffersLength > 200) {
-				this.stream.skip(this.stream.buffersLength - 200);
-				chunk = this.stream.get(200);
-				i = 0;
-			}
-			while (chunk.length - i >= 4) {
-				const c1 = chunk[i];
-				const c2 = chunk[i + 1];
-				const c3 = chunk[i + 2];
-				if (this.scanid3v1 && c1 === 84 && c2 === 65 && c3 === 71) {
-					if (demandData()) {
-						return true;
-					}
-					if (await this.readID3V1(chunk, i)) {
-						return true;
-					}
-				}
-				i++;
+			if (await this.processChunkID3v1(chunk)) {
+				return true;
 			}
 		} else if (!this.scanMpeg) {
-			while (chunk.length - i >= 4) {
-				const c1 = chunk[i];
-				const c2 = chunk[i + 1];
-				const c3 = chunk[i + 2];
-				if (this.scanid3v2 && c1 === 73 && c2 === 68 && c3 === 51) {
-					if (demandData()) {
-						return true;
-					}
-					if (await this.readID3V2(chunk, i)) {
-						return true;
-					}
-				} else if (this.scanid3v1 && c1 === 84 && c2 === 65 && c3 === 71) {
-					if (demandData()) {
-						return true;
-					}
-					if (await this.readID3V1(chunk, i)) {
-						return true;
-					}
-				}
-				i++;
+			if (await this.processChunkID3v1AndID3v2(chunk)) {
+				return true;
 			}
-		} else {
-			while (chunk.length - i >= 4) {
-				const c1 = chunk[i];
-				const c2 = chunk[i + 1];
-				const c3 = chunk[i + 2];
-				if (this.scanid3v2 && c1 === 73 && c2 === 68 && c3 === 51) {
-					if (demandData()) {
-						return true;
-					}
-					if (await this.readID3V2(chunk, i)) {
-						return true;
-					}
-				} else if (this.scanMpeg && c1 === 255) {
-					if (demandData()) {
-						return true;
-					}
-					const header = this.mpegFramereader.readMPEGFrameHeader(chunk, i);
-					if (header) {
-						this.scanid3v2 = false; // no more scanning for id3v2 after audio start
-						if (!this.scanMPEGFrame) {
-							header.offset = this.stream.pos - chunk.length + i;
-							this.layout.frameheaders.push(collapseRawHeader(header));
-						} else {
-							if (demandData()) {
-								return true;
-							}
-							this.readMPEGFrame(chunk, i, header);
-						}
-					}
-				} else if (this.scanid3v1 && c1 === 84 && c2 === 65 && c3 === 71) {
-					if (demandData()) {
-						return true;
-					}
-					if (await this.readID3V1(chunk, i)) {
-						return true;
-					}
-				}
-				i++;
-			}
+		} else if (await this.processChunkID3v1AndID3v2AndMpeg(chunk)) {
+			return true;
 		}
 		if (chunk.length > 3) {
 			this.stream.unshift(chunk.slice(chunk.length - 3));
@@ -230,11 +241,7 @@ export class MP3Reader {
 				return Promise.reject(e);
 			}
 		}
-		if (this.options.streamSize !== undefined) {
-			this.layout.size = this.options.streamSize;
-		} else {
-			this.layout.size = this.stream.pos;
-		}
+		this.layout.size = (this.options.streamSize !== undefined) ? this.options.streamSize : this.stream.pos;
 	}
 
 	private setOptions(options: MP3ReaderOptions): void {
