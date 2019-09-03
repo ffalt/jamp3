@@ -1,20 +1,19 @@
-import {IID3V2} from '../id3v2.types';
-import {ID3v2_FRAME_HEADER_LENGTHS} from '../id3v2.header.consts';
 import * as zlib from 'zlib';
-import {ITagID} from '../../..';
+
+import {IID3V2} from '../id3v2.types';
+import {ITagID} from '../../common/types';
+import {BufferReader} from '../../common/buffer-reader';
+import {ID3v2_FRAME_HEADER_LENGTHS} from '../id3v2.header.consts';
 import {ID3v2Reader} from '../id3v2.reader';
 import {matchFrame} from './id3v2.frame.match';
-import {IEncoding} from '../../common/encodings';
-import {BufferReader} from '../../common/buffer-reader';
 import {removeUnsync} from './id3v2.frame.unsync';
+import {IFrameImplParseResult} from './id3v2.frame';
 
 async function processRawFrame(frame: IID3V2.RawFrame, head: IID3V2.TagHeader): Promise<void> {
 	if ((frame.formatFlags) && (frame.formatFlags.encrypted)) {
-		// debug('processRawFrame', 'encrypted frame');
 		return Promise.reject(Error('Frame Encryption currently not supported'));
 	}
 	if ((frame.formatFlags) && (frame.formatFlags.unsynchronised)) {
-		// debug('processRawFrame', 'unsync frame', frame.id);
 		frame.data = removeUnsync(frame.data);
 	}
 	if ((frame.formatFlags) && (frame.formatFlags.compressed)) {
@@ -89,7 +88,7 @@ export async function readID3v2Frame(rawFrame: IID3V2.RawFrame, head: IID3V2.Tag
 		},
 		value: {}
 	};
-	let result: { value: IID3V2.FrameValue.Base, encoding?: IEncoding, subframes?: Array<IID3V2.Frame> } | undefined;
+	let result: IFrameImplParseResult | undefined;
 	try {
 		await processRawFrame(rawFrame, head);
 		const reader = new BufferReader(rawFrame.data);
