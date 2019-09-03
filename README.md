@@ -6,6 +6,7 @@ An id3 & mp3 library written in Typescript for NodeJS
 
 [![dependencies](https://img.shields.io/david/ffalt/jamp3.svg)](https://www.npmjs.com/package/jamp3) 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/9053f3b64ab847a39a1a4be470759bb7)](https://app.codacy.com/app/ffalt/jamp3?utm_source=github.com&utm_medium=referral&utm_content=ffalt/jamp3&utm_campaign=Badge_Grade_Dashboard)
+[![CodeClimate Badge](https://api.codeclimate.com/v1/badges/c1bc863edffe1b4047e9/maintainability)](https://codeclimate.com/github/ffalt/jamp3/maintainability)
 [![Known Vulnerabilities](https://snyk.io/test/github/ffalt/jamp3/badge.svg)](https://snyk.io/test/github/ffalt/jamp3)
 [![build status](https://travis-ci.org/ffalt/jamp3.svg?branch=master)](https://travis-ci.org/ffalt/jamp3)
 [![total downloads](https://badgen.net/npm/dt/jamp3)](https://badgen.net/npm/dt/xlsx-extract)
