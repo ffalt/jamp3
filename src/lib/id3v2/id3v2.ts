@@ -164,12 +164,10 @@ export class ID3v2 {
 		let specEnd = 0;
 		let skipped = false;
 		for (const tag of layout.tags) {
-			if (tag.id === ITagID.ID3v2) {
-				if (start < tag.end) {
-					specEnd = (tag as IID3V2.RawTag).head.size + tag.start + 10 /*header itself*/;
-					start = tag.end;
-					skipped = true;
-				}
+			if ((tag.id === ITagID.ID3v2) && (start < tag.end)) {
+				specEnd = (tag as IID3V2.RawTag).head.size + tag.start + 10 /*header itself*/;
+				start = tag.end;
+				skipped = true;
 			}
 		}
 		if (layout.frameheaders.length > 0) {
