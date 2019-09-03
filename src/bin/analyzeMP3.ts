@@ -1,7 +1,8 @@
-import {IMP3Analyzer, MP3Analyzer} from '../lib/mp3/mp3.analyzer';
+import {MP3Analyzer} from '../lib/mp3/mp3.analyzer';
 import {collectFiles} from '../lib/common/utils';
 import program from 'commander';
 import fse from 'fs-extra';
+import {IMP3Analyzer} from '../lib/mp3/mp3.analyzer.types';
 
 const pack = require('../../package.json');
 
