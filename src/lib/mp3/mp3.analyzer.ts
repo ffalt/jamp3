@@ -38,25 +38,25 @@ export class MP3Analyzer {
 	private analyzeID3v1(data: IMP3.Result): Array<IMP3Analyzer.Warning> {
 		const result: Array<IMP3Analyzer.Warning> = [];
 		const lastframe: IMP3.FrameRawHeaderArray | undefined = data.frames && data.frames.audio.length > 0 ? data.frames.audio[data.frames.audio.length - 1] : undefined;
-		if (!data.raw || !lastframe) {
-			return [];
-		}
-		const audioEnd = rawHeaderOffSet(lastframe) + rawHeaderSize(lastframe);
-		let id3v1s: Array<IID3V1.Tag> = <Array<IID3V1.Tag>>data.raw.tags.filter(t => t.id === ITagID.ID3v1 && t.start >= audioEnd);
-		if (id3v1s.length === 0) {
-			return [];
-		}
-		if (id3v1s.length > 1) {
-			// filter out not yet supported APETAGEX
-			id3v1s = id3v1s.filter(t => t.value && t.value.title && t.value.title[0] !== 'E' && t.value.title[1] !== 'X' && t.end !== data.size);
-		}
-		if (id3v1s.length > 1) {
-			result.push({msg: 'ID3v1: Multiple tags', expected: 1, actual: id3v1s.length});
-		}
-		if (id3v1s.length > 0) {
-			const id3v1 = id3v1s[id3v1s.length - 1];
-			if (id3v1.end !== data.size) {
-				result.push({msg: 'ID3v1: Invalid tag position, not at end of file', expected: (data.size - 128), actual: id3v1.start});
+		if (data.raw && lastframe) {
+			const audioEnd = rawHeaderOffSet(lastframe) + rawHeaderSize(lastframe);
+			let id3v1s: Array<IID3V1.Tag> = <Array<IID3V1.Tag>>data.raw.tags.filter(t => t.id === ITagID.ID3v1 && t.start >= audioEnd);
+			if (id3v1s.length > 0) {
+				if (id3v1s.length > 1) {
+					// filter out not yet supported APETAGEX
+					id3v1s = id3v1s.filter(t => {
+						return t.value && t.value.title && t.value.title[0] !== 'E' && t.value.title[1] !== 'X' && t.end !== data.size;
+					});
+				}
+				if (id3v1s.length > 1) {
+					result.push({msg: 'ID3v1: Multiple tags', expected: 1, actual: id3v1s.length});
+				}
+				if (id3v1s.length > 0) {
+					const id3v1 = id3v1s[id3v1s.length - 1];
+					if (id3v1.end !== data.size) {
+						result.push({msg: 'ID3v1: Invalid tag position, not at end of file', expected: (data.size - 128), actual: id3v1.start});
+					}
+				}
 			}
 		}
 		return result;
