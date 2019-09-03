@@ -69,17 +69,16 @@ function setResultHeadFrame(headframe: IMP3.Frame, mpeg: IMP3.MPEG) {
 	mpeg.durationEstimate = calculateDuration(mpeg.frameCountDeclared, mpeg.sampleCount, mpeg.sampleRate);
 }
 
-async function prepareResultMPEG(options: IMP3.ReadOptions, layout: IMP3.RawLayout): Promise<{ mpeg: IMP3.MPEG, frames: IMP3.MPEGFrames }> {
-	const mpeg: IMP3.MPEG = {
-		durationEstimate: 0, durationRead: 0,
-		channels: 0,
-		frameCount: 0, frameCountDeclared: 0,
-		bitRate: 0,
-		sampleRate: 0, sampleCount: 0,
-		audioBytes: 0, audioBytesDeclared: 0,
-		version: '', layer: '',
-		encoded: '', mode: ''
+function defaultMPEGResult(): IMP3.MPEG {
+	return {
+		durationEstimate: 0, durationRead: 0, channels: 0, frameCount: 0, frameCountDeclared: 0, bitRate: 0,
+		sampleRate: 0, sampleCount: 0, audioBytes: 0, audioBytesDeclared: 0,
+		version: '', layer: '', encoded: '', mode: ''
 	};
+}
+
+async function prepareResultMPEG(options: IMP3.ReadOptions, layout: IMP3.RawLayout): Promise<{ mpeg: IMP3.MPEG, frames: IMP3.MPEGFrames }> {
+	const mpeg = defaultMPEGResult();
 	const chain: Array<IMP3.FrameRawHeaderArray> = filterBestMPEGChain(layout.frameheaders, 50);
 	const frames = buildFrames(chain, layout);
 	const bitRateMode = analyzeBitrateMode(chain);
