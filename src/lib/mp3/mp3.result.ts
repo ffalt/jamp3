@@ -12,25 +12,8 @@ function calculateDuration(frameCount: number, sampleCount: number, sampleRate: 
 	return 0;
 }
 
-async function prepareResultMPEG(options: IMP3.ReadOptions, layout: IMP3.RawLayout): Promise<{ mpeg: IMP3.MPEG, frames: IMP3.MPEGFrames }> {
-	const mpeg: IMP3.MPEG = {
-		durationEstimate: 0,
-		durationRead: 0,
-		channels: 0,
-		frameCount: 0,
-		frameCountDeclared: 0,
-		bitRate: 0,
-		sampleRate: 0,
-		sampleCount: 0,
-		audioBytes: 0,
-		audioBytesDeclared: 0,
-		version: '',
-		layer: '',
-		encoded: '',
-		mode: ''
-	};
-	const chain = filterBestMPEGChain(layout.frameheaders, 50);
-	const frames = {
+function buildFrames(chain: Array<IMP3.FrameRawHeaderArray>, layout: IMP3.RawLayout): IMP3.MPEGFrames {
+	const frames: IMP3.MPEGFrames = {
 		audio: chain,
 		headers: layout.headframes.map(frame => {
 			return {
@@ -41,46 +24,78 @@ async function prepareResultMPEG(options: IMP3.ReadOptions, layout: IMP3.RawLayo
 			};
 		})
 	};
+	return frames;
+}
+
+function setResultBase(chain: Array<IMP3.FrameRawHeaderArray>, mpeg: IMP3.MPEG) {
+	const header: IMP3.FrameHeader = expandRawHeader(expandRawHeaderArray(chain[0]));
+	mpeg.mode = header.channelType;
+	mpeg.bitRate = header.bitRate;
+	mpeg.channels = header.channelCount;
+	mpeg.sampleRate = header.samplingRate;
+	mpeg.sampleCount = header.samples;
+	mpeg.version = header.version;
+	mpeg.layer = header.layer;
+}
+
+function setResultEstimate(layout: IMP3.RawLayout, chain: Array<IMP3.FrameRawHeaderArray>, mpeg: IMP3.MPEG) {
+	let audioBytes = layout.size;
 	if (chain.length > 0) {
-		const header: IMP3.FrameHeader = expandRawHeader(expandRawHeaderArray(chain[0]));
-		mpeg.mode = header.channelType;
-		mpeg.bitRate = header.bitRate;
-		mpeg.channels = header.channelCount;
-		mpeg.sampleRate = header.samplingRate;
-		mpeg.sampleCount = header.samples;
-		mpeg.version = header.version;
-		mpeg.layer = header.layer;
+		audioBytes -= rawHeaderOffSet(chain[0]);
+		if (layout.tags.find(t => t.id === ITagID.ID3v1)) {
+			audioBytes -= 128;
+		}
+		mpeg.durationEstimate = (audioBytes * 8) / mpeg.bitRate;
 	}
-	const headframe = frames.headers[0];
+}
+
+function setResultCalculated(frameCount: number, audioBytes: number, duration: number, mpeg: IMP3.MPEG) {
+	mpeg.frameCount = frameCount;
+	mpeg.audioBytes = audioBytes;
+	mpeg.durationRead = Math.trunc(duration) / 1000;
+	mpeg.durationEstimate = calculateDuration(mpeg.frameCount, mpeg.sampleCount, mpeg.sampleRate);
+}
+
+function setResultHeadFrame(headframe: IMP3.Frame, mpeg: IMP3.MPEG) {
+	if (headframe.xing) {
+		mpeg.audioBytesDeclared = headframe.xing.bytes || 0;
+		mpeg.frameCountDeclared = headframe.xing.frames || 0;
+		mpeg.encoded = headframe.mode === 'Xing' ? 'VBR' : 'CBR';
+	} else if (headframe.vbri) {
+		mpeg.audioBytesDeclared = headframe.vbri.bytes;
+		mpeg.frameCountDeclared = headframe.vbri.frames;
+		mpeg.encoded = 'VBR';
+	}
+	mpeg.durationEstimate = calculateDuration(mpeg.frameCountDeclared, mpeg.sampleCount, mpeg.sampleRate);
+}
+
+async function prepareResultMPEG(options: IMP3.ReadOptions, layout: IMP3.RawLayout): Promise<{ mpeg: IMP3.MPEG, frames: IMP3.MPEGFrames }> {
+	const mpeg: IMP3.MPEG = {
+		durationEstimate: 0, durationRead: 0,
+		channels: 0,
+		frameCount: 0, frameCountDeclared: 0,
+		bitRate: 0,
+		sampleRate: 0, sampleCount: 0,
+		audioBytes: 0, audioBytesDeclared: 0,
+		version: '', layer: '',
+		encoded: '', mode: ''
+	};
+	const chain: Array<IMP3.FrameRawHeaderArray> = filterBestMPEGChain(layout.frameheaders, 50);
+	const frames = buildFrames(chain, layout);
 	const bitRateMode = analyzeBitrateMode(chain);
+	if (chain.length > 0) {
+		setResultBase(chain, mpeg);
+	}
 	mpeg.encoded = bitRateMode.encoded;
 	mpeg.bitRate = bitRateMode.bitRate;
 	if (options.mpegQuick) {
-		let audioBytes = layout.size;
-		if (chain.length > 0) {
-			audioBytes -= rawHeaderOffSet(chain[0]);
-			if (layout.tags.find(t => t.id === ITagID.ID3v1)) {
-				audioBytes -= 128;
-			}
-			mpeg.durationEstimate = (audioBytes * 8) / mpeg.bitRate;
-		}
+		setResultEstimate(layout, chain, mpeg);
 	} else {
-		mpeg.frameCount = bitRateMode.count;
-		mpeg.audioBytes = bitRateMode.audioBytes;
-		mpeg.durationRead = Math.trunc(bitRateMode.duration) / 1000;
-		mpeg.durationEstimate = calculateDuration(mpeg.frameCount, mpeg.sampleCount, mpeg.sampleRate);
+		setResultCalculated(bitRateMode.count, bitRateMode.audioBytes, bitRateMode.duration, mpeg);
 	}
+	const headframe = frames.headers[0];
 	if (headframe) {
-		if (headframe.xing) {
-			mpeg.audioBytesDeclared = headframe.xing.bytes || 0;
-			mpeg.frameCountDeclared = headframe.xing.frames || 0;
-			mpeg.encoded = headframe.mode === 'Xing' ? 'VBR' : 'CBR';
-		} else if (headframe.vbri) {
-			mpeg.audioBytesDeclared = headframe.vbri.bytes;
-			mpeg.frameCountDeclared = headframe.vbri.frames;
-			mpeg.encoded = 'VBR';
-		}
-		mpeg.durationEstimate = calculateDuration(mpeg.frameCountDeclared, mpeg.sampleCount, mpeg.sampleRate);
+		setResultHeadFrame(headframe, mpeg);
 	}
 	return {mpeg, frames};
 }
