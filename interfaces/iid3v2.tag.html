@@ -2379,16 +2379,16 @@ img {
 			<a href="iid3v2.builder.html" class="tsd-kind-icon">Builder</a>
 		</li>
 		<li class=" tsd-kind-interface tsd-parent-kind-module">
-			<a href="iid3v2.flags.html" class="tsd-kind-icon">Flags</a>
-		</li>
-		<li class=" tsd-kind-interface tsd-parent-kind-module">
-			<a href="iid3v2.formatflags.html" class="tsd-kind-icon">Format<wbr>Flags</a>
-		</li>
-		<li class=" tsd-kind-interface tsd-parent-kind-module">
 			<a href="iid3v2.frame.html" class="tsd-kind-icon">Frame</a>
 		</li>
 		<li class=" tsd-kind-interface tsd-parent-kind-module">
 			<a href="iid3v2.frameheader.html" class="tsd-kind-icon">Frame<wbr>Header</a>
+		</li>
+		<li class=" tsd-kind-interface tsd-parent-kind-module">
+			<a href="iid3v2.frameheaderformatflags.html" class="tsd-kind-icon">Frame<wbr>Header<wbr>Format<wbr>Flags</a>
+		</li>
+		<li class=" tsd-kind-interface tsd-parent-kind-module">
+			<a href="iid3v2.frameheaderstatusflags.html" class="tsd-kind-icon">Frame<wbr>Header<wbr>Status<wbr>Flags</a>
 		</li>
 		<li class=" tsd-kind-interface tsd-parent-kind-module">
 			<a href="iid3v2.id3v2tag.html" class="tsd-kind-icon">ID3v2<wbr>Tag</a>
@@ -2462,11 +2462,18 @@ img {
 </nav>
 <div class="container container-main">
 	<div class="content-wrap">
+		<section class="tsd-panel tsd-comment">
+			<div class="tsd-comment tsd-typography">
+				<div class="lead">
+					<p>ID3v2 Tag (Parsed)</p>
+				</div>
+			</div>
+		</section>
 		<section class="tsd-panel tsd-hierarchy">
 			<h3>Hierarchy</h3>
 			<ul class="tsd-hierarchy">
 				<li>
-					<span class="tsd-signature-type">ITag</span>
+					<a href="itag.html" class="tsd-signature-type">ITag</a>
 					<ul class="tsd-hierarchy">
 						<li>
 							<span class="target">Tag</span>
@@ -2499,11 +2506,16 @@ img {
 				<h3>end</h3>
 				<div class="tsd-signature tsd-kind-icon">end<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
 				<aside class="tsd-sources">
-					<p>Inherited from ITag.end</p>
+					<p>Inherited from <a href="itag.html">ITag</a>.<a href="itag.html#end">end</a></p>
 					<ul>
-						<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/24e78de/src/lib/common/types.ts#L9">common/types.ts:9</a></li>
+						<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/5d1a727/src/lib/common/types.ts#L14">common/types.ts:14</a></li>
 					</ul>
 				</aside>
+				<div class="tsd-comment tsd-typography">
+					<div class="lead">
+						<p>end of tag (excluding padding)</p>
+					</div>
+				</div>
 			</section>
 			<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
 				<a name="frames" class="tsd-anchor"></a>
@@ -2511,9 +2523,14 @@ img {
 				<div class="tsd-signature tsd-kind-icon">frames<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Array</span><span class="tsd-signature-symbol">&lt;</span><a href="iid3v2.frame.html" class="tsd-signature-type">Frame</a><span class="tsd-signature-symbol">&gt;</span></div>
 				<aside class="tsd-sources">
 					<ul>
-						<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/24e78de/src/lib/id3v2/id3v2__types.ts#L370">id3v2/id3v2__types.ts:370</a></li>
+						<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/5d1a727/src/lib/id3v2/id3v2.types.ts#L403">id3v2/id3v2.types.ts:403</a></li>
 					</ul>
 				</aside>
+				<div class="tsd-comment tsd-typography">
+					<div class="lead">
+						<p>ID3v2 Tag Frames</p>
+					</div>
+				</div>
 			</section>
 			<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
 				<a name="head" class="tsd-anchor"></a>
@@ -2521,31 +2538,46 @@ img {
 				<div class="tsd-signature tsd-kind-icon">head<span class="tsd-signature-symbol">:</span> <a href="iid3v2.tagheader.html" class="tsd-signature-type">TagHeader</a></div>
 				<aside class="tsd-sources">
 					<ul>
-						<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/24e78de/src/lib/id3v2/id3v2__types.ts#L369">id3v2/id3v2__types.ts:369</a></li>
+						<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/5d1a727/src/lib/id3v2/id3v2.types.ts#L401">id3v2/id3v2.types.ts:401</a></li>
 					</ul>
 				</aside>
+				<div class="tsd-comment tsd-typography">
+					<div class="lead">
+						<p>ID3v2 Tag Header</p>
+					</div>
+				</div>
 			</section>
 			<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
 				<a name="id" class="tsd-anchor"></a>
 				<h3>id</h3>
-				<div class="tsd-signature tsd-kind-icon">id<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">ITagID</span></div>
+				<div class="tsd-signature tsd-kind-icon">id<span class="tsd-signature-symbol">:</span> <a href="../enums/itagid.html" class="tsd-signature-type">ITagID</a></div>
 				<aside class="tsd-sources">
-					<p>Inherited from ITag.id</p>
+					<p>Inherited from <a href="itag.html">ITag</a>.<a href="itag.html#id">id</a></p>
 					<ul>
-						<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/24e78de/src/lib/common/types.ts#L7">common/types.ts:7</a></li>
+						<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/5d1a727/src/lib/common/types.ts#L10">common/types.ts:10</a></li>
 					</ul>
 				</aside>
+				<div class="tsd-comment tsd-typography">
+					<div class="lead">
+						<p>id of tag: ID3v1 | ID3v2</p>
+					</div>
+				</div>
 			</section>
 			<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
 				<a name="start" class="tsd-anchor"></a>
 				<h3>start</h3>
 				<div class="tsd-signature tsd-kind-icon">start<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
 				<aside class="tsd-sources">
-					<p>Inherited from ITag.start</p>
+					<p>Inherited from <a href="itag.html">ITag</a>.<a href="itag.html#start">start</a></p>
 					<ul>
-						<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/24e78de/src/lib/common/types.ts#L8">common/types.ts:8</a></li>
+						<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/5d1a727/src/lib/common/types.ts#L12">common/types.ts:12</a></li>
 					</ul>
 				</aside>
+				<div class="tsd-comment tsd-typography">
+					<div class="lead">
+						<p>start of tag</p>
+					</div>
+				</div>
 			</section>
 		</section>
 		<footer class="with-border-bottom">

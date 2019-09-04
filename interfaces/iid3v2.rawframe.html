@@ -2379,16 +2379,16 @@ img {
 			<a href="iid3v2.builder.html" class="tsd-kind-icon">Builder</a>
 		</li>
 		<li class=" tsd-kind-interface tsd-parent-kind-module">
-			<a href="iid3v2.flags.html" class="tsd-kind-icon">Flags</a>
-		</li>
-		<li class=" tsd-kind-interface tsd-parent-kind-module">
-			<a href="iid3v2.formatflags.html" class="tsd-kind-icon">Format<wbr>Flags</a>
-		</li>
-		<li class=" tsd-kind-interface tsd-parent-kind-module">
 			<a href="iid3v2.frame.html" class="tsd-kind-icon">Frame</a>
 		</li>
 		<li class=" tsd-kind-interface tsd-parent-kind-module">
 			<a href="iid3v2.frameheader.html" class="tsd-kind-icon">Frame<wbr>Header</a>
+		</li>
+		<li class=" tsd-kind-interface tsd-parent-kind-module">
+			<a href="iid3v2.frameheaderformatflags.html" class="tsd-kind-icon">Frame<wbr>Header<wbr>Format<wbr>Flags</a>
+		</li>
+		<li class=" tsd-kind-interface tsd-parent-kind-module">
+			<a href="iid3v2.frameheaderstatusflags.html" class="tsd-kind-icon">Frame<wbr>Header<wbr>Status<wbr>Flags</a>
 		</li>
 		<li class=" tsd-kind-interface tsd-parent-kind-module">
 			<a href="iid3v2.id3v2tag.html" class="tsd-kind-icon">ID3v2<wbr>Tag</a>
@@ -2468,6 +2468,13 @@ img {
 </nav>
 <div class="container container-main">
 	<div class="content-wrap">
+		<section class="tsd-panel tsd-comment">
+			<div class="tsd-comment tsd-typography">
+				<div class="lead">
+					<p>ID3v2 Frame (Raw)</p>
+				</div>
+			</div>
+		</section>
 		<section class="tsd-panel tsd-hierarchy">
 			<h3>Hierarchy</h3>
 			<ul class="tsd-hierarchy">
@@ -2503,9 +2510,14 @@ img {
 				<div class="tsd-signature tsd-kind-icon">data<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Buffer</span></div>
 				<aside class="tsd-sources">
 					<ul>
-						<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/24e78de/src/lib/id3v2/id3v2__types.ts#L388">id3v2/id3v2__types.ts:388</a></li>
+						<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/5d1a727/src/lib/id3v2/id3v2.types.ts#L433">id3v2/id3v2.types.ts:433</a></li>
 					</ul>
 				</aside>
+				<div class="tsd-comment tsd-typography">
+					<div class="lead">
+						<p>data of frame</p>
+					</div>
+				</div>
 			</section>
 			<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
 				<a name="end" class="tsd-anchor"></a>
@@ -2513,19 +2525,29 @@ img {
 				<div class="tsd-signature tsd-kind-icon">end<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
 				<aside class="tsd-sources">
 					<ul>
-						<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/24e78de/src/lib/id3v2/id3v2__types.ts#L386">id3v2/id3v2__types.ts:386</a></li>
+						<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/5d1a727/src/lib/id3v2/id3v2.types.ts#L429">id3v2/id3v2.types.ts:429</a></li>
 					</ul>
 				</aside>
+				<div class="tsd-comment tsd-typography">
+					<div class="lead">
+						<p>end of frame</p>
+					</div>
+				</div>
 			</section>
 			<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
 				<a name="formatflags" class="tsd-anchor"></a>
 				<h3>format<wbr>Flags</h3>
-				<div class="tsd-signature tsd-kind-icon">format<wbr>Flags<span class="tsd-signature-symbol">:</span> <a href="iid3v2.formatflags.html" class="tsd-signature-type">FormatFlags</a></div>
+				<div class="tsd-signature tsd-kind-icon">format<wbr>Flags<span class="tsd-signature-symbol">:</span> <a href="iid3v2.frameheaderformatflags.html" class="tsd-signature-type">FrameHeaderFormatFlags</a></div>
 				<aside class="tsd-sources">
 					<ul>
-						<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/24e78de/src/lib/id3v2/id3v2__types.ts#L390">id3v2/id3v2__types.ts:390</a></li>
+						<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/5d1a727/src/lib/id3v2/id3v2.types.ts#L437">id3v2/id3v2.types.ts:437</a></li>
 					</ul>
 				</aside>
+				<div class="tsd-comment tsd-typography">
+					<div class="lead">
+						<p>frame format flags</p>
+					</div>
+				</div>
 			</section>
 			<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
 				<a name="id" class="tsd-anchor"></a>
@@ -2533,9 +2555,14 @@ img {
 				<div class="tsd-signature tsd-kind-icon">id<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 				<aside class="tsd-sources">
 					<ul>
-						<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/24e78de/src/lib/id3v2/id3v2__types.ts#L384">id3v2/id3v2__types.ts:384</a></li>
+						<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/5d1a727/src/lib/id3v2/id3v2.types.ts#L425">id3v2/id3v2.types.ts:425</a></li>
 					</ul>
 				</aside>
+				<div class="tsd-comment tsd-typography">
+					<div class="lead">
+						<p>frame id</p>
+					</div>
+				</div>
 			</section>
 			<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
 				<a name="size" class="tsd-anchor"></a>
@@ -2543,9 +2570,14 @@ img {
 				<div class="tsd-signature tsd-kind-icon">size<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
 				<aside class="tsd-sources">
 					<ul>
-						<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/24e78de/src/lib/id3v2/id3v2__types.ts#L387">id3v2/id3v2__types.ts:387</a></li>
+						<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/5d1a727/src/lib/id3v2/id3v2.types.ts#L431">id3v2/id3v2.types.ts:431</a></li>
 					</ul>
 				</aside>
+				<div class="tsd-comment tsd-typography">
+					<div class="lead">
+						<p>size of frame</p>
+					</div>
+				</div>
 			</section>
 			<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
 				<a name="start" class="tsd-anchor"></a>
@@ -2553,19 +2585,29 @@ img {
 				<div class="tsd-signature tsd-kind-icon">start<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
 				<aside class="tsd-sources">
 					<ul>
-						<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/24e78de/src/lib/id3v2/id3v2__types.ts#L385">id3v2/id3v2__types.ts:385</a></li>
+						<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/5d1a727/src/lib/id3v2/id3v2.types.ts#L427">id3v2/id3v2.types.ts:427</a></li>
 					</ul>
 				</aside>
+				<div class="tsd-comment tsd-typography">
+					<div class="lead">
+						<p>start of frame</p>
+					</div>
+				</div>
 			</section>
 			<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
 				<a name="statusflags" class="tsd-anchor"></a>
 				<h3>status<wbr>Flags</h3>
-				<div class="tsd-signature tsd-kind-icon">status<wbr>Flags<span class="tsd-signature-symbol">:</span> <a href="iid3v2.flags.html" class="tsd-signature-type">Flags</a></div>
+				<div class="tsd-signature tsd-kind-icon">status<wbr>Flags<span class="tsd-signature-symbol">:</span> <a href="iid3v2.frameheaderstatusflags.html" class="tsd-signature-type">FrameHeaderStatusFlags</a></div>
 				<aside class="tsd-sources">
 					<ul>
-						<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/24e78de/src/lib/id3v2/id3v2__types.ts#L389">id3v2/id3v2__types.ts:389</a></li>
+						<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/5d1a727/src/lib/id3v2/id3v2.types.ts#L435">id3v2/id3v2.types.ts:435</a></li>
 					</ul>
 				</aside>
+				<div class="tsd-comment tsd-typography">
+					<div class="lead">
+						<p>frame status flags</p>
+					</div>
+				</div>
 			</section>
 		</section>
 		<footer class="with-border-bottom">
