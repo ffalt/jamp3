@@ -73,21 +73,21 @@ export namespace IMP3 {
 		durationEstimate: number;
 		/** the duration calculated by all audio frames */
 		durationRead: number;
-		/** # of channels */
+		/** number of channels */
 		channels: number;
 		/** bitRate of audio */
 		bitRate: number;
 		/** sampleRate of audio */
 		sampleRate: number;
-		/** # of samples per audio frame */
+		/** number of samples per audio frame */
 		sampleCount: number;
-		/** # of audio frames */
+		/** number of audio frames */
 		frameCount: number;
-		/** # of audio frames declared in audio header */
+		/** number of audio frames declared in audio header */
 		frameCountDeclared: number;
-		/** # of bytes of audio*/
+		/** number of bytes of audio*/
 		audioBytes: number;
-		/** # of bytes of audio declared in audio header */
+		/** number of bytes of audio declared in audio header */
 		audioBytesDeclared: number;
 		/** bitrate encoding:  VBR || CBR */
 		encoded: string;
@@ -178,11 +178,11 @@ export namespace IMP3 {
 		delay: number;
 		/** quality indicator */
 		quality: number;
-		/** # of bytes */
+		/** number of bytes */
 		bytes: number;
-		/** # of frames */
+		/** number of frames */
 		frames: number;
-		/** # of toc entries */
+		/** number of toc entries */
 		toc_entries: number;
 		/** scale factor of toc entries */
 		toc_scale: number;
@@ -196,18 +196,18 @@ export namespace IMP3 {
 
 	/** MPEG Header XING */
 	export interface Xing {
-		/** # of frames */
+		/** number of frames */
 		frames?: number;
-		/** # of bytes */
+		/** number of bytes */
 		bytes?: number;
 		/** quality indicator */
 		quality?: number;
 		/** toc entries for seeking */
 		toc?: Buffer;
 		fields: {
-			/** # of frames available */
+			/** number of frames available */
 			frames: boolean;
-			/** # of bytes available */
+			/** number of bytes available */
 			bytes: boolean;
 			/** toc available */
 			toc: boolean;
