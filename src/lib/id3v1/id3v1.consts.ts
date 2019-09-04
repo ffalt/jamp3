@@ -1,5 +1,3 @@
-export const ID3v1_MARKER = 'TAG';
-
 export const ID3v1_GENRES = [
 	'Blues', 'Classic Rock', 'Country', 'Dance', 'Disco', 'Funk', 'Grunge', 'Hip-Hop',
 	'Jazz', 'Metal', 'New Age', 'Oldies', 'Other', 'Pop', 'R&B', 'Rap', 'Reggae', 'Rock',

@@ -2,6 +2,7 @@ import {ITag} from '../common/types';
 
 export namespace IID3V2 {
 
+	/** ID3v2 Frame Value Types */
 	export namespace FrameValue {
 
 		export interface Base {
@@ -13,8 +14,11 @@ export namespace IID3V2 {
 		}
 
 		export interface LangDescText extends Base {
+			/** language code */
 			language: string;
-			id: string; // description
+			/** description */
+			id: string;
+			/** the text */
 			text: string;
 		}
 
@@ -163,7 +167,8 @@ export namespace IID3V2 {
 
 	}
 
-	export interface FormatFlags {
+	/** ID3v2 Frame Header Format Flags */
+	export interface FrameHeaderFormatFlags {
 		[name: string]: boolean | undefined;
 
 		dataLengthIndicator?: boolean;
@@ -176,7 +181,8 @@ export namespace IID3V2 {
 		reserved3?: boolean;
 	}
 
-	export interface Flags {
+	/** ID3v2 Frame Header Status Flags */
+	export interface FrameHeaderStatusFlags {
 		[name: string]: boolean | undefined;
 
 		unsynchronisation?: boolean;
@@ -185,23 +191,37 @@ export namespace IID3V2 {
 		footer?: boolean;
 	}
 
+	/** ID3v2 Frame Header */
 	export interface FrameHeader {
+		/** frame string encoding */
 		encoding?: string;
-		statusFlags?: Flags;
-		formatFlags?: FormatFlags;
+		/** frame status flags */
+		statusFlags?: FrameHeaderStatusFlags;
+		/** frame format flags */
+		formatFlags?: FrameHeaderFormatFlags;
+		/** frame size */
 		size?: number;
 	}
 
+	/** ID3v2 Frame */
 	export interface Frame {
+		/** frame id */
 		id: string;
+		/** frame title */
 		title?: string;
+		/** frame header */
 		head?: FrameHeader;
+		/** frame value */
 		value: FrameValue.Base;
+		/** frame sub-frames */
 		subframes?: Array<Frame>;
+		/** invalid frame marker */
 		invalid?: string;
+		/** frame group id */
 		groupId?: number;
 	}
 
+	/** ID3v2 Frame Types */
 	export namespace Frames {
 		export interface Map {
 			[key: string]: Array<Frame>;
@@ -292,6 +312,7 @@ export namespace IID3V2 {
 		}
 	}
 
+	/** ID3v2 Tag Builder Interface */
 	export interface Builder {
 		buildFrames(): Array<Frame>;
 
@@ -300,39 +321,7 @@ export namespace IID3V2 {
 		rev(): number;
 	}
 
-	export interface TagHeaderFlagsV2 {
-		unsynchronisation?: boolean;
-		compression?: boolean;
-	}
-
-	export interface TagHeaderV2 {
-		sizeAsSyncSafe?: number; // just in case if size is written in wrong v2.2 format
-		flags: TagHeaderFlagsV2;
-	}
-
-	export interface TagHeaderFlagsV3 {
-		unsynchronisation?: boolean;
-		extendedheader?: boolean;
-		experimental?: boolean;
-	}
-
-	export interface TagHeaderV3 {
-		flags: TagHeaderFlagsV3;
-		extended?: TagHeaderExtendedVer3;
-	}
-
-	export interface TagHeaderFlagsV4 {
-		unsynchronisation?: boolean;
-		extendedheader?: boolean;
-		experimental?: boolean;
-		footer?: boolean;
-	}
-
-	export interface TagHeaderV4 {
-		flags: TagHeaderFlagsV4;
-		extended?: TagHeaderExtendedVer4;
-	}
-
+	/** ID3v2 Tag Header */
 	export interface TagHeader {
 		ver: number;
 		rev: number;
@@ -344,17 +333,58 @@ export namespace IID3V2 {
 		flagBits?: Array<number>;
 	}
 
+	/** ID3v2.2 Tag Header */
+	export interface TagHeaderV2 {
+		sizeAsSyncSafe?: number; // just in case if size is written in wrong v2.2 format
+		flags: TagHeaderFlagsV2;
+	}
+
+	/** ID3v2.2 Tag Header Flags */
+	export interface TagHeaderFlagsV2 {
+		unsynchronisation?: boolean;
+		compression?: boolean;
+	}
+
+	/** ID3v2.3 Tag Header */
+	export interface TagHeaderV3 {
+		flags: TagHeaderFlagsV3;
+		extended?: TagHeaderExtendedVer3;
+	}
+
+	/** ID3v2.3 Tag Header Flags */
+	export interface TagHeaderFlagsV3 {
+		unsynchronisation?: boolean;
+		extendedheader?: boolean;
+		experimental?: boolean;
+	}
+
+	/** ID3v2.3 Tag Extended Header */
 	export interface TagHeaderExtendedVer3 {
 		size: number;
-		flags1: Flags;
-		flags2: Flags;
+		flags1: FrameHeaderStatusFlags;
+		flags2: FrameHeaderStatusFlags;
 		crcData?: number;
 		sizeOfPadding: number;
 	}
 
+	/** ID3v2.4 Tag Header */
+	export interface TagHeaderV4 {
+		flags: TagHeaderFlagsV4;
+		extended?: TagHeaderExtendedVer4;
+	}
+
+	/** ID3v2.4 Tag Header Flags */
+	export interface TagHeaderFlagsV4 {
+		unsynchronisation?: boolean;
+		extendedheader?: boolean;
+		experimental?: boolean;
+		footer?: boolean;
+	}
+
+	/** ID3v2.4 Tag Extended Header */
 	export interface TagHeaderExtendedVer4 {
 		size: number;
-		flags: Flags;
+		flags: FrameHeaderStatusFlags;
 		restrictions?: {
 			tagSize: string;
 			textEncoding: string;
@@ -365,31 +395,49 @@ export namespace IID3V2 {
 		crc32?: number;
 	}
 
+	/** ID3v2 Tag (Parsed) */
 	export interface Tag extends ITag {
+		/** ID3v2 Tag Header */
 		head?: TagHeader;
+		/** ID3v2 Tag Frames */
 		frames: Array<Frame>;
 	}
 
+	/** ID3v2 Tag */
 	export interface ID3v2Tag {
+		/** ID3v2 Tag Header */
 		head?: TagHeader;
+		/** ID3v2 Tag Frames (Parsed) */
 		frames: Array<Frame>;
 	}
 
+	/** ID3v2 Tag (Raw) */
 	export interface RawTag extends ITag {
+		/** ID3v2 Tag Header */
 		head: TagHeader;
+		/** ID3v2 Tag Frames (Raw) */
 		frames: Array<RawFrame>;
 	}
 
+	/** ID3v2 Frame (Raw) */
 	export interface RawFrame {
+		/** frame id */
 		id: string;
+		/** start of frame */
 		start: number;
+		/** end of frame */
 		end: number;
+		/** size of frame */
 		size: number;
+		/** data of frame */
 		data: Buffer;
-		statusFlags: Flags;
-		formatFlags: FormatFlags;
+		/** frame status flags */
+		statusFlags: FrameHeaderStatusFlags;
+		/** frame format flags */
+		formatFlags: FrameHeaderFormatFlags;
 	}
 
+	/** ID3v2 Result (Simplified) */
 	export interface TagSimplified {
 		[name: string]: string | undefined;
 
@@ -531,6 +579,7 @@ export namespace IID3V2 {
 		WRITER?: string;
 	}
 
+	/** ID3v2 Format Warnings */
 	export interface Warning {
 		/** msg of warning */
 		msg: string;
@@ -540,11 +589,13 @@ export namespace IID3V2 {
 		actual: number | string | boolean;
 	}
 
+	/** ID3v2 Remove Options */
 	export interface RemoveOptions {
 		/** keep a filename.mp3.bak copy of the original file */
 		keepBackup?: boolean;
 	}
 
+	/** ID3v2 Write Options */
 	export interface WriteOptions {
 		/** encoding used if not specified in frame header */
 		defaultEncoding?: string;

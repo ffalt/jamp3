@@ -1,5 +1,4 @@
 import {Markers} from '../common/marker';
-import {ID3v1_MARKER} from './id3v1.consts';
 import {IID3V1} from './id3v1.types';
 import {BufferUtils} from '../common/buffer';
 import {Readable} from 'stream';
@@ -9,6 +8,7 @@ import {ReaderStream} from '../common/stream-reader';
 import {BufferReader} from '../common/buffer-reader';
 
 const debug = Debug('id3v1-reader');
+export const ID3v1_MARKER = 'TAG';
 
 export class ID3v1Reader {
 
