@@ -17,7 +17,7 @@ export const ID3v1_GENRES = [
 	'Porn Groove', 'Satire', 'Slow Jam', 'Club', 'Tango', 'Samba', 'Folklore',
 	'Ballad', 'Power Ballad', 'Rhythmic Soul', 'Freestyle', 'Duet', 'Punk Rock', 'Drum Solo',
 	'A capella', 'Euro-House', 'Dance Hall', 'Goa', 'Drum & Bass', 'Club-House',
-	'Hardcore', 'Terror', 'Indie', 'BritPop', 'Negerpunk', 'Polsk Punk', 'Beat',
+	'Hardcore', 'Terror', 'Indie', 'BritPop', 'World Music', 'Polsk Punk', 'Beat',
 	'Christian', 'Heavy Metal', 'Black Metal', 'Crossover', 'Contemporary',
 	'Christian Rock', 'Merengue', 'Salsa', 'Thrash Metal', 'Anime', 'JPop', 'Synthpop'
 ];
