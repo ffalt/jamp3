@@ -10,8 +10,8 @@ async function compareRemovalAudio(before: IMP3.Result, after: IMP3.Result): Pro
 	if (!before.frames || !after.frames) {
 		return Promise.reject(Error('no frames obj'));
 	}
-	expect(after.frames.headers.length).toBe(before.frames.headers.length);// 'header frames length not equal');
-	expect(after.frames.audio.length).toBe(before.frames.audio.length);// 'audio frames length not equal');
+	expect(after.frames.headers.length).toBe(before.frames.headers.length); // 'header frames length not equal');
+	expect(after.frames.audio.length).toBe(before.frames.audio.length); // 'audio frames length not equal');
 }
 
 async function removeID3v1TagsTest(filename: string, before: IMP3.Result): Promise<void> {
