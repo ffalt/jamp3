@@ -1,5 +1,4 @@
 import fse from 'fs-extra';
-import {expect, should} from 'chai';
 import Debug from 'debug';
 
 import {ITestSpec} from '../common/test-spec';
@@ -17,16 +16,16 @@ export async function testQuickMPEG(filename: string): Promise<void> {
 	const mp3 = new MP3();
 	const compare: ITestSpec = await fse.readJSON(filename + '.frames.json');
 	const data = await mp3.read(filename, {mpeg: true, mpegQuick: true, id3v2: true});
-	should().exist(data);
+	expect(data).toBeTruthy();
 	if (!data) {
 		return;
 	}
 	const stat = await fse.stat(filename);
-	expect(data.size).to.equal(stat.size, 'file sizes not equal');
+	expect(data.size).toBe(stat.size); // 'file sizes not equal');
 	if (compare.stream && data.mpeg) {
-		expect(data.mpeg.sampleRate).to.equal(parseInt(compare.stream.sample_rate, 10), 'sampleRate not equal');
-		expect(data.mpeg.channels).to.equal(compare.stream.channels, 'channels not equal');
-		expect('MP3 (' + data.mpeg.layer + ')').to.equal(compare.stream.codec_long_name, 'codec_long_name not equal');
+		expect(data.mpeg.sampleRate).toBe(Number(compare.stream.sample_rate)); // , 'sampleRate not equal');
+		expect(data.mpeg.channels).toBe(compare.stream.channels); // , 'channels not equal');
+		expect('MP3 (' + data.mpeg.layer + ')').toBe(compare.stream.codec_long_name); // , 'codec_long_name not equal');
 
 		const a = data.mpeg.durationEstimate;
 		const b = parseFloat(compare.stream.duration);
@@ -56,6 +55,6 @@ export async function testQuickMPEG(filename: string): Promise<void> {
 				}
 			}
 		}
-		expect(false).to.deep.equal(true, 'Estimated duration differs to much. diff: ' + diff + ' actual: ' + a + ' expected:' + b);
+		expect(false).toBe(true); // 'Estimated duration differs to much. diff: ' + diff + ' actual: ' + a + ' expected:' + b);
 	}
 }

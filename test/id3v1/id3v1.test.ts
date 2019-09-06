@@ -1,19 +1,14 @@
-import {expect, should, use} from 'chai';
-import {describe, it, run} from 'mocha';
-import chaiExclude from 'chai-exclude';
 import Debug from 'debug';
 
 import {ID3v1} from '../../src/lib/id3v1/id3v1';
-import {compareID3v1Save, testOverWriteMock, compareID3v1Spec} from './id3v1_test_compare';
-import {ID3v1TestDirectories, ID3v1TestPath} from './id3v1_test_config';
-import {collectTestFiles} from '../common/common';
+import {compareID3v1Save, testOverWriteMock, compareID3v1Spec} from './id3v1_test.compare';
+import {ID3v1TestDirectories, ID3v1TestPath} from './id3v1_test.config';
+import {collectTestFilesSync} from '../common/common';
 
-use(chaiExclude);
 const debug = Debug('id3v1-test');
 
 const testSingleFile: string | undefined =
 	undefined;
-
 // 'id3v1_260_genre_F.mp3';
 
 async function testLoadSaveSpec(filename: string): Promise<void> {
@@ -33,8 +28,8 @@ async function testLoadSaveCompare(filename: string): Promise<void> {
 	await compareID3v1Save(filename, tag);
 }
 
-describe('ID3v1', async () => {
-	const files: Array<string> = await collectTestFiles(ID3v1TestDirectories, ID3v1TestPath, testSingleFile);
+describe('ID3v1', () => {
+	const files: Array<string> = collectTestFilesSync(ID3v1TestDirectories, ID3v1TestPath, testSingleFile);
 	for (const filename of files) {
 		describe('ID3v1: ' + filename.slice(ID3v1TestPath.length), () => {
 			it('should load & save & compare', async () => {
@@ -48,6 +43,5 @@ describe('ID3v1', async () => {
 			});
 		});
 	}
-	run(); // https://github.com/mochajs/mocha/issues/2221#issuecomment-214636042
 });
 

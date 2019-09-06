@@ -1,7 +1,6 @@
-import {should} from 'chai';
 import Debug from 'debug';
 
-import {compareID3v2Save} from './id3v2_test_compare';
+import {compareID3v2Save} from './id3v2_test.compare';
 import {ID3v2} from '../../src/lib/id3v2/id3v2';
 
 const debug = Debug('id3v2-test');
@@ -14,10 +13,10 @@ export async function testLoadSaveCompare(filename: string): Promise<void> {
 		console.log('invalid id3v2 tag found', filename);
 		tag = undefined;
 	}
-	should().exist(tag);
+	expect(tag).toBeTruthy();
 	if (!tag) {
 		return;
 	}
-	should().exist(tag.head);
+	expect(tag.head).toBeTruthy();
 	await compareID3v2Save(filename, tag);
 }

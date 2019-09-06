@@ -21,16 +21,11 @@
   "scripts": {
     "build": "tsc -m commonjs --outDir dist",
     "build:deploy": "tsc -m commonjs --outDir dist",
-    "test": "mocha --opts ./test/mocha.opts --recursive test/**/test.ts",
-    "test:id3v1": "mocha --opts ./test/mocha.opts test/id3v1/test.ts",
-    "test:id3v2": "mocha --opts ./test/mocha.opts test/id3v2/test.ts",
-    "test:mp3": "mocha --opts ./test/mocha.opts test/idmp33v2/test.ts",
-    "test:builder": "mocha --opts ./test/mocha.opts test/id3v2/builder/test.ts",
-    "test:frames": "mocha --opts ./test/mocha.opts test/id3v2/frames/test.ts",
+    "test": "jest",
     "lint": "tslint --project tsconfig.json \"src/**/*.ts\"",
     "lint-fix": "tslint --fix --project tsconfig.json \"src/**/*.ts\"",
     "docs": "typedoc --options ./typedocconfig.ts && cp ./.nojekyll ./docs",
-    "coverage": "nyc npm run test",
+    "coverage": "jest --coverage",
     "deploy": "deplokay -c deplokay.json",
     "deploy:docs": "deplokay -c deplokay-docs.json"
   },
@@ -42,19 +37,15 @@
     "memory-stream": "1.0.0"
   },
   "devDependencies": {
-    "@types/chai": "4.2.1",
     "@types/debug": "4.1.5",
     "@types/fs-extra": "8.0.0",
-    "@types/mocha": "5.2.7",
+    "@types/jest": "^24.0.18",
     "@types/node": "12.7.4",
     "@types/tmp": "0.1.0",
-    "chai": "4.2.0",
-    "chai-exclude": "2.0.2",
     "deplokay": "0.0.9",
-    "istanbul": "0.4.5",
-    "mocha": "6.2.0",
-    "nyc": "14.1.1",
+    "jest": "^24.9.0",
     "tmp": "0.1.0",
+    "ts-jest": "24.0.2",
     "ts-node": "8.3.0",
     "tslint": "5.19.0",
     "typedoc": "0.15.0",
@@ -71,26 +62,6 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/ffalt/jamp3.git"
-  },
-  "nyc": {
-    "temp-directory": "./reports/.nyc_output",
-    "report-dir": "./reports/coverage",
-    "include": [
-      "src/*.ts",
-      "src/**/*.ts"
-    ],
-    "extension": [
-      ".ts"
-    ],
-    "require": [
-      "ts-node/register"
-    ],
-    "reporter": [
-      "text-summary",
-      "html"
-    ],
-    "sourceMap": true,
-    "instrument": true
   },
   "engines": {
     "node": ">=8.0.0"

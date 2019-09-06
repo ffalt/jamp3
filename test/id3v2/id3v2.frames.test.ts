@@ -1,33 +1,30 @@
-import {expect, should} from 'chai';
-import {describe, it, run} from 'mocha';
+import {BufferUtils} from '../../src/lib/common/buffer';
+import {synchsafe, unsynchsafe} from '../../src/lib/common/utils';
+import {ID3v2_ENCODINGS} from '../../src/lib/id3v2/id3v2.header.consts';
+import {IID3V2} from '../../src/lib/id3v2/id3v2.types';
+import {ID3V2ValueTypes} from '../../src/lib/id3v2/id3v2.consts';
+import {MemoryWriterStream} from '../../src/lib/common/stream-writer-memory';
+import {BufferReader} from '../../src/lib/common/buffer-reader';
+import {IFrameImpl} from '../../src/lib/id3v2/frames/id3v2.frame';
+import {FrameIdAscii} from '../../src/lib/id3v2/frames/implementations/id3v2.frame.id-ascii';
+import {FrameIdBin} from '../../src/lib/id3v2/frames/implementations/id3v2.frame.id-bin';
+import {FrameText} from '../../src/lib/id3v2/frames/implementations/id3v2.frame.text';
+import {FrameLangDescText} from '../../src/lib/id3v2/frames/implementations/id3v2.frame.lang-desc-text';
+import {FramePic} from '../../src/lib/id3v2/frames/implementations/id3v2.frame.pic';
+import {FrameAscii} from '../../src/lib/id3v2/frames/implementations/id3v2.frame.ascii';
+import {FrameIdText} from '../../src/lib/id3v2/frames/implementations/id3v2.frame.id-text';
+import {FramePlayCount} from '../../src/lib/id3v2/frames/implementations/id3v2.frame.playcount';
+import {FrameMusicCDId} from '../../src/lib/id3v2/frames/implementations/id3v2.frame.musiccdid';
+import {FramePopularimeter} from '../../src/lib/id3v2/frames/implementations/id3v2.frame.popularimeter';
+import {FrameBooleanString} from '../../src/lib/id3v2/frames/implementations/id3v2.frame.boolstring';
+import {FrameUnknown} from '../../src/lib/id3v2/frames/implementations/id3v2.frame.unknown';
 
-import {BufferUtils} from '../../../src/lib/common/buffer';
-import {synchsafe, unsynchsafe} from '../../../src/lib/common/utils';
-import {ID3v2_ENCODINGS} from '../../../src/lib/id3v2/id3v2.header.consts';
-import {IID3V2} from '../../../src/lib/id3v2/id3v2.types';
-import {ID3V2ValueTypes} from '../../../src/lib/id3v2/id3v2.consts';
-import {MemoryWriterStream} from '../../../src/lib/common/stream-writer-memory';
-import {BufferReader} from '../../../src/lib/common/buffer-reader';
-import {IFrameImpl} from '../../../src/lib/id3v2/frames/id3v2.frame';
-import {FrameIdAscii} from '../../../src/lib/id3v2/frames/implementations/id3v2.frame.id-ascii';
-import {FrameIdBin} from '../../../src/lib/id3v2/frames/implementations/id3v2.frame.id-bin';
-import {FrameText} from '../../../src/lib/id3v2/frames/implementations/id3v2.frame.text';
-import {FrameLangDescText} from '../../../src/lib/id3v2/frames/implementations/id3v2.frame.lang-desc-text';
-import {FramePic} from '../../../src/lib/id3v2/frames/implementations/id3v2.frame.pic';
-import {FrameAscii} from '../../../src/lib/id3v2/frames/implementations/id3v2.frame.ascii';
-import {FrameIdText} from '../../../src/lib/id3v2/frames/implementations/id3v2.frame.id-text';
-import {FramePlayCount} from '../../../src/lib/id3v2/frames/implementations/id3v2.frame.playcount';
-import {FrameMusicCDId} from '../../../src/lib/id3v2/frames/implementations/id3v2.frame.musiccdid';
-import {FramePopularimeter} from '../../../src/lib/id3v2/frames/implementations/id3v2.frame.popularimeter';
-import {FrameBooleanString} from '../../../src/lib/id3v2/frames/implementations/id3v2.frame.boolstring';
-import {FrameUnknown} from '../../../src/lib/id3v2/frames/implementations/id3v2.frame.unknown';
-
-describe('SyncSaveInt', function() {
-	it('should calculate back & forth', function() {
-		expect(unsynchsafe(synchsafe(0))).to.equal(0);
-		expect(unsynchsafe(synchsafe(265))).to.equal(265);
-		expect(unsynchsafe(synchsafe(268435455))).to.equal(268435455); // max size
-		expect(unsynchsafe(synchsafe(268435456))).to.equal(0); // overflow
+describe('SyncSaveInt', () => {
+	it('should calculate back & forth', () => {
+		expect(unsynchsafe(synchsafe(0))).toBe(0);
+		expect(unsynchsafe(synchsafe(265))).toBe(265);
+		expect(unsynchsafe(synchsafe(268435455))).toBe(268435455); // max size
+		expect(unsynchsafe(synchsafe(268435456))).toBe(0); // overflow
 	});
 });
 
@@ -37,11 +34,11 @@ async function writebackandforth(val: IFrameImpl, testobj: { encoding?: string, 
 	await val.write(frame, stream, head);
 	const reader = new BufferReader(stream.toBuffer());
 	const result = await val.parse(reader, {id: 'test', start: 0, end: 0, size: 0, statusFlags: {}, formatFlags: {}, data: stream.toBuffer()}, head);
-	should().exist(result);
+	expect(result).toBeTruthy();
 	if (!result) {
 		return;
 	}
-	should().exist(result.value);
+	expect(result.value).toBeTruthy();
 	return {head: {encoding: result.encoding ? result.encoding.name : undefined}, value: result.value};
 }
 
@@ -73,7 +70,7 @@ describe('ID3v2Frames', () => {
 			it('should write back & forth: ' + testValue, async () => {
 				const testval: IID3V2.FrameValue.Ascii = {text: testValue};
 				const result = await writebackandforth(val, {value: testval}, tagHead);
-				expect(result.value.text).to.equal(testval.text);
+				expect(result.value.text).toBe(testval.text);
 			});
 		});
 	});
@@ -86,8 +83,8 @@ describe('ID3v2Frames', () => {
 					it('should write back & forth: ' + testValue, async () => {
 						const testval: IID3V2.FrameValue.Text = {text: testValue};
 						const result = await writebackandforth(val, {encoding: enc, value: testval}, tagHead);
-						expect(result.value.text).to.equal(testValue);
-						expect(result.head.encoding).to.equal(enc);
+						expect(result.value.text).toBe(testValue);
+						expect(result.head.encoding).toBe(enc);
 					});
 				});
 			});
@@ -102,9 +99,9 @@ describe('ID3v2Frames', () => {
 					it('should write back & forth: ' + testValue, async () => {
 						const testval: IID3V2.FrameValue.IdText = {id: '1234567890a', text: testValue};
 						const result = await writebackandforth(val, {encoding: enc, value: testval}, tagHead);
-						expect(result.head.encoding).to.equal(enc);
-						expect(result.value.text).to.equal(testval.text);
-						expect(result.value.id).to.equal(testval.id);
+						expect(result.head.encoding).toBe(enc);
+						expect(result.value.text).toBe(testval.text);
+						expect(result.value.id).toBe(testval.id);
 					});
 				});
 			});
@@ -117,8 +114,8 @@ describe('ID3v2Frames', () => {
 			it('should write back & forth: ' + testValue, async () => {
 				const testval: IID3V2.FrameValue.IdAscii = {id: '1234567890a', text: testValue};
 				const result = await writebackandforth(val, {value: testval}, tagHead);
-				expect(result.value.text).to.equal(testval.text);
-				expect(result.value.id).to.equal(testval.id);
+				expect(result.value.text).toBe(testval.text);
+				expect(result.value.id).toBe(testval.id);
 			});
 		});
 	});
@@ -135,10 +132,10 @@ describe('ID3v2Frames', () => {
 							text: testValue
 						};
 						const result = await writebackandforth(val, {value: testval, encoding: enc}, tagHead);
-						expect(result.head.encoding).to.equal(enc);
-						expect(result.value.text).to.equal(testval.text);
-						expect(result.value.language).to.equal(testval.language);
-						expect(result.value.id).to.equal(testval.id);
+						expect(result.head.encoding).toBe(enc);
+						expect(result.value.text).toBe(testval.text);
+						expect(result.value.language).toBe(testval.language);
+						expect(result.value.id).toBe(testval.id);
 					});
 				});
 			});
@@ -151,8 +148,8 @@ describe('ID3v2Frames', () => {
 			it('should write back & forth: ' + testValue, async () => {
 				const testval: IID3V2.FrameValue.Bin = {bin: BufferUtils.fromString(testValue)};
 				const result = await writebackandforth(val, {value: testval}, tagHead);
-				expect(result.value.bin.length).to.equal(testval.bin.length);
-				expect(BufferUtils.compareBuffer(testval.bin, result.value.bin)).to.equal(true, 'Binary not equal ' + testval);
+				expect(result.value.bin.length).toBe(testval.bin.length);
+				expect(BufferUtils.compareBuffer(testval.bin, result.value.bin)).toBe(true); // 'Binary not equal ' + testval);
 			});
 		});
 	});
@@ -163,9 +160,9 @@ describe('ID3v2Frames', () => {
 			it('should write back & forth: ' + testValue, async () => {
 				const testval: IID3V2.FrameValue.IdBin = {id: 'öösldfösfsfd', bin: BufferUtils.fromString(testValue)};
 				const result = await writebackandforth(val, {value: testval}, tagHead);
-				expect(result.value.id).to.equal(testval.id);
-				expect(result.value.bin.length).to.equal(testval.bin.length);
-				expect(BufferUtils.compareBuffer(testval.bin, result.value.bin)).to.equal(true);
+				expect(result.value.id).toBe(testval.id);
+				expect(result.value.bin.length).toBe(testval.bin.length);
+				expect(BufferUtils.compareBuffer(testval.bin, result.value.bin)).toBe(true);
 			});
 		});
 	});
@@ -177,9 +174,9 @@ describe('ID3v2Frames', () => {
 				it('should write back & forth: ' + testValue, async () => {
 					const testval: IID3V2.FrameValue.Popularimeter = {email: 'öösldfösfsfd', rating: rating, count: testValue};
 					const result = await writebackandforth(val, {value: testval}, tagHead);
-					expect(result.value.email).to.equal(testval.email);
-					expect(result.value.rating).to.equal(testval.rating);
-					expect(result.value.count).to.equal(testval.count);
+					expect(result.value.email).toBe(testval.email);
+					expect(result.value.rating).toBe(testval.rating);
+					expect(result.value.count).toBe(testval.count);
 				});
 			});
 		});
@@ -193,8 +190,8 @@ describe('ID3v2Frames', () => {
 					it('should write back & forth: ' + testValue, async () => {
 						const testval: IID3V2.FrameValue.Bool = {bool: testValue};
 						const result = await writebackandforth(val, {value: testval, encoding: enc}, tagHead);
-						expect(result.head.encoding).to.equal(enc);
-						expect(result.value.bool).to.equal(testval.bool);
+						expect(result.head.encoding).toBe(enc);
+						expect(result.value.bool).toBe(testval.bool);
 					});
 				});
 			});
@@ -207,8 +204,8 @@ describe('ID3v2Frames', () => {
 			it('should write back & forth: ' + testValue, async () => {
 				const testval: IID3V2.FrameValue.Bin = {bin: BufferUtils.fromString(testValue)};
 				const result = await writebackandforth(val, {value: testval}, tagHead);
-				expect(result.value.bin.length).to.equal(testval.bin.length);
-				expect(BufferUtils.compareBuffer(testval.bin, result.value.bin)).to.equal(true);
+				expect(result.value.bin.length).toBe(testval.bin.length);
+				expect(BufferUtils.compareBuffer(testval.bin, result.value.bin)).toBe(true);
 			});
 		});
 	});
@@ -219,7 +216,7 @@ describe('ID3v2Frames', () => {
 			it('should write back & forth: ' + testValue, async () => {
 				const testval: IID3V2.FrameValue.Number = {num: testValue};
 				const result = await writebackandforth(val, {value: testval}, tagHead);
-				expect(result.value.num).to.equal(testval.num);
+				expect(result.value.num).toBe(testval.num);
 			});
 		});
 	});
@@ -245,18 +242,15 @@ describe('ID3v2Frames', () => {
 									encoding: enc
 								};
 								const result = await writebackandforth(val, testobj, tagHead);
-								expect(result.value.description).to.equal(testobj.value.description);
-								expect(result.value.mimeType).to.equal(testobj.value.mimeType);
-								expect(result.value.pictureType).to.equal(testobj.value.pictureType);
-								expect(result.head.encoding).to.equal(testobj.encoding);
+								expect(result.value.description).toBe(testobj.value.description);
+								expect(result.value.mimeType).toBe(testobj.value.mimeType);
+								expect(result.value.pictureType).toBe(testobj.value.pictureType);
+								expect(result.head.encoding).toBe(testobj.encoding);
 							});
 						});
 					});
 				});
 			});
 		});
-	});
-	setTimeout(() => {
-		run(); // https://github.com/mochajs/mocha/issues/2221#issuecomment-214636042
 	});
 });

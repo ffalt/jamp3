@@ -1,11 +1,9 @@
-import {expect, should} from 'chai';
-import {describe, it, run} from 'mocha';
 import fse from 'fs-extra';
 import tmp from 'tmp';
 
-import {ID3v2} from '../../../src/lib/id3v2/id3v2';
-import {ID3V24TagBuilder} from '../../../src/lib/id3v2/id3v2.builder.v24';
-import {toNonBinJson} from '../../common/common';
+import {ID3v2} from '../../src/lib/id3v2/id3v2';
+import {ID3V24TagBuilder} from '../../src/lib/id3v2/id3v2.builder.v24';
+import {toNonBinJson} from '../common/common';
 
 const testNumber = 5;
 const testString = 'räksmörgåsЪЭЯ😀';
@@ -139,7 +137,7 @@ async function test24Builder(encoding: string): Promise<void> {
 	const builder = new ID3V24TagBuilder(encoding);
 	await fill24Builder(builder);
 	const warnings = ID3v2.check(builder.buildTag());
-	expect(warnings.length).to.equal(0, 'there are warnings: ' + toNonBinJson(warnings));
+	expect(warnings.length).toBe(0); // 'there are warnings: ' + toNonBinJson(warnings));
 }
 
 async function test24BuilderWrite(encoding: string): Promise<void> {
@@ -152,14 +150,14 @@ async function test24BuilderWrite(encoding: string): Promise<void> {
 		await id3.writeBuilder(file.name, builder, {keepBackup: false, paddingSize: 0});
 		const frames = builder.buildFrames();
 		const data = await id3.read(file.name);
-		should().exist(data);
+		expect(data).toBeTruthy();
 		if (!data) {
 			file.removeCallback();
 			return;
 		}
-		expect(data.frames.length).to.equal(frames.length, 'frames.length does not match');
+		expect(data.frames.length).toBe(frames.length); // , 'frames.length does not match');
 		const warnings = ID3v2.check(data);
-		expect(warnings.length).to.equal(0, 'there are warnings: ' + toNonBinJson(warnings));
+		expect(warnings.length).toBe(0); // , 'there are warnings: ' + toNonBinJson(warnings));
 		// console.log(toNonBinJson(data));
 		// await id3.writeBuilder('test-' + encoding + '.id3', builder, {keepBackup: false, paddingSize: 0});
 	} catch (e) {
@@ -169,11 +167,10 @@ async function test24BuilderWrite(encoding: string): Promise<void> {
 	file.removeCallback();
 }
 
-describe('Builder', async () => {
-
-	describe('v2.4', async () => {
+describe('Builder', () => {
+	describe('v2.4', () => {
 		for (const testValue of ['iso-8859-1', 'ucs2', 'utf16-be', 'utf8']) {
-			describe(testValue, async () => {
+			describe(testValue, () => {
 				it('should be valid', async () => {
 					await test24Builder(testValue);
 				});
@@ -182,9 +179,5 @@ describe('Builder', async () => {
 				});
 			});
 		}
-	});
-
-	setTimeout(() => {
-		run(); // https://github.com/mochajs/mocha/issues/2221#issuecomment-214636042
 	});
 });

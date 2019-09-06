@@ -19,14 +19,29 @@ export function toNonBinJson(o: any): string {
 	return JSON.stringify(o, replacer, '\t');
 }
 
-export async function collectTestFiles(dirs: Array<string>, rootDir: string, testSingleFile?: string): Promise<Array<string>> {
+export function omit(obj: any, omitKeys: Array<string>): any {
+	if (Array.isArray(obj)) {
+		return obj.map(o => omit(o, omitKeys));
+	}
+	if (typeof obj !== 'object') {
+		return obj;
+	}
+	return Object.keys(obj).reduce((result, key) => {
+		if (!omitKeys.includes(key)) {
+			(result as any)[key] = omit(obj[key], omitKeys);
+		}
+		return result;
+	}, {});
+}
+
+export function collectTestFilesSync(dirs: Array<string>, rootDir: string, testSingleFile?: string): Array<string> {
 	let files: Array<string> = [];
 	for (const dir of dirs) {
-		const files1 = await fse.readdir(path.join(rootDir, dir));
+		const files1 = fse.readdirSync(path.join(rootDir, dir));
 		for (const f of files1) {
-			const stat = await fse.lstat(path.join(rootDir, dir, f));
+			const stat = fse.lstatSync(path.join(rootDir, dir, f));
 			if (stat.isDirectory()) {
-				files = files.concat(await collectTestFiles([f], path.join(rootDir, dir), testSingleFile));
+				files = files.concat(collectTestFilesSync([f], path.join(rootDir, dir), testSingleFile));
 			} else if (
 				(['.mp3', '.id3'].indexOf(path.extname(f).toLowerCase()) >= 0) &&
 				(!testSingleFile || path.join(dir, f).indexOf(testSingleFile) >= 0)

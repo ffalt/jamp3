@@ -1,50 +1,46 @@
-import {expect, should, use} from 'chai';
-import 'mocha';
-import {loadSpec, toNonBinJson} from '../common/common';
+import {loadSpec, omit, toNonBinJson} from '../common/common';
 import Debug from 'debug';
-import chaiExclude from 'chai-exclude';
 
 import {IID3V2} from '../../src/lib/id3v2/id3v2.types';
 import {ID3v2} from '../../src/lib/id3v2/id3v2';
-
-use(chaiExclude);
 
 const debug = Debug('id3v2-test');
 
 function compareID3v2SpecFrame(filename: string, framespec: any, frame: IID3V2.Frame) {
 	const frameHead = frame.head;
-	should().exist(frameHead);
+	expect(frameHead).toBeTruthy();
 	if (!frameHead) {
 		return;
 	}
 	const formatFlags = frameHead.formatFlags || {};
 	if (framespec.formatFlags) {
 		Object.keys(framespec.formatFlags).forEach(flag => {
-			expect(formatFlags[flag]).to.equal(framespec.formatFlags[flag], 'Flag values not equal for frame ' + framespec.id + ' flag ' + flag + ' frame: ' + JSON.stringify(frame));
+			expect(formatFlags[flag]).toBe(framespec.formatFlags[flag]); // 'Flag values not equal for frame ' + framespec.id + ' flag ' + flag + ' frame: ' + JSON.stringify(frame));
 		});
 	}
 	Object.keys(formatFlags).forEach(flag => {
 		if (formatFlags[flag]) {
-			should().exist(framespec.formatFlags, 'SpecError: Flag values must be specified for frame ' + framespec.id + ' flag ' + flag);
-			expect(formatFlags[flag]).to.equal(framespec.formatFlags[flag], 'SpecError: All Flag values must be correctly specified for frame ' + framespec.id + ' flag ' + flag);
+			expect(framespec.formatFlags).toBeTruthy(); //  'SpecError: Flag values must be specified for frame ' + framespec.id + ' flag ' + flag);
+			expect(formatFlags[flag]).toBe(framespec.formatFlags[flag]); // 'SpecError: All Flag values must be correctly specified for frame ' + framespec.id + ' flag ' + flag);
 		}
 	});
 	if (framespec.binSize !== undefined) {
-		expect((<any>frame.value).bin.length).to.equal(framespec.binSize);
+		expect((<any>frame.value).bin.length).toBe(framespec.binSize);
 	}
 	if (!framespec.invalid) {
-		expect(frame.value).excludingEvery(['bin']).to.deep.equal(framespec.value, 'Values not equal for frame ' + framespec.id + ' ' + toNonBinJson(frame));
+		// expect(frame.value).excludingEvery(['bin']).to.deep.equal(framespec.value, 'Values not equal for frame ' + framespec.id + ' ' + toNonBinJson(frame));
+		expect(omit(frame.value, ['bin'])).toEqual(omit(framespec.value, ['bin'])); // 'Values not equal for frame ' + framespec.id + ' ' + toNonBinJson(frame));
 	} else {
-		should().exist(frame.invalid);
+		expect(frame.invalid).toBeTruthy();
 	}
 	if (framespec.size !== undefined) {
-		expect(frameHead.size).to.equal(framespec.size, 'Invalid size for frame ' + framespec.id + toNonBinJson(frame));
+		expect(frameHead.size).toBe(framespec.size); // 'Invalid size for frame ' + framespec.id + toNonBinJson(frame));
 	}
 	if (framespec.groupId !== undefined) {
-		expect(frame.groupId).to.equal(framespec.groupId, 'Invalid groupId for frame ' + framespec.id);
+		expect(frame.groupId).toBe(framespec.groupId); // 'Invalid groupId for frame ' + framespec.id);
 	}
 	if (framespec.subframes) {
-		should().exist(frame.subframes);
+		expect(frame.subframes).toBeTruthy();
 		if (frame.subframes) {
 			compareID3v2SpecFrames(filename, framespec.subframes, frame.subframes);
 		}
@@ -159,21 +155,21 @@ export async function compareID3v2Spec(filename: string, tag: IID3V2.Tag | undef
 	if (!spec.id3v2) {
 		if (tag) {
 			if (tag.head) {
-				expect(tag.head.valid).to.equal(false, 'Spec needs tag to be invalid ' + toNonBinJson(tag));
+				expect(tag.head.valid).toBe(false); // , 'Spec needs tag to be invalid ' + toNonBinJson(tag));
 			}
 		}
 		return;
 	}
-	should().exist(tag);
+	expect(tag).toBeTruthy();
 	if (!tag) {
 		return;
 	}
-	should().exist(tag.head);
+	expect(tag.head).toBeTruthy();
 	if (tag.head) {
-		expect(tag.head.ver).to.equal(spec.id3v2.ver, 'wrong id3v2 version');
+		expect(tag.head.ver).toBe(spec.id3v2.ver); // 'wrong id3v2 version');
 	}
 	compareID3v2SpecFrames(filename, spec.id3v2.frames, tag.frames);
-	expect(tag.frames.length).to.equal(spec.id3v2.frames ? spec.id3v2.frames.length : 0, 'Invalid frame count ' + toNonBinJson(tag.frames));
+	expect(tag.frames.length).toBe(spec.id3v2.frames ? spec.id3v2.frames.length : 0); // 'Invalid frame count ' + toNonBinJson(tag.frames));
 }
 
 export async function testLoadSaveSpec(filename: string): Promise<void> {
@@ -184,10 +180,10 @@ export async function testLoadSaveSpec(filename: string): Promise<void> {
 		console.log('invalid id3v2 tag found', filename);
 		tag = undefined;
 	}
-	should().exist(tag);
+	expect(tag).toBeTruthy();
 	if (!tag) {
 		return;
 	}
-	should().exist(tag.head);
+	expect(tag.head).toBeTruthy();
 	await compareID3v2Spec(filename, tag);
 }

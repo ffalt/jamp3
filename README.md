@@ -974,11 +974,11 @@ Options:
 
 ### Test
 
-`npm run test` to run the the mocha tests
+`npm run test` to run the the jest tests
 
 ### Coverage
 
-`npm run coverage` to run the mocha tests with code coverage stats
+`npm run coverage` to run the jest tests with code coverage stats
 
 ### Lint
 

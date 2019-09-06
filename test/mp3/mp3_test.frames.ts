@@ -1,5 +1,4 @@
 import fse from 'fs-extra';
-import {expect, should} from 'chai';
 import Debug from 'debug';
 
 import {MP3} from '../../src/lib/mp3/mp3';
@@ -63,18 +62,18 @@ async function loadFramesCompareProbe(filename: string, result: IMP3.Result): Pr
 		const header: IMP3.FrameHeader = expandRawHeader(expandRawHeaderArray(frame));
 		if ((index > 0) && index < frames.length - 2) {
 			// ignore last calculated size (ffprobe reports the real size, which may be smaller)
-			expect(header.size).to.deep.equal(compareframe.size, 'Size not equal ' + index + ': ' + JSON.stringify(frame) + ' ' + JSON.stringify(compareframe));
-			expect(header.samples).to.deep.equal(compareframe.samples, 'Nr of samples not equal ' + index + ': ' + JSON.stringify(frame) + ' ' + JSON.stringify(compareframe));
+			expect(header.size).toBe(compareframe.size); // 'Size not equal ' + index + ': ' + JSON.stringify(frame) + ' ' + JSON.stringify(compareframe));
+			expect(header.samples).toBe(compareframe.samples); // 'Nr of samples not equal ' + index + ': ' + JSON.stringify(frame) + ' ' + JSON.stringify(compareframe));
 		}
-		expect(header.offset).to.deep.equal(compareframe.offset, 'Header position not equal ' + index + ': ' + JSON.stringify(frame) + ' ' + JSON.stringify(compareframe));
-		expect(header.channelCount).to.deep.equal(compareframe.channels, 'Channels not equal ' + index + ': ' + JSON.stringify(frame) + ' ' + JSON.stringify(compareframe));
+		expect(header.offset).toBe(compareframe.offset); // 'Header position not equal ' + index + ': ' + JSON.stringify(frame) + ' ' + JSON.stringify(compareframe));
+		expect(header.channelCount).toBe(compareframe.channels); // 'Channels not equal ' + index + ': ' + JSON.stringify(frame) + ' ' + JSON.stringify(compareframe));
 	});
-	expect(frames.length).to.equal(compareframes.length, 'Frame lengths not equal');
+	expect(frames.length).toBe(compareframes.length); // 'Frame lengths not equal');
 	if (compare.stream && result.mpeg) {
-		expect(frames.length).to.equal(parseInt(compare.stream.nb_read_frames, 10), 'nb_read_frames not equal');
-		expect(result.mpeg.sampleRate).to.equal(parseInt(compare.stream.sample_rate, 10), 'sampleRate not equal');
-		expect(result.mpeg.channels).to.equal(compare.stream.channels, 'channels not equal');
-		expect('MP3 (' + result.mpeg.layer + ')').to.equal(compare.stream.codec_long_name, 'codec_long_name not equal');
+		expect(frames.length).toBe(Number(compare.stream.nb_read_frames)); // 'nb_read_frames not equal');
+		expect(result.mpeg.sampleRate).toBe(Number(compare.stream.sample_rate)); // 'sampleRate not equal');
+		expect(result.mpeg.channels).toBe(compare.stream.channels); // 'channels not equal');
+		expect('MP3 (' + result.mpeg.layer + ')').toBe(compare.stream.codec_long_name); // 'codec_long_name not equal');
 		let time = 0;
 		compareframes.forEach(f => {
 			time += f.time;
@@ -82,7 +81,7 @@ async function loadFramesCompareProbe(filename: string, result: IMP3.Result): Pr
 		time = Math.trunc(time) / 1000;
 		if (frames.length > 30 && time !== result.mpeg.durationRead) {
 			const diff = parseFloat(Math.abs((parseFloat(compare.stream.duration) - result.mpeg.durationEstimate)).toFixed(5));
-			expect(diff < 1).to.deep.equal(true, 'Estimated duration differs to much. diff: ' + diff + ' actual: ' + result.mpeg.durationEstimate + ' expected:' + compare.stream.duration);
+			expect(diff < 1).toBe(true); // 'Estimated duration differs to much. diff: ' + diff + ' actual: ' + result.mpeg.durationEstimate + ' expected:' + compare.stream.duration);
 		}
 	}
 }
@@ -91,7 +90,7 @@ export async function testFrames(filename: string): Promise<void> {
 	debug('mp3test', 'loading', filename);
 	const mp3 = new MP3();
 	const result = await mp3.read(filename, {mpeg: true, id3v2: true});
-	should().exist(result);
+	expect(result).toBeTruthy();
 	if (!result || !result.frames) {
 		return;
 	}

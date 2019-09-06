@@ -8,7 +8,6 @@
 
 .git/
 .idea/
-.nyc_output/
 coverage/
 examples/
 docs/
@@ -16,14 +15,18 @@ local/
 node_modules/
 test/
 
+TODO.md
+jest.config.js
+.travis.yml
+
 .DS_Store
 .npmignore
 .gitignore
 .nojekyll
-TODO.md
 tslint.json
 tsconfig.json
 deplokay.json
+deplokay-docs.json
 renovate.json
 typedocconfig.json
 
