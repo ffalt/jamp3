@@ -17,12 +17,12 @@ function run() {
 	};
 	const version = 1;  // version: 1 = v1.1; 0 = v1.0
 	id3v1.write(filename, newTag, version, options)
-	.then(() => {
-		console.log('id3v1.1 written');
-	})
-	.catch(e => {
-		console.error(e);
-	});
+		.then(() => {
+			console.log('id3v1.1 written');
+		})
+		.catch(e => {
+			console.error(e);
+		});
 }
 
 run();

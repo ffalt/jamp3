@@ -16,12 +16,12 @@ function run() {
 		paddingSize: 10 // add padding zeros between id3v2 and the audio (in bytes)
 	};
 	id3v2.writeBuilder(filename, builder24, options)
-	.then(() => {
-		console.log('id3v2.4 written');
-	})
-	.catch(e => {
-		console.error(e);
-	});
+		.then(() => {
+			console.log('id3v2.4 written');
+		})
+		.catch(e => {
+			console.error(e);
+		});
 }
 
 run();

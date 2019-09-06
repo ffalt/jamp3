@@ -12,12 +12,12 @@ function run() {
 		raw: false // do not parse frames & return all frames as binary blobs
 	};
 	mp3.read(filename, options)
-	.then((data) => {
-		console.log('mp3:', data);
-	})
-	.catch(e => {
-		console.error(e);
-	});
+		.then((data) => {
+			console.log('mp3:', data);
+		})
+		.catch(e => {
+			console.error(e);
+		});
 }
 
 run();

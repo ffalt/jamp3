@@ -28,12 +28,12 @@ function run() {
 	};
 	const version = 4;  // version: 2 = v2.2; 3 = v2.3; 4 = v2.4
 	id3v2.write(filename, tag, version, 0, options)
-	.then(() => {
-		console.log('id3v2.4 written');
-	})
-	.catch(e => {
-		console.error(e);
-	});
+		.then(() => {
+			console.log('id3v2.4 written');
+		})
+		.catch(e => {
+			console.error(e);
+		});
 }
 
 run();
