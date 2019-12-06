@@ -1,9 +1,10 @@
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -11,10 +12,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const mp3_analyzer_1 = require("../lib/mp3/mp3_analyzer");
-const utils_1 = require("../lib/common/utils");
 const commander_1 = __importDefault(require("commander"));
 const fs_extra_1 = __importDefault(require("fs-extra"));
+const mp3_analyzer_1 = require("../lib/mp3/mp3.analyzer");
+const tool_1 = require("../lib/common/tool");
 const pack = require('../../package.json');
 commander_1.default
     .version(pack.version, '-v, --version')
@@ -83,25 +84,10 @@ function onFile(filename) {
 }
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
-        let input = commander_1.default.input;
-        if (!input) {
-            if (commander_1.default.args[0]) {
-                input = commander_1.default.args[0];
-            }
-        }
         if (commander_1.default.ignoreXingOffOne) {
             options.ignoreXingOffOne = commander_1.default.ignoreXingOffOne;
         }
-        if (!input || input.length === 0) {
-            return Promise.reject(Error('must specify a filename/directory'));
-        }
-        const stat = yield fs_extra_1.default.stat(input);
-        if (stat.isDirectory()) {
-            yield utils_1.collectFiles(input, ['.mp3'], commander_1.default.recursive, onFile);
-        }
-        else {
-            yield onFile(input);
-        }
+        yield tool_1.runTool(commander_1.default, onFile);
         if (commander_1.default.dest) {
             if (commander_1.default.format === 'plain') {
                 yield fs_extra_1.default.writeFile(commander_1.default.dest, result.map(r => toPlain(r)).join('\n'));

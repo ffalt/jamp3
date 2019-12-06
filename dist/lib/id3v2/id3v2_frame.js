@@ -1,9 +1,10 @@
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -23,13 +24,13 @@ function getWriteTextEncoding(frame, head, defaultEncoding) {
     return encodings_1.Encodings[encoding] || ascii;
 }
 exports.FrameIdAscii = {
-    parse: (reader) => __awaiter(this, void 0, void 0, function* () {
+    parse: (reader) => __awaiter(void 0, void 0, void 0, function* () {
         const id = reader.readStringTerminated(ascii);
         const text = reader.readStringTerminated(ascii);
         const value = { id, text };
         return { value, encoding: ascii };
     }),
-    write: (frame, stream) => __awaiter(this, void 0, void 0, function* () {
+    write: (frame, stream) => __awaiter(void 0, void 0, void 0, function* () {
         const value = frame.value;
         stream.writeStringTerminated(value.id, ascii);
         stream.writeString(value.text, ascii);
@@ -42,7 +43,7 @@ exports.FrameIdAscii = {
     }
 };
 exports.FrameLangDescText = {
-    parse: (reader) => __awaiter(this, void 0, void 0, function* () {
+    parse: (reader) => __awaiter(void 0, void 0, void 0, function* () {
         const enc = reader.readEncoding();
         const language = utils_1.removeZeroString(reader.readString(3, ascii)).trim();
         const id = reader.readStringTerminated(enc);
@@ -50,7 +51,7 @@ exports.FrameLangDescText = {
         const value = { id, language, text };
         return { value, encoding: enc };
     }),
-    write: (frame, stream, head, defaultEncoding) => __awaiter(this, void 0, void 0, function* () {
+    write: (frame, stream, head, defaultEncoding) => __awaiter(void 0, void 0, void 0, function* () {
         const value = frame.value;
         const enc = getWriteTextEncoding(frame, head, defaultEncoding);
         stream.writeEncoding(enc);
@@ -66,14 +67,14 @@ exports.FrameLangDescText = {
     }
 };
 exports.FrameLangText = {
-    parse: (reader) => __awaiter(this, void 0, void 0, function* () {
+    parse: (reader) => __awaiter(void 0, void 0, void 0, function* () {
         const enc = reader.readEncoding();
         const language = utils_1.removeZeroString(reader.readString(3, ascii)).trim();
         const text = reader.readStringTerminated(enc);
         const value = { language, text };
         return { value, encoding: enc };
     }),
-    write: (frame, stream, head, defaultEncoding) => __awaiter(this, void 0, void 0, function* () {
+    write: (frame, stream, head, defaultEncoding) => __awaiter(void 0, void 0, void 0, function* () {
         const value = frame.value;
         const enc = getWriteTextEncoding(frame, head, defaultEncoding);
         stream.writeEncoding(enc);
@@ -88,13 +89,13 @@ exports.FrameLangText = {
     }
 };
 exports.FrameIdBin = {
-    parse: (reader) => __awaiter(this, void 0, void 0, function* () {
+    parse: (reader) => __awaiter(void 0, void 0, void 0, function* () {
         const id = reader.readStringTerminated(ascii);
         const bin = reader.rest();
         const value = { id, bin };
         return { value, encoding: ascii };
     }),
-    write: (frame, stream) => __awaiter(this, void 0, void 0, function* () {
+    write: (frame, stream) => __awaiter(void 0, void 0, void 0, function* () {
         const value = frame.value;
         stream.writeStringTerminated(value.id, ascii);
         stream.writeBuffer(value.bin);
@@ -107,7 +108,7 @@ exports.FrameIdBin = {
     }
 };
 exports.FrameCTOC = {
-    parse: (reader, frame, head) => __awaiter(this, void 0, void 0, function* () {
+    parse: (reader, frame, head) => __awaiter(void 0, void 0, void 0, function* () {
         const id = reader.readStringTerminated(ascii);
         const bits = reader.readBitsByte();
         const ordered = utils_1.isBitSetAt(bits, 0);
@@ -129,7 +130,7 @@ exports.FrameCTOC = {
         const value = { id, ordered, topLevel, children };
         return { value, encoding: ascii, subframes };
     }),
-    write: (frame, stream, head, defaultEncoding) => __awaiter(this, void 0, void 0, function* () {
+    write: (frame, stream, head, defaultEncoding) => __awaiter(void 0, void 0, void 0, function* () {
         const value = frame.value;
         stream.writeStringTerminated(value.id, ascii);
         stream.writeByte((value.ordered ? 1 : 0) + ((value.topLevel ? 1 : 0) * 2));
@@ -149,7 +150,7 @@ exports.FrameCTOC = {
     }
 };
 exports.FrameCHAP = {
-    parse: (reader, frame, head) => __awaiter(this, void 0, void 0, function* () {
+    parse: (reader, frame, head) => __awaiter(void 0, void 0, void 0, function* () {
         const id = reader.readStringTerminated(ascii);
         const start = reader.readUInt4Byte();
         const end = reader.readUInt4Byte();
@@ -160,7 +161,7 @@ exports.FrameCHAP = {
         const value = { id, start, end, offset, offsetEnd };
         return { value, encoding: ascii, subframes };
     }),
-    write: (frame, stream, head, defaultEncoding) => __awaiter(this, void 0, void 0, function* () {
+    write: (frame, stream, head, defaultEncoding) => __awaiter(void 0, void 0, void 0, function* () {
         const value = frame.value;
         const enc = encodings_1.Encodings['ascii'];
         stream.writeStringTerminated(value.id, enc);
@@ -180,7 +181,7 @@ exports.FrameCHAP = {
     }
 };
 exports.FramePic = {
-    parse: (reader, frame, head) => __awaiter(this, void 0, void 0, function* () {
+    parse: (reader, frame, head) => __awaiter(void 0, void 0, void 0, function* () {
         const enc = reader.readEncoding();
         let mimeType;
         if (head.ver <= 2) {
@@ -200,7 +201,7 @@ exports.FramePic = {
         }
         return { value, encoding: enc };
     }),
-    write: (frame, stream, head, defaultEncoding) => __awaiter(this, void 0, void 0, function* () {
+    write: (frame, stream, head, defaultEncoding) => __awaiter(void 0, void 0, void 0, function* () {
         const value = frame.value;
         const enc = getWriteTextEncoding(frame, head, defaultEncoding);
         stream.writeEncoding(enc);
@@ -233,7 +234,7 @@ exports.FramePic = {
     }
 };
 exports.FrameText = {
-    parse: (reader, frame) => __awaiter(this, void 0, void 0, function* () {
+    parse: (reader, frame) => __awaiter(void 0, void 0, void 0, function* () {
         if (frame.data.length === 0) {
             return { value: { text: '' }, encoding: utf8 };
         }
@@ -242,7 +243,7 @@ exports.FrameText = {
         const value = { text };
         return { value, encoding: enc };
     }),
-    write: (frame, stream, head, defaultEncoding) => __awaiter(this, void 0, void 0, function* () {
+    write: (frame, stream, head, defaultEncoding) => __awaiter(void 0, void 0, void 0, function* () {
         const value = frame.value;
         const enc = getWriteTextEncoding(frame, head, defaultEncoding);
         stream.writeEncoding(enc);
@@ -256,7 +257,7 @@ exports.FrameText = {
     }
 };
 exports.FrameTextConcatList = {
-    parse: (reader, frame) => __awaiter(this, void 0, void 0, function* () {
+    parse: (reader, frame) => __awaiter(void 0, void 0, void 0, function* () {
         if (frame.data.length === 0) {
             return { value: { text: '' }, encoding: utf8 };
         }
@@ -271,7 +272,7 @@ exports.FrameTextConcatList = {
         const value = { text };
         return { value, encoding: enc };
     }),
-    write: (frame, stream, head, defaultEncoding) => __awaiter(this, void 0, void 0, function* () {
+    write: (frame, stream, head, defaultEncoding) => __awaiter(void 0, void 0, void 0, function* () {
         const value = frame.value;
         const enc = getWriteTextEncoding(frame, head, defaultEncoding);
         stream.writeEncoding(enc);
@@ -285,7 +286,7 @@ exports.FrameTextConcatList = {
     }
 };
 exports.FrameTextList = {
-    parse: (reader) => __awaiter(this, void 0, void 0, function* () {
+    parse: (reader) => __awaiter(void 0, void 0, void 0, function* () {
         const enc = reader.readEncoding();
         const list = [];
         while (reader.hasData()) {
@@ -297,7 +298,7 @@ exports.FrameTextList = {
         const value = { list };
         return { value, encoding: enc };
     }),
-    write: (frame, stream, head, defaultEncoding) => __awaiter(this, void 0, void 0, function* () {
+    write: (frame, stream, head, defaultEncoding) => __awaiter(void 0, void 0, void 0, function* () {
         const value = frame.value;
         const enc = getWriteTextEncoding(frame, head, defaultEncoding);
         stream.writeEncoding(enc);
@@ -316,12 +317,12 @@ exports.FrameTextList = {
     }
 };
 exports.FrameAsciiValue = {
-    parse: (reader) => __awaiter(this, void 0, void 0, function* () {
+    parse: (reader) => __awaiter(void 0, void 0, void 0, function* () {
         const text = reader.readStringTerminated(ascii);
         const value = { text };
         return { value, encoding: ascii };
     }),
-    write: (frame, stream) => __awaiter(this, void 0, void 0, function* () {
+    write: (frame, stream) => __awaiter(void 0, void 0, void 0, function* () {
         const value = frame.value;
         stream.writeString(value.text, ascii);
     }),
@@ -333,14 +334,14 @@ exports.FrameAsciiValue = {
     }
 };
 exports.FrameIdText = {
-    parse: (reader) => __awaiter(this, void 0, void 0, function* () {
+    parse: (reader) => __awaiter(void 0, void 0, void 0, function* () {
         const enc = reader.readEncoding();
         const id = reader.readStringTerminated(enc);
         const text = reader.readStringTerminated(enc);
         const value = { id, text };
         return { value, encoding: enc };
     }),
-    write: (frame, stream, head, defaultEncoding) => __awaiter(this, void 0, void 0, function* () {
+    write: (frame, stream, head, defaultEncoding) => __awaiter(void 0, void 0, void 0, function* () {
         const value = frame.value;
         const enc = getWriteTextEncoding(frame, head, defaultEncoding);
         stream.writeEncoding(enc);
@@ -355,11 +356,11 @@ exports.FrameIdText = {
     }
 };
 exports.FrameMusicCDId = {
-    parse: (reader, frame) => __awaiter(this, void 0, void 0, function* () {
+    parse: (reader, frame) => __awaiter(void 0, void 0, void 0, function* () {
         const value = { bin: frame.data };
         return { value, encoding: binary };
     }),
-    write: (frame, stream) => __awaiter(this, void 0, void 0, function* () {
+    write: (frame, stream) => __awaiter(void 0, void 0, void 0, function* () {
         const value = frame.value;
         stream.writeBuffer(value.bin);
     }),
@@ -371,7 +372,7 @@ exports.FrameMusicCDId = {
     }
 };
 exports.FramePlayCounter = {
-    parse: (reader, frame) => __awaiter(this, void 0, void 0, function* () {
+    parse: (reader, frame) => __awaiter(void 0, void 0, void 0, function* () {
         let num = 0;
         try {
             num = reader.readUInt(frame.data.length);
@@ -381,7 +382,7 @@ exports.FramePlayCounter = {
         const value = { num };
         return { value };
     }),
-    write: (frame, stream) => __awaiter(this, void 0, void 0, function* () {
+    write: (frame, stream) => __awaiter(void 0, void 0, void 0, function* () {
         const value = frame.value;
         const byteLength = utils_1.neededStoreBytes(value.num, 4);
         stream.writeUInt(value.num, byteLength);
@@ -394,7 +395,7 @@ exports.FramePlayCounter = {
     }
 };
 exports.FramePopularimeter = {
-    parse: (reader) => __awaiter(this, void 0, void 0, function* () {
+    parse: (reader) => __awaiter(void 0, void 0, void 0, function* () {
         const email = reader.readStringTerminated(ascii);
         const rating = reader.readByte();
         let count = 0;
@@ -409,7 +410,7 @@ exports.FramePopularimeter = {
         const value = { count, rating, email };
         return { value, encoding: ascii };
     }),
-    write: (frame, stream) => __awaiter(this, void 0, void 0, function* () {
+    write: (frame, stream) => __awaiter(void 0, void 0, void 0, function* () {
         const value = frame.value;
         stream.writeStringTerminated(value.email, ascii);
         stream.writeByte(value.rating);
@@ -426,7 +427,7 @@ exports.FramePopularimeter = {
     }
 };
 exports.FrameRelativeVolumeAdjustment = {
-    parse: (reader, frame) => __awaiter(this, void 0, void 0, function* () {
+    parse: (reader, frame) => __awaiter(void 0, void 0, void 0, function* () {
         if (frame.data.length === 0) {
             return { value: {} };
         }
@@ -469,7 +470,7 @@ exports.FrameRelativeVolumeAdjustment = {
         }
         return { value };
     }),
-    write: (frame, stream) => __awaiter(this, void 0, void 0, function* () {
+    write: (frame, stream) => __awaiter(void 0, void 0, void 0, function* () {
         const value = frame.value;
         const flags = [
             0,
@@ -518,7 +519,7 @@ exports.FrameRelativeVolumeAdjustment = {
     }
 };
 exports.FrameRelativeVolumeAdjustment2 = {
-    parse: (reader, frame) => __awaiter(this, void 0, void 0, function* () {
+    parse: (reader, frame) => __awaiter(void 0, void 0, void 0, function* () {
         if (frame.data.length === 0) {
             return { value: {} };
         }
@@ -540,7 +541,7 @@ exports.FrameRelativeVolumeAdjustment2 = {
         const value = { id, channels };
         return { value };
     }),
-    write: (frame, stream) => __awaiter(this, void 0, void 0, function* () {
+    write: (frame, stream) => __awaiter(void 0, void 0, void 0, function* () {
         const value = frame.value;
         stream.writeStringTerminated(value.id, ascii);
         value.channels.forEach(channel => {
@@ -558,14 +559,14 @@ exports.FrameRelativeVolumeAdjustment2 = {
     }
 };
 exports.FramePartOfCompilation = {
-    parse: (reader) => __awaiter(this, void 0, void 0, function* () {
+    parse: (reader) => __awaiter(void 0, void 0, void 0, function* () {
         const enc = reader.readEncoding();
         const intAsString = reader.readStringTerminated(enc);
         const i = parseInt(intAsString, 10).toString();
         const value = { bool: i === '1' };
         return { value, encoding: enc };
     }),
-    write: (frame, stream, head, defaultEncoding) => __awaiter(this, void 0, void 0, function* () {
+    write: (frame, stream, head, defaultEncoding) => __awaiter(void 0, void 0, void 0, function* () {
         const value = frame.value;
         const enc = getWriteTextEncoding(frame, head, defaultEncoding);
         stream.writeEncoding(enc);
@@ -579,12 +580,12 @@ exports.FramePartOfCompilation = {
     }
 };
 exports.FramePCST = {
-    parse: (reader) => __awaiter(this, void 0, void 0, function* () {
+    parse: (reader) => __awaiter(void 0, void 0, void 0, function* () {
         const num = reader.readUInt4Byte();
         const value = { num };
         return { value };
     }),
-    write: (frame, stream) => __awaiter(this, void 0, void 0, function* () {
+    write: (frame, stream) => __awaiter(void 0, void 0, void 0, function* () {
         const value = frame.value;
         stream.writeUInt4Byte(value.num);
     }),
@@ -593,7 +594,7 @@ exports.FramePCST = {
     }
 };
 exports.FrameETCO = {
-    parse: (reader) => __awaiter(this, void 0, void 0, function* () {
+    parse: (reader) => __awaiter(void 0, void 0, void 0, function* () {
         const format = reader.readBitsByte();
         const events = [];
         while (reader.unread() >= 5) {
@@ -604,11 +605,11 @@ exports.FrameETCO = {
         const value = { format, events };
         return { value };
     }),
-    write: (frame, stream) => __awaiter(this, void 0, void 0, function* () {
+    write: (frame, stream) => __awaiter(void 0, void 0, void 0, function* () {
         const value = frame.value;
         stream.writeByte(value.format);
         (value.events || []).forEach(event => {
-            stream.writeUByte(event.type);
+            stream.writeByte(event.type);
             stream.writeUInt4Byte(event.timestamp);
         });
     }),
@@ -617,7 +618,7 @@ exports.FrameETCO = {
     }
 };
 exports.FrameAENC = {
-    parse: (reader) => __awaiter(this, void 0, void 0, function* () {
+    parse: (reader) => __awaiter(void 0, void 0, void 0, function* () {
         const id = reader.readStringTerminated(ascii);
         if (reader.unread() < 2) {
             return Promise.reject(Error('Not enough data'));
@@ -631,7 +632,7 @@ exports.FrameAENC = {
         const value = { id, previewStart, previewLength, bin };
         return { value, encoding: ascii };
     }),
-    write: (frame, stream) => __awaiter(this, void 0, void 0, function* () {
+    write: (frame, stream) => __awaiter(void 0, void 0, void 0, function* () {
         const value = frame.value;
         stream.writeStringTerminated(value.id, ascii);
         stream.writeUInt2Byte(value.previewStart);
@@ -643,7 +644,7 @@ exports.FrameAENC = {
     }
 };
 exports.FrameLINK = {
-    parse: (reader) => __awaiter(this, void 0, void 0, function* () {
+    parse: (reader) => __awaiter(void 0, void 0, void 0, function* () {
         const url = reader.readStringTerminated(ascii);
         const id = reader.readStringTerminated(ascii);
         const value = { url, id, additional: [] };
@@ -655,7 +656,7 @@ exports.FrameLINK = {
         }
         return { value, encoding: ascii };
     }),
-    write: (frame, stream) => __awaiter(this, void 0, void 0, function* () {
+    write: (frame, stream) => __awaiter(void 0, void 0, void 0, function* () {
         const value = frame.value;
         stream.writeStringTerminated(value.url, ascii);
         stream.writeStringTerminated(value.id, ascii);
@@ -668,7 +669,7 @@ exports.FrameLINK = {
     }
 };
 exports.FrameSYLT = {
-    parse: (reader) => __awaiter(this, void 0, void 0, function* () {
+    parse: (reader) => __awaiter(void 0, void 0, void 0, function* () {
         const enc = reader.readEncoding();
         const language = utils_1.removeZeroString(reader.readString(3, ascii)).trim();
         const timestampFormat = reader.readByte();
@@ -685,7 +686,7 @@ exports.FrameSYLT = {
         const value = { language, timestampFormat, contentType, id, events };
         return { value, encoding: enc };
     }),
-    write: (frame, stream, head, defaultEncoding) => __awaiter(this, void 0, void 0, function* () {
+    write: (frame, stream, head, defaultEncoding) => __awaiter(void 0, void 0, void 0, function* () {
         const value = frame.value;
         const enc = getWriteTextEncoding(frame, head, defaultEncoding);
         stream.writeEncoding(enc);
@@ -703,7 +704,7 @@ exports.FrameSYLT = {
     }
 };
 exports.FrameGEOB = {
-    parse: (reader) => __awaiter(this, void 0, void 0, function* () {
+    parse: (reader) => __awaiter(void 0, void 0, void 0, function* () {
         const enc = reader.readEncoding();
         const mimeType = reader.readStringTerminated(ascii);
         const filename = reader.readStringTerminated(enc);
@@ -712,7 +713,7 @@ exports.FrameGEOB = {
         const value = { mimeType, filename, contentDescription, bin };
         return { value, encoding: enc };
     }),
-    write: (frame, stream, head, defaultEncoding) => __awaiter(this, void 0, void 0, function* () {
+    write: (frame, stream, head, defaultEncoding) => __awaiter(void 0, void 0, void 0, function* () {
         const value = frame.value;
         const enc = getWriteTextEncoding(frame, head, defaultEncoding);
         stream.writeEncoding(enc);
@@ -726,14 +727,14 @@ exports.FrameGEOB = {
     }
 };
 exports.FrameRGAD = {
-    parse: (reader) => __awaiter(this, void 0, void 0, function* () {
+    parse: (reader) => __awaiter(void 0, void 0, void 0, function* () {
         const peak = reader.readUInt4Byte();
         const radioAdjustment = reader.readSInt2Byte();
         const audiophileAdjustment = reader.readSInt2Byte();
         const value = { peak, radioAdjustment, audiophileAdjustment };
         return { value };
     }),
-    write: (frame, stream) => __awaiter(this, void 0, void 0, function* () {
+    write: (frame, stream) => __awaiter(void 0, void 0, void 0, function* () {
         const value = frame.value;
         stream.writeUInt4Byte(value.peak);
         stream.writeSInt2Byte(value.radioAdjustment);
@@ -744,11 +745,11 @@ exports.FrameRGAD = {
     }
 };
 exports.FrameUnknown = {
-    parse: (reader, frame) => __awaiter(this, void 0, void 0, function* () {
+    parse: (reader, frame) => __awaiter(void 0, void 0, void 0, function* () {
         const value = { bin: frame.data };
         return { value, encoding: binary };
     }),
-    write: (frame, stream) => __awaiter(this, void 0, void 0, function* () {
+    write: (frame, stream) => __awaiter(void 0, void 0, void 0, function* () {
         const value = frame.value;
         stream.writeBuffer(value.bin);
     }),

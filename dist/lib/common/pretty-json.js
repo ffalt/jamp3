@@ -6,41 +6,42 @@ function quoteJSONProperty(str) {
     }
     return str.match(/^".*"$/) ? str : '"' + str.replace(/"/g, '\\"') + '"';
 }
-function prettyJSONify(obj, level, flat, flatNodes, space) {
-    if (flat) {
-        return JSON.stringify(obj);
-    }
+function objToString(obj, level, options) {
     const lines = [];
-    if (obj instanceof Array) {
-        obj.forEach((c) => {
-            lines.push(space.repeat(level + 1) + prettyJSONify(c, level + 1, false, flatNodes, space));
-        });
-        if (lines.length === 0) {
-            return '[]';
-        }
-        return '[\n' + lines.join(',\n') + '\n' + space.repeat(level) + ']';
-    }
-    if (typeof obj !== 'object') {
-        return JSON.stringify(obj, null, space);
-    }
-    if (obj instanceof Buffer) {
-        return JSON.stringify(obj);
-    }
     Object.keys(obj).forEach(prop => {
         const val = obj[prop];
         if (val !== undefined) {
-            const str = quoteJSONProperty(prop) + ': ' + prettyJSONify(val, level + 1, flatNodes.indexOf(prop) >= 0, flatNodes, space);
-            lines.push(space.repeat(level + 1) + str);
+            const str = quoteJSONProperty(prop) + ': ' + prettyJSONify(val, level + 1, options.flatNodes.indexOf(prop) >= 0, options);
+            lines.push(options.space.repeat(level + 1) + str);
         }
     });
+    return (lines.length === 0) ? '{}' : '{\n' + lines.join(',\n') + '\n' + options.space.repeat(level) + '}';
+}
+function arrayToString(obj, level, options) {
+    const lines = [];
+    obj.forEach((c) => {
+        lines.push(options.space.repeat(level + 1) + prettyJSONify(c, level + 1, false, options));
+    });
     if (lines.length === 0) {
-        return '{}';
+        return '[]';
     }
-    return '{\n' + lines.join(',\n') + '\n' + space.repeat(level) + '}';
+    return '[\n' + lines.join(',\n') + '\n' + options.space.repeat(level) + ']';
+}
+function prettyJSONify(obj, level, flat, options) {
+    if (flat || obj instanceof Buffer) {
+        return JSON.stringify(obj);
+    }
+    if (obj instanceof Array) {
+        return arrayToString(obj, level, options);
+    }
+    if (typeof obj !== 'object') {
+        return JSON.stringify(obj, null, options.space);
+    }
+    return objToString(obj, level, options);
 }
 exports.prettyJSONify = prettyJSONify;
 function toPrettyJsonWithBin(o) {
-    return prettyJSONify(o, 0, false, ['head'], ' ');
+    return prettyJSONify(o, 0, false, { flatNodes: ['head'], space: ' ' });
 }
 exports.toPrettyJsonWithBin = toPrettyJsonWithBin;
 //# sourceMappingURL=pretty-json.js.map

@@ -1,5 +1,5 @@
 /// <reference types="node" />
-import { IID3V1 } from './id3v1__types';
+import { IID3V1 } from './id3v1.types';
 import { Readable } from 'stream';
 export declare class ID3v1 {
     read(filename: string): Promise<IID3V1.Tag | undefined>;

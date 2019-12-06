@@ -1,9 +1,10 @@
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -11,12 +12,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const id3v1_reader_1 = require("./id3v1_reader");
-const id3v1_writer_1 = require("./id3v1_writer");
+const id3v1_reader_1 = require("./id3v1.reader");
+const id3v1_writer_1 = require("./id3v1.writer");
 const fs_extra_1 = __importDefault(require("fs-extra"));
 const __1 = require("../..");
-const streams_1 = require("../common/streams");
 const update_file_1 = require("../common/update-file");
+const stream_writer_file_1 = require("../common/stream-writer-file");
 class ID3v1 {
     read(filename) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -62,7 +63,7 @@ class ID3v1 {
     }
     writeTag(filename, tag, version) {
         return __awaiter(this, void 0, void 0, function* () {
-            const stream = new streams_1.FileWriterStream();
+            const stream = new stream_writer_file_1.FileWriterStream();
             yield stream.open(filename);
             const writer = new id3v1_writer_1.ID3v1Writer();
             try {

@@ -1,9 +1,10 @@
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -11,13 +12,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const streams_1 = require("../common/streams");
 const id3v1_reader_1 = require("../id3v1/id3v1_reader");
 const id3v2_reader_1 = require("../id3v2/id3v2_reader");
 const mp3_frame_1 = require("./mp3_frame");
 const buffer_1 = require("../common/buffer");
 const mp3_frames_1 = require("./mp3_frames");
 const fs_extra_1 = __importDefault(require("fs-extra"));
+const stream_reader_1 = require("../common/stream-reader");
 class MP3Reader {
     constructor() {
         this.options = {};
@@ -30,7 +31,7 @@ class MP3Reader {
         this.id3v2reader = new id3v2_reader_1.ID3v2Reader();
         this.id3v1reader = new id3v1_reader_1.ID3v1Reader();
         this.mpegFramereader = new mp3_frame_1.MPEGFrameReader();
-        this.stream = new streams_1.ReaderStream();
+        this.stream = new stream_reader_1.ReaderStream();
         this.scanMpeg = true;
         this.scanid3v1 = true;
         this.scanid3v2 = true;

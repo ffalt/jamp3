@@ -1,6 +1,6 @@
 {
 	"name": "jamp3",
-	"version": "0.4.0",
+	"version": "0.4.1",
 	"author": "ffalt",
 	"license": "MIT",
 	"description": "mp3, id3v1, id3v2 - reader & writer",
@@ -21,21 +21,16 @@
 	"scripts": {
 		"build": "tsc -m commonjs --outDir dist",
 		"build:deploy": "tsc -m commonjs --outDir dist",
-		"test": "mocha --opts ./test/mocha.opts --recursive test/**/test.ts",
-		"test:id3v1": "mocha --opts ./test/mocha.opts test/id3v1/test.ts",
-		"test:id3v2": "mocha --opts ./test/mocha.opts test/id3v2/test.ts",
-		"test:mp3": "mocha --opts ./test/mocha.opts test/idmp33v2/test.ts",
-		"test:builder": "mocha --opts ./test/mocha.opts test/id3v2/builder/test.ts",
-		"test:frames": "mocha --opts ./test/mocha.opts test/id3v2/frames/test.ts",
+		"test": "jest",
 		"lint": "tslint --project tsconfig.json \"src/**/*.ts\"",
 		"lint-fix": "tslint --fix --project tsconfig.json \"src/**/*.ts\"",
 		"docs": "typedoc --options ./typedocconfig.ts && cp ./.nojekyll ./docs",
-		"coverage": "nyc npm run test",
+		"coverage": "jest --coverage",
 		"deploy": "deplokay -c deplokay.json",
 		"deploy:docs": "deplokay -c deplokay-docs.json"
 	},
 	"dependencies": {
-		"commander": "3.0.0",
+		"commander": "4.0.1",
 		"debug": "4.1.1",
 		"fs-extra": "8.1.0",
 		"iconv-lite": "0.5.0",
@@ -52,26 +47,6 @@
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/ffalt/jamp3.git"
-	},
-	"nyc": {
-		"temp-directory": "./reports/.nyc_output",
-		"report-dir": "./reports/coverage",
-		"include": [
-			"src/*.ts",
-			"src/**/*.ts"
-		],
-		"extension": [
-			".ts"
-		],
-		"require": [
-			"ts-node/register"
-		],
-		"reporter": [
-			"text-summary",
-			"html"
-		],
-		"sourceMap": true,
-		"instrument": true
 	},
 	"engines": {
 		"node": ">=8.0.0"

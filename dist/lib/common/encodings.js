@@ -86,11 +86,14 @@ exports.Encodings['utf8'] = {
         return iconv_lite_1.default.encode(s, 'utf8');
     },
     decode: (buf) => {
-        if ((buf[0] === 0xEF) && (buf[1] === 0xBB) && (buf[1] === 0xBF)) {
+        if ((buf[0] === 0xEF) && ((buf[1] === 0xBB) || (buf[1] === 0xBF))) {
             buf = buf.slice(2);
         }
         return buf.toString('utf8');
     }
 };
 exports.Encodings['utf-8'] = exports.Encodings['utf8'];
+exports.ascii = exports.Encodings['ascii'];
+exports.binary = exports.Encodings['binary'];
+exports.utf8 = exports.Encodings['utf-8'];
 //# sourceMappingURL=encodings.js.map

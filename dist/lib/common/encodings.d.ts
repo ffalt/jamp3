@@ -10,3 +10,6 @@ export interface IEncoding {
 export declare const Encodings: {
     [name: string]: IEncoding;
 };
+export declare const ascii: IEncoding;
+export declare const binary: IEncoding;
+export declare const utf8: IEncoding;

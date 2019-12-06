@@ -1,9 +1,10 @@
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -11,12 +12,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const streams_1 = require("../common/streams");
 const marker_1 = require("../common/marker");
 const id3v1_consts_1 = require("./id3v1_consts");
 const buffer_1 = require("../common/buffer");
 const debug_1 = __importDefault(require("debug"));
 const __1 = require("../..");
+const stream_reader_1 = require("../common/stream-reader");
+const buffer_reader_1 = require("../common/buffer-reader");
 const debug = debug_1.default('id3v1-reader');
 class ID3v1Reader {
     readTag(data) {
@@ -24,7 +26,7 @@ class ID3v1Reader {
             return null;
         }
         const tag = { id: __1.ITagID.ID3v1, start: 0, end: 0, version: 0, value: {} };
-        const reader = new streams_1.DataReader(data);
+        const reader = new buffer_reader_1.BufferReader(data);
         reader.position = 3;
         const value = {};
         value.title = reader.readFixedAutodectectString(30);
@@ -74,7 +76,7 @@ class ID3v1Reader {
     }
     readStream(stream) {
         return __awaiter(this, void 0, void 0, function* () {
-            const reader = new streams_1.ReaderStream();
+            const reader = new stream_reader_1.ReaderStream();
             try {
                 yield reader.openStream(stream);
                 return yield this.readReaderStream(reader);
@@ -86,7 +88,7 @@ class ID3v1Reader {
     }
     read(filename) {
         return __awaiter(this, void 0, void 0, function* () {
-            const reader = new streams_1.ReaderStream();
+            const reader = new stream_reader_1.ReaderStream();
             try {
                 yield reader.open(filename);
                 const tag = yield this.readReaderStream(reader);

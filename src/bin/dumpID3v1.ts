@@ -1,8 +1,10 @@
-import {ID3v1} from '..';
-import {collectFiles} from '../lib/common/utils';
 import program from 'commander';
-const pack = require('../../package.json');
 import fse from 'fs-extra';
+
+import {ID3v1} from '../lib/id3v1/id3v1';
+import {runTool} from '../lib/common/tool';
+
+const pack = require('../../package.json');
 
 program
 	.version(pack.version, '-v, --version')
@@ -11,7 +13,6 @@ program
 	.option('-r, --recursive', 'dump the folder recursive')
 	.option('-d, --dest <file>', 'destination analyze result file')
 	.parse(process.argv);
-
 
 const id3v1 = new ID3v1();
 
@@ -39,29 +40,13 @@ async function onFile(filename: string): Promise<void> {
 }
 
 async function run(): Promise<void> {
-	let input = program.input;
-	if (!input) {
-		if (program.args[0]) {
-			input = program.args[0];
-			// if (program.args[1]) {
-			// 	destfile = program.args[1];
-			// }
-		}
-	}
-	if (!input || input.length === 0) {
-		return Promise.reject(Error('must specify a filename/directory'));
-	}
-	const stat = await fse.stat(input);
-	if (stat.isDirectory()) {
-		await collectFiles(input, ['.mp3'], program.recursive, onFile);
-	} else {
-		await onFile(input);
-	}
+	await runTool(program, onFile);
 	if (program.dest) {
 		await fse.writeJSON(program.dest, result);
 	}
 }
 
-run().catch(e => {
-	console.error(e);
-});
+run()
+	.catch(e => {
+		console.error(e);
+	});

@@ -1,9 +1,10 @@
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -15,7 +16,6 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const streams_1 = require("../common/streams");
 const buffer_1 = require("../common/buffer");
 const id3v2_consts_1 = require("./id3v2_consts");
 const id3v2_reader_1 = require("./id3v2_reader");
@@ -24,6 +24,8 @@ const id3v2_writer_1 = require("./id3v2_writer");
 const id3v2_frame_1 = require("./id3v2_frame");
 const __1 = require("../..");
 const id3v2_raw_1 = require("./id3v2_raw");
+const stream_writer_memory_1 = require("../common/stream-writer-memory");
+const buffer_reader_1 = require("../common/buffer-reader");
 function validCharKeyCode(c) {
     return ((c >= 48) && (c < 58)) || ((c >= 65) && (c < 91));
 }
@@ -1221,7 +1223,7 @@ function writeToRawFrame(frame, head, defaultEncoding) {
             data = val.bin;
         }
         else {
-            const stream = new streams_1.MemoryWriterStream();
+            const stream = new stream_writer_memory_1.MemoryWriterStream();
             const orgDef = matchFrame(frame.id);
             if (orgDef.versions.indexOf(head.ver) < 0) {
                 const toWriteFrameID = ensureID3v2FrameVersionDef(frame.id, head.ver);
@@ -1240,7 +1242,7 @@ function writeToRawFrame(frame, head, defaultEncoding) {
             data = stream.toBuffer();
             if ((frameHead.formatFlags) && (frameHead.formatFlags.compressed)) {
                 const sizebytes = id3v2_consts_1.ID3v2_FRAME_HEADER_LENGTHS.SIZE[head.ver];
-                const uncompressedStream = new streams_1.MemoryWriterStream();
+                const uncompressedStream = new stream_writer_memory_1.MemoryWriterStream();
                 if (sizebytes === 4) {
                     uncompressedStream.writeUInt4Byte(data.length);
                 }
@@ -1250,7 +1252,7 @@ function writeToRawFrame(frame, head, defaultEncoding) {
                 data = buffer_1.BufferUtils.concatBuffer(uncompressedStream.toBuffer(), zlib.deflateSync(data));
             }
             else if ((frameHead.formatFlags) && (frameHead.formatFlags.dataLengthIndicator)) {
-                const dataLengthStream = new streams_1.MemoryWriterStream();
+                const dataLengthStream = new stream_writer_memory_1.MemoryWriterStream();
                 dataLengthStream.writeSyncSafeInt(data.length);
                 data = buffer_1.BufferUtils.concatBuffer(dataLengthStream.toBuffer(), data);
             }
@@ -1410,7 +1412,7 @@ function readID3v2Frame(rawFrame, head) {
         let result;
         try {
             yield processRawFrame(rawFrame, head);
-            const reader = new streams_1.DataReader(rawFrame.data);
+            const reader = new buffer_reader_1.BufferReader(rawFrame.data);
             result = yield f.impl.parse(reader, rawFrame, head);
             if (frame.head) {
                 frame.head.encoding = result.encoding ? result.encoding.name : undefined;

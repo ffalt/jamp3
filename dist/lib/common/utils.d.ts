@@ -17,3 +17,4 @@ export declare function removeZeroString(s: string): string;
 export declare function neededStoreBytes(num: number, min: number): number;
 export declare function fileRangeToBuffer(filename: string, start: number, end: number): Promise<Buffer>;
 export declare function collectFiles(dir: string, ext: Array<string>, recursive: boolean, onFileCB: (filename: string) => Promise<void>): Promise<void>;
+export declare function validCharKeyCode(c: number): boolean;

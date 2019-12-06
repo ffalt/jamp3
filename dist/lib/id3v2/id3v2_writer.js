@@ -1,17 +1,18 @@
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const streams_1 = require("../common/streams");
 const utils_1 = require("../common/utils");
 const id3v2_consts_1 = require("./id3v2_consts");
 const buffer_1 = require("../common/buffer");
+const stream_writer_memory_1 = require("../common/stream-writer-memory");
 class Id3v2RawWriter {
     constructor(stream, head, options, frames) {
         this.stream = stream;
@@ -82,7 +83,7 @@ class Id3v2RawWriter {
     }
     writeExtHeaderV3(extended) {
         return __awaiter(this, void 0, void 0, function* () {
-            const result = new streams_1.MemoryWriterStream();
+            const result = new stream_writer_memory_1.MemoryWriterStream();
             result.writeUInt4Byte(extended.size);
             result.writeBitsByte(utils_1.unflags(id3v2_consts_1.ID3v2_EXTHEADER[3].FLAGS1, extended.flags1));
             result.writeBitsByte(utils_1.unflags(id3v2_consts_1.ID3v2_EXTHEADER[3].FLAGS2, extended.flags2));

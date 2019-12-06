@@ -1,0 +1,1 @@
+{"version":3,"file":"stream-writer-memory.js","sourceRoot":"","sources":["../../../src/lib/common/stream-writer-memory.ts"],"names":[],"mappings":";;AAAA,mDAA6C;AAE7C,MAAa,kBAAmB,SAAQ,4BAAY;IAEnD;QACC,KAAK,EAAE,CAAC;IACT,CAAC;IAED,QAAQ;QACP,OAAQ,IAAI,CAAC,OAAe,CAAC,QAAQ,EAAE,CAAC;IACzC,CAAC;CACD;AATD,gDASC"}

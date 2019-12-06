@@ -485,11 +485,11 @@ class ID3V24TagBuilder {
         return this;
     }
 }
+exports.ID3V24TagBuilder = ID3V24TagBuilder;
 ID3V24TagBuilder.encodings = {
     iso88591: 'iso-8859-1',
     ucs2: 'ucs2',
     utf16be: 'utf16-be',
     utf8: 'utf8'
 };
-exports.ID3V24TagBuilder = ID3V24TagBuilder;
 //# sourceMappingURL=id3v2_builder24.js.map

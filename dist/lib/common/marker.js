@@ -20,6 +20,7 @@ class Markers {
         return true;
     }
 }
+exports.Markers = Markers;
 Markers.MARKERS = {
     tag: Markers.makeMarker('TAG'),
     id3: Markers.makeMarker('ID3'),
@@ -27,5 +28,4 @@ Markers.MARKERS = {
     info: Markers.makeMarker('Info'),
     vbri: Markers.makeMarker('VBRI')
 };
-exports.Markers = Markers;
 //# sourceMappingURL=marker.js.map

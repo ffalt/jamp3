@@ -1,11 +1,11 @@
-import {ID3v1Reader} from './id3v1_reader';
-import {ID3v1Writer} from './id3v1_writer';
-import {IID3V1} from './id3v1__types';
+import {ID3v1Reader} from './id3v1.reader';
+import {ID3v1Writer} from './id3v1.writer';
+import {IID3V1} from './id3v1.types';
 import {Readable} from 'stream';
 import fse from 'fs-extra';
 import {ITagID} from '../..';
-import {FileWriterStream} from '../common/streams';
 import {updateFile} from '../common/update-file';
+import {FileWriterStream} from '../common/stream-writer-file';
 
 /**
  * Class for

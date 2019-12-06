@@ -1,7 +1,7 @@
 /// <reference types="node" />
-import { ReaderStream } from '../common/streams';
 import { IID3V2 } from './id3v2__types';
 import { Readable } from 'stream';
+import { ReaderStream } from '../common/stream-reader';
 export declare class ID3v2Reader {
     private readHeader;
     private readRawTag;

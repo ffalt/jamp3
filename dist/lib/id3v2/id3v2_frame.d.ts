@@ -1,8 +1,9 @@
 import { IEncoding } from '../common/encodings';
-import { DataReader, WriterStream } from '../common/streams';
 import { IID3V2 } from './id3v2__types';
+import { WriterStream } from '../common/stream-writer';
+import { BufferReader } from '../common/buffer-reader';
 export interface IFrameImpl {
-    parse: (reader: DataReader, frame: IID3V2.RawFrame, head: IID3V2.TagHeader) => Promise<{
+    parse: (reader: BufferReader, frame: IID3V2.RawFrame, head: IID3V2.TagHeader) => Promise<{
         value: IID3V2.FrameValue.Base;
         encoding?: IEncoding;
         subframes?: Array<IID3V2.Frame>;

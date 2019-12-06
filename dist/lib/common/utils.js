@@ -1,9 +1,10 @@
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -66,16 +67,7 @@ function log2(x) {
 }
 exports.log2 = log2;
 function bitarray(byte) {
-    const b = [];
-    b[0] = ((byte & 128) === 128 ? 1 : 0);
-    b[1] = ((byte & 64) === 64 ? 1 : 0);
-    b[2] = ((byte & 32) === 32 ? 1 : 0);
-    b[3] = ((byte & 16) === 16 ? 1 : 0);
-    b[4] = ((byte & 8) === 8 ? 1 : 0);
-    b[5] = ((byte & 4) === 4 ? 1 : 0);
-    b[6] = ((byte & 2) === 2 ? 1 : 0);
-    b[7] = ((byte & 1) === 1 ? 1 : 0);
-    return b;
+    return [128, 64, 32, 16, 8, 4, 2, 1].map(offset => (byte & offset) === offset ? 1 : 0);
 }
 exports.bitarray = bitarray;
 function unbitarray(bitsarray) {
@@ -155,4 +147,8 @@ function collectFiles(dir, ext, recursive, onFileCB) {
     });
 }
 exports.collectFiles = collectFiles;
+function validCharKeyCode(c) {
+    return ((c >= 48) && (c < 58)) || ((c >= 65) && (c < 91));
+}
+exports.validCharKeyCode = validCharKeyCode;
 //# sourceMappingURL=utils.js.map

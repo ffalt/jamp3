@@ -1,20 +1,22 @@
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const streams_1 = require("../common/streams");
 const id3v2_frames_1 = require("./id3v2_frames");
 const utils_1 = require("../common/utils");
 const marker_1 = require("../common/marker");
 const buffer_1 = require("../common/buffer");
 const id3v2_consts_1 = require("./id3v2_consts");
 const __1 = require("../..");
+const stream_reader_1 = require("../common/stream-reader");
+const buffer_reader_1 = require("../common/buffer-reader");
 const ID3v2_MARKER_BUFFER = buffer_1.BufferUtils.fromString(id3v2_consts_1.ID3v2_MARKER);
 class ID3v2Reader {
     readHeader(reader) {
@@ -185,7 +187,7 @@ class ID3v2Reader {
     }
     readStream(stream) {
         return __awaiter(this, void 0, void 0, function* () {
-            const reader = new streams_1.ReaderStream();
+            const reader = new stream_reader_1.ReaderStream();
             try {
                 yield reader.openStream(stream);
                 return yield this.readReaderStream(reader);
@@ -197,7 +199,7 @@ class ID3v2Reader {
     }
     read(filename) {
         return __awaiter(this, void 0, void 0, function* () {
-            const reader = new streams_1.ReaderStream();
+            const reader = new stream_reader_1.ReaderStream();
             try {
                 yield reader.open(filename);
                 const tag = yield this.readReaderStream(reader);
@@ -215,7 +217,7 @@ class ID3v2Reader {
             const marker = id3v2_consts_1.ID3v2_FRAME_HEADER_LENGTHS.MARKER[tag.head.ver];
             const sizebytes = id3v2_consts_1.ID3v2_FRAME_HEADER_LENGTHS.SIZE[tag.head.ver];
             const flagsbytes = id3v2_consts_1.ID3v2_FRAME_HEADER_LENGTHS.FLAGS[tag.head.ver];
-            const reader = new streams_1.DataReader(data);
+            const reader = new buffer_reader_1.BufferReader(data);
             let finish = false;
             let scanpos = reader.position;
             let skip = 0;

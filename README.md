@@ -6,59 +6,62 @@ An id3 & mp3 library written in Typescript for NodeJS
 
 [![dependencies](https://img.shields.io/david/ffalt/jamp3.svg)](https://www.npmjs.com/package/jamp3) 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/9053f3b64ab847a39a1a4be470759bb7)](https://app.codacy.com/app/ffalt/jamp3?utm_source=github.com&utm_medium=referral&utm_content=ffalt/jamp3&utm_campaign=Badge_Grade_Dashboard)
+[![Maintainability](https://api.codeclimate.com/v1/badges/c1bc863edffe1b4047e9/maintainability)](https://codeclimate.com/github/ffalt/jamp3/maintainability)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/c1bc863edffe1b4047e9/test_coverage)](https://codeclimate.com/github/ffalt/jamp3/test_coverage)
 [![Known Vulnerabilities](https://snyk.io/test/github/ffalt/jamp3/badge.svg)](https://snyk.io/test/github/ffalt/jamp3)
 [![build status](https://travis-ci.org/ffalt/jamp3.svg?branch=master)](https://travis-ci.org/ffalt/jamp3)
+[![total downloads](https://badgen.net/npm/dt/jamp3)](https://badgen.net/npm/dt/xlsx-extract)
 [![license](https://img.shields.io/github/license/ffalt/jamp3.svg)](http://opensource.org/licenses/MIT)
 
 Motivation for this yet-another-id3-library: 
 
-* On the fly & async & only as much as needed
+*   On the fly & async & only as much as needed
   
-  Only loads small parts of the file stream at a time. So that 100MB of e.g. podcast-episode.mp3 is not read completely in memory to get 100kb for an ID3v2 at the beginning of a file.
+    Only loads small parts of the file stream at a time. So that 100MB of e.g. podcast-episode.mp3 is not read completely in memory to get 100kb for an ID3v2 at the beginning of a file.
 
-* Native Node
+*   Native Node
 
-  No external dependecies
+    No external dependecies
 
-* Read MPEG frames information
+*   Read MPEG frames information
 
-  While reading the tag, you may want read the duration/bitrate/... of the audio stream.
+    While reading the tag, you may want read the duration/bitrate/... of the audio stream.
 
-* Write support
+*   Write support
 
-  ID3v2/ID3v1 can be remove or written.
+    ID3v2/ID3v1 can be removed or written.
 
-  For ID3v2.4 an easy-to-use build helper is available. For more complex use, you can write other versions and even non-standard combinations of ID3v2 frames.
+    For ID3v2.4 an easy-to-use build helper is available. For more complex use, you can write other versions and even non-standard combinations of ID3v2 frames.
   
-  There are not much reported issues, but be advised to make & keep backups of your audio files in case of bugs. 
+    There haven't been many reported issues, but be advised to make & keep backups of your audio files in case of bugs. 
 
-* Return ID3v2 frames as raw as needed
+*   Return ID3v2 frames as raw as needed
 
-  No mangling or combination into a simplified tag object (but there is a helper function to do just that).
+    No mangling or combination into a simplified tag object (but there is a helper function to do just that).
   
-* Deal with unknown/not implemented ID3v2 Frames
+*   Deal with unknown/not implemented ID3v2 Frames
 
-  Such frames are loaded as binary blobs and can be also written as such.
+    Such frames are loaded as binary blobs and can be also written as such.
 
-* Error tolerance over Specification
+*   Error tolerance over Specification
 
-  Tested with many broken/invalid files https://github.com/ffalt/jamp3-testfiles
+    Tested with many broken/invalid files https://github.com/ffalt/jamp3-testfiles
 
 **Table of Contents**
--   [Installation](#installation)
--   [Usage as Library](#usage-as-library)
-    -   [ID3v1](#id3v1)
-    -   [ID3v2](#id3v2)
-    -   [ID3v1, ID3v2, MPEG](#id3v1-id3v2-mpeg)
--   [Command Line Tools](#command-line-tools)
-    -   [mp3-analyze](#mp3-analyze)
-    -   [id3v2-dump](#id3v2-dump)
-    -   [id3v1-dump](#id3v1-dump)
--   [Development Commands](#development-commands)
-    -   [Build](#build)
-    -   [Test](#test)
-    -   [Coverage](#coverage)
-    -   [Lint](#lint)
+*   [Installation](#installation)
+*   [Usage as Library](#usage-as-library)
+    *   [ID3v1](#id3v1)
+    *   [ID3v2](#id3v2)
+    *   [ID3v1, ID3v2, MPEG](#id3v1-id3v2-mpeg)
+*   [Command Line Tools](#command-line-tools)
+    *   [mp3-analyze](#mp3-analyze)
+    *   [id3v2-dump](#id3v2-dump)
+    *   [id3v1-dump](#id3v1-dump)
+*   [Development Commands](#development-commands)
+    *   [Build](#build)
+    *   [Test](#test)
+    *   [Coverage](#coverage)
+    *   [Lint](#lint)
 
 ## Installation
 
@@ -544,8 +547,8 @@ Note: MP3 Duration
 if the mp3 does include a VBR/CBR header, the declared header values are used for duration calculation
 
 if the mp3 does NOT include a VBR/CBR header: 
-  - with option {mpegQuick: true}: only a few audio frames are read and the duration is estimated 
-  - with option {mpegQuick: false}: all audio frames are read and the duration is calculated 
+*   with option {mpegQuick: true}: only a few audio frames are read and the duration is estimated 
+*   with option {mpegQuick: false}: all audio frames are read and the duration is calculated 
 
 Example result:
 ```json
@@ -972,11 +975,11 @@ Options:
 
 ### Test
 
-`npm run test` to run the the mocha tests
+`npm run test` to run the the jest tests
 
 ### Coverage
 
-`npm run coverage` to run the mocha tests with code coverage stats
+`npm run coverage` to run the jest tests with code coverage stats
 
 ### Lint
 
