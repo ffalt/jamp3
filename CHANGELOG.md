@@ -1,5 +1,5 @@
 <a name="0.4.1"></a>
-## 0.4.1 (2019/?/?)
+## 0.4.1 (2019/12/06)
 ### Features
 *   CodeClimate: reduce duplication
 *   CodeClimate: smaller source files
@@ -8,6 +8,7 @@
  
 ### Bug Fixes
 *   ID3V2.FrameTextConcatList value was not written in parts
+*   updateFile: do not remove existing .bak files
 
 <a name="0.4.0"></a>
 ## 0.4.0 (2019/08/28)
