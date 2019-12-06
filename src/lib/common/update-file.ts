@@ -15,7 +15,7 @@ export async function updateFile(
 	}
 	const tmpFile = filename + '.tempmp3';
 	const bakFile = filename + '.bak';
-	let exists = await fse.pathExists(tmpFile);
+	const exists = await fse.pathExists(tmpFile);
 	if (exists) {
 		await fse.remove(tmpFile);
 	}
@@ -28,22 +28,19 @@ export async function updateFile(
 		return Promise.reject(e);
 	}
 	await fileWriterStream.close();
-	exists = await fse.pathExists(bakFile);
+	const bakExists = await fse.pathExists(bakFile);
 	if (keepBackup) {
-		if (!exists) {
+		if (!bakExists) {
 			await fse.rename(filename, bakFile);
 		} else {
 			// we have already a .bak which will be not touched
 			await fse.remove(filename);
 		}
-	} else {
-		if (exists) {
-			await fse.remove(bakFile);
-		}
+	} else if (!bakExists) {
 		await fse.rename(filename, bakFile);
 	}
 	await fse.rename(tmpFile, filename);
-	if (!keepBackup) {
+	if (!keepBackup && !bakExists) {
 		await fse.remove(bakFile);
 	}
 }
