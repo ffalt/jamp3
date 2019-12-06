@@ -21,7 +21,7 @@ Motivation for this yet-another-id3-library:
 
 *   Native Node
 
-    No external dependecies
+    No external dependencies
 
 *   Read MPEG frames information
 
