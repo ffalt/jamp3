@@ -48,7 +48,7 @@
     "ts-jest": "24.3.0",
     "ts-node": "8.6.1",
     "tslint": "5.20.1",
-    "typedoc": "0.16.0",
+    "typedoc": "0.16.1",
     "typescript": "3.7.4"
   },
   "main": "dist/index.js",
