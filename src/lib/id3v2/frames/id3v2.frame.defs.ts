@@ -158,7 +158,7 @@ export const FrameDefs: { [id: string]: IFrameDef } = {
 	'TCO': {
 		title: 'Genre',
 		versions: [2],
-		impl: FrameTextConcatList,
+		impl: FrameText,
 		upgrade: 'TCON'
 	},
 	'TAL': {
