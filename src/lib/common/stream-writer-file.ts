@@ -34,7 +34,7 @@ export class FileWriterStream extends WriterStream {
 			readstream.on('error', (err) => {
 				return reject(err);
 			});
-			readstream.on('end', (err) => {
+			readstream.on('end', (err: Error) => {
 				if (err) {
 					reject(err);
 				} else {

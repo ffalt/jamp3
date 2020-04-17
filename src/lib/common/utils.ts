@@ -106,7 +106,7 @@ export async function fileRangeToBuffer(filename: string, start: number, end: nu
 	return new Promise<Buffer>((resolve, reject) => {
 		try {
 			const readStream = fs.createReadStream(filename, {start, end});
-			readStream.on('data', chunk => {
+			readStream.on('data', (chunk: Buffer) => {
 				chunks.push(chunk);
 			});
 			readStream.on('error', e => {
