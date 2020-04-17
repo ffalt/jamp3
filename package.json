@@ -64,6 +64,6 @@
     "url": "https://github.com/ffalt/jamp3.git"
   },
   "engines": {
-    "node": ">=8.0.0"
+    "node": ">=10.0.0"
   }
 }

@@ -1,3 +1,8 @@
+<a name="0.4.2"></a>
+## 0.4.2
+### BREAKING
+*  Update Dependencies, require node 10 as minimum version
+
 <a name="0.4.1"></a>
 ## 0.4.1 (2019/12/06)
 ### Features
