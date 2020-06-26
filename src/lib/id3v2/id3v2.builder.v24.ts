@@ -611,7 +611,7 @@ export class ID3V24TagBuilder implements IID3V2.Builder {
 
 	synchronisedLyrics(
 		id: string, language: string, timestampFormat: number,
-		contentType: number, events: Array<{ timestamp: number; text: string; }>
+		contentType: number, events: Array<{ timestamp: number; text: string }>
 	): ID3V24TagBuilder {
 		this.rawBuilder.synchronisedLyrics('SYLT', id, language, timestampFormat, contentType, events);
 		return this;

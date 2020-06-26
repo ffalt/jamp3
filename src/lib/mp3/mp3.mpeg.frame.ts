@@ -373,7 +373,7 @@ export class MPEGFrameReader {
 		return reader.position;
 	}
 
-	public readFrame(chunk: Buffer, offset: number, header: IMP3.FrameRawHeader): { offset: number, frame: IMP3.RawFrame } {
+	public readFrame(chunk: Buffer, offset: number, header: IMP3.FrameRawHeader): { offset: number; frame: IMP3.RawFrame } {
 		const frame: IMP3.RawFrame = {header: collapseRawHeader(header)};
 		let off = 0;
 		const length = offset + Math.min(40, chunk.length - 4 - offset);

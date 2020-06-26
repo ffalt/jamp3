@@ -77,7 +77,7 @@ function defaultMPEGResult(): IMP3.MPEG {
 	};
 }
 
-async function prepareResultMPEG(options: IMP3.ReadOptions, layout: IMP3.RawLayout): Promise<{ mpeg: IMP3.MPEG, frames: IMP3.MPEGFrames }> {
+async function prepareResultMPEG(options: IMP3.ReadOptions, layout: IMP3.RawLayout): Promise<{ mpeg: IMP3.MPEG; frames: IMP3.MPEGFrames }> {
 	const mpeg = defaultMPEGResult();
 	const chain: Array<IMP3.FrameRawHeaderArray> = filterBestMPEGChain(layout.frameheaders, 50);
 	const frames = buildFrames(chain, layout);

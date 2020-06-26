@@ -22,7 +22,7 @@ export function flags(names: Array<string>, values: Array<number>): {
 	return result;
 }
 
-export function unflags(names: Array<string>, flagsObj?: { [name: string]: boolean | undefined; }): Array<number> {
+export function unflags(names: Array<string>, flagsObj?: { [name: string]: boolean | undefined }): Array<number> {
 	return names.map(name => {
 		return flagsObj && flagsObj[name] ? 1 : 0;
 	});

@@ -108,7 +108,7 @@ export class ID3V2RawBuilder extends ID3V2FramesCollect {
 		this.addFrame<IID3V2.FrameValue.ReplayGainAdjustment>(key, {peak, radioAdjustment, audiophileAdjustment});
 	}
 
-	synchronisedLyrics(key: string, id: string, language: string, timestampFormat: number, contentType: number, events: Array<{ timestamp: number; text: string; }>) {
+	synchronisedLyrics(key: string, id: string, language: string, timestampFormat: number, contentType: number, events: Array<{ timestamp: number; text: string }>) {
 		this.addFrame<IID3V2.FrameValue.SynchronisedLyrics>(key, {id, language, timestampFormat, contentType, events});
 	}
 

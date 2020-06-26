@@ -56,7 +56,7 @@ export const FrameETCO: IFrameImpl = {
  */
 	parse: async (reader) => {
 		const format = reader.readBitsByte();
-		const events: Array<{ type: number, timestamp: number }> = [];
+		const events: Array<{ type: number; timestamp: number }> = [];
 		while (reader.unread() >= 5) {
 			const type = reader.readBitsByte();
 			const timestamp = reader.readUInt4Byte();

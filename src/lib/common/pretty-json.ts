@@ -17,7 +17,7 @@ function objToString(obj: any, level: number, options: { flatNodes: Array<string
 	return (lines.length === 0) ? '{}' : '{\n' + lines.join(',\n') + '\n' + options.space.repeat(level) + '}';
 }
 
-function arrayToString(obj: Array<any>, level: number, options: { flatNodes: Array<string>, space: string }): string {
+function arrayToString(obj: Array<any>, level: number, options: { flatNodes: Array<string>; space: string }): string {
 	const lines: Array<string> = [];
 	obj.forEach((c: any) => {
 		lines.push(options.space.repeat(level + 1) + prettyJSONify(c, level + 1, false, options));
@@ -28,7 +28,7 @@ function arrayToString(obj: Array<any>, level: number, options: { flatNodes: Arr
 	return '[\n' + lines.join(',\n') + '\n' + options.space.repeat(level) + ']';
 }
 
-export function prettyJSONify(obj: any, level: number, flat: boolean, options: { flatNodes: Array<string>, space: string }): string {
+export function prettyJSONify(obj: any, level: number, flat: boolean, options: { flatNodes: Array<string>; space: string }): string {
 	if (flat || obj instanceof Buffer) {
 		return JSON.stringify(obj);
 	}

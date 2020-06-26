@@ -29,7 +29,7 @@ export const ID3v2_HEADER_FLAGS: { [ver: number]: Array<string> } = {
 export const ID3v2_ENCODINGS: {
 	[version: number]: {
 		[id: string]: string;
-	}
+	};
 } = {
 	2: {
 		'0': 'iso-8859-1',
@@ -65,7 +65,7 @@ export const ID3v2_FRAME_HEADER: { SYNCSAVEINT: Array<number> } = {
 export const ID3v2_FRAME_HEADER_LENGTHS: {
 	[name: string]: {
 		[ver: number]: number;
-	}
+	};
 } = {
 	SIZE: {
 		2: 3,

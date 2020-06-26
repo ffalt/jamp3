@@ -22,7 +22,7 @@ export class Id3v2RawWriter {
 		this.paddingSize = options.paddingSize === undefined ? 0 : options.paddingSize;
 	}
 
-	private async buildHeaderFlagsV4(): Promise<{ flagBits: Array<number>, extendedHeaderBuffer?: Buffer }> {
+	private async buildHeaderFlagsV4(): Promise<{ flagBits: Array<number>; extendedHeaderBuffer?: Buffer }> {
 		this.head.v4 = this.head.v4 || {flags: {}};
 		this.head.v4.flags.unsynchronisation = false;
 		this.head.v4.flags.extendedheader = !!this.head.v4.extended;
@@ -145,7 +145,7 @@ export class Id3v2RawWriter {
 		return Promise.reject(Error('TODO extended header v2.4'));
 	}
 
-	private async buildHeaderFlagsV3(): Promise<{ flagBits: Array<number>, extendedHeaderBuffer?: Buffer }> {
+	private async buildHeaderFlagsV3(): Promise<{ flagBits: Array<number>; extendedHeaderBuffer?: Buffer }> {
 		this.head.v3 = this.head.v3 || {flags: {}};
 		this.head.v3.flags.unsynchronisation = false;
 		this.head.v3.flags.extendedheader = !!this.head.v3.extended;
@@ -201,14 +201,14 @@ export class Id3v2RawWriter {
 		return result.toBuffer();
 	}
 
-	private async buildHeaderFlagsV2(): Promise<{ flagBits: Array<number>, extendedHeaderBuffer?: Buffer }> {
+	private async buildHeaderFlagsV2(): Promise<{ flagBits: Array<number>; extendedHeaderBuffer?: Buffer }> {
 		this.head.v2 = this.head.v2 || {flags: {}};
 		this.head.v2.flags.unsynchronisation = false;
 		const flagBits = unflags(ID3v2_HEADER_FLAGS[2], this.head.v2.flags as any);
 		return {flagBits};
 	}
 
-	private async buildHeaderFlags(): Promise<{ flagBits: Array<number>, extendedHeaderBuffer?: Buffer }> {
+	private async buildHeaderFlags(): Promise<{ flagBits: Array<number>; extendedHeaderBuffer?: Buffer }> {
 		if (this.head.ver <= 2) {
 			return this.buildHeaderFlagsV2();
 		} else if (this.head.ver === 3) {

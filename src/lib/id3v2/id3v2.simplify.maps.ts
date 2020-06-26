@@ -1,18 +1,18 @@
 import {FrameDefs} from './frames/id3v2.frame.defs';
 import {findId3v2FrameDef} from './frames/id3v2.frame.match';
 
-export const PRIVMap: { [key: string]: string; } = {};
+export const PRIVMap: { [key: string]: string } = {};
 
-export const COMMMap: { [key: string]: string; } = {
+export const COMMMap: { [key: string]: string } = {
 	'description': 'COMMENT',
 	'comment': 'COMMENT'
 };
 
-export const UFIDMap: { [key: string]: string; } = {
+export const UFIDMap: { [key: string]: string } = {
 	'http://musicbrainz.org': 'MUSICBRAINZ_TRACKID'
 };
 
-export const TXXXMap: { [key: string]: string; } = {
+export const TXXXMap: { [key: string]: string } = {
 	'ORIGINALYEAR': 'ORIGINALYEAR',
 	'REPLAYGAIN_TRACK_GAIN': 'REPLAYGAIN_TRACK_GAIN',
 	'REPLAYGAIN_ALBUM_GAIN': 'REPLAYGAIN_ALBUM_GAIN',
@@ -64,7 +64,7 @@ export const TXXXMap: { [key: string]: string; } = {
 	'PERFORMER': 'PERFORMER'
 };
 
-export const FramesMap: { [key: string]: string; } = {
+export const FramesMap: { [key: string]: string } = {
 	'TALB': 'ALBUM',
 	'TSOA': 'ALBUMSORT',
 	'TIT2': 'TITLE',
@@ -164,13 +164,13 @@ export const FramesMap: { [key: string]: string; } = {
 	'TPOS': 'DISCNUMBER'
 };
 
-export const SplitFrameMap: { [key: string]: Array<string>; } = {
+export const SplitFrameMap: { [key: string]: Array<string> } = {
 	'TRCK': ['TRACKNUMBER', 'TRACKTOTAL'],
 	'MVIN': ['MOVEMENT', 'MOVEMENTTOTAL'],
 	'TPOS': ['DISCNUMBER', 'DISCTOTAL']
 };
 
-export const DateUpgradeMap: { [key: string]: string; } = {
+export const DateUpgradeMap: { [key: string]: string } = {
 	'TYER': 'Year',
 	'TDAT': 'Date',
 	'TIME': 'Time'

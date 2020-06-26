@@ -6,7 +6,7 @@ import {ReaderStream} from '../common/stream-reader';
 
 export class ID3v2HeaderReader {
 
-	private async readID3ExtendedHeaderV3(reader: ReaderStream): Promise<{ rest?: Buffer, exthead: IID3V2.TagHeaderExtendedVer3 }> {
+	private async readID3ExtendedHeaderV3(reader: ReaderStream): Promise<{ rest?: Buffer; exthead: IID3V2.TagHeaderExtendedVer3 }> {
 		const headdata = await reader.read(4);
 		let size = headdata.readInt32BE(0);
 		if (size > 10) {
@@ -58,7 +58,7 @@ export class ID3v2HeaderReader {
 		return {exthead};
 	}
 
-	private async readID3ExtendedHeaderV4(reader: ReaderStream): Promise<{ rest?: Buffer, exthead: IID3V2.TagHeaderExtendedVer4 }> {
+	private async readID3ExtendedHeaderV4(reader: ReaderStream): Promise<{ rest?: Buffer; exthead: IID3V2.TagHeaderExtendedVer4 }> {
 		const headdata = await reader.read(4);
 		let size = headdata.readInt32BE(0);
 		size = unsynchsafe(size);
@@ -149,7 +149,7 @@ export class ID3v2HeaderReader {
 		return head;
 	}
 
-	public async readHeader(reader: ReaderStream): Promise<{ rest?: Buffer, header?: IID3V2.TagHeader }> {
+	public async readHeader(reader: ReaderStream): Promise<{ rest?: Buffer; header?: IID3V2.TagHeader }> {
 		const data = await reader.read(ID3v2_HEADER.SIZE);
 		const header: IID3V2.TagHeader | undefined = this.readID3v2Header(data, 0);
 		if (!header || !header.valid) {

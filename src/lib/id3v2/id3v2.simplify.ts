@@ -12,7 +12,7 @@ function slugIDValue(id: string, value: { id: string }, mapping: { [id: string]:
 	}
 }
 
-export function simplifyInvolvedPeopleList(id: string, frame: IID3V2.Frame): Array<{ slug: string; text: string; }> | undefined {
+export function simplifyInvolvedPeopleList(id: string, frame: IID3V2.Frame): Array<{ slug: string; text: string }> | undefined {
 	const value = <IID3V2.FrameValue.TextList>frame.value;
 	const knownSections: { [key: string]: string } = {
 		'arranger': 'ARRANGER',
@@ -39,7 +39,7 @@ export function simplifyInvolvedPeopleList(id: string, frame: IID3V2.Frame): Arr
 	return list;
 }
 
-function simplifyValue(id: string, slug: string, frame: IID3V2.Frame): Array<{ slug: string; text: string; }> | undefined {
+function simplifyValue(id: string, slug: string, frame: IID3V2.Frame): Array<{ slug: string; text: string }> | undefined {
 	const frameDef = matchFrame(id);
 	const text = frameDef.impl.simplify(frame.value);
 	if (!text) {
@@ -60,7 +60,7 @@ function simplifyValue(id: string, slug: string, frame: IID3V2.Frame): Array<{ s
 	return [{slug, text}];
 }
 
-export function simplifyFrame(frame: IID3V2.Frame, dropIDsList?: Array<string>): Array<{ slug: string; text: string; }> | undefined {
+export function simplifyFrame(frame: IID3V2.Frame, dropIDsList?: Array<string>): Array<{ slug: string; text: string }> | undefined {
 	const id = ensureID3v2FrameVersionDef(frame.id, 4) || frame.id;
 	if (dropIDsList && dropIDsList.indexOf(frame.id) >= 0) {
 		return;

@@ -71,7 +71,7 @@ export interface IMPEGFrameChain {
 
 function buildMPEGChains(frames: Array<IMP3.FrameRawHeaderArray>, maxCheckFrames: number, followMaxChain: number): Array<IMPEGFrameChain> {
 	const done: Array<Array<number>> = [];
-	const chains: Array<{ frame: Array<number>, pos: number, count: number }> = [];
+	const chains: Array<{ frame: Array<number>; pos: number; count: number }> = [];
 	const count = Math.min(maxCheckFrames, frames.length);
 	for (let i = 0; i < count; i++) {
 		const frame = frames[i];
