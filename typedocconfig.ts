@@ -1,5 +1,5 @@
 module.exports = {
-	src: [
+	inputFiles: [
 		'./src/lib/common/types.ts',
 		'./src/lib/mp3/mp3.ts',
 		'./src/lib/id3v2/id3v2.ts',
