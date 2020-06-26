@@ -2,8 +2,7 @@ import fs from 'fs';
 import {BufferUtils} from './buffer';
 import {synchsafe, unbitarray} from './utils';
 import {ascii, IEncoding} from './encodings';
-
-const MemoryStream = require('memory-stream'); // TODO: type Memorystream
+import MemoryStream from 'memory-stream';
 
 export class WriterStream {
 	protected wstream: fs.WriteStream;
