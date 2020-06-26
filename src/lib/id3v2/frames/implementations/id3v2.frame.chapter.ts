@@ -1,5 +1,5 @@
 import {IFrameImpl} from '../id3v2.frame';
-import {ascii, Encodings} from '../../../common/encodings';
+import {ascii} from '../../../common/encodings';
 import {IID3V2} from '../../id3v2.types';
 import {writeRawSubFrames} from '../id3v2.frame.write';
 import {readSubFrames} from '../id3v2.frame.read';

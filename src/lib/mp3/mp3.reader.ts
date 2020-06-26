@@ -31,9 +31,6 @@ export class MP3Reader {
 	private scanMPEGFrame = true;
 	private hasMPEGHeadFrame = false;
 
-	constructor() {
-	}
-
 	private readFullMPEGFrame(chunk: Buffer, pos: number, header: IMP3.FrameRawHeader): boolean {
 		if (this.demandData(chunk, pos)) {
 			return true;

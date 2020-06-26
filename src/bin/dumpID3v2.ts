@@ -5,6 +5,7 @@ import {runTool} from '../lib/common/tool';
 import {ID3v2} from '../lib/id3v2/id3v2';
 import {toPrettyJsonWithBin} from '../lib/common/pretty-json';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const pack = require('../../package.json');
 
 program

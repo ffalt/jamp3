@@ -12,10 +12,11 @@ export const FramePlayCount: IFrameImpl = {
 	 Counter         $xx xx xx xx (xx ...)
 	 */
 	parse: async (reader, frame) => {
-		let num = 0;
+		let num: number;
 		try {
 			num = reader.readUInt(frame.data.length);
 		} catch (e) {
+			num = 0;
 		}
 		const value: IID3V2.FrameValue.Number = {num};
 		return {value};
