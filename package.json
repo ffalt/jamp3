@@ -45,7 +45,7 @@
     "deplokay": "0.0.12",
     "@typescript-eslint/eslint-plugin": "3.6.1",
     "@typescript-eslint/parser": "3.6.1",
-    "eslint": "7.4.0",
+    "eslint": "7.8.1",
     "jest": "26.1.0",
     "tmp": "0.2.1",
     "ts-jest": "26.1.3",
