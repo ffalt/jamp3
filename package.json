@@ -31,7 +31,7 @@
   },
   "dependencies": {
     "commander": "6.1.0",
-    "debug": "4.1.1",
+    "debug": "4.2.0",
     "fs-extra": "9.0.1",
     "iconv-lite": "0.6.2",
     "memory-stream": "1.0.0"
