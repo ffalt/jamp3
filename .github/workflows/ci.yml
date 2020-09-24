@@ -1,12 +1,12 @@
-name: Test
+name: CI
 
 on:
-  push:
+  pull_request:
     branches: [ main ]
 
 jobs:
   build:
-    name: Test
+    name: CI
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -23,11 +23,4 @@ jobs:
         args: git submodule update --init --recursive
     - run: npm ci
     - run: npm run build
-    - name: Test & publish code coverage
-      uses: paambaati/codeclimate-action@v2.6.0
-      env:
-        CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
-      with:
-        coverageCommand: npm run coverage
-        coverageLocations: ${{github.workspace}}/coverage/lcov.info:lcov
-        debug: true
+    - run: npm run test
