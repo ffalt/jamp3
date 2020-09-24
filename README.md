@@ -102,7 +102,9 @@ run().catch(e => {
 ```
 Example as [typescript](examples/snippet_id3v1-read.ts) [javascript](examples/snippet_id3v1-read.js) 
 
-Example result:
+<details>
+  <summary>Example result</summary>
+
 ```json
 {
   "id": "ID3v1",
@@ -118,6 +120,7 @@ Example result:
   }
 }
 ```
+</details>
 
 #### writing ID3v1
 
@@ -556,7 +559,10 @@ if the mp3 does NOT include a VBR/CBR header:
 *   with option {mpegQuick: true}: only a few audio frames are read and the duration is estimated 
 *   with option {mpegQuick: false}: all audio frames are read and the duration is calculated 
 
-Example result:
+
+<details>
+  <summary>Example result</summary>
+
 ```json
 {
   "size": 4096,
@@ -584,6 +590,7 @@ Example result:
   }
 }
 ```
+</details>
 
 ## Command Line Tools
 
@@ -606,6 +613,12 @@ Options:
   -d, --dest <file>        destination analyze result file
   -h, --help               output usage information
 
+```
+
+<details>
+  <summary>Example result</summary>
+
+```bash
 > mp3-analyze SampleVBR.mp3
 SampleVBR.mp3
 1212 Frames, Duration 31.66ms, VBR 58930, MPEG 1 (ISO/IEC 11172-3) MPEG audio layer 3, Channels 2 (joint), Xing
@@ -637,6 +650,7 @@ SampleVBR.mp3
   ]
 }
 ```
+</details>
 
 ### id3v2-dump
 
@@ -652,7 +666,12 @@ Options:
   -f, --full               full tag output (simple otherwise)
   -d, --dest <file>        destination analyze result file
   -h, --help               output usage information
+```
 
+<details>
+  <summary>Example result 1</summary>
+
+```bash
 > id3v2-dump Helium02.mp3
 {
   "filename": "Helium02.mp3",
@@ -684,8 +703,14 @@ Options:
     "PICTURE|5": "<pic Cover (front);image/jpg;38784bytes>"
   }
 }
-> id3v2-dump -f Helium02.mp3
+```
+</details>
 
+<details>
+  <summary>Example result 2</summary>
+
+```bash
+> id3v2-dump -f Helium02.mp3
 {
  "filename": "Helium02.mp3",
  "tag": {
@@ -934,6 +959,7 @@ Options:
  }
 }
 ```
+</details>
 
 ### id3v1-dump
 
@@ -948,7 +974,12 @@ Options:
   -r, --recursive          dump the folder recursive
   -d, --dest <file>        destination analyze result file
   -h, --help               output usage information
+```
 
+<details>
+  <summary>Example result</summary>
+
+```bash
 > id3v1-dump v1tag.mp3
 {
   "filename": "v1tag.mp3",
@@ -966,8 +997,8 @@ Options:
     }
   }
 }
-
 ```
+</details>
 
 ## Development Commands
 
