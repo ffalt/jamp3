@@ -559,7 +559,6 @@ if the mp3 does NOT include a VBR/CBR header:
 *   with option {mpegQuick: true}: only a few audio frames are read and the duration is estimated 
 *   with option {mpegQuick: false}: all audio frames are read and the duration is calculated 
 
-
 <details>
   <summary>Example result</summary>
 
