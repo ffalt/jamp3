@@ -410,7 +410,7 @@ Example as [typescript](examples/snippet_id3v2-read.ts) [javascript](examples/sn
   ]
 }
 ```
-</summary>
+</details>
 
 <details>
   <summary>Example result simplified</summary>
@@ -443,7 +443,7 @@ Example as [typescript](examples/snippet_id3v2-read.ts) [javascript](examples/sn
     "DATE": "1992-1402-1346"
 }
 ```
-</summary>
+</details>
 
 #### writing ID3v2 with Helper
 [Class Documentation](https://ffalt.github.io/jamp3/classes/id3v24tagbuilder.html)
