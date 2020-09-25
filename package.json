@@ -1,0 +1,73 @@
+{
+  "name": "jamp3",
+  "version": "0.4.2",
+  "author": "ffalt",
+  "license": "MIT",
+  "description": "mp3, id3v1, id3v2 - reader & writer",
+  "keywords": [
+    "mp3",
+    "ID3",
+    "ID3v1",
+    "ID3v2",
+    "nodejs",
+    "cli"
+  ],
+  "bin": {
+    "mp3-analyze": "./bin/analyzeMP3.js",
+    "id3v2-dump": "./bin/dumpID3v2.js",
+    "id3v1-dump": "./bin/dumpID3v1.js",
+    "id3v1-remove": "./bin/removeID3v1.js"
+  },
+  "scripts": {
+    "build": "tsc -m commonjs --outDir dist",
+    "build:deploy": "tsc -m commonjs --outDir dist",
+    "build:docs": "typedoc --options ./typedocconfig.ts && touch ./docs/.nojekyll",
+    "build:releaselog": "conventional-changelog -p angular -r 2 -o RELEASELOG.md",
+    "test": "jest",
+    "lint": "eslint ./src --ext .js,.ts",
+    "lint:fix": "eslint --fix ./src --ext .js,.ts",
+    "release": "standard-version -a",
+    "coverage": "jest --coverage",
+    "deploy": "deplokay -c deplokay.json"
+  },
+  "dependencies": {
+    "commander": "6.1.0",
+    "debug": "4.2.0",
+    "fs-extra": "9.0.1",
+    "iconv-lite": "0.6.2",
+    "memory-stream": "1.0.0"
+  },
+  "devDependencies": {
+    "@types/debug": "4.1.5",
+    "@types/fs-extra": "9.0.1",
+    "@types/jest": "26.0.14",
+    "@types/node": "14.11.2",
+    "@types/tmp": "0.2.0",
+    "@typescript-eslint/eslint-plugin": "4.2.0",
+    "@typescript-eslint/parser": "4.2.0",
+    "conventional-changelog-cli": "2.1.0",
+    "eslint": "7.9.0",
+    "jest": "26.4.2",
+    "standard-version": "9.0.0",
+    "tmp": "0.2.1",
+    "ts-jest": "26.4.0",
+    "ts-node": "9.0.0",
+    "typedoc": "0.19.2",
+    "typescript": "4.0.3"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "bin",
+    "dist",
+    "src",
+    "LICENSE"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ffalt/jamp3.git"
+  },
+  "engines": {
+    "node": ">=10.0.0"
+  }
+}
