@@ -1,0 +1,33 @@
+name: docs
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Docs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: 14.x
+
+      - name: Install Dependencies
+        run: |
+          npm install
+
+      - name: Generate Docs
+        run: |
+          npm run build:docs
+
+      - name: Deploy to GH Pages Branch 🚀
+        uses: JamesIves/github-pages-deploy-action@releases/v3
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: gh-pages # The branch the action should deploy to.
+          FOLDER: docs # The folder the action should deploy.
+          CLEAN: true

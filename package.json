@@ -21,13 +21,12 @@
   "scripts": {
     "build": "tsc -m commonjs --outDir dist",
     "build:deploy": "tsc -m commonjs --outDir dist",
+    "build:docs": "typedoc --options ./typedocconfig.ts && touch ./docs/.nojekyll",
     "test": "jest",
     "lint": "eslint ./src --ext .js,.ts",
     "lint:fix": "eslint --fix ./src --ext .js,.ts",
-    "docs": "typedoc --options ./typedocconfig.ts && cp ./.nojekyll ./docs",
     "coverage": "jest --coverage",
-    "deploy": "deplokay -c deplokay.json",
-    "deploy:docs": "deplokay -c deplokay-docs.json"
+    "deploy": "deplokay -c deplokay.json"
   },
   "dependencies": {
     "commander": "6.1.0",

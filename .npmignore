@@ -23,7 +23,6 @@ jest.config.js
 .DS_Store
 .npmignore
 .gitignore
-.nojekyll
 tslint.json
 tsconfig.json
 deplokay.json
