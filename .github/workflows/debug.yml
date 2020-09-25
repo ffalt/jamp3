@@ -1,0 +1,49 @@
+name: debug
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: DEBUG
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: 10.x
+
+      - name: Install Dependencies
+        run: |
+          npm install
+
+      - name: Build
+        run: |
+          npm run build:deploy
+
+      - name: Build Release Branch Folder
+        run: |
+          mkdir deploy
+          cp bin ./deploy/
+          cp dist ./deploy/
+          cp src ./deploy/
+          cp CHANGELOG.md ./deploy/
+          cp README.md ./deploy/
+          cp LICENSE ./deploy/
+          cp package-lock.json ./deploy/
+          cp package.json ./deploy/
+
+      - name: Deploy to Release Branch 🚀
+        uses: JamesIves/github-pages-deploy-action@releases/v3
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: release # The branch the action should deploy to.
+          FOLDER: deploy # The folder the action should deploy.
+          CLEAN: true
+
+      - name: Create Release Package
+        run: |
+          cd deploy && zip -r ./jamp3-release.zip .
