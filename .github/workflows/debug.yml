@@ -27,9 +27,9 @@ jobs:
       - name: Build Release Branch Folder
         run: |
           mkdir deploy
-          cp bin ./deploy/
-          cp dist ./deploy/
-          cp src ./deploy/
+          cp -r bin ./deploy/
+          cp -r dist ./deploy/
+          cp -r src ./deploy/
           cp CHANGELOG.md ./deploy/
           cp README.md ./deploy/
           cp LICENSE ./deploy/
