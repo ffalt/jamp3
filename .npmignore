@@ -18,16 +18,14 @@ test/
 
 TODO.md
 jest.config.js
-.travis.yml
-
 .DS_Store
 .npmignore
 .gitignore
-tslint.json
+.gitmodules
+.eslintignore
+.eslintrc.js
 tsconfig.json
-deplokay.json
-deplokay-docs.json
-renovate.json
 typedocconfig.json
+RELEASELOG.md
 
 
