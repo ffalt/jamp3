@@ -45,7 +45,7 @@ jobs:
 
       - name: Create Release Package
         run: |
-          cd dist && zip -r ./jamp3-release.zip .
+          zip -r ./jamp3-release.zip bin dist src CHANGELOG.md README.md LICENSE package-lock.json package.json
 
       - name: Create Release
         id: create_release
