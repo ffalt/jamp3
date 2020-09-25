@@ -1,0 +1,22 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.IMP3Analyzer = exports.ITagID = exports.ID3V2ValueTypes = exports.ID3v1_GENRES = exports.ID3V24TagBuilder = exports.MP3Analyzer = exports.MP3 = exports.ID3v2 = exports.ID3v1 = void 0;
+var id3v1_1 = require("./lib/id3v1/id3v1");
+Object.defineProperty(exports, "ID3v1", { enumerable: true, get: function () { return id3v1_1.ID3v1; } });
+var id3v2_1 = require("./lib/id3v2/id3v2");
+Object.defineProperty(exports, "ID3v2", { enumerable: true, get: function () { return id3v2_1.ID3v2; } });
+var mp3_1 = require("./lib/mp3/mp3");
+Object.defineProperty(exports, "MP3", { enumerable: true, get: function () { return mp3_1.MP3; } });
+var mp3_analyzer_1 = require("./lib/mp3/mp3.analyzer");
+Object.defineProperty(exports, "MP3Analyzer", { enumerable: true, get: function () { return mp3_analyzer_1.MP3Analyzer; } });
+var id3v2_builder_v24_1 = require("./lib/id3v2/id3v2.builder.v24");
+Object.defineProperty(exports, "ID3V24TagBuilder", { enumerable: true, get: function () { return id3v2_builder_v24_1.ID3V24TagBuilder; } });
+var id3v1_consts_1 = require("./lib/id3v1/id3v1.consts");
+Object.defineProperty(exports, "ID3v1_GENRES", { enumerable: true, get: function () { return id3v1_consts_1.ID3v1_GENRES; } });
+var id3v2_consts_1 = require("./lib/id3v2/id3v2.consts");
+Object.defineProperty(exports, "ID3V2ValueTypes", { enumerable: true, get: function () { return id3v2_consts_1.ID3V2ValueTypes; } });
+var types_1 = require("./lib/common/types");
+Object.defineProperty(exports, "ITagID", { enumerable: true, get: function () { return types_1.ITagID; } });
+var mp3_analyzer_types_1 = require("./lib/mp3/mp3.analyzer.types");
+Object.defineProperty(exports, "IMP3Analyzer", { enumerable: true, get: function () { return mp3_analyzer_types_1.IMP3Analyzer; } });
+//# sourceMappingURL=index.js.map
