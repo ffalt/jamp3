@@ -45,7 +45,7 @@ Motivation for this yet-another-id3-library:
 
 *   Error tolerance over Specification
 
-    Tested with many broken/invalid files https://github.com/ffalt/jamp3-testfiles
+    Tested with many valid & broken/invalid files https://github.com/ffalt/jamp3-testfiles
 
 **Table of Contents**
 *   [Installation](#installation)
