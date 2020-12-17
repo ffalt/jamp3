@@ -107,12 +107,12 @@
     <span class="hljs-keyword">const</span> mp3 = <span class="hljs-keyword">new</span> MP3();
     <span class="hljs-keyword">const</span> filename = <span class="hljs-string">&#x27;demo.mp3&#x27;</span>;
     <span class="hljs-keyword">const</span> options: IMP3.ReadOptions = {
-        mpeg: <span class="hljs-literal">true</span>, <span class="hljs-comment">// read mpeg information</span>
-        mpegQuick: <span class="hljs-literal">true</span>, <span class="hljs-comment">// estimate mpeg information based on mpeg header (XING|Info) and stop reading if tags and header are found</span>
-        id3v2: <span class="hljs-literal">true</span>, <span class="hljs-comment">// read ID3 v2 tag</span>
-        id3v1: <span class="hljs-literal">false</span>,  <span class="hljs-comment">// read ID3 v1 tag</span>
-        id3v1IfNotID3v2: <span class="hljs-literal">true</span>,  <span class="hljs-comment">// read ID3 v1 tag only if no ID3 v2 tag is found (stops reading otherwise)</span>
-        raw: <span class="hljs-literal">false</span> <span class="hljs-comment">// do not parse frames &amp; return all frames as binary blobs</span>
+        <span class="hljs-attr">mpeg</span>: <span class="hljs-literal">true</span>, <span class="hljs-comment">// read mpeg information</span>
+        <span class="hljs-attr">mpegQuick</span>: <span class="hljs-literal">true</span>, <span class="hljs-comment">// estimate mpeg information based on mpeg header (XING|Info) and stop reading if tags and header are found</span>
+        <span class="hljs-attr">id3v2</span>: <span class="hljs-literal">true</span>, <span class="hljs-comment">// read ID3 v2 tag</span>
+        <span class="hljs-attr">id3v1</span>: <span class="hljs-literal">false</span>,  <span class="hljs-comment">// read ID3 v1 tag</span>
+        <span class="hljs-attr">id3v1IfNotID3v2</span>: <span class="hljs-literal">true</span>,  <span class="hljs-comment">// read ID3 v1 tag only if no ID3 v2 tag is found (stops reading otherwise)</span>
+        <span class="hljs-attr">raw</span>: <span class="hljs-literal">false</span> <span class="hljs-comment">// do not parse frames &amp; return all frames as binary blobs</span>
     };
     <span class="hljs-keyword">const</span> data = <span class="hljs-keyword">await</span> mp3.read(filename, options);
     <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&#x27;mp3:&#x27;</span>, data);
@@ -159,7 +159,7 @@ run().catch(<span class="hljs-function"><span class="hljs-params">e</span> =&gt;
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/14fbbfc/src/lib/mp3/mp3.ts#L44">mp3/mp3.ts:44</a></li>
+								<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/8e274eb/src/lib/mp3/mp3.ts#L44">src/lib/mp3/mp3.ts:44</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">
@@ -197,7 +197,7 @@ run().catch(<span class="hljs-function"><span class="hljs-params">e</span> =&gt;
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/14fbbfc/src/lib/mp3/mp3.ts#L32">mp3/mp3.ts:32</a></li>
+								<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/8e274eb/src/lib/mp3/mp3.ts#L32">src/lib/mp3/mp3.ts:32</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">
@@ -241,7 +241,7 @@ run().catch(<span class="hljs-function"><span class="hljs-params">e</span> =&gt;
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/14fbbfc/src/lib/mp3/mp3.ts#L56">mp3/mp3.ts:56</a></li>
+								<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/8e274eb/src/lib/mp3/mp3.ts#L56">src/lib/mp3/mp3.ts:56</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">

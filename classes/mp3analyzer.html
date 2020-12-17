@@ -100,11 +100,11 @@
     <span class="hljs-keyword">const</span> mp3Analyzer = <span class="hljs-keyword">new</span> MP3Analyzer();
     <span class="hljs-keyword">const</span> filename = <span class="hljs-string">&#x27;demo.mp3&#x27;</span>;
     <span class="hljs-keyword">const</span> options: IMP3Analyzer.Options = {
-        mpeg: <span class="hljs-literal">true</span>, <span class="hljs-comment">// test for mpeg warnings</span>
-        id3v2: <span class="hljs-literal">true</span>, <span class="hljs-comment">// test for id3v2 warnings</span>
-        id3v1: <span class="hljs-literal">true</span>, <span class="hljs-comment">// test for id3v1 warnings</span>
-        xing: <span class="hljs-literal">true</span>, <span class="hljs-comment">// test for frame head xing warnings</span>
-        ignoreXingOffOne: <span class="hljs-literal">false</span> <span class="hljs-comment">// ignore most common error in off-by-one XING header declaration</span>
+        <span class="hljs-attr">mpeg</span>: <span class="hljs-literal">true</span>, <span class="hljs-comment">// test for mpeg warnings</span>
+        <span class="hljs-attr">id3v2</span>: <span class="hljs-literal">true</span>, <span class="hljs-comment">// test for id3v2 warnings</span>
+        <span class="hljs-attr">id3v1</span>: <span class="hljs-literal">true</span>, <span class="hljs-comment">// test for id3v1 warnings</span>
+        <span class="hljs-attr">xing</span>: <span class="hljs-literal">true</span>, <span class="hljs-comment">// test for frame head xing warnings</span>
+        <span class="hljs-attr">ignoreXingOffOne</span>: <span class="hljs-literal">false</span> <span class="hljs-comment">// ignore most common error in off-by-one XING header declaration</span>
     };
     <span class="hljs-keyword">const</span> data = <span class="hljs-keyword">await</span> mp3Analyzer.read(filename, options);
     <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&#x27;report:&#x27;</span>, data);
@@ -149,7 +149,7 @@ run().catch(<span class="hljs-function"><span class="hljs-params">e</span> =&gt;
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/14fbbfc/src/lib/mp3/mp3.analyzer.ts#L145">mp3/mp3.analyzer.ts:145</a></li>
+								<li>Defined in <a href="https://github.com/ffalt/jamp3/blob/8e274eb/src/lib/mp3/mp3.analyzer.ts#L145">src/lib/mp3/mp3.analyzer.ts:145</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">
