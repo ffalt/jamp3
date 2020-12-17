@@ -94,7 +94,7 @@ export const FrameRelativeVolumeAdjustment: IFrameImpl = {
 			value.left < 0 ? 0 : 1,
 			value.right < 0 ? 0 : 1
 		];
-		stream.writeBitsByte(flags);
+		await stream.writeBitsByte(flags);
 		let byteLength = 2;
 		Object.keys(value).forEach(key => {
 			const num = <number>(<any>value)[key];
@@ -102,36 +102,36 @@ export const FrameRelativeVolumeAdjustment: IFrameImpl = {
 				byteLength = Math.max(neededStoreBytes(Math.abs(num), 2), byteLength);
 			}
 		});
-		stream.writeByte(byteLength * 8);
-		stream.writeUInt(Math.abs(value.right), byteLength);
-		stream.writeUInt(Math.abs(value.left), byteLength);
+		await stream.writeByte(byteLength * 8);
+		await stream.writeUInt(Math.abs(value.right), byteLength);
+		await stream.writeUInt(Math.abs(value.left), byteLength);
 		if (value.peakRight !== undefined && value.peakLeft !== undefined) {
-			stream.writeUInt(value.peakRight, byteLength);
-			stream.writeUInt(value.peakLeft, byteLength);
+			await stream.writeUInt(value.peakRight, byteLength);
+			await stream.writeUInt(value.peakLeft, byteLength);
 		} else {
 			return;
 		}
 		if (value.rightBack !== undefined && value.leftBack !== undefined) {
-			stream.writeUInt(Math.abs(value.rightBack), byteLength);
-			stream.writeUInt(Math.abs(value.leftBack), byteLength);
+			await stream.writeUInt(Math.abs(value.rightBack), byteLength);
+			await stream.writeUInt(Math.abs(value.leftBack), byteLength);
 		} else {
 			return;
 		}
 		if (value.peakRightBack !== undefined && value.peakLeftBack !== undefined) {
-			stream.writeUInt(value.peakRightBack, byteLength);
-			stream.writeUInt(value.peakLeftBack, byteLength);
+			await stream.writeUInt(value.peakRightBack, byteLength);
+			await stream.writeUInt(value.peakLeftBack, byteLength);
 		} else {
 			return;
 		}
 		if (value.center !== undefined && value.peakCenter !== undefined) {
-			stream.writeUInt(Math.abs(value.center), byteLength);
-			stream.writeUInt(value.peakLeftBack, byteLength);
+			await stream.writeUInt(Math.abs(value.center), byteLength);
+			await stream.writeUInt(value.peakLeftBack, byteLength);
 		} else {
 			return;
 		}
 		if (value.bass !== undefined && value.peakBass !== undefined) {
-			stream.writeUInt(Math.abs(value.center), byteLength);
-			stream.writeUInt(value.peakCenter, byteLength);
+			await stream.writeUInt(Math.abs(value.center), byteLength);
+			await stream.writeUInt(value.peakCenter, byteLength);
 		}
 	},
 	simplify: (value: IID3V2.FrameValue.RVA) => {

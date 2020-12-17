@@ -35,7 +35,7 @@ export class Id3v2RawWriter {
 	}
 
 	private async writeExtHeaderV4(extended: IID3V2.TagHeaderExtendedVer4): Promise<Buffer> {
-		console.log('WARNING: extended header 2.4 not implemented');
+		console.error('WARNING: extended header 2.4 not implemented');
 		/**
 		 ID3v2.4
 		 3.2. Extended header
@@ -191,12 +191,12 @@ export class Id3v2RawWriter {
 
 		 */
 		const result = new MemoryWriterStream();
-		result.writeUInt4Byte(extended.size);
-		result.writeBitsByte(unflags(ID3v2_EXTHEADER[3].FLAGS1, extended.flags1));
-		result.writeBitsByte(unflags(ID3v2_EXTHEADER[3].FLAGS2, extended.flags2));
-		result.writeUInt4Byte(this.paddingSize || 0);
+		await result.writeUInt4Byte(extended.size);
+		await result.writeBitsByte(unflags(ID3v2_EXTHEADER[3].FLAGS1, extended.flags1));
+		await result.writeBitsByte(unflags(ID3v2_EXTHEADER[3].FLAGS2, extended.flags2));
+		await result.writeUInt4Byte(this.paddingSize || 0);
 		if (extended.flags1.crc) {
-			result.writeUInt4Byte(extended.crcData || 0);
+			await result.writeUInt4Byte(extended.crcData || 0);
 		}
 		return result.toBuffer();
 	}
@@ -278,21 +278,21 @@ export class Id3v2RawWriter {
 		 Where yy is less than $FF, xx is the 'flags' byte and zz is less than $80.
 		 */
 
-		this.stream.writeAscii('ID3'); // ID3v2/file identifier
+		await this.stream.writeAscii('ID3'); // ID3v2/file identifier
 		// ID3V2HEADER_FLAGS
-		this.stream.writeByte(this.head.ver);  // ID3v2 version
-		this.stream.writeByte(this.head.rev); // ID3v2 rev version
+		await this.stream.writeByte(this.head.ver);  // ID3v2 version
+		await this.stream.writeByte(this.head.rev); // ID3v2 rev version
 		const versionHead = await this.buildHeaderFlags();
 		this.head.flagBits = versionHead.flagBits;
-		this.stream.writeBitsByte(versionHead.flagBits); // ID3v2 flags
+		await this.stream.writeBitsByte(versionHead.flagBits); // ID3v2 flags
 		const tagSize = this.calculateTagSize(frames, versionHead.extendedHeaderBuffer ? versionHead.extendedHeaderBuffer.length : 0);
 		if (this.head.ver > 2) {
-			this.stream.writeSyncSafeInt(tagSize);
+			await this.stream.writeSyncSafeInt(tagSize);
 		} else {
-			this.stream.writeUInt4Byte(tagSize);
+			await this.stream.writeUInt4Byte(tagSize);
 		}
 		if (versionHead.extendedHeaderBuffer) {
-			this.stream.writeBuffer(versionHead.extendedHeaderBuffer);
+			await this.stream.writeBuffer(versionHead.extendedHeaderBuffer);
 		}
 	}
 
@@ -331,7 +331,7 @@ export class Id3v2RawWriter {
 		 ID3v2 size             4 * %0xxxxxxx
 		 */
 		if (this.paddingSize > 0) {
-			this.stream.writeBuffer(BufferUtils.zeroBuffer(this.paddingSize));
+			await this.stream.writeBuffer(BufferUtils.zeroBuffer(this.paddingSize));
 		}
 	}
 
@@ -534,15 +534,15 @@ export class Id3v2RawWriter {
 		 1      A data length Indicator has been added to the frame.
 
 		 */
-		this.stream.writeAscii(frame.id);
+		await this.stream.writeAscii(frame.id);
 		if (ID3v2_FRAME_HEADER_LENGTHS.SIZE[this.head.ver] === 4) {
 			if (ID3v2_FRAME_HEADER.SYNCSAVEINT.indexOf(this.head.ver) >= 0) {
-				this.stream.writeSyncSafeInt(frame.size);
+				await this.stream.writeSyncSafeInt(frame.size);
 			} else {
-				this.stream.writeUInt4Byte(frame.size);
+				await this.stream.writeUInt4Byte(frame.size);
 			}
 		} else {
-			this.stream.writeUInt3Byte(frame.size);
+			await this.stream.writeUInt3Byte(frame.size);
 		}
 
 		// TODO: currently no support for unsynchronised writing
@@ -551,10 +551,10 @@ export class Id3v2RawWriter {
 		}
 
 		if (ID3v2_FRAME_HEADER_LENGTHS.FLAGS[this.head.ver] !== 0) {
-			this.stream.writeBitsByte(unflags(ID3v2_FRAME_FLAGS1[this.head.ver], frame.statusFlags));
-			this.stream.writeBitsByte(unflags(ID3v2_FRAME_FLAGS2[this.head.ver], frame.formatFlags));
+			await this.stream.writeBitsByte(unflags(ID3v2_FRAME_FLAGS1[this.head.ver], frame.statusFlags));
+			await this.stream.writeBitsByte(unflags(ID3v2_FRAME_FLAGS2[this.head.ver], frame.formatFlags));
 		}
-		this.stream.writeBuffer(frame.data);
+		await this.stream.writeBuffer(frame.data);
 	}
 
 	async write(): Promise<void> {

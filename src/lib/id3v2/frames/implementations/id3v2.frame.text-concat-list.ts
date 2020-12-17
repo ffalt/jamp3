@@ -26,10 +26,10 @@ export const FrameTextConcatList: IFrameImpl = {
 	write: async (frame, stream, head, defaultEncoding) => {
 		const value = <IID3V2.FrameValue.Text>frame.value;
 		const enc = getWriteTextEncoding(frame, head, defaultEncoding);
-		stream.writeEncoding(enc);
+		await stream.writeEncoding(enc);
 		const list = value.text.split('/');
 		for (const s of list) {
-			stream.writeStringTerminated(s, enc);
+			await stream.writeStringTerminated(s, enc);
 		}
 	},
 	simplify: (value: IID3V2.FrameValue.Text) => {

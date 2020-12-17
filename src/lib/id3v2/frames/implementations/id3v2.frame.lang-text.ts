@@ -20,9 +20,9 @@ export const FrameLangText: IFrameImpl = {
 	write: async (frame, stream, head, defaultEncoding) => {
 		const value = <IID3V2.FrameValue.LangText>frame.value;
 		const enc = getWriteTextEncoding(frame, head, defaultEncoding);
-		stream.writeEncoding(enc);
-		stream.writeAsciiString(value.language || '', 3);
-		stream.writeString(value.text, enc);
+		await stream.writeEncoding(enc);
+		await stream.writeAsciiString(value.language || '', 3);
+		await stream.writeString(value.text, enc);
 	},
 	simplify: (value: IID3V2.FrameValue.LangText) => {
 		if (value && value.text && value.text.length > 0) {

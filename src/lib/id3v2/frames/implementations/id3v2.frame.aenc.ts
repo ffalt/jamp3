@@ -35,10 +35,10 @@ export const FrameAENC: IFrameImpl = {
 	},
 	write: async (frame, stream) => {
 		const value = <IID3V2.FrameValue.AudioEncryption>frame.value;
-		stream.writeStringTerminated(value.id, ascii);
-		stream.writeUInt2Byte(value.previewStart);
-		stream.writeUInt2Byte(value.previewLength);
-		stream.writeBuffer(value.bin);
+		await stream.writeStringTerminated(value.id, ascii);
+		await stream.writeUInt2Byte(value.previewStart);
+		await stream.writeUInt2Byte(value.previewLength);
+		await stream.writeBuffer(value.bin);
 	},
 	simplify: (value: IID3V2.FrameValue.AudioEncryption) => {
 		return null; // TODO simplify IID3V2.FrameValue.AudioEncryption

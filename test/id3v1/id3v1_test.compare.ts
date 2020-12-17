@@ -5,7 +5,7 @@ import Debug from 'debug';
 import {ID3v1} from '../../src/lib/id3v1/id3v1';
 import {IID3V1} from '../../src/lib/id3v1/id3v1.types';
 import {ITagID} from '../../src/lib/common/types';
-import {loadSpec, wait} from '../common/common';
+import {loadSpec} from '../common/common';
 
 const debug = Debug('id3v1-test');
 
@@ -90,7 +90,6 @@ export async function testOverWriteMock(filename: string): Promise<void> {
 		const id3 = new ID3v1();
 		let tag2 = await id3.read(file.name);
 		if (!tag2) {
-			await wait();
 			tag2 = await id3.read(file.name);
 		}
 		expect(tag2).toBeTruthy();

@@ -42,22 +42,22 @@ export const FramePic: IFrameImpl = {
 	write: async (frame, stream, head, defaultEncoding) => {
 		const value = <IID3V2.FrameValue.Pic>frame.value;
 		const enc = getWriteTextEncoding(frame, head, defaultEncoding);
-		stream.writeEncoding(enc);
+		await stream.writeEncoding(enc);
 		if (head.ver <= 2) {
 			if (value.url) {
-				stream.writeString('-->', ascii);
+				await stream.writeString('-->', ascii);
 			} else {
-				stream.writeAsciiString(value.mimeType || '', 3);
+				await stream.writeAsciiString(value.mimeType || '', 3);
 			}
 		} else {
-			stream.writeStringTerminated(value.url ? value.url : (value.mimeType || ''), ascii);
+			await stream.writeStringTerminated(value.url ? value.url : (value.mimeType || ''), ascii);
 		}
-		stream.writeByte(value.pictureType);
-		stream.writeStringTerminated(value.description, enc);
+		await stream.writeByte(value.pictureType);
+		await stream.writeStringTerminated(value.description, enc);
 		if (value.url) {
-			stream.writeString(value.url, enc);
+			await stream.writeString(value.url, enc);
 		} else if (value.bin) {
-			stream.writeBuffer(value.bin);
+			await stream.writeBuffer(value.bin);
 		}
 	},
 	simplify: (value: IID3V2.FrameValue.Pic) => {

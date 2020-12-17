@@ -27,11 +27,11 @@ export const FrameCHAP: IFrameImpl = {
 	},
 	write: async (frame, stream, head, defaultEncoding) => {
 		const value = <IID3V2.FrameValue.Chapter>frame.value;
-		stream.writeStringTerminated(value.id, ascii);
-		stream.writeUInt4Byte(value.start);
-		stream.writeUInt4Byte(value.end);
-		stream.writeUInt4Byte(value.offset);
-		stream.writeUInt4Byte(value.offsetEnd);
+		await stream.writeStringTerminated(value.id, ascii);
+		await stream.writeUInt4Byte(value.start);
+		await stream.writeUInt4Byte(value.end);
+		await stream.writeUInt4Byte(value.offset);
+		await stream.writeUInt4Byte(value.offsetEnd);
 		if (frame.subframes) {
 			await writeRawSubFrames(frame.subframes, stream, head, defaultEncoding);
 		}

@@ -13,7 +13,7 @@ class Id3v1RawWriter {
 	}
 
 	async write(): Promise<void> {
-		this.stream.writeAscii('TAG'); // ID3v1/file identifier
+		await this.stream.writeAscii('TAG'); // ID3v1/file identifier
 		/* v1
 		 Song Title		30 characters
 		 Artist	 		30 characters
@@ -33,18 +33,18 @@ class Id3v1RawWriter {
 		 Genre			1 byte
 		 */
 
-		this.stream.writeFixedAsciiString(this.tag.title || '', 30);
-		this.stream.writeFixedAsciiString(this.tag.artist || '', 30);
-		this.stream.writeFixedAsciiString(this.tag.album || '', 30);
-		this.stream.writeFixedAsciiString(this.tag.year || '', 4);
+		await this.stream.writeFixedAsciiString(this.tag.title || '', 30);
+		await this.stream.writeFixedAsciiString(this.tag.artist || '', 30);
+		await this.stream.writeFixedAsciiString(this.tag.album || '', 30);
+		await this.stream.writeFixedAsciiString(this.tag.year || '', 4);
 		if (this.version === 0) {
-			this.stream.writeFixedAsciiString(this.tag.comment || '', 30);
+			await this.stream.writeFixedAsciiString(this.tag.comment || '', 30);
 		} else {
-			this.stream.writeFixedAsciiString(this.tag.comment || '', 28);
-			this.stream.writeByte(0);
-			this.stream.writeByte(this.tag.track || 0);
+			await this.stream.writeFixedAsciiString(this.tag.comment || '', 28);
+			await this.stream.writeByte(0);
+			await this.stream.writeByte(this.tag.track || 0);
 		}
-		this.stream.writeByte(this.tag.genreIndex || 0);
+		await this.stream.writeByte(this.tag.genreIndex || 0);
 	}
 
 }

@@ -11,105 +11,127 @@ export class WriterStream {
 		this.wstream = new MemoryStream();
 	}
 
-	writeByte(byte: number) {
+	private async _write(something: Buffer): Promise<void> {
+		if (!this.wstream.write(something)) {
+			// handle backpressure
+			return new Promise<void>((resolve, reject) => {
+				this.wstream.once('drain', () => {
+					resolve();
+				});
+			})
+		}
+	}
+
+	private async _writeString(something: string, encoding: BufferEncoding): Promise<void> {
+		if (!this.wstream.write(something, encoding)) {
+			// handle backpressure
+			return new Promise<void>((resolve, reject) => {
+				this.wstream.once('drain', () => {
+					resolve();
+				});
+			})
+		}
+	}
+
+	async writeByte(byte: number): Promise<void> {
 		const buf = BufferUtils.zeroBuffer(1);
 		buf.writeUInt8(byte, 0);
-		this.wstream.write(buf);
+		return this._write(buf);
 	}
 
-	writeBytes(bytes: Array<number>) {
-		this.wstream.write(BufferUtils.fromArray(bytes));
+	async writeBytes(bytes: Array<number>): Promise<void> {
+		return this._write(BufferUtils.fromArray(bytes));
 	}
 
-	writeBitsByte(bits: Array<number>) {
+	async writeBitsByte(bits: Array<number>): Promise<void> {
 		while (bits.length < 8) {
 			bits.push(0);
 		}
-		this.writeByte(unbitarray(bits));
+		return this.writeByte(unbitarray(bits));
 	}
 
-	writeBuffer(buffer: Buffer) {
-		this.wstream.write(buffer);
+	async writeBuffer(buffer: Buffer): Promise<void> {
+		return this._write(buffer);
 	}
 
-	writeSyncSafeInt(int: number) {
-		this.writeUInt(synchsafe(int), 4);
+	async writeSyncSafeInt(int: number): Promise<void> {
+		return this.writeUInt(synchsafe(int), 4);
 	}
 
-	writeUInt(int: number, byteLength: number) {
+	async writeUInt(int: number, byteLength: number): Promise<void> {
 		const buf = BufferUtils.zeroBuffer(byteLength);
 		buf.writeUIntBE(int, 0, byteLength);
-		this.wstream.write(buf);
+		return this._write(buf);
 	}
 
-	writeUInt2Byte(int: number) {
-		this.writeUInt(int, 2);
+	async writeUInt2Byte(int: number): Promise<void> {
+		return this.writeUInt(int, 2);
 	}
 
-	writeUInt3Byte(int: number) {
-		this.writeUInt(int, 3);
+	async writeUInt3Byte(int: number): Promise<void> {
+		return this.writeUInt(int, 3);
 	}
 
-	writeUInt4Byte(int: number) {
-		this.writeUInt(int, 4);
+	async writeUInt4Byte(int: number): Promise<void> {
+		return this.writeUInt(int, 4);
 	}
 
-	writeSInt(int: number, byteLength: number) {
+	async writeSInt(int: number, byteLength: number): Promise<void> {
 		const buf = BufferUtils.zeroBuffer(byteLength);
 		buf.writeIntBE(int, 0, byteLength);
-		this.wstream.write(buf);
+		return this._write(buf);
 	}
 
-	writeSInt2Byte(int: number) {
-		this.writeSInt(int, 2);
+	async writeSInt2Byte(int: number): Promise<void> {
+		return this.writeSInt(int, 2);
 	}
 
-	writeEncoding(enc: IEncoding) {
-		this.writeByte(enc.byte);
+	async writeEncoding(enc: IEncoding): Promise<void> {
+		return this.writeByte(enc.byte);
 	}
 
-	writeString(val: string, enc: IEncoding) {
+	async writeString(val: string, enc: IEncoding): Promise<void> {
 		if (enc.bom) {
-			this.writeBytes(enc.bom);
+			await this.writeBytes(enc.bom);
 		}
-		this.wstream.write(enc.encode(val));
+		return this._write(enc.encode(val));
 	}
 
-	writeStringTerminated(val: string, enc: IEncoding) {
+	async writeStringTerminated(val: string, enc: IEncoding): Promise<void> {
 		if (enc.bom) {
-			this.writeBytes(enc.bom);
+			await this.writeBytes(enc.bom);
 		}
-		this.wstream.write(enc.encode(val));
-		this.writeTerminator(enc);
+		await this._write(enc.encode(val));
+		return this.writeTerminator(enc);
 	}
 
-	writeAsciiString(val: string, length: number) {
+	async writeAsciiString(val: string, length: number): Promise<void> {
 		while (val.length < length) {
 			val += ' ';
 		}
-		this.wstream.write(val.slice(0, length), 'ascii');
+		return this._writeString(val.slice(0, length), 'ascii');
 	}
 
-	writeAscii(val: string) {
-		this.wstream.write(val, 'ascii');
+	async writeAscii(val: string): Promise<void> {
+		return this._writeString(val, 'ascii');
 	}
 
-	writeTerminator(enc: IEncoding) {
-		this.writeBuffer(enc.terminator);
+	async writeTerminator(enc: IEncoding): Promise<void> {
+		return this.writeBuffer(enc.terminator);
 	}
 
-	writeFixedBuffer(buffer: Buffer, size: number) {
+	async writeFixedBuffer(buffer: Buffer, size: number): Promise<void> {
 		const padding = size - buffer.length;
 		if (padding > 0) {
 			const pad = BufferUtils.zeroBuffer(padding);
 			buffer = BufferUtils.concatBuffer(buffer, pad);
 		}
-		this.writeBuffer(buffer);
+		return this.writeBuffer(buffer);
 	}
 
-	writeFixedAsciiString(val: string, size: number) {
+	async writeFixedAsciiString(val: string, size: number): Promise<void> {
 		const buf = ascii.encode(val.slice(0, size)).slice(0, size);
-		this.writeFixedBuffer(buf, size);
+		return this.writeFixedBuffer(buf, size);
 	}
 
 	// writeFixedUTF8String(val: string, size: number) {

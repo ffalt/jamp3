@@ -18,9 +18,9 @@ export const FrameIdText: IFrameImpl = {
 	write: async (frame, stream, head, defaultEncoding) => {
 		const value = <IID3V2.FrameValue.IdText>frame.value;
 		const enc = getWriteTextEncoding(frame, head, defaultEncoding);
-		stream.writeEncoding(enc);
-		stream.writeStringTerminated(value.id, enc);
-		stream.writeString(value.text, enc);
+		await stream.writeEncoding(enc);
+		await stream.writeStringTerminated(value.id, enc);
+		await stream.writeString(value.text, enc);
 	},
 	simplify: (value: IID3V2.FrameValue.IdText) => {
 		if (value && value.text && value.text.length > 0) {

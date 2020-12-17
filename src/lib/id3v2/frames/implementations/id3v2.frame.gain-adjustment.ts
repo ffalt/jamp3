@@ -25,9 +25,9 @@ export const FrameRGAD: IFrameImpl = {
 	},
 	write: async (frame, stream) => {
 		const value = <IID3V2.FrameValue.ReplayGainAdjustment>frame.value;
-		stream.writeUInt4Byte(value.peak);
-		stream.writeSInt2Byte(value.radioAdjustment);
-		stream.writeSInt2Byte(value.audiophileAdjustment);
+		await stream.writeUInt4Byte(value.peak);
+		await stream.writeSInt2Byte(value.radioAdjustment);
+		await stream.writeSInt2Byte(value.audiophileAdjustment);
 	},
 	simplify: (value: IID3V2.FrameValue.ReplayGainAdjustment) => {
 		return null; // TODO IID3V2.FrameValue.ReplayGainAdjustment IID3V2.FrameValue.Link

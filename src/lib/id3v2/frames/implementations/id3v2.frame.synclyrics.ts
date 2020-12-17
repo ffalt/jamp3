@@ -85,15 +85,15 @@ export const FrameSYLT: IFrameImpl = {
 	write: async (frame, stream, head, defaultEncoding) => {
 		const value = <IID3V2.FrameValue.SynchronisedLyrics>frame.value;
 		const enc = getWriteTextEncoding(frame, head, defaultEncoding);
-		stream.writeEncoding(enc);
-		stream.writeAsciiString(value.language, 3);
-		stream.writeByte(value.timestampFormat);
-		stream.writeByte(value.contentType);
-		stream.writeStringTerminated(value.id, enc);
-		value.events.forEach(event => {
-			stream.writeStringTerminated(event.text, enc);
-			stream.writeUInt4Byte(event.timestamp);
-		});
+		await stream.writeEncoding(enc);
+		await stream.writeAsciiString(value.language, 3);
+		await stream.writeByte(value.timestampFormat);
+		await stream.writeByte(value.contentType);
+		await stream.writeStringTerminated(value.id, enc);
+		for (const event of value.events) {
+			await stream.writeStringTerminated(event.text, enc);
+			await stream.writeUInt4Byte(event.timestamp);
+		}
 	},
 	simplify: (value: IID3V2.FrameValue.SynchronisedLyrics) => {
 		return null; // TODO IID3V2.FrameValue.SynchronisedLyrics IID3V2.FrameValue.Link

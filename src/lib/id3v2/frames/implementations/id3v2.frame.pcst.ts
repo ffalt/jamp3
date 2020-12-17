@@ -15,7 +15,7 @@ export const FramePCST: IFrameImpl = {
 	},
 	write: async (frame, stream) => {
 		const value = <IID3V2.FrameValue.Number>frame.value;
-		stream.writeUInt4Byte(value.num);
+		await stream.writeUInt4Byte(value.num);
 	},
 	simplify: (value: IID3V2.FrameValue.Number) => {
 		return value.num.toString();

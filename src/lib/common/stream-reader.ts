@@ -85,12 +85,13 @@ export class ReaderStream {
 	}
 
 	close() {
-		if (this.readableStream) {
-			if (typeof (<any>this.readableStream).close === 'function') {
-				(<any>this.readableStream).close();
+		const stream = this.readableStream;
+		this.readableStream = null;
+		if (stream) {
+			if (typeof (<any>stream).close === 'function') {
+				(<any>stream).close();
 			}
-			this.readableStream.destroy();
-			this.readableStream = null;
+			stream.destroy();
 		}
 	}
 
@@ -175,7 +176,6 @@ export class ReaderStream {
 		if (!this.streamEnd) {
 			await this.resume();
 			return await this.read(amount);
-			// TODO: process.nextTick(() => {}); with async/wait still needed?
 		} else {
 			if (this.buffersLength === 0) {
 				return BufferUtils.zeroBuffer(0);

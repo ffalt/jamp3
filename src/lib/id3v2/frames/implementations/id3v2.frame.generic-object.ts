@@ -28,11 +28,11 @@ export const FrameGEOB: IFrameImpl = {
 	write: async (frame, stream, head, defaultEncoding) => {
 		const value = <IID3V2.FrameValue.GEOB>frame.value;
 		const enc = getWriteTextEncoding(frame, head, defaultEncoding);
-		stream.writeEncoding(enc);
-		stream.writeStringTerminated(value.mimeType, ascii);
-		stream.writeStringTerminated(value.filename, enc);
-		stream.writeStringTerminated(value.contentDescription, enc);
-		stream.writeBuffer(value.bin);
+		await stream.writeEncoding(enc);
+		await stream.writeStringTerminated(value.mimeType, ascii);
+		await stream.writeStringTerminated(value.filename, enc);
+		await stream.writeStringTerminated(value.contentDescription, enc);
+		await stream.writeBuffer(value.bin);
 	},
 	simplify: (value: IID3V2.FrameValue.GEOB) => {
 		return null; // TODO IID3V2.FrameValue.GEOB

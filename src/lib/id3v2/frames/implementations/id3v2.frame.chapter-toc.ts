@@ -50,12 +50,12 @@ export const FrameCTOC: IFrameImpl = {
 	},
 	write: async (frame, stream, head, defaultEncoding) => {
 		const value = <IID3V2.FrameValue.ChapterToc>frame.value;
-		stream.writeStringTerminated(value.id, ascii);
-		stream.writeByte((value.ordered ? 1 : 0) + ((value.topLevel ? 1 : 0) * 2));
-		stream.writeByte(value.children.length);
-		value.children.forEach(childId => {
-			stream.writeStringTerminated(childId, ascii);
-		});
+		await stream.writeStringTerminated(value.id, ascii);
+		await stream.writeByte((value.ordered ? 1 : 0) + ((value.topLevel ? 1 : 0) * 2));
+		await stream.writeByte(value.children.length);
+		for (const childId of value.children) {
+			await stream.writeStringTerminated(childId, ascii);
+		}
 		if (frame.subframes) {
 			await writeRawSubFrames(frame.subframes, stream, head, defaultEncoding);
 		}

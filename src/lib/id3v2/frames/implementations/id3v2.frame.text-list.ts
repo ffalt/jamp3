@@ -22,13 +22,13 @@ export const FrameTextList: IFrameImpl = {
 	write: async (frame, stream, head, defaultEncoding) => {
 		const value = <IID3V2.FrameValue.TextList>frame.value;
 		const enc = getWriteTextEncoding(frame, head, defaultEncoding);
-		stream.writeEncoding(enc);
-		value.list.forEach((entry, index) => {
-			stream.writeString(entry, enc);
+		await stream.writeEncoding(enc);
+		for (let index = 0; index < value.list.length; index++) {
+			await stream.writeString(value.list[index], enc);
 			if (index !== value.list.length - 1) {
-				stream.writeTerminator(enc);
+				await stream.writeTerminator(enc);
 			}
-		});
+		}
 	},
 	simplify: (value: IID3V2.FrameValue.TextList) => {
 		if (value && value.list && value.list.length > 0) {
