@@ -19,16 +19,17 @@
     "id3v1-remove": "./bin/removeID3v1.js"
   },
   "scripts": {
-    "build": "tsc -m commonjs --outDir dist",
-    "build:deploy": "tsc -m commonjs --outDir dist",
+    "clean": "rimraf dist",
+    "build": "npm run clean && npm run build:commonjs",
+    "build:commonjs": "tsc",
+    "build:deploy": "npm run build",
     "build:docs": "typedoc --options ./typedocconfig.ts && touch ./docs/.nojekyll",
     "build:releaselog": "conventional-changelog -p angular -r 2 -o RELEASELOG.md",
     "test": "jest",
     "lint": "eslint ./src --ext .js,.ts",
     "lint:fix": "eslint --fix ./src --ext .js,.ts",
     "release": "standard-version -a",
-    "coverage": "jest --coverage",
-    "deploy": "deplokay -c deplokay.json"
+    "coverage": "jest --coverage"
   },
   "dependencies": {
     "commander": "6.2.0",
@@ -48,6 +49,7 @@
     "conventional-changelog-cli": "2.1.1",
     "eslint": "7.15.0",
     "jest": "26.6.3",
+    "rimraf": "3.0.2",
     "standard-version": "9.0.0",
     "tmp": "0.2.1",
     "ts-jest": "26.4.4",

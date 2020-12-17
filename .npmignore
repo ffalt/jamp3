@@ -25,6 +25,8 @@ jest.config.js
 .eslintignore
 .eslintrc.js
 tsconfig.json
+tsconfig.jest.json
+tsconfig.eslint.json
 typedocconfig.json
 RELEASELOG.md
 
