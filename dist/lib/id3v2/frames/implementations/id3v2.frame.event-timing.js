@@ -24,11 +24,11 @@ exports.FrameETCO = {
     }),
     write: (frame, stream) => __awaiter(void 0, void 0, void 0, function* () {
         const value = frame.value;
-        stream.writeByte(value.format);
-        (value.events || []).forEach(event => {
-            stream.writeByte(event.type);
-            stream.writeUInt4Byte(event.timestamp);
-        });
+        yield stream.writeByte(value.format);
+        for (const event of (value.events || [])) {
+            yield stream.writeByte(event.type);
+            yield stream.writeUInt4Byte(event.timestamp);
+        }
     }),
     simplify: (value) => {
         return null;

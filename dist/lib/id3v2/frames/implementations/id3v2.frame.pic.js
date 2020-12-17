@@ -37,25 +37,25 @@ exports.FramePic = {
     write: (frame, stream, head, defaultEncoding) => __awaiter(void 0, void 0, void 0, function* () {
         const value = frame.value;
         const enc = id3v2_frame_write_1.getWriteTextEncoding(frame, head, defaultEncoding);
-        stream.writeEncoding(enc);
+        yield stream.writeEncoding(enc);
         if (head.ver <= 2) {
             if (value.url) {
-                stream.writeString('-->', encodings_1.ascii);
+                yield stream.writeString('-->', encodings_1.ascii);
             }
             else {
-                stream.writeAsciiString(value.mimeType || '', 3);
+                yield stream.writeAsciiString(value.mimeType || '', 3);
             }
         }
         else {
-            stream.writeStringTerminated(value.url ? value.url : (value.mimeType || ''), encodings_1.ascii);
+            yield stream.writeStringTerminated(value.url ? value.url : (value.mimeType || ''), encodings_1.ascii);
         }
-        stream.writeByte(value.pictureType);
-        stream.writeStringTerminated(value.description, enc);
+        yield stream.writeByte(value.pictureType);
+        yield stream.writeStringTerminated(value.description, enc);
         if (value.url) {
-            stream.writeString(value.url, enc);
+            yield stream.writeString(value.url, enc);
         }
         else if (value.bin) {
-            stream.writeBuffer(value.bin);
+            yield stream.writeBuffer(value.bin);
         }
     }),
     simplify: (value) => {

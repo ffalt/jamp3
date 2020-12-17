@@ -15,8 +15,8 @@ export const FrameIdAscii: IFrameImpl = {
 	},
 	write: async (frame, stream) => {
 		const value = <IID3V2.FrameValue.IdAscii>frame.value;
-		stream.writeStringTerminated(value.id, ascii);
-		stream.writeString(value.text, ascii);
+		await stream.writeStringTerminated(value.id, ascii);
+		await stream.writeString(value.text, ascii);
 	},
 	simplify: (value: IID3V2.FrameValue.IdAscii) => {
 		if (value && value.text && value.text.length > 0) {

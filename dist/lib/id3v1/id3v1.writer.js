@@ -18,20 +18,20 @@ class Id3v1RawWriter {
     }
     write() {
         return __awaiter(this, void 0, void 0, function* () {
-            this.stream.writeAscii('TAG');
-            this.stream.writeFixedAsciiString(this.tag.title || '', 30);
-            this.stream.writeFixedAsciiString(this.tag.artist || '', 30);
-            this.stream.writeFixedAsciiString(this.tag.album || '', 30);
-            this.stream.writeFixedAsciiString(this.tag.year || '', 4);
+            yield this.stream.writeAscii('TAG');
+            yield this.stream.writeFixedAsciiString(this.tag.title || '', 30);
+            yield this.stream.writeFixedAsciiString(this.tag.artist || '', 30);
+            yield this.stream.writeFixedAsciiString(this.tag.album || '', 30);
+            yield this.stream.writeFixedAsciiString(this.tag.year || '', 4);
             if (this.version === 0) {
-                this.stream.writeFixedAsciiString(this.tag.comment || '', 30);
+                yield this.stream.writeFixedAsciiString(this.tag.comment || '', 30);
             }
             else {
-                this.stream.writeFixedAsciiString(this.tag.comment || '', 28);
-                this.stream.writeByte(0);
-                this.stream.writeByte(this.tag.track || 0);
+                yield this.stream.writeFixedAsciiString(this.tag.comment || '', 28);
+                yield this.stream.writeByte(0);
+                yield this.stream.writeByte(this.tag.track || 0);
             }
-            this.stream.writeByte(this.tag.genreIndex || 0);
+            yield this.stream.writeByte(this.tag.genreIndex || 0);
         });
     }
 }

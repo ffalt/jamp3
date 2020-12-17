@@ -20,9 +20,9 @@ exports.FrameRGAD = {
     }),
     write: (frame, stream) => __awaiter(void 0, void 0, void 0, function* () {
         const value = frame.value;
-        stream.writeUInt4Byte(value.peak);
-        stream.writeSInt2Byte(value.radioAdjustment);
-        stream.writeSInt2Byte(value.audiophileAdjustment);
+        yield stream.writeUInt4Byte(value.peak);
+        yield stream.writeSInt2Byte(value.radioAdjustment);
+        yield stream.writeSInt2Byte(value.audiophileAdjustment);
     }),
     simplify: (value) => {
         return null;

@@ -23,8 +23,8 @@ export const FrameBooleanString: IFrameImpl = {
 	write: async (frame, stream, head, defaultEncoding) => {
 		const value = <IID3V2.FrameValue.Bool>frame.value;
 		const enc = getWriteTextEncoding(frame, head, defaultEncoding);
-		stream.writeEncoding(enc);
-		stream.writeStringTerminated(value.bool ? '1' : '0', enc);
+		await stream.writeEncoding(enc);
+		await stream.writeStringTerminated(value.bool ? '1' : '0', enc);
 	},
 	simplify: (value: IID3V2.FrameValue.Bool) => {
 		if (value) {

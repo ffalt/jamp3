@@ -81,16 +81,16 @@ export const FrameRelativeVolumeAdjustment2: IFrameImpl = {
 	},
 	write: async (frame, stream) => {
 		const value = <IID3V2.FrameValue.RVA2>frame.value;
-		stream.writeStringTerminated(value.id, ascii);
-		value.channels.forEach(channel => {
-			stream.writeByte(channel.type);
-			stream.writeSInt(channel.adjustment, 2);
+		await stream.writeStringTerminated(value.id, ascii);
+		for (const channel of value.channels) {
+			await stream.writeByte(channel.type);
+			await stream.writeSInt(channel.adjustment, 2);
 			const bytes = channel.peak === undefined ? 0 : neededStoreBytes(channel.peak, 2);
-			stream.writeUInt(bytes * 8, 2);
+			await stream.writeUInt(bytes * 8, 2);
 			if (channel.peak !== undefined && bytes > 0) {
-				stream.writeUInt(channel.peak, bytes);
+				await stream.writeUInt(channel.peak, bytes);
 			}
-		});
+		}
 	},
 	simplify: (value: IID3V2.FrameValue.RVA2) => {
 		return null; // TODO simplify IID3V2.FrameValue.RVA2

@@ -20,8 +20,8 @@ exports.FrameIdBin = {
     }),
     write: (frame, stream) => __awaiter(void 0, void 0, void 0, function* () {
         const value = frame.value;
-        stream.writeStringTerminated(value.id, encodings_1.ascii);
-        stream.writeBuffer(value.bin);
+        yield stream.writeStringTerminated(value.id, encodings_1.ascii);
+        yield stream.writeBuffer(value.bin);
     }),
     simplify: (value) => {
         if (value && value.bin && value.bin.length > 0) {

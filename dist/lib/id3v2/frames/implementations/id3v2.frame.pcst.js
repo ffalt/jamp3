@@ -18,7 +18,7 @@ exports.FramePCST = {
     }),
     write: (frame, stream) => __awaiter(void 0, void 0, void 0, function* () {
         const value = frame.value;
-        stream.writeUInt4Byte(value.num);
+        yield stream.writeUInt4Byte(value.num);
     }),
     simplify: (value) => {
         return value.num.toString();

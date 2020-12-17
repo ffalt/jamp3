@@ -39,12 +39,12 @@ exports.FrameCTOC = {
     }),
     write: (frame, stream, head, defaultEncoding) => __awaiter(void 0, void 0, void 0, function* () {
         const value = frame.value;
-        stream.writeStringTerminated(value.id, encodings_1.ascii);
-        stream.writeByte((value.ordered ? 1 : 0) + ((value.topLevel ? 1 : 0) * 2));
-        stream.writeByte(value.children.length);
-        value.children.forEach(childId => {
-            stream.writeStringTerminated(childId, encodings_1.ascii);
-        });
+        yield stream.writeStringTerminated(value.id, encodings_1.ascii);
+        yield stream.writeByte((value.ordered ? 1 : 0) + ((value.topLevel ? 1 : 0) * 2));
+        yield stream.writeByte(value.children.length);
+        for (const childId of value.children) {
+            yield stream.writeStringTerminated(childId, encodings_1.ascii);
+        }
         if (frame.subframes) {
             yield id3v2_frame_write_1.writeRawSubFrames(frame.subframes, stream, head, defaultEncoding);
         }

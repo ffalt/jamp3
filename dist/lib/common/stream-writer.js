@@ -1,4 +1,13 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -12,87 +21,147 @@ class WriterStream {
     constructor() {
         this.wstream = new memory_stream_1.default();
     }
+    _write(something) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!this.wstream.write(something)) {
+                return new Promise((resolve, reject) => {
+                    this.wstream.once('drain', () => {
+                        resolve();
+                    });
+                });
+            }
+        });
+    }
+    _writeString(something, encoding) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!this.wstream.write(something, encoding)) {
+                return new Promise((resolve, reject) => {
+                    this.wstream.once('drain', () => {
+                        resolve();
+                    });
+                });
+            }
+        });
+    }
     writeByte(byte) {
-        const buf = buffer_1.BufferUtils.zeroBuffer(1);
-        buf.writeUInt8(byte, 0);
-        this.wstream.write(buf);
+        return __awaiter(this, void 0, void 0, function* () {
+            const buf = buffer_1.BufferUtils.zeroBuffer(1);
+            buf.writeUInt8(byte, 0);
+            return this._write(buf);
+        });
     }
     writeBytes(bytes) {
-        this.wstream.write(buffer_1.BufferUtils.fromArray(bytes));
+        return __awaiter(this, void 0, void 0, function* () {
+            return this._write(buffer_1.BufferUtils.fromArray(bytes));
+        });
     }
     writeBitsByte(bits) {
-        while (bits.length < 8) {
-            bits.push(0);
-        }
-        this.writeByte(utils_1.unbitarray(bits));
+        return __awaiter(this, void 0, void 0, function* () {
+            while (bits.length < 8) {
+                bits.push(0);
+            }
+            return this.writeByte(utils_1.unbitarray(bits));
+        });
     }
     writeBuffer(buffer) {
-        this.wstream.write(buffer);
+        return __awaiter(this, void 0, void 0, function* () {
+            return this._write(buffer);
+        });
     }
     writeSyncSafeInt(int) {
-        this.writeUInt(utils_1.synchsafe(int), 4);
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.writeUInt(utils_1.synchsafe(int), 4);
+        });
     }
     writeUInt(int, byteLength) {
-        const buf = buffer_1.BufferUtils.zeroBuffer(byteLength);
-        buf.writeUIntBE(int, 0, byteLength);
-        this.wstream.write(buf);
+        return __awaiter(this, void 0, void 0, function* () {
+            const buf = buffer_1.BufferUtils.zeroBuffer(byteLength);
+            buf.writeUIntBE(int, 0, byteLength);
+            return this._write(buf);
+        });
     }
     writeUInt2Byte(int) {
-        this.writeUInt(int, 2);
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.writeUInt(int, 2);
+        });
     }
     writeUInt3Byte(int) {
-        this.writeUInt(int, 3);
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.writeUInt(int, 3);
+        });
     }
     writeUInt4Byte(int) {
-        this.writeUInt(int, 4);
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.writeUInt(int, 4);
+        });
     }
     writeSInt(int, byteLength) {
-        const buf = buffer_1.BufferUtils.zeroBuffer(byteLength);
-        buf.writeIntBE(int, 0, byteLength);
-        this.wstream.write(buf);
+        return __awaiter(this, void 0, void 0, function* () {
+            const buf = buffer_1.BufferUtils.zeroBuffer(byteLength);
+            buf.writeIntBE(int, 0, byteLength);
+            return this._write(buf);
+        });
     }
     writeSInt2Byte(int) {
-        this.writeSInt(int, 2);
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.writeSInt(int, 2);
+        });
     }
     writeEncoding(enc) {
-        this.writeByte(enc.byte);
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.writeByte(enc.byte);
+        });
     }
     writeString(val, enc) {
-        if (enc.bom) {
-            this.writeBytes(enc.bom);
-        }
-        this.wstream.write(enc.encode(val));
+        return __awaiter(this, void 0, void 0, function* () {
+            if (enc.bom) {
+                yield this.writeBytes(enc.bom);
+            }
+            return this._write(enc.encode(val));
+        });
     }
     writeStringTerminated(val, enc) {
-        if (enc.bom) {
-            this.writeBytes(enc.bom);
-        }
-        this.wstream.write(enc.encode(val));
-        this.writeTerminator(enc);
+        return __awaiter(this, void 0, void 0, function* () {
+            if (enc.bom) {
+                yield this.writeBytes(enc.bom);
+            }
+            yield this._write(enc.encode(val));
+            return this.writeTerminator(enc);
+        });
     }
     writeAsciiString(val, length) {
-        while (val.length < length) {
-            val += ' ';
-        }
-        this.wstream.write(val.slice(0, length), 'ascii');
+        return __awaiter(this, void 0, void 0, function* () {
+            while (val.length < length) {
+                val += ' ';
+            }
+            return this._writeString(val.slice(0, length), 'ascii');
+        });
     }
     writeAscii(val) {
-        this.wstream.write(val, 'ascii');
+        return __awaiter(this, void 0, void 0, function* () {
+            return this._writeString(val, 'ascii');
+        });
     }
     writeTerminator(enc) {
-        this.writeBuffer(enc.terminator);
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.writeBuffer(enc.terminator);
+        });
     }
     writeFixedBuffer(buffer, size) {
-        const padding = size - buffer.length;
-        if (padding > 0) {
-            const pad = buffer_1.BufferUtils.zeroBuffer(padding);
-            buffer = buffer_1.BufferUtils.concatBuffer(buffer, pad);
-        }
-        this.writeBuffer(buffer);
+        return __awaiter(this, void 0, void 0, function* () {
+            const padding = size - buffer.length;
+            if (padding > 0) {
+                const pad = buffer_1.BufferUtils.zeroBuffer(padding);
+                buffer = buffer_1.BufferUtils.concatBuffer(buffer, pad);
+            }
+            return this.writeBuffer(buffer);
+        });
     }
     writeFixedAsciiString(val, size) {
-        const buf = encodings_1.ascii.encode(val.slice(0, size)).slice(0, size);
-        this.writeFixedBuffer(buf, size);
+        return __awaiter(this, void 0, void 0, function* () {
+            const buf = encodings_1.ascii.encode(val.slice(0, size)).slice(0, size);
+            return this.writeFixedBuffer(buf, size);
+        });
     }
 }
 exports.WriterStream = WriterStream;

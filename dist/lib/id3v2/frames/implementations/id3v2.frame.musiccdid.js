@@ -18,7 +18,7 @@ exports.FrameMusicCDId = {
     }),
     write: (frame, stream) => __awaiter(void 0, void 0, void 0, function* () {
         const value = frame.value;
-        stream.writeBuffer(value.bin);
+        yield stream.writeBuffer(value.bin);
     }),
     simplify: (value) => {
         if (value && value.bin && value.bin.length > 0) {

@@ -19,7 +19,7 @@ exports.FrameAscii = {
     }),
     write: (frame, stream) => __awaiter(void 0, void 0, void 0, function* () {
         const value = frame.value;
-        stream.writeString(value.text, encodings_1.ascii);
+        yield stream.writeString(value.text, encodings_1.ascii);
     }),
     simplify: (value) => {
         if (value && value.text && value.text.length > 0) {

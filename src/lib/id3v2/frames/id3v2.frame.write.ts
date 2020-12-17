@@ -61,14 +61,14 @@ async function writeRawFrame(frame: IID3V2.Frame, head: IID3V2.TagHeader, defaul
 			const sizebytes = ID3v2_FRAME_HEADER_LENGTHS.SIZE[head.ver];
 			const uncompressedStream = new MemoryWriterStream();
 			if (sizebytes === 4) {
-				uncompressedStream.writeUInt4Byte(data.length);
+				await uncompressedStream.writeUInt4Byte(data.length);
 			} else {
-				uncompressedStream.writeUInt3Byte(data.length);
+				await uncompressedStream.writeUInt3Byte(data.length);
 			}
 			data = BufferUtils.concatBuffer(uncompressedStream.toBuffer(), zlib.deflateSync(data));
 		} else if ((frameHead.formatFlags) && (frameHead.formatFlags.dataLengthIndicator)) {
 			const dataLengthStream = new MemoryWriterStream();
-			dataLengthStream.writeSyncSafeInt(data.length);
+			await dataLengthStream.writeSyncSafeInt(data.length);
 			data = BufferUtils.concatBuffer(dataLengthStream.toBuffer(), data);
 		}
 	}

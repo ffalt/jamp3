@@ -96,16 +96,16 @@ function writeRawFrame(frame, head, defaultEncoding) {
                 const sizebytes = id3v2_header_consts_1.ID3v2_FRAME_HEADER_LENGTHS.SIZE[head.ver];
                 const uncompressedStream = new stream_writer_memory_1.MemoryWriterStream();
                 if (sizebytes === 4) {
-                    uncompressedStream.writeUInt4Byte(data.length);
+                    yield uncompressedStream.writeUInt4Byte(data.length);
                 }
                 else {
-                    uncompressedStream.writeUInt3Byte(data.length);
+                    yield uncompressedStream.writeUInt3Byte(data.length);
                 }
                 data = buffer_1.BufferUtils.concatBuffer(uncompressedStream.toBuffer(), zlib.deflateSync(data));
             }
             else if ((frameHead.formatFlags) && (frameHead.formatFlags.dataLengthIndicator)) {
                 const dataLengthStream = new stream_writer_memory_1.MemoryWriterStream();
-                dataLengthStream.writeSyncSafeInt(data.length);
+                yield dataLengthStream.writeSyncSafeInt(data.length);
                 data = buffer_1.BufferUtils.concatBuffer(dataLengthStream.toBuffer(), data);
             }
         }

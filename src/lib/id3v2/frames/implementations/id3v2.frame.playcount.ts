@@ -24,7 +24,7 @@ export const FramePlayCount: IFrameImpl = {
 	write: async (frame, stream) => {
 		const value = <IID3V2.FrameValue.Number>frame.value;
 		const byteLength = neededStoreBytes(value.num, 4);
-		stream.writeUInt(value.num, byteLength);
+		await stream.writeUInt(value.num, byteLength);
 	},
 	simplify: (value: IID3V2.FrameValue.Number) => {
 		if (value && value.num !== undefined) {

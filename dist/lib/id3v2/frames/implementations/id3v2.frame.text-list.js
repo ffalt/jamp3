@@ -27,13 +27,13 @@ exports.FrameTextList = {
     write: (frame, stream, head, defaultEncoding) => __awaiter(void 0, void 0, void 0, function* () {
         const value = frame.value;
         const enc = id3v2_frame_write_1.getWriteTextEncoding(frame, head, defaultEncoding);
-        stream.writeEncoding(enc);
-        value.list.forEach((entry, index) => {
-            stream.writeString(entry, enc);
+        yield stream.writeEncoding(enc);
+        for (let index = 0; index < value.list.length; index++) {
+            yield stream.writeString(value.list[index], enc);
             if (index !== value.list.length - 1) {
-                stream.writeTerminator(enc);
+                yield stream.writeTerminator(enc);
             }
-        });
+        }
     }),
     simplify: (value) => {
         if (value && value.list && value.list.length > 0) {

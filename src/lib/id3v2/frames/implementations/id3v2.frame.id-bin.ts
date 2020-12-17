@@ -15,8 +15,8 @@ export const FrameIdBin: IFrameImpl = {
 	},
 	write: async (frame, stream) => {
 		const value = <IID3V2.FrameValue.IdBin>frame.value;
-		stream.writeStringTerminated(value.id, ascii);
-		stream.writeBuffer(value.bin);
+		await stream.writeStringTerminated(value.id, ascii);
+		await stream.writeBuffer(value.bin);
 	},
 	simplify: (value: IID3V2.FrameValue.IdBin) => {
 		if (value && value.bin && value.bin.length > 0) {

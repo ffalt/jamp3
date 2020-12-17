@@ -30,11 +30,11 @@ exports.FramePopularimeter = {
     }),
     write: (frame, stream) => __awaiter(void 0, void 0, void 0, function* () {
         const value = frame.value;
-        stream.writeStringTerminated(value.email, encodings_1.ascii);
-        stream.writeByte(value.rating);
+        yield stream.writeStringTerminated(value.email, encodings_1.ascii);
+        yield stream.writeByte(value.rating);
         if (value.count > 0) {
             const byteLength = utils_1.neededStoreBytes(value.count, 4);
-            stream.writeUInt(value.count, byteLength);
+            yield stream.writeUInt(value.count, byteLength);
         }
     }),
     simplify: (value) => {

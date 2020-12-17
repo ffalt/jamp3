@@ -55,11 +55,11 @@ export const FrameLINK: IFrameImpl = {
 	},
 	write: async (frame, stream) => {
 		const value = <IID3V2.FrameValue.LinkedInfo>frame.value;
-		stream.writeStringTerminated(value.url, ascii);
-		stream.writeStringTerminated(value.id, ascii);
-		value.additional.forEach(additional => {
-			stream.writeStringTerminated(additional, ascii);
-		});
+		await stream.writeStringTerminated(value.url, ascii);
+		await stream.writeStringTerminated(value.id, ascii);
+		for (const additional of value.additional) {
+			await stream.writeStringTerminated(additional, ascii);
+		}
 	},
 	simplify: (value: IID3V2.FrameValue.LinkedInfo) => {
 		return null; // TODO simplify IID3V2.FrameValue.Link

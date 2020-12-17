@@ -97,12 +97,13 @@ class ReaderStream {
         });
     }
     close() {
-        if (this.readableStream) {
-            if (typeof this.readableStream.close === 'function') {
-                this.readableStream.close();
+        const stream = this.readableStream;
+        this.readableStream = null;
+        if (stream) {
+            if (typeof stream.close === 'function') {
+                stream.close();
             }
-            this.readableStream.destroy();
-            this.readableStream = null;
+            stream.destroy();
         }
     }
     getBufferLength() {

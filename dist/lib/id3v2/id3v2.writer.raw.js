@@ -36,7 +36,7 @@ class Id3v2RawWriter {
     }
     writeExtHeaderV4(extended) {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log('WARNING: extended header 2.4 not implemented');
+            console.error('WARNING: extended header 2.4 not implemented');
             return Promise.reject(Error('TODO extended header v2.4'));
         });
     }
@@ -56,12 +56,12 @@ class Id3v2RawWriter {
     writeExtHeaderV3(extended) {
         return __awaiter(this, void 0, void 0, function* () {
             const result = new stream_writer_memory_1.MemoryWriterStream();
-            result.writeUInt4Byte(extended.size);
-            result.writeBitsByte(utils_1.unflags(id3v2_header_consts_1.ID3v2_EXTHEADER[3].FLAGS1, extended.flags1));
-            result.writeBitsByte(utils_1.unflags(id3v2_header_consts_1.ID3v2_EXTHEADER[3].FLAGS2, extended.flags2));
-            result.writeUInt4Byte(this.paddingSize || 0);
+            yield result.writeUInt4Byte(extended.size);
+            yield result.writeBitsByte(utils_1.unflags(id3v2_header_consts_1.ID3v2_EXTHEADER[3].FLAGS1, extended.flags1));
+            yield result.writeBitsByte(utils_1.unflags(id3v2_header_consts_1.ID3v2_EXTHEADER[3].FLAGS2, extended.flags2));
+            yield result.writeUInt4Byte(this.paddingSize || 0);
             if (extended.flags1.crc) {
-                result.writeUInt4Byte(extended.crcData || 0);
+                yield result.writeUInt4Byte(extended.crcData || 0);
             }
             return result.toBuffer();
         });
@@ -103,21 +103,21 @@ class Id3v2RawWriter {
     }
     writeHeader(frames) {
         return __awaiter(this, void 0, void 0, function* () {
-            this.stream.writeAscii('ID3');
-            this.stream.writeByte(this.head.ver);
-            this.stream.writeByte(this.head.rev);
+            yield this.stream.writeAscii('ID3');
+            yield this.stream.writeByte(this.head.ver);
+            yield this.stream.writeByte(this.head.rev);
             const versionHead = yield this.buildHeaderFlags();
             this.head.flagBits = versionHead.flagBits;
-            this.stream.writeBitsByte(versionHead.flagBits);
+            yield this.stream.writeBitsByte(versionHead.flagBits);
             const tagSize = this.calculateTagSize(frames, versionHead.extendedHeaderBuffer ? versionHead.extendedHeaderBuffer.length : 0);
             if (this.head.ver > 2) {
-                this.stream.writeSyncSafeInt(tagSize);
+                yield this.stream.writeSyncSafeInt(tagSize);
             }
             else {
-                this.stream.writeUInt4Byte(tagSize);
+                yield this.stream.writeUInt4Byte(tagSize);
             }
             if (versionHead.extendedHeaderBuffer) {
-                this.stream.writeBuffer(versionHead.extendedHeaderBuffer);
+                yield this.stream.writeBuffer(versionHead.extendedHeaderBuffer);
             }
         });
     }
@@ -131,32 +131,32 @@ class Id3v2RawWriter {
     writeEnd() {
         return __awaiter(this, void 0, void 0, function* () {
             if (this.paddingSize > 0) {
-                this.stream.writeBuffer(buffer_1.BufferUtils.zeroBuffer(this.paddingSize));
+                yield this.stream.writeBuffer(buffer_1.BufferUtils.zeroBuffer(this.paddingSize));
             }
         });
     }
     writeFrame(frame) {
         return __awaiter(this, void 0, void 0, function* () {
-            this.stream.writeAscii(frame.id);
+            yield this.stream.writeAscii(frame.id);
             if (id3v2_header_consts_1.ID3v2_FRAME_HEADER_LENGTHS.SIZE[this.head.ver] === 4) {
                 if (id3v2_header_consts_1.ID3v2_FRAME_HEADER.SYNCSAVEINT.indexOf(this.head.ver) >= 0) {
-                    this.stream.writeSyncSafeInt(frame.size);
+                    yield this.stream.writeSyncSafeInt(frame.size);
                 }
                 else {
-                    this.stream.writeUInt4Byte(frame.size);
+                    yield this.stream.writeUInt4Byte(frame.size);
                 }
             }
             else {
-                this.stream.writeUInt3Byte(frame.size);
+                yield this.stream.writeUInt3Byte(frame.size);
             }
             if (frame.formatFlags.unsynchronised) {
                 frame.formatFlags.unsynchronised = false;
             }
             if (id3v2_header_consts_1.ID3v2_FRAME_HEADER_LENGTHS.FLAGS[this.head.ver] !== 0) {
-                this.stream.writeBitsByte(utils_1.unflags(id3v2_header_consts_1.ID3v2_FRAME_FLAGS1[this.head.ver], frame.statusFlags));
-                this.stream.writeBitsByte(utils_1.unflags(id3v2_header_consts_1.ID3v2_FRAME_FLAGS2[this.head.ver], frame.formatFlags));
+                yield this.stream.writeBitsByte(utils_1.unflags(id3v2_header_consts_1.ID3v2_FRAME_FLAGS1[this.head.ver], frame.statusFlags));
+                yield this.stream.writeBitsByte(utils_1.unflags(id3v2_header_consts_1.ID3v2_FRAME_FLAGS2[this.head.ver], frame.formatFlags));
             }
-            this.stream.writeBuffer(frame.data);
+            yield this.stream.writeBuffer(frame.data);
         });
     }
     write() {

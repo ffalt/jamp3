@@ -24,9 +24,9 @@ exports.FrameLangText = {
     write: (frame, stream, head, defaultEncoding) => __awaiter(void 0, void 0, void 0, function* () {
         const value = frame.value;
         const enc = id3v2_frame_write_1.getWriteTextEncoding(frame, head, defaultEncoding);
-        stream.writeEncoding(enc);
-        stream.writeAsciiString(value.language || '', 3);
-        stream.writeString(value.text, enc);
+        yield stream.writeEncoding(enc);
+        yield stream.writeAsciiString(value.language || '', 3);
+        yield stream.writeString(value.text, enc);
     }),
     simplify: (value) => {
         if (value && value.text && value.text.length > 0) {

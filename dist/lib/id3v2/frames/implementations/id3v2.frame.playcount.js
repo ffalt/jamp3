@@ -26,7 +26,7 @@ exports.FramePlayCount = {
     write: (frame, stream) => __awaiter(void 0, void 0, void 0, function* () {
         const value = frame.value;
         const byteLength = utils_1.neededStoreBytes(value.num, 4);
-        stream.writeUInt(value.num, byteLength);
+        yield stream.writeUInt(value.num, byteLength);
     }),
     simplify: (value) => {
         if (value && value.num !== undefined) {

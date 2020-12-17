@@ -43,11 +43,11 @@ export const FramePopularimeter: IFrameImpl = {
 	},
 	write: async (frame, stream) => {
 		const value = <IID3V2.FrameValue.Popularimeter>frame.value;
-		stream.writeStringTerminated(value.email, ascii);
-		stream.writeByte(value.rating);
+		await stream.writeStringTerminated(value.email, ascii);
+		await stream.writeByte(value.rating);
 		if (value.count > 0) {
 			const byteLength = neededStoreBytes(value.count, 4);
-			stream.writeUInt(value.count, byteLength);
+			await stream.writeUInt(value.count, byteLength);
 		}
 	},
 	simplify: (value: IID3V2.FrameValue.Popularimeter) => {

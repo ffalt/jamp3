@@ -10,7 +10,7 @@ export const FrameUnknown: IFrameImpl = {
 	},
 	write: async (frame, stream) => {
 		const value = <IID3V2.FrameValue.Bin>frame.value;
-		stream.writeBuffer(value.bin);
+		await stream.writeBuffer(value.bin);
 	},
 	simplify: (value: IID3V2.FrameValue.Bin) => {
 		if (value && value.bin && value.bin.length > 0) {

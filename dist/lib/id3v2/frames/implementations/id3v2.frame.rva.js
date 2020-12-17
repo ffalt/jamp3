@@ -67,7 +67,7 @@ exports.FrameRelativeVolumeAdjustment = {
             value.left < 0 ? 0 : 1,
             value.right < 0 ? 0 : 1
         ];
-        stream.writeBitsByte(flags);
+        yield stream.writeBitsByte(flags);
         let byteLength = 2;
         Object.keys(value).forEach(key => {
             const num = value[key];
@@ -75,40 +75,40 @@ exports.FrameRelativeVolumeAdjustment = {
                 byteLength = Math.max(utils_1.neededStoreBytes(Math.abs(num), 2), byteLength);
             }
         });
-        stream.writeByte(byteLength * 8);
-        stream.writeUInt(Math.abs(value.right), byteLength);
-        stream.writeUInt(Math.abs(value.left), byteLength);
+        yield stream.writeByte(byteLength * 8);
+        yield stream.writeUInt(Math.abs(value.right), byteLength);
+        yield stream.writeUInt(Math.abs(value.left), byteLength);
         if (value.peakRight !== undefined && value.peakLeft !== undefined) {
-            stream.writeUInt(value.peakRight, byteLength);
-            stream.writeUInt(value.peakLeft, byteLength);
+            yield stream.writeUInt(value.peakRight, byteLength);
+            yield stream.writeUInt(value.peakLeft, byteLength);
         }
         else {
             return;
         }
         if (value.rightBack !== undefined && value.leftBack !== undefined) {
-            stream.writeUInt(Math.abs(value.rightBack), byteLength);
-            stream.writeUInt(Math.abs(value.leftBack), byteLength);
+            yield stream.writeUInt(Math.abs(value.rightBack), byteLength);
+            yield stream.writeUInt(Math.abs(value.leftBack), byteLength);
         }
         else {
             return;
         }
         if (value.peakRightBack !== undefined && value.peakLeftBack !== undefined) {
-            stream.writeUInt(value.peakRightBack, byteLength);
-            stream.writeUInt(value.peakLeftBack, byteLength);
+            yield stream.writeUInt(value.peakRightBack, byteLength);
+            yield stream.writeUInt(value.peakLeftBack, byteLength);
         }
         else {
             return;
         }
         if (value.center !== undefined && value.peakCenter !== undefined) {
-            stream.writeUInt(Math.abs(value.center), byteLength);
-            stream.writeUInt(value.peakLeftBack, byteLength);
+            yield stream.writeUInt(Math.abs(value.center), byteLength);
+            yield stream.writeUInt(value.peakLeftBack, byteLength);
         }
         else {
             return;
         }
         if (value.bass !== undefined && value.peakBass !== undefined) {
-            stream.writeUInt(Math.abs(value.center), byteLength);
-            stream.writeUInt(value.peakCenter, byteLength);
+            yield stream.writeUInt(Math.abs(value.center), byteLength);
+            yield stream.writeUInt(value.peakCenter, byteLength);
         }
     }),
     simplify: (value) => {

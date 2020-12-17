@@ -28,10 +28,10 @@ exports.FrameAENC = {
     }),
     write: (frame, stream) => __awaiter(void 0, void 0, void 0, function* () {
         const value = frame.value;
-        stream.writeStringTerminated(value.id, encodings_1.ascii);
-        stream.writeUInt2Byte(value.previewStart);
-        stream.writeUInt2Byte(value.previewLength);
-        stream.writeBuffer(value.bin);
+        yield stream.writeStringTerminated(value.id, encodings_1.ascii);
+        yield stream.writeUInt2Byte(value.previewStart);
+        yield stream.writeUInt2Byte(value.previewLength);
+        yield stream.writeBuffer(value.bin);
     }),
     simplify: (value) => {
         return null;

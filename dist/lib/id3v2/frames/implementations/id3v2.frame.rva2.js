@@ -37,16 +37,16 @@ exports.FrameRelativeVolumeAdjustment2 = {
     }),
     write: (frame, stream) => __awaiter(void 0, void 0, void 0, function* () {
         const value = frame.value;
-        stream.writeStringTerminated(value.id, encodings_1.ascii);
-        value.channels.forEach(channel => {
-            stream.writeByte(channel.type);
-            stream.writeSInt(channel.adjustment, 2);
+        yield stream.writeStringTerminated(value.id, encodings_1.ascii);
+        for (const channel of value.channels) {
+            yield stream.writeByte(channel.type);
+            yield stream.writeSInt(channel.adjustment, 2);
             const bytes = channel.peak === undefined ? 0 : utils_1.neededStoreBytes(channel.peak, 2);
-            stream.writeUInt(bytes * 8, 2);
+            yield stream.writeUInt(bytes * 8, 2);
             if (channel.peak !== undefined && bytes > 0) {
-                stream.writeUInt(channel.peak, bytes);
+                yield stream.writeUInt(channel.peak, bytes);
             }
-        });
+        }
     }),
     simplify: (value) => {
         return null;

@@ -27,11 +27,11 @@ exports.FrameCHAP = {
     }),
     write: (frame, stream, head, defaultEncoding) => __awaiter(void 0, void 0, void 0, function* () {
         const value = frame.value;
-        stream.writeStringTerminated(value.id, encodings_1.ascii);
-        stream.writeUInt4Byte(value.start);
-        stream.writeUInt4Byte(value.end);
-        stream.writeUInt4Byte(value.offset);
-        stream.writeUInt4Byte(value.offsetEnd);
+        yield stream.writeStringTerminated(value.id, encodings_1.ascii);
+        yield stream.writeUInt4Byte(value.start);
+        yield stream.writeUInt4Byte(value.end);
+        yield stream.writeUInt4Byte(value.offset);
+        yield stream.writeUInt4Byte(value.offsetEnd);
         if (frame.subframes) {
             yield id3v2_frame_write_1.writeRawSubFrames(frame.subframes, stream, head, defaultEncoding);
         }

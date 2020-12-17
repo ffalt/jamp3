@@ -67,11 +67,11 @@ export const FrameETCO: IFrameImpl = {
 	},
 	write: async (frame, stream) => {
 		const value = <IID3V2.FrameValue.EventTimingCodes>frame.value;
-		stream.writeByte(value.format);
-		(value.events || []).forEach(event => {
-			stream.writeByte(event.type);
-			stream.writeUInt4Byte(event.timestamp);
-		});
+		await stream.writeByte(value.format);
+		for (const event of (value.events || [])) {
+			await stream.writeByte(event.type);
+			await stream.writeUInt4Byte(event.timestamp);
+		}
 	},
 	simplify: (value: IID3V2.FrameValue.EventTimingCodes) => {
 		return null; // TODO simplify IID3V2.FrameValue.EventTimingCodes

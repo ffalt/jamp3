@@ -34,15 +34,15 @@ exports.FrameSYLT = {
     write: (frame, stream, head, defaultEncoding) => __awaiter(void 0, void 0, void 0, function* () {
         const value = frame.value;
         const enc = id3v2_frame_write_1.getWriteTextEncoding(frame, head, defaultEncoding);
-        stream.writeEncoding(enc);
-        stream.writeAsciiString(value.language, 3);
-        stream.writeByte(value.timestampFormat);
-        stream.writeByte(value.contentType);
-        stream.writeStringTerminated(value.id, enc);
-        value.events.forEach(event => {
-            stream.writeStringTerminated(event.text, enc);
-            stream.writeUInt4Byte(event.timestamp);
-        });
+        yield stream.writeEncoding(enc);
+        yield stream.writeAsciiString(value.language, 3);
+        yield stream.writeByte(value.timestampFormat);
+        yield stream.writeByte(value.contentType);
+        yield stream.writeStringTerminated(value.id, enc);
+        for (const event of value.events) {
+            yield stream.writeStringTerminated(event.text, enc);
+            yield stream.writeUInt4Byte(event.timestamp);
+        }
     }),
     simplify: (value) => {
         return null;
