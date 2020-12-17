@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.4.3](https://github.com/ffalt/jamp3/compare/v0.4.2...v0.4.3) (2020-12-17)
+
+
+### Bug Fixes
+
+* **writestream:** handle backpressure ([e92158a](https://github.com/ffalt/jamp3/commit/e92158a80c67f679a6d0098ba4ff0b23fcd3fb0a))
+
 ## 0.4.2 (2020-09-25)
 
 ### BREAKING
