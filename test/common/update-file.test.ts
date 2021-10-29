@@ -18,7 +18,7 @@ describe('updateFile', () => {
 			expect(stat2.mtimeMs).toBe(stat.mtimeMs);
 			expect(stat2.ctimeMs).toBe(stat.ctimeMs);
 			await fse.remove(bakFile);
-		} catch (e) {
+		} catch (e: any) {
 			file.removeCallback();
 			await fse.remove(bakFile);
 			return Promise.reject(e);
@@ -34,7 +34,7 @@ describe('updateFile', () => {
 				});
 			expect(await fse.pathExists(bakFile)).toBe(true);
 			await fse.remove(bakFile);
-		} catch (e) {
+		} catch (e: any) {
 			file.removeCallback();
 			await fse.remove(bakFile);
 			return Promise.reject(e);
@@ -49,7 +49,7 @@ describe('updateFile', () => {
 
 				});
 			expect(await fse.pathExists(bakFile)).toBe(false);
-		} catch (e) {
+		} catch (e: any) {
 			file.removeCallback();
 			return Promise.reject(e);
 		}
@@ -65,7 +65,7 @@ describe('updateFile', () => {
 				});
 			expect(await fse.pathExists(bakFile)).toBe(true);
 			await fse.remove(bakFile);
-		} catch (e) {
+		} catch (e: any) {
 			file.removeCallback();
 			await fse.remove(bakFile);
 			return Promise.reject(e);

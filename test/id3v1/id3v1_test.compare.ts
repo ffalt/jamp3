@@ -54,7 +54,7 @@ export async function compareID3v1Save(filename: string, tag: IID3V1.Tag): Promi
 	try {
 		const id3 = new ID3v1();
 		await id3.write(file.name, tag.value, tag.version || 0, {keepBackup: false});
-	} catch (e) {
+	} catch (e: any) {
 		file.removeCallback();
 		return Promise.reject(e);
 	}
@@ -66,7 +66,7 @@ export async function compareID3v1Save(filename: string, tag: IID3V1.Tag): Promi
 		if (tag2) {
 			await compareTags(tag, tag2);
 		}
-	} catch (e) {
+	} catch (e: any) {
 		file.removeCallback();
 		return Promise.reject(e);
 	}
@@ -81,7 +81,7 @@ export async function testOverWriteMock(filename: string): Promise<void> {
 	try {
 		const id3 = new ID3v1();
 		await id3.write(file.name, mockTag.value, mockTag.version || 0, {keepBackup: false});
-	} catch (e) {
+	} catch (e: any) {
 		file.removeCallback();
 		return Promise.reject(e);
 	}
@@ -96,7 +96,7 @@ export async function testOverWriteMock(filename: string): Promise<void> {
 		if (tag2) {
 			await compareTags(mockTag, tag2);
 		}
-	} catch (e) {
+	} catch (e: any) {
 		file.removeCallback();
 		return Promise.reject(e);
 	}

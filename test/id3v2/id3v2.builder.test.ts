@@ -160,7 +160,7 @@ async function test24BuilderWrite(encoding: string): Promise<void> {
 		expect(warnings.length).toBe(0); // , 'there are warnings: ' + toNonBinJson(warnings));
 		// console.log(toNonBinJson(data));
 		// await id3.writeBuilder('test-' + encoding + '.id3', builder, {keepBackup: false, paddingSize: 0});
-	} catch (e) {
+	} catch (e: any) {
 		file.removeCallback();
 		return Promise.reject(e);
 	}

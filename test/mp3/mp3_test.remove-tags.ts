@@ -32,7 +32,7 @@ async function removeID3v1TagsTest(filename: string, before: IMP3.Result): Promi
 		expect(!!after.id3v2).toBe(!!before.id3v2); // 'id3v2 tag should be unchanged (id3v1.remove)');
 		expect(!!after.id3v1).toBe(false); // 'id3v1 tag should no longer exists (id3v1.remove)');
 		return compareRemovalAudio(before, after);
-	} catch (e) {
+	} catch (e: any) {
 		file.removeCallback();
 		return Promise.reject(e);
 	}
@@ -65,7 +65,7 @@ async function removeID3v2TagsTest(filename: string, before: IMP3.Result): Promi
 		expect(!!after2.id3v2).toBe(false); // 'id3v2 tag should no longer exists (id3v2.remove)');
 		await compareRemovalAudio(before, after);
 		expect(cleanFileSize2).toBe(cleanFileSize); // 'padding leftovers not removed');
-	} catch (e) {
+	} catch (e: any) {
 		file.removeCallback();
 		return Promise.reject(e);
 	}
@@ -92,7 +92,7 @@ async function removeID3TagsTest(filename: string, before: IMP3.Result): Promise
 		expect(!!after.id3v2).toBe(false); //  'id3v2 tag should no longer exists (id3v2&1.remove)');
 		file.removeCallback();
 		return compareRemovalAudio(before, after);
-	} catch (e) {
+	} catch (e: any) {
 		file.removeCallback();
 		return Promise.reject(e);
 	}

@@ -237,7 +237,7 @@ export class MP3Reader {
 			}
 			try {
 				go = await this.processChunk(data);
-			} catch (e) {
+			} catch (e: any) {
 				return Promise.reject(e);
 			}
 		}
@@ -266,7 +266,7 @@ export class MP3Reader {
 		try {
 			await this.scan();
 			this.stream.close();
-		} catch (e) {
+		} catch (e: any) {
 			this.stream.close();
 			return Promise.reject(e);
 		}

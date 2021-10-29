@@ -115,7 +115,7 @@ export async function fileRangeToBuffer(filename: string, start: number, end: nu
 			readStream.on('close', () => {
 				resolve(Buffer.concat(chunks));
 			});
-		} catch (e) {
+		} catch (e: any) {
 			return reject(e);
 		}
 	});

@@ -1,4 +1,4 @@
-import program from 'commander';
+import {program} from 'commander';
 import fse from 'fs-extra';
 
 import {ID3v1} from '../lib/id3v1/id3v1';
@@ -33,7 +33,7 @@ async function onFile(filename: string): Promise<void> {
 	} else {
 		dump = {error: 'No tag found', filename};
 	}
-	if (program.dest) {
+	if (program.opts().dest) {
 		result.push(dump);
 	} else {
 		console.log(JSON.stringify(dump, null, '\t'));
@@ -42,8 +42,8 @@ async function onFile(filename: string): Promise<void> {
 
 async function run(): Promise<void> {
 	await runTool(program, onFile);
-	if (program.dest) {
-		await fse.writeJSON(program.dest, result);
+	if (program.opts().dest) {
+		await fse.writeJSON(program.opts().dest, result);
 	}
 }
 

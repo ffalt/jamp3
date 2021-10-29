@@ -65,7 +65,7 @@ export async function compareID3v2Save(filename: string, tag: IID3V2.Tag): Promi
 		const ver = tag.head ? tag.head.ver : 4;
 		const rev = tag.head ? tag.head.rev : 0;
 		await id3.write(file.name, tag, ver, rev, {keepBackup: false, paddingSize});
-	} catch (e) {
+	} catch (e: any) {
 		file.removeCallback();
 		return Promise.reject(e);
 	}
@@ -104,7 +104,7 @@ export async function compareID3v2Save(filename: string, tag: IID3V2.Tag): Promi
 			// expect(startOfAudio).toBe(data.id3v2.end + paddingSize, 'id3v2 padding seems to be wrong');
 		}
 		await compareID3v2Tags(tag, data.id3v2);
-	} catch (e) {
+	} catch (e: any) {
 		file.removeCallback();
 		return Promise.reject(e);
 	}
