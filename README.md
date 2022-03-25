@@ -81,7 +81,7 @@ npm -g i jamp3
 
 ### ID3v1
 
-[Class Documentation](https://ffalt.github.io/jamp3/classes/id3v1.html)
+[Class Documentation](https://ffalt.github.io/jamp3/classes/id3v1_id3v1.ID3v1.html)
 
 #### reading ID3v1
 
@@ -154,7 +154,7 @@ Example as [typescript](examples/snippet_id3v1-write.ts) [javascript](examples/s
 
 ### ID3v2
 
-[Class Documentation](https://ffalt.github.io/jamp3/classes/id3v2.html)
+[Class Documentation](https://ffalt.github.io/jamp3/classes/id3v2_id3v2.ID3v2.html)
 
 #### reading ID3v2
 
@@ -448,7 +448,7 @@ Example as [typescript](examples/snippet_id3v2-read.ts) [javascript](examples/sn
 </details>
 
 #### writing ID3v2 with Helper
-[Class Documentation](https://ffalt.github.io/jamp3/classes/id3v24tagbuilder.html)
+[Class Documentation](https://ffalt.github.io/jamp3/classes/id3v2_id3v2_builder_v24.ID3V24TagBuilder.html)
 
 ```typescript
 import {ID3v2, ID3V24TagBuilder, IID3V2} from 'jamp3';
@@ -522,7 +522,7 @@ Example as [typescript](examples/snippet_id3v2-write.ts) [javascript](examples/s
 
 ### ID3v1, ID3v2, MPEG
 
-[Class Documentation](https://ffalt.github.io/jamp3/classes/mp3.html)
+[Class Documentation](https://ffalt.github.io/jamp3/classes/mp3_mp3.MP3.html)
 
 #### reading MP3
 
