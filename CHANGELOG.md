@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.5.0](https://github.com/ffalt/jamp3/compare/v0.4.3...v0.5.0) (2022-03-26)
+
+
+### ⚠ BREAKING CHANGES
+
+* **deps:** Update Dependencies, require node 12 as minimum version
+
+* **deps:** bump ([807038e](https://github.com/ffalt/jamp3/commit/807038eed5f63e4d02edb97b8cb7ab8a30618cfd))
+
 ### [0.4.3](https://github.com/ffalt/jamp3/compare/v0.4.2...v0.4.3) (2020-12-17)
 
 
