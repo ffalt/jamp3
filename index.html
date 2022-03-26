@@ -79,7 +79,7 @@
 <a href="#id3v1" id="id3v1" style="color: inherit; text-decoration: none;">
   <h3>ID3v1</h3>
 </a>
-<p><a href="https://ffalt.github.io/jamp3/classes/id3v1.html">Class Documentation</a></p>
+<p><a href="https://ffalt.github.io/jamp3/classes/id3v1_id3v1.ID3v1.html">Class Documentation</a></p>
 
 <a href="#reading-id3v1" id="reading-id3v1" style="color: inherit; text-decoration: none;">
   <h4>reading ID3v1</h4>
@@ -105,7 +105,7 @@
 <a href="#id3v2" id="id3v2" style="color: inherit; text-decoration: none;">
   <h3>ID3v2</h3>
 </a>
-<p><a href="https://ffalt.github.io/jamp3/classes/id3v2.html">Class Documentation</a></p>
+<p><a href="https://ffalt.github.io/jamp3/classes/id3v2_id3v2.ID3v2.html">Class Documentation</a></p>
 
 <a href="#reading-id3v2" id="reading-id3v2" style="color: inherit; text-decoration: none;">
   <h4>reading ID3v2</h4>
@@ -131,7 +131,7 @@
 <a href="#writing-id3v2-with-helper" id="writing-id3v2-with-helper" style="color: inherit; text-decoration: none;">
   <h4>writing ID3v2 with Helper</h4>
 </a>
-<p><a href="https://ffalt.github.io/jamp3/classes/id3v24tagbuilder.html">Class Documentation</a></p>
+<p><a href="https://ffalt.github.io/jamp3/classes/id3v2_id3v2_builder_v24.ID3V24TagBuilder.html">Class Documentation</a></p>
 <pre><code class="language-typescript"><span class="hl-1">import</span><span class="hl-0"> {</span><span class="hl-2">ID3v2</span><span class="hl-0">, </span><span class="hl-2">ID3V24TagBuilder</span><span class="hl-0">, </span><span class="hl-2">IID3V2</span><span class="hl-0">} </span><span class="hl-1">from</span><span class="hl-0"> </span><span class="hl-3">&#39;jamp3&#39;</span><span class="hl-0">;</span><br/><br/><span class="hl-4">async</span><span class="hl-0"> </span><span class="hl-4">function</span><span class="hl-0"> </span><span class="hl-5">run</span><span class="hl-0">(): </span><span class="hl-6">Promise</span><span class="hl-0">&lt;</span><span class="hl-6">void</span><span class="hl-0">&gt; {</span><br/><span class="hl-0">    </span><span class="hl-4">const</span><span class="hl-0"> </span><span class="hl-7">id3v2</span><span class="hl-0"> = </span><span class="hl-4">new</span><span class="hl-0"> </span><span class="hl-5">ID3v2</span><span class="hl-0">();</span><br/><span class="hl-0">    </span><span class="hl-4">const</span><span class="hl-0"> </span><span class="hl-7">filename</span><span class="hl-0"> = </span><span class="hl-3">&#39;demo.mp3&#39;</span><span class="hl-0">;</span><br/><br/><span class="hl-0">    </span><span class="hl-4">const</span><span class="hl-0"> </span><span class="hl-7">builder</span><span class="hl-0"> = </span><span class="hl-4">new</span><span class="hl-0"> </span><span class="hl-5">ID3V24TagBuilder</span><span class="hl-0">(</span><span class="hl-2">ID3V24TagBuilder</span><span class="hl-0">.</span><span class="hl-2">encodings</span><span class="hl-0">.</span><span class="hl-2">utf8</span><span class="hl-0">);</span><br/><span class="hl-0">    </span><span class="hl-2">builder</span><br/><span class="hl-0">        .</span><span class="hl-5">album</span><span class="hl-0">(</span><span class="hl-3">&#39;An album&#39;</span><span class="hl-0">)</span><br/><span class="hl-0">        .</span><span class="hl-5">artist</span><span class="hl-0">(</span><span class="hl-3">&#39;An artist&#39;</span><span class="hl-0">)</span><br/><span class="hl-0">        .</span><span class="hl-5">artistSort</span><span class="hl-0">(</span><span class="hl-3">&#39;artist, An&#39;</span><span class="hl-0">)</span><br/><span class="hl-0">        .</span><span class="hl-5">title</span><span class="hl-0">(</span><span class="hl-3">&#39;A title&#39;</span><span class="hl-0">);</span><br/><br/><span class="hl-0">    </span><span class="hl-4">const</span><span class="hl-0"> </span><span class="hl-7">options</span><span class="hl-0">: </span><span class="hl-6">IID3V2</span><span class="hl-0">.</span><span class="hl-6">WriteOptions</span><span class="hl-0"> = {</span><br/><span class="hl-0">        </span><span class="hl-2">keepBackup:</span><span class="hl-0"> </span><span class="hl-4">true</span><span class="hl-0">, </span><span class="hl-10">// keep a filename.mp3.bak copy of the original file</span><br/><span class="hl-0">        </span><span class="hl-2">paddingSize:</span><span class="hl-0"> </span><span class="hl-9">10</span><span class="hl-0"> </span><span class="hl-10">// add padding zeros between id3v2 and the audio (in bytes)</span><br/><span class="hl-0">    };</span><br/><span class="hl-0">    </span><span class="hl-1">await</span><span class="hl-0"> </span><span class="hl-2">id3v2</span><span class="hl-0">.</span><span class="hl-5">writeBuilder</span><span class="hl-0">(</span><span class="hl-2">filename</span><span class="hl-0">, </span><span class="hl-2">builder</span><span class="hl-0">, </span><span class="hl-2">options</span><span class="hl-0">);</span><br/><span class="hl-0">    </span><span class="hl-2">console</span><span class="hl-0">.</span><span class="hl-5">log</span><span class="hl-0">(</span><span class="hl-3">&#39;id3v2.4 written&#39;</span><span class="hl-0">);</span><br/><span class="hl-0">}</span><br/><br/><span class="hl-5">run</span><span class="hl-0">().</span><span class="hl-5">catch</span><span class="hl-0">(</span><span class="hl-2">e</span><span class="hl-0"> </span><span class="hl-4">=&gt;</span><span class="hl-0"> {</span><br/><span class="hl-0">    </span><span class="hl-2">console</span><span class="hl-0">.</span><span class="hl-5">error</span><span class="hl-0">(</span><span class="hl-2">e</span><span class="hl-0">);</span><br/><span class="hl-0">});</span>
 </code></pre>
 <p>Example as <a href="examples/snippet_id3v2-build.ts">typescript</a> <a href="examples/snippet_id3v2-build.js">javascript</a> </p>
@@ -146,7 +146,7 @@
 <a href="#id3v1-id3v2-mpeg" id="id3v1-id3v2-mpeg" style="color: inherit; text-decoration: none;">
   <h3>ID3v1, ID3v2, MPEG</h3>
 </a>
-<p><a href="https://ffalt.github.io/jamp3/classes/mp3.html">Class Documentation</a></p>
+<p><a href="https://ffalt.github.io/jamp3/classes/mp3_mp3.MP3.html">Class Documentation</a></p>
 
 <a href="#reading-mp3" id="reading-mp3" style="color: inherit; text-decoration: none;">
   <h4>reading MP3</h4>
