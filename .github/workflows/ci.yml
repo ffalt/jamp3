@@ -13,7 +13,7 @@ jobs:
     - name: Install Node.js
       uses: actions/setup-node@v1
       with:
-        node-version: 10.x
+        node-version: 12.x
     - name: Checkout submodules
       uses: srt32/git-actions@v0.0.3
       with:
