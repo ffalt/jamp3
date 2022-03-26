@@ -57,7 +57,7 @@ class MP3Reader {
                         this.scanMpeg = false;
                     }
                     else {
-                        const chain = mp3_mpeg_chain_1.getBestMPEGChain(this.layout.frameheaders, 20);
+                        const chain = (0, mp3_mpeg_chain_1.getBestMPEGChain)(this.layout.frameheaders, 20);
                         if (chain && chain.count >= 10) {
                             this.scanMpeg = false;
                         }
@@ -76,7 +76,7 @@ class MP3Reader {
             this.scanid3v2 = false;
             if (!this.scanMPEGFrame) {
                 header.offset = this.stream.pos - chunk.length + pos;
-                this.layout.frameheaders.push(mp3_mpeg_frame_1.collapseRawHeader(header));
+                this.layout.frameheaders.push((0, mp3_mpeg_frame_1.collapseRawHeader)(header));
             }
             else {
                 return this.readFullMPEGFrame(chunk, pos, header);

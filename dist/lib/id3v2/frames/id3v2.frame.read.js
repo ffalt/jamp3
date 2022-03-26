@@ -1,7 +1,11 @@
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -42,7 +46,7 @@ function processRawFrame(frame, head) {
             return Promise.reject(Error('Frame Encryption currently not supported'));
         }
         if ((frame.formatFlags) && (frame.formatFlags.unsynchronised)) {
-            frame.data = id3v2_frame_unsync_1.removeUnsync(frame.data);
+            frame.data = (0, id3v2_frame_unsync_1.removeUnsync)(frame.data);
         }
         if ((frame.formatFlags) && (frame.formatFlags.compressed)) {
             let data = frame.data;
@@ -100,7 +104,7 @@ function readSubFrames(bin, head) {
 exports.readSubFrames = readSubFrames;
 function readID3v2Frame(rawFrame, head) {
     return __awaiter(this, void 0, void 0, function* () {
-        const f = id3v2_frame_match_1.matchFrame(rawFrame.id);
+        const f = (0, id3v2_frame_match_1.matchFrame)(rawFrame.id);
         let groupId;
         if (rawFrame.formatFlags && rawFrame.formatFlags.grouping) {
             groupId = rawFrame.data[0];

@@ -23,9 +23,9 @@ exports.FrameRelativeVolumeAdjustment = {
             return Promise.reject(Error('Unsupported description bit size of: ' + bitLength));
         }
         let val = reader.readUInt(byteLength);
-        const right = (utils_1.isBitSetAt(flags, 0) || (val === 0) ? 1 : -1) * val;
+        const right = ((0, utils_1.isBitSetAt)(flags, 0) || (val === 0) ? 1 : -1) * val;
         val = reader.readUInt(byteLength);
-        const left = (utils_1.isBitSetAt(flags, 1) || (val === 0) ? 1 : -1) * val;
+        const left = ((0, utils_1.isBitSetAt)(flags, 1) || (val === 0) ? 1 : -1) * val;
         const value = {
             right, left
         };
@@ -38,19 +38,19 @@ exports.FrameRelativeVolumeAdjustment = {
             value.peakLeft = reader.readUInt(byteLength);
         }
         if (reader.unread() >= byteLength * 2) {
-            value.rightBack = (utils_1.isBitSetAt(flags, 4) ? 1 : -1) * reader.readUInt(byteLength);
-            value.leftBack = (utils_1.isBitSetAt(flags, 8) ? 1 : -1) * reader.readUInt(byteLength);
+            value.rightBack = ((0, utils_1.isBitSetAt)(flags, 4) ? 1 : -1) * reader.readUInt(byteLength);
+            value.leftBack = ((0, utils_1.isBitSetAt)(flags, 8) ? 1 : -1) * reader.readUInt(byteLength);
         }
         if (reader.unread() >= byteLength * 2) {
             value.peakRightBack = reader.readUInt(byteLength);
             value.peakLeftBack = reader.readUInt(byteLength);
         }
         if (reader.unread() >= byteLength * 2) {
-            value.center = (utils_1.isBitSetAt(flags, 10) ? 1 : -1) * reader.readUInt(byteLength);
+            value.center = ((0, utils_1.isBitSetAt)(flags, 10) ? 1 : -1) * reader.readUInt(byteLength);
             value.peakCenter = reader.readUInt(byteLength);
         }
         if (reader.unread() >= byteLength * 2) {
-            value.bass = (utils_1.isBitSetAt(flags, 20) ? 1 : -1) * reader.readUInt(byteLength);
+            value.bass = ((0, utils_1.isBitSetAt)(flags, 20) ? 1 : -1) * reader.readUInt(byteLength);
             value.peakBass = reader.readUInt(byteLength);
         }
         return { value };
@@ -72,7 +72,7 @@ exports.FrameRelativeVolumeAdjustment = {
         Object.keys(value).forEach(key => {
             const num = value[key];
             if (!isNaN(num)) {
-                byteLength = Math.max(utils_1.neededStoreBytes(Math.abs(num), 2), byteLength);
+                byteLength = Math.max((0, utils_1.neededStoreBytes)(Math.abs(num), 2), byteLength);
             }
         });
         yield stream.writeByte(byteLength * 8);

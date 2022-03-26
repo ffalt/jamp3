@@ -27,17 +27,17 @@ const id3v2_frame_write_1 = require("./frames/id3v2.frame.write");
 const id3v2_frame_read_1 = require("./frames/id3v2.frame.read");
 class ID3v2 {
     static check(tag) {
-        return id3v2_check_1.checkID3v2(tag);
+        return (0, id3v2_check_1.checkID3v2)(tag);
     }
     static simplify(tag, dropIDsList) {
-        return id3v2_simplify_1.simplifyTag(tag, dropIDsList);
+        return (0, id3v2_simplify_1.simplifyTag)(tag, dropIDsList);
     }
     read(filename) {
         return __awaiter(this, void 0, void 0, function* () {
             const reader = new id3v2_reader_1.ID3v2Reader();
             const tag = yield reader.read(filename);
             if (tag) {
-                return yield id3v2_frame_read_1.buildID3v2(tag);
+                return yield (0, id3v2_frame_read_1.buildID3v2)(tag);
             }
         });
     }
@@ -46,7 +46,7 @@ class ID3v2 {
             const reader = new id3v2_reader_1.ID3v2Reader();
             const tag = yield reader.readStream(stream);
             if (tag) {
-                return yield id3v2_frame_read_1.buildID3v2(tag);
+                return yield (0, id3v2_frame_read_1.buildID3v2)(tag);
             }
         });
     }
@@ -55,14 +55,14 @@ class ID3v2 {
             const reader = new id3v2_reader_1.ID3v2Reader();
             const tag = yield reader.read(filename);
             if (tag) {
-                return yield utils_1.fileRangeToBuffer(filename, tag.start, tag.end);
+                return yield (0, utils_1.fileRangeToBuffer)(filename, tag.start, tag.end);
             }
         });
     }
     remove(filename, options) {
         return __awaiter(this, void 0, void 0, function* () {
             let removed = false;
-            yield update_file_1.updateFile(filename, { id3v2: true, mpegQuick: true }, !!options.keepBackup, () => true, (layout, fileWriter) => __awaiter(this, void 0, void 0, function* () {
+            yield (0, update_file_1.updateFile)(filename, { id3v2: true, mpegQuick: true }, !!options.keepBackup, () => true, (layout, fileWriter) => __awaiter(this, void 0, void 0, function* () {
                 removed = yield this.copyAudio(filename, layout, fileWriter);
             }));
             return removed;
@@ -77,7 +77,7 @@ class ID3v2 {
         return __awaiter(this, void 0, void 0, function* () {
             const opts = Object.assign({ keepBackup: false, paddingSize: 100 }, options);
             const head = yield this.buildHead(tag, version, rev);
-            const raw_frames = yield id3v2_frame_write_1.writeRawFrames(tag.frames, head, options.defaultEncoding);
+            const raw_frames = yield (0, id3v2_frame_write_1.writeRawFrames)(tag.frames, head, options.defaultEncoding);
             const exists = yield fs_extra_1.default.pathExists(filename);
             if (!exists) {
                 yield this.writeTag(filename, raw_frames, head);
@@ -132,7 +132,7 @@ class ID3v2 {
                 }
             }
             if (layout.frameheaders.length > 0) {
-                const mediastart = mp3_mpeg_frame_1.rawHeaderOffSet(layout.frameheaders[0]);
+                const mediastart = (0, mp3_mpeg_frame_1.rawHeaderOffSet)(layout.frameheaders[0]);
                 start = specEnd < mediastart ? specEnd : mediastart;
             }
             else {
@@ -144,7 +144,7 @@ class ID3v2 {
     }
     replaceTag(filename, frames, head, options) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield update_file_1.updateFile(filename, { id3v2: true, mpegQuick: true }, !!options.keepBackup, () => true, (layout, fileWriter) => __awaiter(this, void 0, void 0, function* () {
+            yield (0, update_file_1.updateFile)(filename, { id3v2: true, mpegQuick: true }, !!options.keepBackup, () => true, (layout, fileWriter) => __awaiter(this, void 0, void 0, function* () {
                 const writer = new id3v2_writer_1.ID3v2Writer();
                 yield writer.write(fileWriter, frames, head, options);
                 yield this.copyAudio(filename, layout, fileWriter);

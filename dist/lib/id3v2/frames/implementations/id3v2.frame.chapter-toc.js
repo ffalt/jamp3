@@ -18,8 +18,8 @@ exports.FrameCTOC = {
     parse: (reader, frame, head) => __awaiter(void 0, void 0, void 0, function* () {
         const id = reader.readStringTerminated(encodings_1.ascii);
         const bits = reader.readBitsByte();
-        const ordered = utils_1.isBitSetAt(bits, 0);
-        const topLevel = utils_1.isBitSetAt(bits, 1);
+        const ordered = (0, utils_1.isBitSetAt)(bits, 0);
+        const topLevel = (0, utils_1.isBitSetAt)(bits, 1);
         let entrycount = reader.readBitsByte();
         if (entrycount < 0) {
             entrycount = (entrycount * -1) + 2;
@@ -33,7 +33,7 @@ exports.FrameCTOC = {
             }
         }
         const bin = reader.rest();
-        const subframes = yield id3v2_frame_read_1.readSubFrames(bin, head);
+        const subframes = yield (0, id3v2_frame_read_1.readSubFrames)(bin, head);
         const value = { id, ordered, topLevel, children };
         return { value, encoding: encodings_1.ascii, subframes };
     }),
@@ -46,7 +46,7 @@ exports.FrameCTOC = {
             yield stream.writeStringTerminated(childId, encodings_1.ascii);
         }
         if (frame.subframes) {
-            yield id3v2_frame_write_1.writeRawSubFrames(frame.subframes, stream, head, defaultEncoding);
+            yield (0, id3v2_frame_write_1.writeRawSubFrames)(frame.subframes, stream, head, defaultEncoding);
         }
     }),
     simplify: (value) => {

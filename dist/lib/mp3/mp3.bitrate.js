@@ -8,14 +8,14 @@ function analyzeBitrateMode(frames) {
     let audioBytes = 0;
     let count = 0;
     frames.forEach(frame => {
-        const header = mp3_mpeg_frame_1.expandRawHeader(mp3_mpeg_frame_1.expandRawHeaderArray(frame));
+        const header = (0, mp3_mpeg_frame_1.expandRawHeader)((0, mp3_mpeg_frame_1.expandRawHeaderArray)(frame));
         bitRates[header.bitRate] = (bitRates[header.bitRate] || 0) + 1;
         duration += header.time;
         audioBytes += header.size;
         count++;
     });
     let encoded = 'CBR';
-    const first = frames.length > 0 ? mp3_mpeg_frame_1.expandRawHeader(mp3_mpeg_frame_1.expandRawHeaderArray(frames[0])) : undefined;
+    const first = frames.length > 0 ? (0, mp3_mpeg_frame_1.expandRawHeader)((0, mp3_mpeg_frame_1.expandRawHeaderArray)(frames[0])) : undefined;
     let bitRate = first ? first.bitRate : 0;
     const rates = Object.keys(bitRates).map(s => parseInt(s, 10));
     if (rates.length > 1) {

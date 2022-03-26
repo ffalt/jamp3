@@ -36,7 +36,7 @@ exports.FramePic = {
     }),
     write: (frame, stream, head, defaultEncoding) => __awaiter(void 0, void 0, void 0, function* () {
         const value = frame.value;
-        const enc = id3v2_frame_write_1.getWriteTextEncoding(frame, head, defaultEncoding);
+        const enc = (0, id3v2_frame_write_1.getWriteTextEncoding)(frame, head, defaultEncoding);
         yield stream.writeEncoding(enc);
         if (head.ver <= 2) {
             if (value.url) {

@@ -104,12 +104,12 @@ class BufferReader {
     }
     readUnsyncedBuffer(amount) {
         let result = this.data.slice(this.position, this.position + amount);
-        let unsynced = id3v2_frame_unsync_1.removeUnsync(result);
+        let unsynced = (0, id3v2_frame_unsync_1.removeUnsync)(result);
         let stuffed = 0;
         while (unsynced.length < amount && (this.position + amount + stuffed < this.data.length)) {
             stuffed += amount - unsynced.length;
             result = this.data.slice(this.position, this.position + amount + stuffed);
-            unsynced = id3v2_frame_unsync_1.removeUnsync(result);
+            unsynced = (0, id3v2_frame_unsync_1.removeUnsync)(result);
         }
         this.position = this.position + amount + stuffed;
         return unsynced;

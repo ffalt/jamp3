@@ -1,4 +1,4 @@
-import program from 'commander';
+import {program} from 'commander';
 import fse from 'fs-extra';
 
 import {MP3Analyzer} from '../lib/mp3/mp3.analyzer';
@@ -62,10 +62,10 @@ function toPlain(report: IMP3Analyzer.Report): string {
 async function onFile(filename: string): Promise<void> {
 	const probe = new MP3Analyzer();
 	const info = await probe.read(filename, options);
-	if (!program.warnings || info.warnings.length > 0) {
-		if (program.dest) {
+	if (!program.opts().warnings || info.warnings.length > 0) {
+		if (program.opts().dest) {
 			result.push(info);
-		} else if (program.format === 'plain') {
+		} else if (program.opts().format === 'plain') {
 			console.log(toPlain(info) + '\n');
 		} else {
 			console.log(JSON.stringify(info, null, '\t'));
@@ -75,15 +75,15 @@ async function onFile(filename: string): Promise<void> {
 
 
 async function run(): Promise<void> {
-	if (program.ignoreXingOffOne) {
-		options.ignoreXingOffOne = program.ignoreXingOffOne;
+	if (program.opts().ignoreXingOffOne) {
+		options.ignoreXingOffOne = program.opts().ignoreXingOffOne;
 	}
 	await runTool(program, onFile);
-	if (program.dest) {
-		if (program.format === 'plain') {
-			await fse.writeFile(program.dest, result.map(r => toPlain(r)).join('\n'));
+	if (program.opts().dest) {
+		if (program.opts().format === 'plain') {
+			await fse.writeFile(program.opts().dest, result.map(r => toPlain(r)).join('\n'));
 		} else {
-			await fse.writeFile(program.dest, JSON.stringify(result, null, '\t'));
+			await fse.writeFile(program.opts().dest, JSON.stringify(result, null, '\t'));
 		}
 	}
 }

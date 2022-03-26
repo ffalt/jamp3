@@ -155,10 +155,10 @@ class MPEGFrameReader {
         const field = reader.readSInt(4);
         frame.xing = {
             fields: {
-                frames: utils_1.isBit(field, 1),
-                bytes: utils_1.isBit(field, 2),
-                toc: utils_1.isBit(field, 4),
-                quality: utils_1.isBit(field, 8)
+                frames: (0, utils_1.isBit)(field, 1),
+                bytes: (0, utils_1.isBit)(field, 2),
+                toc: (0, utils_1.isBit)(field, 4),
+                quality: (0, utils_1.isBit)(field, 8)
             }
         };
         if (frame.xing.fields.frames) {

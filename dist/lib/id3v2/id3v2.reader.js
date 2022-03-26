@@ -109,12 +109,12 @@ class ID3v2Reader {
                     reader.position -= markerLength;
                     return reader.rest();
                 }
-                while (reader.hasData() && (!id3v2_frame_match_1.isValidFrameBinId(idbin))) {
+                while (reader.hasData() && (!(0, id3v2_frame_match_1.isValidFrameBinId)(idbin))) {
                     reader.position -= (markerLength - 1);
                     skip++;
                     idbin = reader.readBuffer(markerLength);
                 }
-                if (reader.hasData() && id3v2_frame_match_1.isValidFrameBinId(idbin)) {
+                if (reader.hasData() && (0, id3v2_frame_match_1.isValidFrameBinId)(idbin)) {
                     if (reader.unread() < id3v2_header_consts_1.ID3v2_FRAME_HEADER_LENGTHS.SIZE[tag.head.ver]) {
                         return reader.rest();
                     }
@@ -132,7 +132,7 @@ class ID3v2Reader {
     }
     defaultRawFrame(idbin, tag) {
         return {
-            id: utils_1.removeZeroString(idbin.toString('ascii').trim()),
+            id: (0, utils_1.removeZeroString)(idbin.toString('ascii').trim()),
             size: 0, start: tag.start, end: tag.end,
             data: buffer_1.BufferUtils.zeroBuffer(0),
             statusFlags: {}, formatFlags: {}
@@ -144,11 +144,11 @@ class ID3v2Reader {
         const frame = this.defaultRawFrame(idbin, tag);
         frame.size = reader.readUInt(id3v2_header_consts_1.ID3v2_FRAME_HEADER_LENGTHS.SIZE[tag.head.ver]);
         if (id3v2_header_consts_1.ID3v2_FRAME_HEADER.SYNCSAVEINT.includes(tag.head.ver)) {
-            frame.size = utils_1.unsynchsafe(frame.size);
+            frame.size = (0, utils_1.unsynchsafe)(frame.size);
         }
         if (id3v2_header_consts_1.ID3v2_FRAME_HEADER_LENGTHS.FLAGS[tag.head.ver] > 0) {
-            frame.statusFlags = utils_1.flags(id3v2_header_consts_1.ID3v2_FRAME_FLAGS1[tag.head.ver], utils_1.bitarray(reader.readByte()));
-            frame.formatFlags = utils_1.flags(id3v2_header_consts_1.ID3v2_FRAME_FLAGS2[tag.head.ver], utils_1.bitarray(reader.readByte()));
+            frame.statusFlags = (0, utils_1.flags)(id3v2_header_consts_1.ID3v2_FRAME_FLAGS1[tag.head.ver], (0, utils_1.bitarray)(reader.readByte()));
+            frame.formatFlags = (0, utils_1.flags)(id3v2_header_consts_1.ID3v2_FRAME_FLAGS2[tag.head.ver], (0, utils_1.bitarray)(reader.readByte()));
         }
         let valid = (!frame.statusFlags.reserved && !frame.formatFlags.reserved2 && !frame.formatFlags.reserved3);
         if (valid && frame.size > reader.unread()) {

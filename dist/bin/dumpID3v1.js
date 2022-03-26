@@ -12,12 +12,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const commander_1 = __importDefault(require("commander"));
+const commander_1 = require("commander");
 const fs_extra_1 = __importDefault(require("fs-extra"));
 const id3v1_1 = require("../lib/id3v1/id3v1");
 const tool_1 = require("../lib/common/tool");
 const pack = require('../../package.json');
-commander_1.default
+commander_1.program
     .version(pack.version, '-v, --version')
     .usage('[options]')
     .option('-i, --input <fileOrDir>', 'mp3 file or folder')
@@ -36,7 +36,7 @@ function onFile(filename) {
         else {
             dump = { error: 'No tag found', filename };
         }
-        if (commander_1.default.dest) {
+        if (commander_1.program.opts().dest) {
             result.push(dump);
         }
         else {
@@ -46,9 +46,9 @@ function onFile(filename) {
 }
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
-        yield tool_1.runTool(commander_1.default, onFile);
-        if (commander_1.default.dest) {
-            yield fs_extra_1.default.writeJSON(commander_1.default.dest, result);
+        yield (0, tool_1.runTool)(commander_1.program, onFile);
+        if (commander_1.program.opts().dest) {
+            yield fs_extra_1.default.writeJSON(commander_1.program.opts().dest, result);
         }
     });
 }

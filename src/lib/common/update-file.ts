@@ -23,7 +23,7 @@ export async function updateFile(
 	await fileWriterStream.open(tmpFile);
 	try {
 		await process(layout, fileWriterStream);
-	} catch (e) {
+	} catch (e: any) {
 		await fileWriterStream.close();
 		return Promise.reject(e);
 	}

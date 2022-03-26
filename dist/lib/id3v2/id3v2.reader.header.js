@@ -24,8 +24,8 @@ class ID3v2HeaderReader {
             const data = yield reader.read(size);
             const exthead = {
                 size,
-                flags1: utils_1.flags(id3v2_header_consts_1.ID3v2_EXTHEADER[3].FLAGS1, utils_1.bitarray(data[0])),
-                flags2: utils_1.flags(id3v2_header_consts_1.ID3v2_EXTHEADER[3].FLAGS2, utils_1.bitarray(data[1])),
+                flags1: (0, utils_1.flags)(id3v2_header_consts_1.ID3v2_EXTHEADER[3].FLAGS1, (0, utils_1.bitarray)(data[0])),
+                flags2: (0, utils_1.flags)(id3v2_header_consts_1.ID3v2_EXTHEADER[3].FLAGS2, (0, utils_1.bitarray)(data[1])),
                 sizeOfPadding: data.readUInt32BE(2)
             };
             if (exthead.flags1.crc && data.length > 6) {
@@ -38,25 +38,25 @@ class ID3v2HeaderReader {
         return __awaiter(this, void 0, void 0, function* () {
             const headdata = yield reader.read(4);
             let size = headdata.readInt32BE(0);
-            size = utils_1.unsynchsafe(size);
+            size = (0, utils_1.unsynchsafe)(size);
             if (size > 10) {
                 size = 6;
             }
             const data = yield reader.read(size);
             const exthead = {
                 size,
-                flags: utils_1.flags(id3v2_header_consts_1.ID3v2_EXTHEADER[4].FLAGS, utils_1.bitarray(data[0]))
+                flags: (0, utils_1.flags)(id3v2_header_consts_1.ID3v2_EXTHEADER[4].FLAGS, (0, utils_1.bitarray)(data[0]))
             };
             let pos = 1;
             if (exthead.flags.crc) {
                 const crcSize = data[pos];
                 pos++;
-                exthead.crc32 = utils_1.unsynchsafe(data.readInt32BE(pos));
+                exthead.crc32 = (0, utils_1.unsynchsafe)(data.readInt32BE(pos));
                 pos += crcSize;
             }
             if (exthead.flags.restrictions) {
                 pos++;
-                const r = utils_1.bitarray(data[pos]);
+                const r = (0, utils_1.bitarray)(data[pos]);
                 exthead.restrictions = {
                     tagSize: r[0].toString() + r[1].toString(),
                     textEncoding: r[2].toString(),
@@ -70,7 +70,7 @@ class ID3v2HeaderReader {
     }
     readID3v22Header(head, flagBits) {
         head.v2 = {
-            sizeAsSyncSafe: utils_1.unsynchsafe(head.size),
+            sizeAsSyncSafe: (0, utils_1.unsynchsafe)(head.size),
             flags: {
                 unsynchronisation: flagBits[0] === 1,
                 compression: flagBits[1] === 1,
@@ -100,7 +100,7 @@ class ID3v2HeaderReader {
         if ((!marker_1.Markers.isMarker(buffer, offset, marker_1.Markers.MARKERS.id3)) || (buffer.length < 10)) {
             return;
         }
-        const flagBits = utils_1.bitarray(buffer[5]);
+        const flagBits = (0, utils_1.bitarray)(buffer[5]);
         const head = {
             ver: buffer[offset + 3],
             rev: buffer[offset + 4],
@@ -109,7 +109,7 @@ class ID3v2HeaderReader {
             valid: false
         };
         if (head.ver > 2) {
-            head.size = utils_1.unsynchsafe(head.size);
+            head.size = (0, utils_1.unsynchsafe)(head.size);
         }
         if (head.ver === 4) {
             this.readID3v24Header(head, flagBits);

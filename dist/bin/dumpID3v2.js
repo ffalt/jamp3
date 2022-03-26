@@ -13,12 +13,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const fs_extra_1 = __importDefault(require("fs-extra"));
-const commander_1 = __importDefault(require("commander"));
+const commander_1 = require("commander");
 const tool_1 = require("../lib/common/tool");
 const id3v2_1 = require("../lib/id3v2/id3v2");
 const pretty_json_1 = require("../lib/common/pretty-json");
 const pack = require('../../package.json');
-commander_1.default
+commander_1.program
     .version(pack.version, '-v, --version')
     .usage('[options]')
     .option('-i, --input <fileOrDir>', 'mp3 file or folder')
@@ -33,16 +33,16 @@ function onFile(filename) {
         const tag = yield id3v2.read(filename);
         let dump;
         if (tag) {
-            dump = { filename, tag: commander_1.default.full ? tag : id3v2_1.ID3v2.simplify(tag) };
+            dump = { filename, tag: commander_1.program.opts().full ? tag : id3v2_1.ID3v2.simplify(tag) };
         }
         else {
             dump = { error: 'No tag found', filename };
         }
-        if (commander_1.default.dest) {
+        if (commander_1.program.opts().dest) {
             result.push(dump);
         }
-        else if (commander_1.default.full) {
-            console.log(pretty_json_1.toPrettyJsonWithBin(dump));
+        else if (commander_1.program.opts().full) {
+            console.log((0, pretty_json_1.toPrettyJsonWithBin)(dump));
         }
         else {
             console.log(JSON.stringify(dump, null, '\t'));
@@ -51,9 +51,9 @@ function onFile(filename) {
 }
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
-        yield tool_1.runTool(commander_1.default, onFile);
-        if (commander_1.default.dest) {
-            yield fs_extra_1.default.writeFile(commander_1.default.dest, pretty_json_1.toPrettyJsonWithBin(result));
+        yield (0, tool_1.runTool)(commander_1.program, onFile);
+        if (commander_1.program.opts().dest) {
+            yield fs_extra_1.default.writeFile(commander_1.program.opts().dest, (0, pretty_json_1.toPrettyJsonWithBin)(result));
         }
     });
 }

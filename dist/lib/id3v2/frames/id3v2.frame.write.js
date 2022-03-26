@@ -1,7 +1,11 @@
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -76,15 +80,15 @@ function writeRawFrame(frame, head, defaultEncoding) {
         }
         else {
             const stream = new stream_writer_memory_1.MemoryWriterStream();
-            const orgDef = id3v2_frame_match_1.matchFrame(frame.id);
+            const orgDef = (0, id3v2_frame_match_1.matchFrame)(frame.id);
             if (orgDef.versions.indexOf(head.ver) < 0) {
-                const toWriteFrameID = id3v2_frame_version_1.ensureID3v2FrameVersionDef(frame.id, head.ver);
+                const toWriteFrameID = (0, id3v2_frame_version_1.ensureID3v2FrameVersionDef)(frame.id, head.ver);
                 if (!toWriteFrameID) {
                     yield orgDef.impl.write(frame, stream, head, defaultEncoding);
                 }
                 else {
                     id = toWriteFrameID;
-                    const toWriteFrameDef = id3v2_frame_match_1.matchFrame(toWriteFrameID);
+                    const toWriteFrameDef = (0, id3v2_frame_match_1.matchFrame)(toWriteFrameID);
                     yield toWriteFrameDef.impl.write(frame, stream, head, defaultEncoding);
                 }
             }

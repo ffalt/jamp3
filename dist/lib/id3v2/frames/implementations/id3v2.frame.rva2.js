@@ -41,7 +41,7 @@ exports.FrameRelativeVolumeAdjustment2 = {
         for (const channel of value.channels) {
             yield stream.writeByte(channel.type);
             yield stream.writeSInt(channel.adjustment, 2);
-            const bytes = channel.peak === undefined ? 0 : utils_1.neededStoreBytes(channel.peak, 2);
+            const bytes = channel.peak === undefined ? 0 : (0, utils_1.neededStoreBytes)(channel.peak, 2);
             yield stream.writeUInt(bytes * 8, 2);
             if (channel.peak !== undefined && bytes > 0) {
                 yield stream.writeUInt(channel.peak, bytes);

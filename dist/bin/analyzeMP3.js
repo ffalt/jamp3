@@ -12,12 +12,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const commander_1 = __importDefault(require("commander"));
+const commander_1 = require("commander");
 const fs_extra_1 = __importDefault(require("fs-extra"));
 const mp3_analyzer_1 = require("../lib/mp3/mp3.analyzer");
 const tool_1 = require("../lib/common/tool");
 const pack = require('../../package.json');
-commander_1.default
+commander_1.program
     .version(pack.version, '-v, --version')
     .usage('[options] <fileOrDir>')
     .option('-i, --input <fileOrDir>', 'mp3 file or folder')
@@ -69,11 +69,11 @@ function onFile(filename) {
     return __awaiter(this, void 0, void 0, function* () {
         const probe = new mp3_analyzer_1.MP3Analyzer();
         const info = yield probe.read(filename, options);
-        if (!commander_1.default.warnings || info.warnings.length > 0) {
-            if (commander_1.default.dest) {
+        if (!commander_1.program.opts().warnings || info.warnings.length > 0) {
+            if (commander_1.program.opts().dest) {
                 result.push(info);
             }
-            else if (commander_1.default.format === 'plain') {
+            else if (commander_1.program.opts().format === 'plain') {
                 console.log(toPlain(info) + '\n');
             }
             else {
@@ -84,16 +84,16 @@ function onFile(filename) {
 }
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
-        if (commander_1.default.ignoreXingOffOne) {
-            options.ignoreXingOffOne = commander_1.default.ignoreXingOffOne;
+        if (commander_1.program.opts().ignoreXingOffOne) {
+            options.ignoreXingOffOne = commander_1.program.opts().ignoreXingOffOne;
         }
-        yield tool_1.runTool(commander_1.default, onFile);
-        if (commander_1.default.dest) {
-            if (commander_1.default.format === 'plain') {
-                yield fs_extra_1.default.writeFile(commander_1.default.dest, result.map(r => toPlain(r)).join('\n'));
+        yield (0, tool_1.runTool)(commander_1.program, onFile);
+        if (commander_1.program.opts().dest) {
+            if (commander_1.program.opts().format === 'plain') {
+                yield fs_extra_1.default.writeFile(commander_1.program.opts().dest, result.map(r => toPlain(r)).join('\n'));
             }
             else {
-                yield fs_extra_1.default.writeFile(commander_1.default.dest, JSON.stringify(result, null, '\t'));
+                yield fs_extra_1.default.writeFile(commander_1.program.opts().dest, JSON.stringify(result, null, '\t'));
             }
         }
     });

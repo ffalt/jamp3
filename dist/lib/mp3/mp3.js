@@ -24,14 +24,14 @@ class MP3 {
         return __awaiter(this, void 0, void 0, function* () {
             const reader = new mp3_reader_1.MP3Reader();
             const layout = yield reader.readStream(stream, Object.assign({ streamSize }, options));
-            return yield mp3_result_1.prepareResult(options, layout);
+            return yield (0, mp3_result_1.prepareResult)(options, layout);
         });
     }
     read(filename, options) {
         return __awaiter(this, void 0, void 0, function* () {
             const reader = new mp3_reader_1.MP3Reader();
             const layout = yield reader.read(filename, options);
-            return yield mp3_result_1.prepareResult(options, layout);
+            return yield (0, mp3_result_1.prepareResult)(options, layout);
         });
     }
     removeTags(filename, options) {
@@ -46,7 +46,7 @@ class MP3 {
             };
             let id2v1removed = false;
             let id2v2removed = false;
-            yield update_file_1.updateFile(filename, opts, !!options.keepBackup, layout => {
+            yield (0, update_file_1.updateFile)(filename, opts, !!options.keepBackup, layout => {
                 for (const tag of layout.tags) {
                     if (options.id3v2 && tag.id === __1.ITagID.ID3v2 && tag.end > 0) {
                         return true;
@@ -77,7 +77,7 @@ class MP3 {
                 }
                 if (options.id3v2) {
                     if (layout.frameheaders.length > 0) {
-                        start = mp3_mpeg_frame_1.rawHeaderOffSet(layout.frameheaders[0]);
+                        start = (0, mp3_mpeg_frame_1.rawHeaderOffSet)(layout.frameheaders[0]);
                     }
                     else {
                         start = Math.max(start, specEnd);

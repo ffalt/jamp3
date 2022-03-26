@@ -5,7 +5,6 @@ An id3 & mp3 library written in Typescript for NodeJS
 [![NPM](https://nodei.co/npm/jamp3.png?downloads=true&downloadRank=true&stars=true)](https://www.npmjs.com/package/jamp3)
 
 [![Test](https://github.com/ffalt/jamp3/workflows/Test/badge.svg)](https://github.com/ffalt/jamp3/actions?query=workflow%3ATest)
-[![dependencies](https://img.shields.io/david/ffalt/jamp3.svg)](https://www.npmjs.com/package/jamp3?activeTab=dependencies) 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/9053f3b64ab847a39a1a4be470759bb7)](https://app.codacy.com/app/ffalt/jamp3?utm_source=github.com&utm_medium=referral&utm_content=ffalt/jamp3&utm_campaign=Badge_Grade_Dashboard)
 [![Maintainability](https://api.codeclimate.com/v1/badges/c1bc863edffe1b4047e9/maintainability)](https://codeclimate.com/github/ffalt/jamp3/maintainability)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/c1bc863edffe1b4047e9/test_coverage)](https://codeclimate.com/github/ffalt/jamp3/test_coverage)
@@ -82,7 +81,7 @@ npm -g i jamp3
 
 ### ID3v1
 
-[Class Documentation](https://ffalt.github.io/jamp3/classes/id3v1.html)
+[Class Documentation](https://ffalt.github.io/jamp3/classes/id3v1_id3v1.ID3v1.html)
 
 #### reading ID3v1
 
@@ -155,7 +154,7 @@ Example as [typescript](examples/snippet_id3v1-write.ts) [javascript](examples/s
 
 ### ID3v2
 
-[Class Documentation](https://ffalt.github.io/jamp3/classes/id3v2.html)
+[Class Documentation](https://ffalt.github.io/jamp3/classes/id3v2_id3v2.ID3v2.html)
 
 #### reading ID3v2
 
@@ -449,7 +448,7 @@ Example as [typescript](examples/snippet_id3v2-read.ts) [javascript](examples/sn
 </details>
 
 #### writing ID3v2 with Helper
-[Class Documentation](https://ffalt.github.io/jamp3/classes/id3v24tagbuilder.html)
+[Class Documentation](https://ffalt.github.io/jamp3/classes/id3v2_id3v2_builder_v24.ID3V24TagBuilder.html)
 
 ```typescript
 import {ID3v2, ID3V24TagBuilder, IID3V2} from 'jamp3';
@@ -523,7 +522,7 @@ Example as [typescript](examples/snippet_id3v2-write.ts) [javascript](examples/s
 
 ### ID3v1, ID3v2, MPEG
 
-[Class Documentation](https://ffalt.github.io/jamp3/classes/mp3.html)
+[Class Documentation](https://ffalt.github.io/jamp3/classes/mp3_mp3.MP3.html)
 
 #### reading MP3
 

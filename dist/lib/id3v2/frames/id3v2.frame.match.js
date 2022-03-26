@@ -17,7 +17,7 @@ exports.Matcher = [
             }
             let allX = true;
             for (let i = 1; i < id.length; i++) {
-                if (!utils_1.validCharKeyCode(id[i])) {
+                if (!(0, utils_1.validCharKeyCode)(id[i])) {
                     return false;
                 }
                 allX = allX && (id[i] === 88);
@@ -40,7 +40,7 @@ exports.Matcher = [
             }
             let allX = true;
             for (let i = 1; i < id.length; i++) {
-                if (!utils_1.validCharKeyCode(id[i])) {
+                if (!(0, utils_1.validCharKeyCode)(id[i])) {
                     return false;
                 }
                 allX = allX && (id[i] === 88);

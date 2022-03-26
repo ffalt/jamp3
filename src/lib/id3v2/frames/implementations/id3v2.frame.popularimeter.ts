@@ -34,7 +34,7 @@ export const FramePopularimeter: IFrameImpl = {
 		if (reader.hasData()) {
 			try {
 				count = reader.readUInt(reader.unread());
-			} catch (e) {
+			} catch (e: any) {
 				count = 0;
 			}
 		}

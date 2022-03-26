@@ -19,7 +19,7 @@ const debug_1 = __importDefault(require("debug"));
 const __1 = require("../..");
 const stream_reader_1 = require("../common/stream-reader");
 const buffer_reader_1 = require("../common/buffer-reader");
-const debug = debug_1.default('id3v1-reader');
+const debug = (0, debug_1.default)('id3v1-reader');
 exports.ID3v1_MARKER = 'TAG';
 class ID3v1Reader {
     readTag(data) {

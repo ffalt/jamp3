@@ -17,7 +17,7 @@ const fs_extra_1 = __importDefault(require("fs-extra"));
 const utils_1 = require("./utils");
 function runTool(program, onFile) {
     return __awaiter(this, void 0, void 0, function* () {
-        let input = program.input;
+        let input = program.opts().input;
         if (!input && program.args[0]) {
             input = program.args[0];
         }
@@ -26,7 +26,7 @@ function runTool(program, onFile) {
         }
         const stat = yield fs_extra_1.default.stat(input);
         if (stat.isDirectory()) {
-            yield utils_1.collectFiles(input, ['.mp3'], program.recursive, onFile);
+            yield (0, utils_1.collectFiles)(input, ['.mp3'], program.opts().recursive, onFile);
         }
         else {
             yield onFile(input);

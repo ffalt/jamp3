@@ -26,7 +26,7 @@ exports.FrameTextList = {
     }),
     write: (frame, stream, head, defaultEncoding) => __awaiter(void 0, void 0, void 0, function* () {
         const value = frame.value;
-        const enc = id3v2_frame_write_1.getWriteTextEncoding(frame, head, defaultEncoding);
+        const enc = (0, id3v2_frame_write_1.getWriteTextEncoding)(frame, head, defaultEncoding);
         yield stream.writeEncoding(enc);
         for (let index = 0; index < value.list.length; index++) {
             yield stream.writeString(value.list[index], enc);

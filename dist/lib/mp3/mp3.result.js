@@ -26,7 +26,7 @@ function buildFrames(chain, layout) {
         audio: chain,
         headers: layout.headframes.map(frame => {
             return {
-                header: mp3_mpeg_frame_1.expandRawHeader(mp3_mpeg_frame_1.expandRawHeaderArray(frame.header)),
+                header: (0, mp3_mpeg_frame_1.expandRawHeader)((0, mp3_mpeg_frame_1.expandRawHeaderArray)(frame.header)),
                 mode: frame.mode,
                 xing: frame.xing,
                 vbri: frame.vbri
@@ -36,7 +36,7 @@ function buildFrames(chain, layout) {
     return frames;
 }
 function setResultBase(chain, mpeg) {
-    const header = mp3_mpeg_frame_1.expandRawHeader(mp3_mpeg_frame_1.expandRawHeaderArray(chain[0]));
+    const header = (0, mp3_mpeg_frame_1.expandRawHeader)((0, mp3_mpeg_frame_1.expandRawHeaderArray)(chain[0]));
     mpeg.mode = header.channelType;
     mpeg.bitRate = header.bitRate;
     mpeg.channels = header.channelCount;
@@ -48,7 +48,7 @@ function setResultBase(chain, mpeg) {
 function setResultEstimate(layout, chain, mpeg) {
     let audioBytes = layout.size;
     if (chain.length > 0) {
-        audioBytes -= mp3_mpeg_frame_1.rawHeaderOffSet(chain[0]);
+        audioBytes -= (0, mp3_mpeg_frame_1.rawHeaderOffSet)(chain[0]);
         if (layout.tags.find(t => t.id === __1.ITagID.ID3v1)) {
             audioBytes -= 128;
         }
@@ -84,9 +84,9 @@ function defaultMPEGResult() {
 function prepareResultMPEG(options, layout) {
     return __awaiter(this, void 0, void 0, function* () {
         const mpeg = defaultMPEGResult();
-        const chain = mp3_mpeg_chain_1.filterBestMPEGChain(layout.frameheaders, 50);
+        const chain = (0, mp3_mpeg_chain_1.filterBestMPEGChain)(layout.frameheaders, 50);
         const frames = buildFrames(chain, layout);
-        const bitRateMode = mp3_bitrate_1.analyzeBitrateMode(chain);
+        const bitRateMode = (0, mp3_bitrate_1.analyzeBitrateMode)(chain);
         if (chain.length > 0) {
             setResultBase(chain, mpeg);
         }
@@ -120,7 +120,7 @@ function prepareResultID3v2(layout) {
         const id3v2s = layout.tags.filter(o => o.id === __1.ITagID.ID3v2);
         const id3v2raw = id3v2s.length > 0 ? id3v2s[0] : undefined;
         if (id3v2raw) {
-            return yield id3v2_frame_read_1.buildID3v2(id3v2raw);
+            return yield (0, id3v2_frame_read_1.buildID3v2)(id3v2raw);
         }
     });
 }

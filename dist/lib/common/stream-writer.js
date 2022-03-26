@@ -60,7 +60,7 @@ class WriterStream {
             while (bits.length < 8) {
                 bits.push(0);
             }
-            return this.writeByte(utils_1.unbitarray(bits));
+            return this.writeByte((0, utils_1.unbitarray)(bits));
         });
     }
     writeBuffer(buffer) {
@@ -70,7 +70,7 @@ class WriterStream {
     }
     writeSyncSafeInt(int) {
         return __awaiter(this, void 0, void 0, function* () {
-            return this.writeUInt(utils_1.synchsafe(int), 4);
+            return this.writeUInt((0, utils_1.synchsafe)(int), 4);
         });
     }
     writeUInt(int, byteLength) {

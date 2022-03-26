@@ -26,7 +26,7 @@ class Id3v2RawWriter {
             this.head.v4 = this.head.v4 || { flags: {} };
             this.head.v4.flags.unsynchronisation = false;
             this.head.v4.flags.extendedheader = !!this.head.v4.extended;
-            const flagBits = utils_1.unflags(id3v2_header_consts_1.ID3v2_HEADER_FLAGS[this.head.ver], this.head.v4.flags);
+            const flagBits = (0, utils_1.unflags)(id3v2_header_consts_1.ID3v2_HEADER_FLAGS[this.head.ver], this.head.v4.flags);
             if (this.head.v4.extended) {
                 const extendedHeaderBuffer = yield this.writeExtHeaderV4(this.head.v4.extended);
                 return { flagBits, extendedHeaderBuffer };
@@ -45,7 +45,7 @@ class Id3v2RawWriter {
             this.head.v3 = this.head.v3 || { flags: {} };
             this.head.v3.flags.unsynchronisation = false;
             this.head.v3.flags.extendedheader = !!this.head.v3.extended;
-            const flagBits = utils_1.unflags(id3v2_header_consts_1.ID3v2_HEADER_FLAGS[this.head.ver], this.head.v3.flags);
+            const flagBits = (0, utils_1.unflags)(id3v2_header_consts_1.ID3v2_HEADER_FLAGS[this.head.ver], this.head.v3.flags);
             if (this.head.v3.extended) {
                 const extendedHeaderBuffer = yield this.writeExtHeaderV3(this.head.v3.extended);
                 return { flagBits, extendedHeaderBuffer };
@@ -57,8 +57,8 @@ class Id3v2RawWriter {
         return __awaiter(this, void 0, void 0, function* () {
             const result = new stream_writer_memory_1.MemoryWriterStream();
             yield result.writeUInt4Byte(extended.size);
-            yield result.writeBitsByte(utils_1.unflags(id3v2_header_consts_1.ID3v2_EXTHEADER[3].FLAGS1, extended.flags1));
-            yield result.writeBitsByte(utils_1.unflags(id3v2_header_consts_1.ID3v2_EXTHEADER[3].FLAGS2, extended.flags2));
+            yield result.writeBitsByte((0, utils_1.unflags)(id3v2_header_consts_1.ID3v2_EXTHEADER[3].FLAGS1, extended.flags1));
+            yield result.writeBitsByte((0, utils_1.unflags)(id3v2_header_consts_1.ID3v2_EXTHEADER[3].FLAGS2, extended.flags2));
             yield result.writeUInt4Byte(this.paddingSize || 0);
             if (extended.flags1.crc) {
                 yield result.writeUInt4Byte(extended.crcData || 0);
@@ -70,7 +70,7 @@ class Id3v2RawWriter {
         return __awaiter(this, void 0, void 0, function* () {
             this.head.v2 = this.head.v2 || { flags: {} };
             this.head.v2.flags.unsynchronisation = false;
-            const flagBits = utils_1.unflags(id3v2_header_consts_1.ID3v2_HEADER_FLAGS[2], this.head.v2.flags);
+            const flagBits = (0, utils_1.unflags)(id3v2_header_consts_1.ID3v2_HEADER_FLAGS[2], this.head.v2.flags);
             return { flagBits };
         });
     }
@@ -86,7 +86,7 @@ class Id3v2RawWriter {
                 return yield this.buildHeaderFlagsV4();
             }
             else {
-                return { flagBits: utils_1.unflags(id3v2_header_consts_1.ID3v2_HEADER_FLAGS[this.head.ver], {}) };
+                return { flagBits: (0, utils_1.unflags)(id3v2_header_consts_1.ID3v2_HEADER_FLAGS[this.head.ver], {}) };
             }
         });
     }
@@ -153,8 +153,8 @@ class Id3v2RawWriter {
                 frame.formatFlags.unsynchronised = false;
             }
             if (id3v2_header_consts_1.ID3v2_FRAME_HEADER_LENGTHS.FLAGS[this.head.ver] !== 0) {
-                yield this.stream.writeBitsByte(utils_1.unflags(id3v2_header_consts_1.ID3v2_FRAME_FLAGS1[this.head.ver], frame.statusFlags));
-                yield this.stream.writeBitsByte(utils_1.unflags(id3v2_header_consts_1.ID3v2_FRAME_FLAGS2[this.head.ver], frame.formatFlags));
+                yield this.stream.writeBitsByte((0, utils_1.unflags)(id3v2_header_consts_1.ID3v2_FRAME_FLAGS1[this.head.ver], frame.statusFlags));
+                yield this.stream.writeBitsByte((0, utils_1.unflags)(id3v2_header_consts_1.ID3v2_FRAME_FLAGS2[this.head.ver], frame.formatFlags));
             }
             yield this.stream.writeBuffer(frame.data);
         });

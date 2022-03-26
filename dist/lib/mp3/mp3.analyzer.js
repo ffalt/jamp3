@@ -19,13 +19,13 @@ class MP3Analyzer {
         if (!data.id3v2) {
             return [];
         }
-        return id3v2_check_1.checkID3v2(data.id3v2);
+        return (0, id3v2_check_1.checkID3v2)(data.id3v2);
     }
     analyzeID3v1(data) {
         const result = [];
         const lastframe = data.frames && data.frames.audio.length > 0 ? data.frames.audio[data.frames.audio.length - 1] : undefined;
         if (data.raw && lastframe) {
-            const audioEnd = mp3_mpeg_frame_1.rawHeaderOffSet(lastframe) + mp3_mpeg_frame_1.rawHeaderSize(lastframe);
+            const audioEnd = (0, mp3_mpeg_frame_1.rawHeaderOffSet)(lastframe) + (0, mp3_mpeg_frame_1.rawHeaderSize)(lastframe);
             let id3v1s = data.raw.tags.filter(t => t.id === __1.ITagID.ID3v1 && t.start >= audioEnd);
             if (id3v1s.length > 0) {
                 if (id3v1s.length > 1) {
@@ -52,14 +52,14 @@ class MP3Analyzer {
             result.push({ msg: 'MPEG: No frames found', expected: '>0', actual: 0 });
             return result;
         }
-        let nextdata = mp3_mpeg_frame_1.rawHeaderOffSet(data.frames.audio[0]) + mp3_mpeg_frame_1.rawHeaderSize(data.frames.audio[0]);
+        let nextdata = (0, mp3_mpeg_frame_1.rawHeaderOffSet)(data.frames.audio[0]) + (0, mp3_mpeg_frame_1.rawHeaderSize)(data.frames.audio[0]);
         data.frames.audio.slice(1).forEach((f, index) => {
-            if (nextdata !== mp3_mpeg_frame_1.rawHeaderOffSet(f)) {
-                result.push({ msg: 'MPEG: stream error at position ' + nextdata + ', gap after frame ' + (index + 1), expected: 0, actual: mp3_mpeg_frame_1.rawHeaderOffSet(f) - nextdata });
+            if (nextdata !== (0, mp3_mpeg_frame_1.rawHeaderOffSet)(f)) {
+                result.push({ msg: 'MPEG: stream error at position ' + nextdata + ', gap after frame ' + (index + 1), expected: 0, actual: (0, mp3_mpeg_frame_1.rawHeaderOffSet)(f) - nextdata });
             }
-            nextdata = mp3_mpeg_frame_1.rawHeaderOffSet(f) + mp3_mpeg_frame_1.rawHeaderSize(f);
+            nextdata = (0, mp3_mpeg_frame_1.rawHeaderOffSet)(f) + (0, mp3_mpeg_frame_1.rawHeaderSize)(f);
         });
-        const audiostart = mp3_mpeg_frame_1.rawHeaderOffSet(data.frames.audio[0]);
+        const audiostart = (0, mp3_mpeg_frame_1.rawHeaderOffSet)(data.frames.audio[0]);
         if (data.id3v2 && data.id3v2.head) {
             const shouldaudiostart = data.id3v2.start + data.id3v2.head.size + 10;
             if (audiostart !== shouldaudiostart) {

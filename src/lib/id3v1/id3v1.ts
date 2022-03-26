@@ -87,7 +87,7 @@ export class ID3v1 {
 		const writer = new ID3v1Writer();
 		try {
 			await writer.write(stream, tag, version);
-		} catch (e) {
+		} catch (e: any) {
 			await stream.close();
 			return Promise.reject(e);
 		}

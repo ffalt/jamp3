@@ -24,7 +24,7 @@ exports.FrameGEOB = {
     }),
     write: (frame, stream, head, defaultEncoding) => __awaiter(void 0, void 0, void 0, function* () {
         const value = frame.value;
-        const enc = id3v2_frame_write_1.getWriteTextEncoding(frame, head, defaultEncoding);
+        const enc = (0, id3v2_frame_write_1.getWriteTextEncoding)(frame, head, defaultEncoding);
         yield stream.writeEncoding(enc);
         yield stream.writeStringTerminated(value.mimeType, encodings_1.ascii);
         yield stream.writeStringTerminated(value.filename, enc);

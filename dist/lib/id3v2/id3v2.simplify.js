@@ -41,7 +41,7 @@ function simplifyInvolvedPeopleList(id, frame) {
 }
 exports.simplifyInvolvedPeopleList = simplifyInvolvedPeopleList;
 function simplifyValue(id, slug, frame) {
-    const frameDef = id3v2_frame_match_1.matchFrame(id);
+    const frameDef = (0, id3v2_frame_match_1.matchFrame)(id);
     const text = frameDef.impl.simplify(frame.value);
     if (!text) {
         return;
@@ -61,7 +61,7 @@ function simplifyValue(id, slug, frame) {
     return [{ slug, text }];
 }
 function simplifyFrame(frame, dropIDsList) {
-    const id = id3v2_frame_version_1.ensureID3v2FrameVersionDef(frame.id, 4) || frame.id;
+    const id = (0, id3v2_frame_version_1.ensureID3v2FrameVersionDef)(frame.id, 4) || frame.id;
     if (dropIDsList && dropIDsList.indexOf(frame.id) >= 0) {
         return;
     }
@@ -97,7 +97,7 @@ function simplifyTag(tag, dropIDsList) {
     const slugcounter = {};
     const frames = tag.frames.filter(f => !id3v2_simplify_maps_1.DateUpgradeMap[f.id]);
     const dateframes = tag.frames.filter(f => !!id3v2_simplify_maps_1.DateUpgradeMap[f.id]);
-    const dateFrame = id3v2_frame_version_1.upgrade23DateFramesTov24Date(dateframes);
+    const dateFrame = (0, id3v2_frame_version_1.upgrade23DateFramesTov24Date)(dateframes);
     if (dateFrame) {
         frames.push(dateFrame);
     }

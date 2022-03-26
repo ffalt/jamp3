@@ -173,7 +173,7 @@ exports.DateUpgradeMap = {
 };
 if (process.env.NODE_ENV === 'development') {
     Object.keys(id3v2_frame_defs_1.FrameDefs).forEach(key => {
-        const frame = id3v2_frame_match_1.findId3v2FrameDef(key);
+        const frame = (0, id3v2_frame_match_1.findId3v2FrameDef)(key);
         if (!frame) {
             console.error('DEVELOPER ERROR: Unknown frame id \'' + key + '\' in simplify list');
         }

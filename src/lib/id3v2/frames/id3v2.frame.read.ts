@@ -101,7 +101,7 @@ export async function readID3v2Frame(rawFrame: IID3V2.RawFrame, head: IID3V2.Tag
 		if (result.subframes) {
 			frame.subframes = result.subframes;
 		}
-	} catch (e) {
+	} catch (e: any) {
 		frame.invalid = e.toString();
 		frame.value = {bin: rawFrame.data};
 	}

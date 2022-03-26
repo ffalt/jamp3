@@ -16,7 +16,7 @@ const id3v2_frame_write_1 = require("../id3v2.frame.write");
 exports.FrameLangDescText = {
     parse: (reader) => __awaiter(void 0, void 0, void 0, function* () {
         const enc = reader.readEncoding();
-        const language = utils_1.removeZeroString(reader.readString(3, encodings_1.ascii)).trim();
+        const language = (0, utils_1.removeZeroString)(reader.readString(3, encodings_1.ascii)).trim();
         const id = reader.readStringTerminated(enc);
         const text = reader.readStringTerminated(enc);
         const value = { id, language, text };
@@ -24,7 +24,7 @@ exports.FrameLangDescText = {
     }),
     write: (frame, stream, head, defaultEncoding) => __awaiter(void 0, void 0, void 0, function* () {
         const value = frame.value;
-        const enc = id3v2_frame_write_1.getWriteTextEncoding(frame, head, defaultEncoding);
+        const enc = (0, id3v2_frame_write_1.getWriteTextEncoding)(frame, head, defaultEncoding);
         yield stream.writeEncoding(enc);
         yield stream.writeAsciiString(value.language || '', 3);
         yield stream.writeStringTerminated(value.id || '', enc);

@@ -152,7 +152,7 @@ export class ID3v2 {
 		const writer = new ID3v2Writer();
 		try {
 			await writer.write(stream, frames, head, {paddingSize: 0});
-		} catch (e) {
+		} catch (e: any) {
 			await stream.close();
 			return Promise.reject(e);
 		}

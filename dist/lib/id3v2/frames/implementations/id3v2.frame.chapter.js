@@ -21,7 +21,7 @@ exports.FrameCHAP = {
         const offset = reader.readUInt4Byte();
         const offsetEnd = reader.readUInt4Byte();
         const bin = reader.rest();
-        const subframes = yield id3v2_frame_read_1.readSubFrames(bin, head);
+        const subframes = yield (0, id3v2_frame_read_1.readSubFrames)(bin, head);
         const value = { id, start, end, offset, offsetEnd };
         return { value, encoding: encodings_1.ascii, subframes };
     }),
@@ -33,7 +33,7 @@ exports.FrameCHAP = {
         yield stream.writeUInt4Byte(value.offset);
         yield stream.writeUInt4Byte(value.offsetEnd);
         if (frame.subframes) {
-            yield id3v2_frame_write_1.writeRawSubFrames(frame.subframes, stream, head, defaultEncoding);
+            yield (0, id3v2_frame_write_1.writeRawSubFrames)(frame.subframes, stream, head, defaultEncoding);
         }
     }),
     simplify: (value) => {

@@ -33,7 +33,7 @@ exports.FramePopularimeter = {
         yield stream.writeStringTerminated(value.email, encodings_1.ascii);
         yield stream.writeByte(value.rating);
         if (value.count > 0) {
-            const byteLength = utils_1.neededStoreBytes(value.count, 4);
+            const byteLength = (0, utils_1.neededStoreBytes)(value.count, 4);
             yield stream.writeUInt(value.count, byteLength);
         }
     }),
