@@ -14,9 +14,9 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Install Node.js
-      uses: actions/setup-node@v1
+      uses: actions/setup-node@v4
       with:
-        node-version: 10.x
+        node-version: 16.x
     - name: Checkout submodules
       run: git submodule update --init --recursive
     - run: npm ci
