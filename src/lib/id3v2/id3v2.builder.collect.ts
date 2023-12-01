@@ -10,7 +10,7 @@ export class ID3V2FramesCollect {
 		this.frameValues[key] = [frame];
 	}
 
-	protected replaceFrame<T>(key: string, value: T): void {
+	protected replaceFrame<T extends IID3V2.FrameValue.Base>(key: string, value: T): void {
 		this.replace(key, {id: key, value, head: this.head()});
 	}
 
@@ -18,7 +18,7 @@ export class ID3V2FramesCollect {
 		this.frameValues[key] = (this.frameValues[key] || []).concat([frame]);
 	}
 
-	protected addFrame<T>(key: string, value: T): void {
+	protected addFrame<T extends IID3V2.FrameValue.Base>(key: string, value: T): void {
 		this.add(key, {id: key, value, head: this.head()});
 	}
 

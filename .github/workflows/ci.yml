@@ -9,11 +9,11 @@ jobs:
     name: CI
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Install Node.js
-      uses: actions/setup-node@v1
+      uses: actions/setup-node@v4
       with:
-        node-version: 12.x
+        node-version: 16.x
     - name: Checkout submodules
       uses: srt32/git-actions@v0.0.3
       with:
