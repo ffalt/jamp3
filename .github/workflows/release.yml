@@ -16,9 +16,7 @@ jobs:
           fetch-depth: 0
 
       - name: Checkout submodules
-        uses: srt32/git-actions@v0.0.3
-        with:
-          args: git submodule update --init --recursive
+        run: git submodule update --init --recursive
 
       - name: Install Node.js
         uses: actions/setup-node@v6
