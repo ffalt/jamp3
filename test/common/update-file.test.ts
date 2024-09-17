@@ -9,10 +9,7 @@ describe('updateFile', () => {
 		try {
 			await fse.copyFile(file.name, bakFile);
 			const stat = await fse.stat(bakFile);
-			await updateFile(file.name, {id3v2: true, id3v1: true}, true, layout => true,
-				async (layout, filewriter) => {
-
-				});
+			await updateFile(file.name, {id3v2: true, id3v1: true}, true, _layout => true, async (_layout, _filewriter) => {});
 			expect(await fse.pathExists(bakFile)).toBe(true);
 			const stat2 = await fse.stat(bakFile);
 			expect(stat2.mtimeMs).toBe(stat.mtimeMs);
@@ -28,10 +25,7 @@ describe('updateFile', () => {
 		const file = tmp.fileSync();
 		const bakFile = file.name + '.bak';
 		try {
-			await updateFile(file.name, {id3v2: true, id3v1: true}, true, layout => true,
-				async (layout, filewriter) => {
-
-				});
+			await updateFile(file.name, {id3v2: true, id3v1: true}, true, _layout => true, async (_layout, _filewriter) => {});
 			expect(await fse.pathExists(bakFile)).toBe(true);
 			await fse.remove(bakFile);
 		} catch (e: any) {
@@ -44,10 +38,7 @@ describe('updateFile', () => {
 		const file = tmp.fileSync();
 		const bakFile = file.name + '.bak';
 		try {
-			await updateFile(file.name, {id3v2: true, id3v1: true}, false, layout => true,
-				async (layout, filewriter) => {
-
-				});
+			await updateFile(file.name, {id3v2: true, id3v1: true}, false, _layout => true, async (_layout, _filewriter) => {});
 			expect(await fse.pathExists(bakFile)).toBe(false);
 		} catch (e: any) {
 			file.removeCallback();
@@ -59,10 +50,7 @@ describe('updateFile', () => {
 		const bakFile = file.name + '.bak';
 		try {
 			await fse.copyFile(file.name, bakFile);
-			await updateFile(file.name, {id3v2: true, id3v1: true}, false, layout => true,
-				async (layout, filewriter) => {
-
-				});
+			await updateFile(file.name, {id3v2: true, id3v1: true}, false, _layout => true, async (_layout, _filewriter) => {});
 			expect(await fse.pathExists(bakFile)).toBe(true);
 			await fse.remove(bakFile);
 		} catch (e: any) {

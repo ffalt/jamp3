@@ -29,7 +29,7 @@ export const FrameRGAD: IFrameImpl = {
 		await stream.writeSInt2Byte(value.radioAdjustment);
 		await stream.writeSInt2Byte(value.audiophileAdjustment);
 	},
-	simplify: (value: IID3V2.FrameValue.ReplayGainAdjustment) => {
+	simplify: (_value: IID3V2.FrameValue.ReplayGainAdjustment) => {
 		return null; // TODO IID3V2.FrameValue.ReplayGainAdjustment IID3V2.FrameValue.Link
 	}
 };

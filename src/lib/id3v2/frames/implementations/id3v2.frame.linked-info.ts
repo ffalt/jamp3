@@ -61,7 +61,7 @@ export const FrameLINK: IFrameImpl = {
 			await stream.writeStringTerminated(additional, ascii);
 		}
 	},
-	simplify: (value: IID3V2.FrameValue.LinkedInfo) => {
+	simplify: (_value: IID3V2.FrameValue.LinkedInfo) => {
 		return null; // TODO simplify IID3V2.FrameValue.Link
 	}
 };

@@ -34,7 +34,7 @@ export class Id3v2RawWriter {
 		return {flagBits};
 	}
 
-	private async writeExtHeaderV4(extended: IID3V2.TagHeaderExtendedVer4): Promise<Buffer> {
+	private async writeExtHeaderV4(_extended: IID3V2.TagHeaderExtendedVer4): Promise<Buffer> {
 		console.error('WARNING: extended header 2.4 not implemented');
 		/**
 		 ID3v2.4

@@ -13,15 +13,15 @@ export class FileWriterStream extends WriterStream {
 		} catch (err) {
 			return Promise.reject(err);
 		}
-		return new Promise<void>((resolve, reject) => {
-			this.wstream.once('open', (fd) => {
+		return new Promise<void>((resolve, _reject) => {
+			this.wstream.once('open', (_fd) => {
 				resolve();
 			});
 		});
 	}
 
 	async close(): Promise<void> {
-		return new Promise<void>((resolve, reject) => {
+		return new Promise<void>((resolve, _reject) => {
 			this.wstream.on('close', () => {
 				resolve();
 			});

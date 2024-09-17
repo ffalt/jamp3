@@ -1,9 +1,0 @@
-.github/
-node_modules/
-data/
-coverage/
-dist/
-local/
-docs/
-static/
-temp/

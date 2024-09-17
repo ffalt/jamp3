@@ -3,7 +3,7 @@ import tmp from 'tmp';
 
 import {ID3v2} from '../../src/lib/id3v2/id3v2';
 import {ID3V24TagBuilder} from '../../src/lib/id3v2/id3v2.builder.v24';
-import {toNonBinJson} from '../common/common';
+// import {toNonBinJson} from '../common/common';
 
 const testNumber = 5;
 const testString = 'räksmörgåsЪЭЯ😀';

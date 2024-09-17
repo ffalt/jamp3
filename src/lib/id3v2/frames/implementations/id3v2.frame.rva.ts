@@ -134,7 +134,7 @@ export const FrameRelativeVolumeAdjustment: IFrameImpl = {
 			await stream.writeUInt(value.peakCenter, byteLength);
 		}
 	},
-	simplify: (value: IID3V2.FrameValue.RVA) => {
+	simplify: (_value: IID3V2.FrameValue.RVA) => {
 		return null; // TODO simplify IID3V2.FrameValue.RVA
 	}
 };

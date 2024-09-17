@@ -92,7 +92,7 @@ export const FrameRelativeVolumeAdjustment2: IFrameImpl = {
 			}
 		}
 	},
-	simplify: (value: IID3V2.FrameValue.RVA2) => {
+	simplify: (_value: IID3V2.FrameValue.RVA2) => {
 		return null; // TODO simplify IID3V2.FrameValue.RVA2
 	}
 };

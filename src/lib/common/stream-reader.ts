@@ -108,7 +108,7 @@ export class ReaderStream {
 			this.streamEnd = true;
 			return;
 		}
-		return new Promise<void>((resolve, reject) => {
+		return new Promise<void>((resolve, _reject) => {
 			this.waiting = () => {
 				resolve();
 			};

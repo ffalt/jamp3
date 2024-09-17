@@ -128,7 +128,7 @@ export class MP3Reader {
 		return false;
 	}
 
-	private async processChunkToEnd(chunk: Buffer): Promise<boolean> {
+	private async processChunkToEnd(_chunk: Buffer): Promise<boolean> {
 		if (this.options.streamSize !== undefined) {
 			return false;
 		}

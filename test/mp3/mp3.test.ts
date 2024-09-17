@@ -1,5 +1,4 @@
 import path from 'path';
-import {MP3} from '../../src/lib/mp3/mp3';
 import {ID3v2TestDirectories, ID3v2TestPath} from '../id3v2/id3v2_test.config';
 import {ID3v1TestDirectories, ID3v1TestPath} from '../id3v1/id3v1_test.config';
 import {collectTestFilesSync} from '../common/common';

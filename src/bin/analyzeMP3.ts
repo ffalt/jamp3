@@ -5,8 +5,7 @@ import {MP3Analyzer} from '../lib/mp3/mp3.analyzer';
 import {IMP3Analyzer} from '../lib/mp3/mp3.analyzer.types';
 import {runTool} from '../lib/common/tool';
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const pack = require('../../package.json');
+import pack from '../../package.json';
 
 program
 	.version(pack.version, '-v, --version')

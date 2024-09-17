@@ -95,7 +95,7 @@ export const FrameSYLT: IFrameImpl = {
 			await stream.writeUInt4Byte(event.timestamp);
 		}
 	},
-	simplify: (value: IID3V2.FrameValue.SynchronisedLyrics) => {
+	simplify: (_value: IID3V2.FrameValue.SynchronisedLyrics) => {
 		return null; // TODO IID3V2.FrameValue.SynchronisedLyrics IID3V2.FrameValue.Link
 	}
 };

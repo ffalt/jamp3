@@ -15,7 +15,7 @@ export const FramePlayCount: IFrameImpl = {
 		let num: number;
 		try {
 			num = reader.readUInt(frame.data.length);
-		} catch (e: any) {
+		} catch (_: any) {
 			num = 0;
 		}
 		const value: IID3V2.FrameValue.Number = {num};

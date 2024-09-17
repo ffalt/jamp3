@@ -29,5 +29,6 @@ tsconfig.jest.json
 tsconfig.eslint.json
 typedocconfig.json
 RELEASELOG.md
+eslint.config.mjs
 
 

@@ -14,7 +14,7 @@ export class WriterStream {
 	private async _write(something: Buffer): Promise<void> {
 		if (!this.wstream.write(something)) {
 			// handle backpressure
-			return new Promise<void>((resolve, reject) => {
+			return new Promise<void>((resolve, _reject) => {
 				this.wstream.once('drain', () => {
 					resolve();
 				});
@@ -25,7 +25,7 @@ export class WriterStream {
 	private async _writeString(something: string, encoding: BufferEncoding): Promise<void> {
 		if (!this.wstream.write(something, encoding)) {
 			// handle backpressure
-			return new Promise<void>((resolve, reject) => {
+			return new Promise<void>((resolve, _reject) => {
 				this.wstream.once('drain', () => {
 					resolve();
 				});
