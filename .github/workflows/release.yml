@@ -62,25 +62,17 @@ jobs:
         run: |
           cd deploy && zip -r ./jamp3-release.zip .
 
-      - name: Create Release
+      - name: Create release
         id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: ncipollo/release-action@v1
         with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          body_path: ./RELEASELOG.md
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ github.ref }}
+          name: Release ${{ github.ref_name }}
+          bodyFile: ./RELEASELOG.md
           draft: false
           prerelease: false
+          artifacts: ./deploy/jamp3-release.zip
+          artifactContentType: application/zip
+          makeLatest: true
 
-      - name: Upload Release Package
-        id: upload-release-asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./deploy/jamp3-release.zip
-          asset_name: jamp3-release.zip
-          asset_content_type: application/zip
