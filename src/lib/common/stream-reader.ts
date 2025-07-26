@@ -126,7 +126,7 @@ export class ReaderStream {
 			const need = amount - givenLength;
 			if (need < b.length) {
 				givenLength += need;
-				this.buffers[i] = b.slice(need);
+				this.buffers[i] = b.subarray(need);
 				break;
 			} else {
 				givenLength += b.length;
@@ -146,8 +146,8 @@ export class ReaderStream {
 			const b = this.buffers[i];
 			const need = amount - givenLength;
 			if (need < b.length) {
-				destBuffers.push(b.slice(0, need));
-				this.buffers[i] = b.slice(need);
+				destBuffers.push(b.subarray(0, need));
+				this.buffers[i] = b.subarray(need);
 				break;
 			} else {
 				destBuffers.push(b);
@@ -202,7 +202,7 @@ export class ReaderStream {
 		const index = BufferUtils.indexOfBuffer(result, buffer);
 		if (index >= 0) {
 			this.pos += index;
-			this.buffers = [result.slice(index)];
+			this.buffers = [result.subarray(index)];
 			return this.pos;
 		} else {
 			if (this.end) {

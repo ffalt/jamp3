@@ -20,7 +20,7 @@ async function processRawFrame(frame: IID3V2.RawFrame, head: IID3V2.TagHeader): 
 		let data = frame.data;
 		if (frame.formatFlags.compressed) {
 			const sizebytes = ID3v2_FRAME_HEADER_LENGTHS.SIZE[head.ver];
-			data = data.slice(sizebytes);
+			data = data.subarray(sizebytes);
 		}
 		return new Promise<void>((resolve, reject) => {
 			zlib.inflate(data, (err, result) => {
@@ -44,7 +44,7 @@ async function processRawFrame(frame: IID3V2.RawFrame, head: IID3V2.TagHeader): 
 			 as the 'Frame length' if all of the frame format flags were
 			 zeroed, represented as a 32 bit synchsafe integer.
 		 */
-		frame.data = frame.data.slice(4);
+		frame.data = frame.data.subarray(4);
 	}
 }
 
@@ -77,7 +77,7 @@ export async function readID3v2Frame(rawFrame: IID3V2.RawFrame, head: IID3V2.Tag
 	let groupId: number | undefined;
 	if (rawFrame.formatFlags && rawFrame.formatFlags.grouping) {
 		groupId = rawFrame.data[0];
-		rawFrame.data = rawFrame.data.slice(1);
+		rawFrame.data = rawFrame.data.subarray(1);
 	}
 	const frame: IID3V2.Frame = {
 		id: rawFrame.id,

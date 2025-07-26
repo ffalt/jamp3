@@ -1,4 +1,4 @@
-import { program } from 'commander';
+import { program, Option } from 'commander';
 import fse from 'fs-extra';
 
 import { MP3Analyzer } from '../lib/mp3/mp3.analyzer';
@@ -14,7 +14,7 @@ program
 	.option('-r, --recursive', 'scan the folder recursive')
 	.option('-w, --warnings', 'show results only for files with warnings')
 	.option('-x, --ignoreXingOffOne', 'ignore most common error in off-by-one XING header declaration')
-	.option('-f, --format <format>', 'format of analyze result (plain|json)', /^(plain|json)$/i, 'plain')
+	.addOption(new Option('-f, --format <format>', 'format of analyze result (plain|json)').choices(['plain', 'json']).default('plain'))
 	.option('-d, --dest <file>', 'destination analyze result file')
 	.parse(process.argv);
 

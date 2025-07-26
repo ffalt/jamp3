@@ -13,20 +13,20 @@ export class BufferReader {
 
 	readStringTerminated(enc: IEncoding): string {
 		const i = BufferUtils.scanBufferTextPos(this.data, enc.terminator, this.position);
-		const buf = this.data.slice(this.position, i);
+		const buf = this.data.subarray(this.position, i);
 		const result = (buf.length === 0) ? '' : enc.decode(buf);
 		this.position = i + enc.terminator.length;
 		return result;
 	}
 
 	readString(amount: number, enc: IEncoding): string {
-		const result = enc.decode(this.data.slice(this.position, this.position + amount));
+		const result = enc.decode(this.data.subarray(this.position, this.position + amount));
 		this.position += amount;
 		return result;
 	}
 
 	rest(): Buffer {
-		const result = this.data.slice(this.position);
+		const result = this.data.subarray(this.position);
 		this.position += result.length;
 		return result;
 	}
@@ -81,11 +81,11 @@ export class BufferReader {
 	}
 
 	readStringBuffer(amount: number): Buffer {
-		let buf = this.data.slice(this.position, this.position + amount);
+		let buf = this.data.subarray(this.position, this.position + amount);
 		this.position += amount;
 		for (let i = 0; i < buf.length; i++) {
 			if (buf[i] === 0) {
-				buf = buf.slice(0, i);
+				buf = buf.subarray(0, i);
 				break;
 			}
 		}
@@ -115,18 +115,18 @@ export class BufferReader {
 	}
 
 	readBuffer(amount: number): Buffer {
-		const result = this.data.slice(this.position, this.position + amount);
+		const result = this.data.subarray(this.position, this.position + amount);
 		this.position += amount;
 		return result;
 	}
 
 	readUnsyncedBuffer(amount: number): Buffer {
-		let result = this.data.slice(this.position, this.position + amount);
+		let result = this.data.subarray(this.position, this.position + amount);
 		let unsynced = removeUnsync(result);
 		let stuffed = 0;
 		while (unsynced.length < amount && (this.position + amount + stuffed < this.data.length)) {
 			stuffed += amount - unsynced.length;
-			result = this.data.slice(this.position, this.position + amount + stuffed);
+			result = this.data.subarray(this.position, this.position + amount + stuffed);
 			unsynced = removeUnsync(result);
 		}
 		this.position = this.position + amount + stuffed;

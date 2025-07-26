@@ -101,6 +101,7 @@ export class ID3v2 {
 	/**
 	 * Writes ID3v2 Tag from a Builder object with given options
 	 * @param filename the file to write
+	 * @param builder the builder to write
 	 * @param options write options
 	 */
 	async writeBuilder(filename: string, builder: IID3V2.Builder, options: IID3V2.WriteOptions): Promise<void> {

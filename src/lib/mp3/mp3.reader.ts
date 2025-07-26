@@ -75,7 +75,7 @@ export class MP3Reader {
 		if (this.demandData(chunk, pos)) {
 			return true;
 		}
-		const tag = this.id3v1reader.readTag(chunk.slice(pos, pos + 128));
+		const tag = this.id3v1reader.readTag(chunk.subarray(pos, pos + 128));
 		if (!tag) {
 			return false;
 		}
@@ -84,9 +84,9 @@ export class MP3Reader {
 		this.layout.tags.push(tag);
 		if (!this.stream.end || chunk.length - 128 - pos > 0) {
 			// we need to rewind and scan, there are several unfortunate other tags which may be detected as valid td3v1, e.g. "APETAGEX", "TAG+", "CUSTOMTAG" or just a equal looking stream position
-			this.stream.unshift(chunk.slice(pos + 1));
+			this.stream.unshift(chunk.subarray(pos + 1));
 		} else {
-			this.stream.unshift(chunk.slice(pos + 128));
+			this.stream.unshift(chunk.subarray(pos + 128));
 		}
 		return true;
 	}
@@ -100,7 +100,7 @@ export class MP3Reader {
 			return false;
 		}
 		const start = this.stream.pos - chunk.length + pos;
-		this.stream.unshift(chunk.slice(pos));
+		this.stream.unshift(chunk.subarray(pos));
 		const result = await this.id3v2reader.readReaderStream(this.stream);
 		if (result) {
 			let rest = result.rest || BufferUtils.zeroBuffer(0);
@@ -115,7 +115,7 @@ export class MP3Reader {
 					this.scanid3v1 = false;
 				}
 			} else {
-				rest = rest.slice(1);
+				rest = rest.subarray(1);
 			}
 			this.stream.unshift(rest);
 			return true;
@@ -190,7 +190,7 @@ export class MP3Reader {
 	private demandData(chunk: Buffer, pos: number): boolean {
 		if (!this.stream.end && (chunk.length - pos) < 200) {
 			// check if enough in chunk to read the frame header
-			this.stream.unshift(chunk.slice(pos));
+			this.stream.unshift(chunk.subarray(pos));
 			return true;
 		}
 		return false;
