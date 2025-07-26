@@ -16,9 +16,7 @@ import { FileWriterStream } from '../common/stream-writer-file';
  *
  * Basic usage example:
  *
- * ```ts
- * [[include:snippet_id3v1-read.ts]]
- * ```
+ * {@includeCode ../../../examples/snippet_id3v1-read.ts}}
  */
 export class ID3v1 {
 	/**

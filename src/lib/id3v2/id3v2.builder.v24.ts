@@ -8,9 +8,7 @@ import { ITagID } from '../common/types';
  *
  * Basic usage example:
  *
- * ```ts
- * [[include:snippet_id3v2-build.ts]]
- * ```
+ * {@includeCode ../../../examples/snippet_id3v2-build.ts}
  */
 export class ID3V24TagBuilder implements IID3V2.Builder {
 	public static encodings = {

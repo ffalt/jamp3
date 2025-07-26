@@ -12,9 +12,7 @@ import { IMP3Analyzer } from './mp3.analyzer.types';
  *
  * Basic usage example:
  *
- * ```ts
- * [[include:snippet_mp3-analyze.ts]]
- * ```
+ * {@includeCode ../../../examples/snippet_mp3-analyze.ts}
  * */
 export class MP3Analyzer {
 	/**

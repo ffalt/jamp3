@@ -23,7 +23,7 @@
     "build": "npm run clean && npm run build:dist",
     "build:dist": "tsc",
     "build:deploy": "npm run build",
-    "build:docs": "typedoc --options ./typedocconfig.ts && touch ./docs/.nojekyll",
+    "build:docs": "typedoc --options typedoc.json && touch ./docs/.nojekyll",
     "build:releaselog": "conventional-changelog -p angular -r 2 -o RELEASELOG.md",
     "test": "jest",
     "lint": "eslint .",

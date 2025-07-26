@@ -23,9 +23,7 @@ import { IMP3 } from '../mp3/mp3.types';
  *
  * Basic usage example:
  *
- * ```ts
- * [[include:snippet_id3v2-read.ts]]
- * ```
+ * {@includeCode ../../../examples/snippet_id3v2-read.ts}
  */
 export class ID3v2 {
 	/**

@@ -16,9 +16,7 @@ import { prepareResult } from './mp3.result';
  *
  * Basic usage example:
  *
- * ```ts
- * [[include:snippet_mp3-read.ts]]
- * ```
+ * {@includeCode ../../../examples/snippet_mp3-read.ts}
  */
 export class MP3 {
 	/**
