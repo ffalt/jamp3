@@ -1,6 +1,6 @@
 {
   "name": "jamp3",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "author": "ffalt",
   "license": "MIT",
   "description": "mp3, id3v1, id3v2 - reader & writer",
