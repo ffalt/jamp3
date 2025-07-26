@@ -1,9 +1,8 @@
 import fse from 'fs-extra';
 import tmp from 'tmp';
 
-import {ID3v2} from '../../src/lib/id3v2/id3v2';
-import {ID3V24TagBuilder} from '../../src/lib/id3v2/id3v2.builder.v24';
-// import {toNonBinJson} from '../common/common';
+import { ID3v2 } from '../../src/lib/id3v2/id3v2';
+import { ID3V24TagBuilder } from '../../src/lib/id3v2/id3v2.builder.v24';
 
 const testNumber = 5;
 const testString = 'räksmörgåsЪЭЯ😀';
@@ -42,7 +41,7 @@ async function fill24Builder(builder: ID3V24TagBuilder): Promise<void> {
 		.encoder(testString)
 		.encoderSettings(testString)
 		.encodingDate(testString)
-		.eventTimingCodes(testNumber, [{type: testNumber, timestamp: testNumber}])
+		.eventTimingCodes(testNumber, [{ type: testNumber, timestamp: testNumber }])
 		.fileOwner(testString)
 		.fileType(testString)
 		.genre(testString)
@@ -112,13 +111,13 @@ async function fill24Builder(builder: ID3V24TagBuilder): Promise<void> {
 			testNumber, testNumber,
 			testNumber, testNumber
 		)
-		.relativeVolumeAdjustment2(testString, [{type: testNumber, adjustment: testNumber, peak: testNumber}])
+		.relativeVolumeAdjustment2(testString, [{ type: testNumber, adjustment: testNumber, peak: testNumber }])
 		.releaseDate(testString)
 		.remixer(testString)
 		.replayGainAdjustment(testNumber, testNumber, testNumber)
 		.script(testString)
 		.subtitle(testString)
-		.synchronisedLyrics(testString, testLanguage, testNumber, testNumber, [{timestamp: testNumber, text: testString}])
+		.synchronisedLyrics(testString, testLanguage, testNumber, testNumber, [{ timestamp: testNumber, text: testString }])
 		.taggingDate(testString)
 		.termsOfUse(testString, testLanguage, testString)
 		.title(testString)
@@ -137,7 +136,7 @@ async function test24Builder(encoding: string): Promise<void> {
 	const builder = new ID3V24TagBuilder(encoding);
 	await fill24Builder(builder);
 	const warnings = ID3v2.check(builder.buildTag());
-	expect(warnings.length).toBe(0); // 'there are warnings: ' + toNonBinJson(warnings));
+	expect(warnings.length).toBe(0);
 }
 
 async function test24BuilderWrite(encoding: string): Promise<void> {
@@ -147,7 +146,7 @@ async function test24BuilderWrite(encoding: string): Promise<void> {
 	try {
 		await fse.remove(file.name);
 		const id3 = new ID3v2();
-		await id3.writeBuilder(file.name, builder, {keepBackup: false, paddingSize: 0});
+		await id3.writeBuilder(file.name, builder, { keepBackup: false, paddingSize: 0 });
 		const frames = builder.buildFrames();
 		const data = await id3.read(file.name);
 		expect(data).toBeTruthy();
@@ -155,29 +154,25 @@ async function test24BuilderWrite(encoding: string): Promise<void> {
 			file.removeCallback();
 			return;
 		}
-		expect(data.frames.length).toBe(frames.length); // , 'frames.length does not match');
+		expect(data.frames.length).toBe(frames.length);
 		const warnings = ID3v2.check(data);
-		expect(warnings.length).toBe(0); // , 'there are warnings: ' + toNonBinJson(warnings));
-		// console.log(toNonBinJson(data));
-		// await id3.writeBuilder('test-' + encoding + '.id3', builder, {keepBackup: false, paddingSize: 0});
-	} catch (e: any) {
+		expect(warnings.length).toBe(0);
+	} catch (error) {
 		file.removeCallback();
-		return Promise.reject(e);
+		return Promise.reject(error);
 	}
 	file.removeCallback();
 }
 
 describe('Builder', () => {
 	describe('v2.4', () => {
-		for (const testValue of ['iso-8859-1', 'ucs2', 'utf16-be', 'utf8']) {
-			describe(testValue, () => {
-				it('should be valid', async () => {
-					await test24Builder(testValue);
-				});
-				it('should write', async () => {
-					await test24BuilderWrite(testValue);
-				});
+		describe.each(['iso-8859-1', 'ucs2', 'utf16-be', 'utf8'])('%s', testValue => {
+			it('should be valid', async () => {
+				await test24Builder(testValue);
 			});
-		}
+			it('should write', async () => {
+				await test24BuilderWrite(testValue);
+			});
+		});
 	});
 });

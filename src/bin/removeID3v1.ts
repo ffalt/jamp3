@@ -1,7 +1,7 @@
-import {program} from 'commander';
+import { program } from 'commander';
 
-import {MP3} from '../lib/mp3/mp3';
-import {runTool} from '../lib/common/tool';
+import { MP3 } from '../lib/mp3/mp3';
+import { runTool } from '../lib/common/tool';
 
 import pack from '../../package.json';
 
@@ -26,7 +26,7 @@ function log(msg: string, filename: string, important?: boolean): void {
 
 async function onFile(filename: string): Promise<void> {
 	if (program.opts().onlyIfId3v2) {
-		const tag = await mp3.read(filename, {id3v2: true, id3v1: true});
+		const tag = await mp3.read(filename, { id3v2: true, id3v1: true });
 		if (!tag.id3v2) {
 			log('ℹ️ No ID3v2 found. Ignoring this file.', filename);
 			return;
@@ -36,7 +36,7 @@ async function onFile(filename: string): Promise<void> {
 			return;
 		}
 	}
-	const result = await mp3.removeTags(filename, {id3v1: true, id3v2: false, keepBackup: program.opts().keepBackup});
+	const result = await mp3.removeTags(filename, { id3v1: true, id3v2: false, keepBackup: program.opts().keepBackup });
 	if (result) {
 		if (result.id3v1) {
 			log('👍 ID3v1 removed.', filename, true);
@@ -52,6 +52,6 @@ async function run(): Promise<void> {
 	await runTool(program, onFile);
 }
 
-run().catch(e => {
-	console.error(e);
+run().catch(error => {
+	console.error(error);
 });

@@ -1,19 +1,19 @@
 import fse from 'fs-extra';
-import {Readable} from 'stream';
+import { Readable } from 'node:stream';
 
-import {ID3v2Reader} from './id3v2.reader';
-import {ID3v2Writer} from './id3v2.writer';
-import {IID3V2} from './id3v2.types';
-import {fileRangeToBuffer} from '../common/utils';
-import {updateFile} from '../common/update-file';
-import {ITagID} from '../common/types';
-import {rawHeaderOffSet} from '../mp3/mp3.mpeg.frame';
-import {checkID3v2} from './id3v2.check';
-import {simplifyTag} from './id3v2.simplify';
-import {FileWriterStream} from '../common/stream-writer-file';
-import {writeRawFrames} from './frames/id3v2.frame.write';
-import {buildID3v2} from './frames/id3v2.frame.read';
-import {IMP3} from '../mp3/mp3.types';
+import { ID3v2Reader } from './id3v2.reader';
+import { ID3v2Writer } from './id3v2.writer';
+import { IID3V2 } from './id3v2.types';
+import { fileRangeToBuffer } from '../common/utils';
+import { updateFile } from '../common/update-file';
+import { ITagID } from '../common/types';
+import { rawHeaderOffSet } from '../mp3/mp3.mpeg.frame';
+import { checkID3v2 } from './id3v2.check';
+import { simplifyTag } from './id3v2.simplify';
+import { FileWriterStream } from '../common/stream-writer-file';
+import { writeRawFrames } from './frames/id3v2.frame.write';
+import { buildID3v2 } from './frames/id3v2.frame.read';
+import { IMP3 } from '../mp3/mp3.types';
 
 /**
  * Class for
@@ -28,7 +28,6 @@ import {IMP3} from '../mp3/mp3.types';
  * ```
  */
 export class ID3v2 {
-
 	/**
 	 * Checks an ID3v2 Tag for warnings
 	 * @param tag the ID3v2 object to check
@@ -95,7 +94,7 @@ export class ID3v2 {
 	 */
 	async remove(filename: string, options: IID3V2.RemoveOptions): Promise<boolean> {
 		let removed = false;
-		await updateFile(filename, {id3v2: true, mpegQuick: true}, !!options.keepBackup, () => true, async (layout, fileWriter): Promise<void> => {
+		await updateFile(filename, { id3v2: true, mpegQuick: true }, !!options.keepBackup, () => true, async (layout, fileWriter): Promise<void> => {
 			removed = await this.copyAudio(filename, layout, fileWriter);
 		});
 		return removed;
@@ -107,7 +106,7 @@ export class ID3v2 {
 	 * @param options write options
 	 */
 	async writeBuilder(filename: string, builder: IID3V2.Builder, options: IID3V2.WriteOptions): Promise<void> {
-		await this.write(filename, {frames: builder.buildFrames()}, builder.version(), builder.rev(), options);
+		await this.write(filename, { frames: builder.buildFrames() }, builder.version(), builder.rev(), options);
 	}
 
 	/**
@@ -119,19 +118,15 @@ export class ID3v2 {
 	 * @param options write options
 	 */
 	async write(filename: string, tag: IID3V2.ID3v2Tag, version: number, rev: number, options: IID3V2.WriteOptions): Promise<void> {
-		const opts = Object.assign({keepBackup: false, paddingSize: 100}, options);
+		const opts = { keepBackup: false, paddingSize: 100, ...options };
 		const head = await this.buildHead(tag, version, rev);
 		const raw_frames = await writeRawFrames(tag.frames, head, options.defaultEncoding);
 		const exists = await fse.pathExists(filename);
-		if (!exists) {
-			await this.writeTag(filename, raw_frames, head);
-		} else {
-			await this.replaceTag(filename, raw_frames, head, opts);
-		}
+		await (exists ? this.replaceTag(filename, raw_frames, head, opts) : this.writeTag(filename, raw_frames, head));
 	}
 
 	private async buildHead(tag: IID3V2.ID3v2Tag, version: number, rev: number): Promise<IID3V2.TagHeader> {
-		const head: IID3V2.TagHeader = {ver: version, rev: rev, size: 0, valid: true, flagBits: tag.head ? tag.head.flagBits : undefined};
+		const head: IID3V2.TagHeader = { ver: version, rev: rev, size: 0, valid: true, flagBits: tag.head ? tag.head.flagBits : undefined };
 		if (tag.head) {
 			if (version === 4 && tag.head.v4) {
 				head.v4 = tag.head.v4;
@@ -151,10 +146,10 @@ export class ID3v2 {
 		await stream.open(filename);
 		const writer = new ID3v2Writer();
 		try {
-			await writer.write(stream, frames, head, {paddingSize: 0});
-		} catch (e: any) {
+			await writer.write(stream, frames, head, { paddingSize: 0 });
+		} catch (error) {
 			await stream.close();
-			return Promise.reject(e);
+			return Promise.reject(error);
 		}
 		await stream.close();
 	}
@@ -165,14 +160,14 @@ export class ID3v2 {
 		let skipped = false;
 		for (const tag of layout.tags) {
 			if ((tag.id === ITagID.ID3v2) && (start < tag.end)) {
-				specEnd = (tag as IID3V2.RawTag).head.size + tag.start + 10 /*header itself*/;
+				specEnd = (tag as IID3V2.RawTag).head.size + tag.start + 10; // 10: header itself
 				start = tag.end;
 				skipped = true;
 			}
 		}
 		if (layout.frameheaders.length > 0) {
 			const mediastart = rawHeaderOffSet(layout.frameheaders[0]);
-			start = specEnd < mediastart ? specEnd : mediastart;
+			start = Math.min(specEnd, mediastart);
 		} else {
 			start = Math.max(start, specEnd);
 		}
@@ -181,11 +176,10 @@ export class ID3v2 {
 	}
 
 	private async replaceTag(filename: string, frames: Array<IID3V2.RawFrame>, head: IID3V2.TagHeader, options: IID3V2.WriteOptions): Promise<void> {
-		await updateFile(filename, {id3v2: true, mpegQuick: true}, !!options.keepBackup, () => true, async (layout, fileWriter): Promise<void> => {
+		await updateFile(filename, { id3v2: true, mpegQuick: true }, !!options.keepBackup, () => true, async (layout, fileWriter): Promise<void> => {
 			const writer = new ID3v2Writer();
 			await writer.write(fileWriter, frames, head, options);
 			await this.copyAudio(filename, layout, fileWriter);
 		});
 	}
-
 }

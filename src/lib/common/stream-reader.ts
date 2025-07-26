@@ -1,6 +1,6 @@
-import {Readable} from 'stream';
-import fs from 'fs';
-import {BufferUtils} from './buffer';
+import { Readable } from 'node:stream';
+import fs from 'node:fs';
+import { BufferUtils } from './buffer';
 
 export class ReaderStream {
 	readableStream: Readable | null = null;
@@ -40,9 +40,7 @@ export class ReaderStream {
 			if (!this.readableStream) {
 				return Promise.reject('Invalid Stream');
 			}
-			this.readableStream.on('error', (err) => {
-				return reject(err);
-			});
+			this.readableStream.on('error', error => reject(error));
 			this.readableStream.on('end', () => {
 				this.end = true;
 				this.streamEnd = true;
@@ -52,25 +50,23 @@ export class ReaderStream {
 					w();
 				}
 			});
-			this.readableStream.on('data', (chunk) => {
+			this.readableStream.on('data', chunk => {
 				if (this.streamOnData) {
 					this.streamOnData(chunk);
 				}
 			});
-			this.waiting = () => {
-				resolve();
-			};
+			this.waiting = () => resolve();
 		});
 	}
 
 	async open(filename: string): Promise<void> {
 		try {
 			this.readableStream = fs.createReadStream(filename);
-		} catch (err) {
-			return Promise.reject(err);
+		} catch (error) {
+			return Promise.reject(error);
 		}
 		if (!this.readableStream) {
-			return Promise.reject(Error('Could not open file ' + filename));
+			return Promise.reject(new Error(`Could not open file ${filename}`));
 		}
 		await this.openStream(this.readableStream);
 	}
@@ -88,8 +84,8 @@ export class ReaderStream {
 		const stream = this.readableStream;
 		this.readableStream = null;
 		if (stream) {
-			if (typeof (<any>stream).close === 'function') {
-				(<any>stream).close();
+			if (typeof (stream as any).close === 'function') {
+				(stream as any).close();
 			}
 			stream.destroy();
 		}
@@ -97,9 +93,9 @@ export class ReaderStream {
 
 	private getBufferLength(): number {
 		let result = 0;
-		this.buffers.forEach(buf => {
-			result += buf.length;
-		});
+		for (const buffer of this.buffers) {
+			result += buffer.length;
+		}
 		return result;
 	}
 
@@ -167,16 +163,13 @@ export class ReaderStream {
 	}
 
 	async read(amount: number): Promise<Buffer> {
-		amount = Math.max(1, amount);
-		if ((this.buffersLength >= amount)) {
-			const result = this.get(amount);
+		const toRead = Math.max(1, amount);
+		if ((this.buffersLength >= toRead)) {
+			const result = this.get(toRead);
 			this.end = this.streamEnd && this.buffersLength === 0;
 			return result;
 		}
-		if (!this.streamEnd) {
-			await this.resume();
-			return await this.read(amount);
-		} else {
+		if (this.streamEnd) {
 			if (this.buffersLength === 0) {
 				return BufferUtils.zeroBuffer(0);
 			}
@@ -186,6 +179,9 @@ export class ReaderStream {
 			this.pos += result.length;
 			this.end = this.streamEnd;
 			return result;
+		} else {
+			await this.resume();
+			return await this.read(toRead);
 		}
 	}
 

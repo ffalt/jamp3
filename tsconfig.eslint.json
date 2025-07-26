@@ -7,7 +7,7 @@
     "./src/types.d.ts",
     "./src/**/*",
     "./test/**/*",
-    "./jest.config.js",
+    "./jest.config.mjs",
     "./.eslintrc.js"
   ]
 }

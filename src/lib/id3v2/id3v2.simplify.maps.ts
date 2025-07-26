@@ -1,18 +1,18 @@
-import {FrameDefs} from './frames/id3v2.frame.defs';
-import {findId3v2FrameDef} from './frames/id3v2.frame.match';
+import { FrameDefs } from './frames/id3v2.frame.defs';
+import { findId3v2FrameDef } from './frames/id3v2.frame.match';
 
-export const PRIVMap: { [key: string]: string } = {};
+export const PRIVMap: Record<string, string> = {};
 
-export const COMMMap: { [key: string]: string } = {
+export const COMMMap: Record<string, string> = {
 	'description': 'COMMENT',
 	'comment': 'COMMENT'
 };
 
-export const UFIDMap: { [key: string]: string } = {
+export const UFIDMap: Record<string, string> = {
 	'http://musicbrainz.org': 'MUSICBRAINZ_TRACKID'
 };
 
-export const TXXXMap: { [key: string]: string } = {
+export const TXXXMap: Record<string, string> = {
 	'ORIGINALYEAR': 'ORIGINALYEAR',
 	'REPLAYGAIN_TRACK_GAIN': 'REPLAYGAIN_TRACK_GAIN',
 	'REPLAYGAIN_ALBUM_GAIN': 'REPLAYGAIN_ALBUM_GAIN',
@@ -64,7 +64,7 @@ export const TXXXMap: { [key: string]: string } = {
 	'PERFORMER': 'PERFORMER'
 };
 
-export const FramesMap: { [key: string]: string } = {
+export const FramesMap: Record<string, string> = {
 	'TALB': 'ALBUM',
 	'TSOA': 'ALBUMSORT',
 	'TIT2': 'TITLE',
@@ -164,13 +164,13 @@ export const FramesMap: { [key: string]: string } = {
 	'TPOS': 'DISCNUMBER'
 };
 
-export const SplitFrameMap: { [key: string]: Array<string> } = {
+export const SplitFrameMap: Record<string, Array<string>> = {
 	'TRCK': ['TRACKNUMBER', 'TRACKTOTAL'],
 	'MVIN': ['MOVEMENT', 'MOVEMENTTOTAL'],
 	'TPOS': ['DISCNUMBER', 'DISCTOTAL']
 };
 
-export const DateUpgradeMap: { [key: string]: string } = {
+export const DateUpgradeMap: Record<string, string> = {
 	'TYER': 'Year',
 	'TDAT': 'Date',
 	'TIME': 'Time'
@@ -183,21 +183,21 @@ export const DateUpgradeMap: { [key: string]: string } = {
  */
 
 if (process.env.NODE_ENV === 'development') {
-	Object.keys(FrameDefs).forEach(key => {
+	for (const key of Object.keys(FrameDefs)) {
 		const frame = findId3v2FrameDef(key);
-		if (!frame) {
-			console.error('DEVELOPER ERROR: Unknown frame id \'' + key + '\' in simplify list');
-		} else {
-			const slug = (['TXXX', 'UFID', 'COMM', 'PRIV', 'WXXX', 'LINK', 'TIPL', 'TMCL'].indexOf(key) >= 0) || FramesMap[key] ||
-				TXXXMap[key] || UFIDMap[key] || COMMMap[key] || PRIVMap[key] || SplitFrameMap[key] || DateUpgradeMap[key];
+		if (frame) {
+			const slug =
+				['TXXX', 'UFID', 'COMM', 'PRIV', 'WXXX', 'LINK', 'TIPL', 'TMCL'].includes(key) ||
+				FramesMap[key] || TXXXMap[key] || UFIDMap[key] || COMMMap[key] || PRIVMap[key] || SplitFrameMap[key] || DateUpgradeMap[key];
 			if (!slug) {
-				if (frame.versions.indexOf(4) >= 0) {
-					console.error('DEVELOPER ERROR: Add a slug for the 2.4 frame \'' + key + '\': \'' + FrameDefs[key].title.toLowerCase().replace(/ /g, '_') + '\',');
+				if (frame.versions.includes(4)) {
+					console.error(`DEVELOPER ERROR: Add a slug for the 2.4 frame '${key}': '${FrameDefs[key].title.toLowerCase().replaceAll(' ', '_')}',`);
 				} else if (!frame.upgrade) {
-					console.error('DEVELOPER ERROR: Add a slug for the ' + frame.versions.join('/') + ' frame \'' + key + '\': \'' + FrameDefs[key].title.toLowerCase().replace(/ /g, '_') + '\',');
+					console.error(`DEVELOPER ERROR: Add a slug for the ${frame.versions.join('/')} frame '${key}': '${FrameDefs[key].title.toLowerCase().replaceAll(' ', '_')}',`);
 				}
 			}
+		} else {
+			console.error(`DEVELOPER ERROR: Unknown frame id '${key}' in simplify list`);
 		}
-	});
+	}
 }
-

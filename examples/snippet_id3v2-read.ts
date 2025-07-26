@@ -1,4 +1,4 @@
-import {ID3v2} from 'jamp3';
+import { ID3v2 } from 'jamp3';
 
 async function run(): Promise<void> {
 	const id3v2 = new ID3v2();
@@ -12,6 +12,4 @@ async function run(): Promise<void> {
 	}
 }
 
-run().catch(e => {
-	console.error(e);
-});
+run().catch(console.error);

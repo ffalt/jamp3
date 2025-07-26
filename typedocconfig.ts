@@ -26,5 +26,5 @@ module.exports = {
 	readme: 'README.md',
 	name: 'jamp3',
 	plugin: 'none',
-	validation: {invalidLink: true}
+	validation: { invalidLink: true }
 };

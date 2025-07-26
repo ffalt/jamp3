@@ -1,18 +1,18 @@
-import {IFrameImpl} from '../id3v2.frame';
-import {ascii} from '../../../common/encodings';
-import {IID3V2} from '../../id3v2.types';
+import { IFrameImpl } from '../id3v2.frame';
+import { ascii } from '../../../common/encodings';
+import { IID3V2 } from '../../id3v2.types';
 
 export const FrameAscii: IFrameImpl = {
 	/**
 	 Information    <text string>
 	 */
-	parse: async (reader) => {
+	parse: async reader => {
 		const text = reader.readStringTerminated(ascii);
-		const value: IID3V2.FrameValue.Ascii = {text};
-		return {value, encoding: ascii};
+		const value: IID3V2.FrameValue.Ascii = { text };
+		return { value, encoding: ascii };
 	},
 	write: async (frame, stream) => {
-		const value = <IID3V2.FrameValue.Ascii>frame.value;
+		const value = frame.value as IID3V2.FrameValue.Ascii;
 		await stream.writeString(value.text, ascii);
 	},
 	simplify: (value: IID3V2.FrameValue.Ascii) => {

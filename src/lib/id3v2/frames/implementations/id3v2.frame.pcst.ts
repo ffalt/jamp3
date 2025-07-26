@@ -1,5 +1,5 @@
-import {IFrameImpl} from '../id3v2.frame';
-import {IID3V2} from '../../id3v2.types';
+import { IFrameImpl } from '../id3v2.frame';
+import { IID3V2 } from '../../id3v2.types';
 
 export const FramePCST: IFrameImpl = {
 	/**
@@ -8,16 +8,14 @@ export const FramePCST: IFrameImpl = {
 
 	 This is written to a v2.2 tag as PCS.
 	 */
-	parse: async (reader) => {
+	parse: async reader => {
 		const num = reader.readUInt4Byte();
-		const value: IID3V2.FrameValue.Number = {num};
-		return {value};
+		const value: IID3V2.FrameValue.Number = { num };
+		return { value };
 	},
 	write: async (frame, stream) => {
-		const value = <IID3V2.FrameValue.Number>frame.value;
+		const value = frame.value as IID3V2.FrameValue.Number;
 		await stream.writeUInt4Byte(value.num);
 	},
-	simplify: (value: IID3V2.FrameValue.Number) => {
-		return value.num.toString();
-	}
+	simplify: (value: IID3V2.FrameValue.Number) => value.num.toString()
 };

@@ -1,5 +1,5 @@
-import {IFrameImpl} from '../id3v2.frame';
-import {IID3V2} from '../../id3v2.types';
+import { IFrameImpl } from '../id3v2.frame';
+import { IID3V2 } from '../../id3v2.types';
 
 export const FrameETCO: IFrameImpl = {
 	/*
@@ -50,30 +50,30 @@ export const FrameETCO: IFrameImpl = {
 	 $FE     audio file ends
 	 $FF     one more byte of events follows (all the following bytes with the value $FF have the same function)
 
-	 Terminating the start events such as "intro start" is not required. The 'Not predefined sync's ($E0-EF) are for user events. You might want to synchronise your music to something, like setting of an explosion on-stage, turning on your screensaver etc.
+	 Terminating the start events such as "intro start" is not required.
+	 The 'Not predefined sync's ($E0-EF) are for user events.
+	 You might want to synchronise your music to something, like setting of an explosion on-stage, turning on your screensaver etc.
 
 	 There may only be one "ETCO" frame in each tag.
  */
-	parse: async (reader) => {
+	parse: async reader => {
 		const format = reader.readBitsByte();
 		const events: Array<{ type: number; timestamp: number }> = [];
 		while (reader.unread() >= 5) {
 			const type = reader.readBitsByte();
 			const timestamp = reader.readUInt4Byte();
-			events.push({type, timestamp});
+			events.push({ type, timestamp });
 		}
-		const value: IID3V2.FrameValue.EventTimingCodes = {format, events};
-		return {value};
+		const value: IID3V2.FrameValue.EventTimingCodes = { format, events };
+		return { value };
 	},
 	write: async (frame, stream) => {
-		const value = <IID3V2.FrameValue.EventTimingCodes>frame.value;
+		const value = frame.value as IID3V2.FrameValue.EventTimingCodes;
 		await stream.writeByte(value.format);
 		for (const event of (value.events || [])) {
 			await stream.writeByte(event.type);
 			await stream.writeUInt4Byte(event.timestamp);
 		}
 	},
-	simplify: (_value: IID3V2.FrameValue.EventTimingCodes) => {
-		return null; // TODO simplify IID3V2.FrameValue.EventTimingCodes
-	}
+	simplify: (_value: IID3V2.FrameValue.EventTimingCodes) => null // TODO simplify IID3V2.FrameValue.EventTimingCodes
 };

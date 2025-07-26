@@ -1,6 +1,6 @@
-import {IFrameImpl} from '../id3v2.frame';
-import {IID3V2} from '../../id3v2.types';
-import {neededStoreBytes} from '../../../common/utils';
+import { IFrameImpl } from '../id3v2.frame';
+import { IID3V2 } from '../../id3v2.types';
+import { neededStoreBytes } from '../../../common/utils';
 
 export const FramePlayCount: IFrameImpl = {
 	/**
@@ -15,14 +15,14 @@ export const FramePlayCount: IFrameImpl = {
 		let num: number;
 		try {
 			num = reader.readUInt(frame.data.length);
-		} catch (_: any) {
+		} catch {
 			num = 0;
 		}
-		const value: IID3V2.FrameValue.Number = {num};
-		return {value};
+		const value: IID3V2.FrameValue.Number = { num };
+		return { value };
 	},
 	write: async (frame, stream) => {
-		const value = <IID3V2.FrameValue.Number>frame.value;
+		const value = frame.value as IID3V2.FrameValue.Number;
 		const byteLength = neededStoreBytes(value.num, 4);
 		await stream.writeUInt(value.num, byteLength);
 	},

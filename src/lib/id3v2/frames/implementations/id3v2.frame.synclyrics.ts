@@ -1,8 +1,8 @@
-import {IFrameImpl} from '../id3v2.frame';
-import {removeZeroString} from '../../../common/utils';
-import {ascii} from '../../../common/encodings';
-import {IID3V2} from '../../id3v2.types';
-import {getWriteTextEncoding} from '../id3v2.frame.write';
+import { IFrameImpl } from '../id3v2.frame';
+import { removeZeroString } from '../../../common/utils';
+import { ascii } from '../../../common/encodings';
+import { IID3V2 } from '../../id3v2.types';
+import { getWriteTextEncoding } from '../id3v2.frame.write';
 
 export const FrameSYLT: IFrameImpl = {
 	/**
@@ -46,11 +46,15 @@ export const FrameSYLT: IFrameImpl = {
 	 Sync identifier (terminator to above string)    $00 (00)
 	 Time stamp      $xx (xx ...)
 
-	 The 'time stamp' is set to zero or the whole sync is omitted if located directly at the beginning of the sound. All time stamps should be sorted in chronological order. The sync can be considered as a validator of the subsequent string.
+	 The 'time stamp' is set to zero or the whole sync is omitted if located directly at the beginning of the sound.
+	 All time stamps should be sorted in chronological order. The sync can be considered as a validator of the subsequent string.
 
 	 Newline ($0A) characters are allowed in all "SYLT" frames and should be used after every entry (name, event etc.) in a frame with the content type $03 - $04.
 
-	 A few considerations regarding whitespace characters: Whitespace separating words should mark the beginning of a new word, thus occurring in front of the first syllable of a new word. This is also valid for new line characters. A syllable followed by a comma should not be broken apart with a sync (both the syllable and the comma should be before the sync).
+	 A few considerations regarding whitespace characters:
+	 Whitespace separating words should mark the beginning of a new word, thus occurring in front of the first syllable of a new word.
+	 This is also valid for new line characters. A syllable followed by a comma should not be broken apart with a sync
+	 (both the syllable and the comma should be before the sync).
 
 	 An example: The "USLT" passage
 
@@ -65,7 +69,7 @@ export const FrameSYLT: IFrameImpl = {
 	 There may be more than one "SYLT" frame in each tag, but only one with the same language and content descriptor.
 
 	 */
-	parse: async (reader) => {
+	parse: async reader => {
 		const enc = reader.readEncoding();
 		const language = removeZeroString(reader.readString(3, ascii)).trim();
 		const timestampFormat = reader.readByte();
@@ -76,14 +80,14 @@ export const FrameSYLT: IFrameImpl = {
 			const text = reader.readStringTerminated(enc);
 			if (reader.unread() >= 4) {
 				const timestamp = reader.readUInt4Byte();
-				events.push({timestamp, text});
+				events.push({ timestamp, text });
 			}
 		}
-		const value: IID3V2.FrameValue.SynchronisedLyrics = {language, timestampFormat, contentType, id, events};
-		return {value, encoding: enc};
+		const value: IID3V2.FrameValue.SynchronisedLyrics = { language, timestampFormat, contentType, id, events };
+		return { value, encoding: enc };
 	},
 	write: async (frame, stream, head, defaultEncoding) => {
-		const value = <IID3V2.FrameValue.SynchronisedLyrics>frame.value;
+		const value = frame.value as IID3V2.FrameValue.SynchronisedLyrics;
 		const enc = getWriteTextEncoding(frame, head, defaultEncoding);
 		await stream.writeEncoding(enc);
 		await stream.writeAsciiString(value.language, 3);
@@ -95,7 +99,5 @@ export const FrameSYLT: IFrameImpl = {
 			await stream.writeUInt4Byte(event.timestamp);
 		}
 	},
-	simplify: (_value: IID3V2.FrameValue.SynchronisedLyrics) => {
-		return null; // TODO IID3V2.FrameValue.SynchronisedLyrics IID3V2.FrameValue.Link
-	}
+	simplify: (_value: IID3V2.FrameValue.SynchronisedLyrics) => null // TODO IID3V2.FrameValue.SynchronisedLyrics IID3V2.FrameValue.Link
 };

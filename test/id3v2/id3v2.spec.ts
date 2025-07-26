@@ -1,10 +1,7 @@
-import {loadSpec, omit, toNonBinJson} from '../common/common';
-import Debug from 'debug';
+import { loadSpec, omit, toNonBinJson } from '../common/common';
 
-import {IID3V2} from '../../src/lib/id3v2/id3v2.types';
-import {ID3v2} from '../../src/lib/id3v2/id3v2';
-
-const debug = Debug('id3v2-test');
+import { IID3V2 } from '../../src/lib/id3v2/id3v2.types';
+import { ID3v2 } from '../../src/lib/id3v2/id3v2';
 
 function compareID3v2SpecFrame(filename: string, framespec: any, frame: IID3V2.Frame) {
 	const frameHead = frame.head;
@@ -14,24 +11,24 @@ function compareID3v2SpecFrame(filename: string, framespec: any, frame: IID3V2.F
 	}
 	const formatFlags = frameHead.formatFlags || {};
 	if (framespec.formatFlags) {
-		Object.keys(framespec.formatFlags).forEach(flag => {
+		for (const flag of Object.keys(framespec.formatFlags)) {
 			expect(formatFlags[flag]).toBe(framespec.formatFlags[flag]); // 'Flag values not equal for frame ' + framespec.id + ' flag ' + flag + ' frame: ' + JSON.stringify(frame));
-		});
+		}
 	}
-	Object.keys(formatFlags).forEach(flag => {
+	for (const flag of Object.keys(formatFlags)) {
 		if (formatFlags[flag]) {
 			expect(framespec.formatFlags).toBeTruthy(); //  'SpecError: Flag values must be specified for frame ' + framespec.id + ' flag ' + flag);
 			expect(formatFlags[flag]).toBe(framespec.formatFlags[flag]); // 'SpecError: All Flag values must be correctly specified for frame ' + framespec.id + ' flag ' + flag);
 		}
-	});
-	if (framespec.binSize !== undefined) {
-		expect((<any>frame.value).bin.length).toBe(framespec.binSize);
 	}
-	if (!framespec.invalid) {
+	if (framespec.binSize !== undefined) {
+		expect((frame.value as any).bin.length).toBe(framespec.binSize);
+	}
+	if (framespec.invalid) {
+		expect(frame.invalid).toBeTruthy();
+	} else {
 		// expect(frame.value).excludingEvery(['bin']).to.deep.equal(framespec.value, 'Values not equal for frame ' + framespec.id + ' ' + toNonBinJson(frame));
 		expect(omit(frame.value, ['bin'])).toEqual(omit(framespec.value, ['bin'])); // 'Values not equal for frame ' + framespec.id + ' ' + toNonBinJson(frame));
-	} else {
-		expect(frame.invalid).toBeTruthy();
 	}
 	if (framespec.size !== undefined) {
 		expect(frameHead.size).toBe(framespec.size); // 'Invalid size for frame ' + framespec.id + toNonBinJson(frame));
@@ -47,26 +44,26 @@ function compareID3v2SpecFrame(filename: string, framespec: any, frame: IID3V2.F
 	}
 }
 
-function compareID3v2SpecFrames(filename: string, specframes: Array<any>, frames: Array<IID3V2.Frame>) {
-	(specframes || []).forEach((framespec: any) => {
+function compareID3v2SpecFrames(filename: string, specframes: Array<any> = [], frames: Array<IID3V2.Frame>) {
+	for (const framespec of specframes) {
 		const list: Array<IID3V2.Frame> = frames.filter(f => f.id === framespec.id);
 		if (list.length === 0) {
-			throw new Error('Spec frame not found:' + JSON.stringify(framespec));
+			throw new Error(`Spec frame not found:${JSON.stringify(framespec)}`);
 		} else if (list.length === 1) {
 			compareID3v2SpecFrame(filename, framespec, list[0]);
 		} else {
 			let sublist = [];
-			if (['POPM'].indexOf(framespec.id) >= 0) {
-				sublist = list.filter(f => (<any>f.value).email === framespec.value.email);
+			if (['POPM'].includes(framespec.id)) {
+				sublist = list.filter(f => (f.value as any).email === framespec.value.email);
 				if (sublist.length !== 1) {
-					throw new Error('Spec frame not found:' + JSON.stringify(framespec));
+					throw new Error(`Spec frame not found:${JSON.stringify(framespec)}`);
 				}
-			} else if (['GEOB'].indexOf(framespec.id) >= 0) {
+			} else if (['GEOB'].includes(framespec.id)) {
 				sublist = list;
 				if (sublist.length > 1) {
 					let done = false;
 					let nr = -1;
-					specframes.forEach(sf => {
+					for (const sf of specframes) {
 						if (!done) {
 							if (sf.id === framespec.id) {
 								nr++;
@@ -75,18 +72,18 @@ function compareID3v2SpecFrames(filename: string, specframes: Array<any>, frames
 								done = true;
 							}
 						}
-					});
+					}
 					sublist[0] = sublist[nr];
 				}
-			} else if (['APIC', 'PIC'].indexOf(framespec.id) >= 0) {
-				sublist = list.filter(f => (<any>f.value).pictureType === framespec.value.pictureType);
-				if (sublist.length < 1) {
-					throw new Error('Spec frame not found:' + JSON.stringify(framespec));
+			} else if (['APIC', 'PIC'].includes(framespec.id)) {
+				sublist = list.filter(f => (f.value as any).pictureType === framespec.value.pictureType);
+				if (sublist.length === 0) {
+					throw new Error(`Spec frame not found:${JSON.stringify(framespec)}`);
 				}
 				if (sublist.length > 1) {
 					let done = false;
 					let nr = -1;
-					specframes.forEach(sf => {
+					for (const sf of specframes) {
 						if (!done) {
 							if (sf.id === framespec.id && sf.value.pictureType === framespec.value.pictureType) {
 								nr++;
@@ -95,18 +92,18 @@ function compareID3v2SpecFrames(filename: string, specframes: Array<any>, frames
 								done = true;
 							}
 						}
-					});
+					}
 					sublist[0] = sublist[nr];
 				}
-			} else if (['TIT2', 'TPE1', 'TALB', 'TRCK', 'TRK'].indexOf(framespec.id) >= 0) {
-				sublist = list.filter(f => (<any>f.value).text === framespec.value.text);
-				if (sublist.length < 1) {
-					throw new Error('Spec frame not found:' + JSON.stringify(framespec));
+			} else if (['TIT2', 'TPE1', 'TALB', 'TRCK', 'TRK'].includes(framespec.id)) {
+				sublist = list.filter(f => (f.value as any).text === framespec.value.text);
+				if (sublist.length === 0) {
+					throw new Error(`Spec frame not found:${JSON.stringify(framespec)}`);
 				}
 				if (sublist.length > 1) {
 					let done = false;
 					let nr = -1;
-					specframes.forEach(sf => {
+					for (const sf of specframes) {
 						if (!done) {
 							if (sf.id === framespec.id) {
 								nr++;
@@ -115,20 +112,20 @@ function compareID3v2SpecFrames(filename: string, specframes: Array<any>, frames
 								done = true;
 							}
 						}
-					});
+					}
 					sublist[0] = sublist[nr];
 				}
-			} else if (['WOAR'].indexOf(framespec.id) >= 0) {
-				sublist = list.filter(f => (<any>f.value).text === framespec.value.text);
+			} else if (['WOAR'].includes(framespec.id)) {
+				sublist = list.filter(f => (f.value as any).text === framespec.value.text);
 				if (sublist.length !== 1) {
-					throw new Error('Spec frame not found:' + JSON.stringify(framespec));
+					throw new Error(`Spec frame not found:${JSON.stringify(framespec)}`);
 				}
-			} else if (['TXXX', 'PRIV', 'WXXX', 'CHAP', 'CTOC', 'COMM', 'COM', 'RVA2', 'TRC'].indexOf(framespec.id) >= 0) {
-				sublist = list.filter(f => (<any>f.value).id === framespec.value.id);
+			} else if (['TXXX', 'PRIV', 'WXXX', 'CHAP', 'CTOC', 'COMM', 'COM', 'RVA2', 'TRC'].includes(framespec.id)) {
+				sublist = list.filter(f => (f.value as any).id === framespec.value.id);
 				if (sublist.length > 1) {
 					let done = false;
 					let nr = -1;
-					specframes.forEach(sf => {
+					for (const sf of specframes) {
 						if (!done) {
 							if (sf.id === framespec.id) {
 								nr++;
@@ -137,26 +134,24 @@ function compareID3v2SpecFrames(filename: string, specframes: Array<any>, frames
 								done = true;
 							}
 						}
-					});
+					}
 					sublist[0] = sublist[nr];
 				} else if (sublist.length !== 1) {
-					throw new Error('Spec frame not found:' + JSON.stringify(framespec) + toNonBinJson(frames));
+					throw new Error(`Spec frame not found:${JSON.stringify(framespec)}${toNonBinJson(frames)}`);
 				}
 			} else {
-				throw new Error('TODO: Implement Spec matching:' + JSON.stringify(framespec));
+				throw new Error(`TODO: Implement Spec matching:${JSON.stringify(framespec)}`);
 			}
 			compareID3v2SpecFrame(filename, framespec, sublist[0]);
 		}
-	});
+	}
 }
 
 export async function compareID3v2Spec(filename: string, tag: IID3V2.Tag | undefined): Promise<void> {
 	const spec = await loadSpec(filename);
 	if (!spec.id3v2) {
-		if (tag) {
-			if (tag.head) {
-				expect(tag.head.valid).toBe(false); // , 'Spec needs tag to be invalid ' + toNonBinJson(tag));
-			}
+		if (tag?.head) {
+			expect(tag.head.valid).toBe(false); // , 'Spec needs tag to be invalid ' + toNonBinJson(tag));
 		}
 		return;
 	}
@@ -174,7 +169,6 @@ export async function compareID3v2Spec(filename: string, tag: IID3V2.Tag | undef
 
 export async function testLoadSaveSpec(filename: string): Promise<void> {
 	const id3 = new ID3v2();
-	debug('LoadSaveSpec', 'loading', filename);
 	let tag = await id3.read(filename);
 	if (tag && tag.head && !tag.head.valid) {
 		console.log('invalid id3v2 tag found', filename);

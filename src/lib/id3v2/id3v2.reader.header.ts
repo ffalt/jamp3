@@ -1,11 +1,10 @@
-import {bitarray, flags, unsynchsafe} from '../common/utils';
-import {Markers} from '../common/marker';
-import {ID3v2_EXTHEADER, ID3v2_HEADER} from './id3v2.header.consts';
-import {IID3V2} from './id3v2.types';
-import {ReaderStream} from '../common/stream-reader';
+import { bitarray, flags, unsynchsafe } from '../common/utils';
+import { Markers } from '../common/marker';
+import { ID3v2_EXTHEADER, ID3v2_HEADER } from './id3v2.header.consts';
+import { IID3V2 } from './id3v2.types';
+import { ReaderStream } from '../common/stream-reader';
 
 export class ID3v2HeaderReader {
-
 	private async readID3ExtendedHeaderV3(reader: ReaderStream): Promise<{ rest?: Buffer; exthead: IID3V2.TagHeaderExtendedVer3 }> {
 		const headdata = await reader.read(4);
 		let size = headdata.readInt32BE(0);
@@ -55,7 +54,7 @@ export class ID3v2HeaderReader {
 		if (exthead.flags1.crc && data.length > 6) {
 			exthead.crcData = data.readUInt32BE(6);
 		}
-		return {exthead};
+		return { exthead };
 	}
 
 	private async readID3ExtendedHeaderV4(reader: ReaderStream): Promise<{ rest?: Buffer; exthead: IID3V2.TagHeaderExtendedVer4 }> {
@@ -65,7 +64,6 @@ export class ID3v2HeaderReader {
 		if (size > 10) {
 			size = 6;
 		}
-		// debug('readID3ExtendedHeader', 'exthead.size:', exthead.size);
 		const data = await reader.read(size);
 		const exthead: IID3V2.TagHeaderExtendedVer4 = {
 			size,
@@ -89,7 +87,7 @@ export class ID3v2HeaderReader {
 				imageSize: r[6].toString() + r[7].toString()
 			};
 		}
-		return {exthead};
+		return { exthead };
 	}
 
 	private readID3v22Header(head: IID3V2.TagHeader, flagBits: Array<number>): void {
@@ -97,7 +95,7 @@ export class ID3v2HeaderReader {
 			sizeAsSyncSafe: unsynchsafe(head.size), // keep this if someone is writing v2 with syncsafeint
 			flags: {
 				unsynchronisation: flagBits[0] === 1,
-				compression: flagBits[1] === 1,
+				compression: flagBits[1] === 1
 			}
 		};
 	}
@@ -153,18 +151,17 @@ export class ID3v2HeaderReader {
 		const data = await reader.read(ID3v2_HEADER.SIZE);
 		const header: IID3V2.TagHeader | undefined = this.readID3v2Header(data, 0);
 		if (!header || !header.valid) {
-			return {rest: data};
+			return { rest: data };
 		}
 		if (header.v3 && header.v3.flags.extendedheader) {
 			const extended = await this.readID3ExtendedHeaderV3(reader);
 			header.v3.extended = extended.exthead;
-			return {header, rest: extended.rest};
+			return { header, rest: extended.rest };
 		} else if (header.v4 && header.v4.flags.extendedheader) {
 			const extended = await this.readID3ExtendedHeaderV4(reader);
 			header.v4.extended = extended.exthead;
-			return {header, rest: extended.rest};
+			return { header, rest: extended.rest };
 		}
-		return {header};
+		return { header };
 	}
-
 }

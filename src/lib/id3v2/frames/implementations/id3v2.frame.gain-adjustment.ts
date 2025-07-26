@@ -1,5 +1,5 @@
-import {IFrameImpl} from '../id3v2.frame';
-import {IID3V2} from '../../id3v2.types';
+import { IFrameImpl } from '../id3v2.frame';
+import { IID3V2 } from '../../id3v2.types';
 
 export const FrameRGAD: IFrameImpl = {
 	/*
@@ -16,20 +16,18 @@ export const FrameRGAD: IFrameImpl = {
 	 This is not widely supported and I think it has been superseded by RVA2 in ID3v2.4 (and the XRVA tag for 2.3 compatibility).
 	 */
 
-	parse: async (reader) => {
+	parse: async reader => {
 		const peak = reader.readUInt4Byte();
 		const radioAdjustment = reader.readSInt2Byte();
 		const audiophileAdjustment = reader.readSInt2Byte();
-		const value: IID3V2.FrameValue.ReplayGainAdjustment = {peak, radioAdjustment, audiophileAdjustment};
-		return {value};
+		const value: IID3V2.FrameValue.ReplayGainAdjustment = { peak, radioAdjustment, audiophileAdjustment };
+		return { value };
 	},
 	write: async (frame, stream) => {
-		const value = <IID3V2.FrameValue.ReplayGainAdjustment>frame.value;
+		const value = frame.value as IID3V2.FrameValue.ReplayGainAdjustment;
 		await stream.writeUInt4Byte(value.peak);
 		await stream.writeSInt2Byte(value.radioAdjustment);
 		await stream.writeSInt2Byte(value.audiophileAdjustment);
 	},
-	simplify: (_value: IID3V2.FrameValue.ReplayGainAdjustment) => {
-		return null; // TODO IID3V2.FrameValue.ReplayGainAdjustment IID3V2.FrameValue.Link
-	}
+	simplify: (_value: IID3V2.FrameValue.ReplayGainAdjustment) => null // TODO IID3V2.FrameValue.ReplayGainAdjustment IID3V2.FrameValue.Link
 };

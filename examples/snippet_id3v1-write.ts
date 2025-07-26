@@ -1,4 +1,4 @@
-import {ID3v1, IID3V1} from 'jamp3';
+import { ID3v1, IID3V1 } from 'jamp3';
 
 async function run(): Promise<void> {
 	const id3v1 = new ID3v1();
@@ -15,11 +15,9 @@ async function run(): Promise<void> {
 	const options: IID3V1.WriteOptions = {
 		keepBackup: true // keep a filename.mp3.bak copy of the original file
 	};
-	const version = 1;  // version: 1 = v1.1; 0 = v1.0
+	const version = 1; // version: 1 = v1.1; 0 = v1.0
 	await id3v1.write(filename, newTag, version, options);
 	console.log('id3v1.1 written');
 }
 
-run().catch(e => {
-	console.error(e);
-});
+run().catch(console.error);

@@ -44,8 +44,8 @@ interface ITestSpecFileInfo {
 		attached_pic: number; // 0,
 		timed_thumbnails: number; // 0
 	};
-	tags: { [key: string]: string; }; //  { encoder: 'LAME3.97 ' }
-	side_data_list: Array<{ [key: string]: string; }>; //   [{ side_data_type: 'Replay Gain' }]
+	tags: Record<string, string>; //  { encoder: 'LAME3.97 ' }
+	side_data_list: Array<Record<string, string>>; //   [{ side_data_type: 'Replay Gain' }]
 }
 
 export interface ITestSpec {

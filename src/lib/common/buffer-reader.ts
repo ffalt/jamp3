@@ -1,7 +1,7 @@
-import {ascii, utf8, IEncoding, Encodings} from './encodings';
-import {BufferUtils} from './buffer';
-import {ID3v2_UnifiedENCODINGS} from '../id3v2/id3v2.header.consts';
-import {removeUnsync} from '../id3v2/frames/id3v2.frame.unsync';
+import { ascii, utf8, IEncoding, Encodings } from './encodings';
+import { BufferUtils } from './buffer';
+import { ID3v2_UnifiedENCODINGS } from '../id3v2/id3v2.header.consts';
+import { removeUnsync } from '../id3v2/frames/id3v2.frame.unsync';
 
 export class BufferReader {
 	data: Buffer;
@@ -97,15 +97,10 @@ export class BufferReader {
 		return ascii.decode(buf);
 	}
 
-	// readFixedUTF8String(amount: number): string {
-	// 	const buf = this.readStringBuffer(amount);
-	// 	return utf8.decode(buf);
-	// }
-
 	readFixedAutodectectString(amount: number): string {
 		const buf = this.readStringBuffer(amount);
 		let result = utf8.decode(buf);
-		if (result.indexOf('�') >= 0) {
+		if (result.includes('�')) {
 			result = ascii.decode(buf);
 		}
 		return result;

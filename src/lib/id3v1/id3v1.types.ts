@@ -1,4 +1,4 @@
-import {ITag} from '../common/types';
+import { ITag } from '../common/types';
 
 export namespace IID3V1 {
 

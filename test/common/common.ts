@@ -1,18 +1,11 @@
-import path from 'path';
+import path from 'node:path';
 import fse from 'fs-extra';
 
 function replacer(name: string, val: any): any {
 	if (name === 'bin') {
-		return '<bin ' + val.data.length + 'bytes>';
+		return `<bin ${val.data.length}bytes>`;
 	}
-	// // convert RegExp to string
-	// if (val && val.constructor === RegExp) {
-	// 	return val.toString();
-	// } else if (name === 'str') { //
-	// 	return undefined; // remove from result
-	// } else {
-	return val; // return as is
-	// }
+	return val;
 }
 
 export function toNonBinJson(o: any): string {
@@ -41,10 +34,10 @@ export function collectTestFilesSync(dirs: Array<string>, rootDir: string, testS
 		for (const f of files1) {
 			const stat = fse.lstatSync(path.join(rootDir, dir, f));
 			if (stat.isDirectory()) {
-				files = files.concat(collectTestFilesSync([f], path.join(rootDir, dir), testSingleFile));
+				files = [...files, ...collectTestFilesSync([f], path.join(rootDir, dir), testSingleFile)];
 			} else if (
-				(['.mp3', '.id3'].indexOf(path.extname(f).toLowerCase()) >= 0) &&
-				(!testSingleFile || path.join(dir, f).indexOf(testSingleFile) >= 0)
+				(['.mp3', '.id3'].includes(path.extname(f).toLowerCase())) &&
+				(!testSingleFile || path.join(dir, f).includes(testSingleFile))
 			) {
 				files.push(path.join(rootDir, dir, f));
 			}
@@ -54,9 +47,9 @@ export function collectTestFilesSync(dirs: Array<string>, rootDir: string, testS
 }
 
 export async function hasSpec(filename: string): Promise<any> {
-	return (await fse.pathExists(filename + '.spec.json'));
+	return (await fse.pathExists(`${filename}.spec.json`));
 }
 
 export async function loadSpec(filename: string): Promise<any> {
-	return await fse.readJSON(filename + '.spec.json');
+	return await fse.readJSON(`${filename}.spec.json`);
 }

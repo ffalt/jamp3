@@ -1,4 +1,4 @@
-import {ID3v2, ID3V24TagBuilder, IID3V2} from 'jamp3';
+import { ID3v2, ID3V24TagBuilder, IID3V2 } from 'jamp3';
 
 async function run(): Promise<void> {
 	const id3v2 = new ID3v2();
@@ -19,6 +19,4 @@ async function run(): Promise<void> {
 	console.log('id3v2.4 written');
 }
 
-run().catch(e => {
-	console.error(e);
-});
+run().catch(console.error);

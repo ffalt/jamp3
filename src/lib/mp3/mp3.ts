@@ -1,13 +1,13 @@
 import fse from 'fs-extra';
-import {Readable} from 'stream';
+import { Readable } from 'node:stream';
 
-import {IMP3} from './mp3.types';
-import {MP3Reader, MP3ReaderOptions} from './mp3.reader';
-import {IID3V2} from '../id3v2/id3v2.types';
-import {rawHeaderOffSet} from './mp3.mpeg.frame';
-import {ITagID} from '../..';
-import {updateFile} from '../common/update-file';
-import {prepareResult} from './mp3.result';
+import { IMP3 } from './mp3.types';
+import { MP3Reader, MP3ReaderOptions } from './mp3.reader';
+import { IID3V2 } from '../id3v2/id3v2.types';
+import { rawHeaderOffSet } from './mp3.mpeg.frame';
+import { ITagID } from '../common/types';
+import { updateFile } from '../common/update-file';
+import { prepareResult } from './mp3.result';
 
 /**
  * Class for
@@ -21,7 +21,6 @@ import {prepareResult} from './mp3.result';
  * ```
  */
 export class MP3 {
-
 	/**
 	 * Reads a stream with given options
 	 * @param stream the stream to read (NodeJS.stream.Readable)
@@ -31,7 +30,7 @@ export class MP3 {
 	 */
 	async readStream(stream: Readable, options: IMP3.ReadOptions, streamSize?: number): Promise<IMP3.Result> {
 		const reader = new MP3Reader();
-		const layout = await reader.readStream(stream, Object.assign({streamSize}, options));
+		const layout = await reader.readStream(stream, { streamSize, ...options });
 		return await prepareResult(options, layout);
 	}
 
@@ -82,29 +81,22 @@ export class MP3 {
 				for (const tag of layout.tags) {
 					if (tag.id === ITagID.ID3v2 && options.id3v2) {
 						if (start < tag.end) {
-							specEnd = (tag as IID3V2.RawTag).head.size + tag.start + 10 /*header itself*/;
+							specEnd = (tag as IID3V2.RawTag).head.size + tag.start + 10; // 10: header itself
 							start = tag.end;
 							id2v2removed = true;
 						}
-					} else if (tag.id === ITagID.ID3v1 && options.id3v1 && tag.end === stat.size) {
-						if (finish > tag.start) {
-							finish = tag.start;
-							id2v1removed = true;
-						}
+					} else if (tag.id === ITagID.ID3v1 && options.id3v1 && tag.end === stat.size && finish > tag.start) {
+						finish = tag.start;
+						id2v1removed = true;
 					}
 				}
 				if (options.id3v2) {
-					if (layout.frameheaders.length > 0) {
-						start = rawHeaderOffSet(layout.frameheaders[0]);
-					} else {
-						start = Math.max(start, specEnd);
-					}
+					start = layout.frameheaders.length > 0 ? rawHeaderOffSet(layout.frameheaders[0]) : Math.max(start, specEnd);
 				}
 				if (finish > start) {
 					await fileWriter.copyRange(filename, start, finish);
 				}
 			});
-		return id2v2removed || id2v1removed ? {id3v2: id2v2removed, id3v1: id2v1removed} : undefined;
+		return id2v2removed || id2v1removed ? { id3v2: id2v2removed, id3v1: id2v1removed } : undefined;
 	}
-
 }

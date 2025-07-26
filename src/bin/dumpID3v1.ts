@@ -1,8 +1,8 @@
-import {program} from 'commander';
+import { program } from 'commander';
 import fse from 'fs-extra';
 
-import {ID3v1} from '../lib/id3v1/id3v1';
-import {runTool} from '../lib/common/tool';
+import { ID3v1 } from '../lib/id3v1/id3v1';
+import { runTool } from '../lib/common/tool';
 
 import pack from '../../package.json';
 
@@ -26,12 +26,7 @@ const result: Array<IDumpResult> = [];
 
 async function onFile(filename: string): Promise<void> {
 	const tag = await id3v1.read(filename);
-	let dump: IDumpResult;
-	if (tag) {
-		dump = {filename, tag: tag};
-	} else {
-		dump = {error: 'No tag found', filename};
-	}
+	const dump: IDumpResult = tag ? { filename, tag: tag } : { error: 'No tag found', filename };
 	if (program.opts().dest) {
 		result.push(dump);
 	} else {
@@ -46,7 +41,6 @@ async function run(): Promise<void> {
 	}
 }
 
-run()
-	.catch(e => {
-		console.error(e);
-	});
+run().catch(error => {
+	console.error(error);
+});

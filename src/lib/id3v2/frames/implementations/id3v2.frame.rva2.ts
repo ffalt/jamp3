@@ -1,7 +1,7 @@
-import {IFrameImpl} from '../id3v2.frame';
-import {ascii} from '../../../common/encodings';
-import {IID3V2} from '../../id3v2.types';
-import {neededStoreBytes} from '../../../common/utils';
+import { IFrameImpl } from '../id3v2.frame';
+import { ascii } from '../../../common/encodings';
+import { IID3V2 } from '../../id3v2.types';
+import { neededStoreBytes } from '../../../common/utils';
 
 export const FrameRelativeVolumeAdjustment2: IFrameImpl = {
 	/**
@@ -30,7 +30,6 @@ export const FrameRelativeVolumeAdjustment2: IFrameImpl = {
 	 Bits representing peak  $xx
 	 Peak volume             $xx (xx ...)
 
-
 	 Type of channel:  $00  Other
 	 $01  Master volume
 	 $02  Front right
@@ -48,25 +47,27 @@ export const FrameRelativeVolumeAdjustment2: IFrameImpl = {
 
 	parse: async (reader, frame) => {
 		if (frame.data.length === 0) {
-			return {value: {}};
+			return { value: {} };
 		}
-		// const AdjustmentType: any = {
-		// 	0: 'Other',
-		// 	1: 'Master volume',
-		// 	2: 'Front right',
-		// 	3: 'Front left',
-		// 	4: 'Back right',
-		// 	5: 'Back left',
-		// 	6: 'Front centre',
-		// 	7: 'Back centre',
-		// 	8: 'Subwoofer'
-		// };
+		/*
+		const AdjustmentType: any = {
+			0: 'Other',
+			1: 'Master volume',
+			2: 'Front right',
+			3: 'Front left',
+			4: 'Back right',
+			5: 'Back left',
+			6: 'Front centre',
+			7: 'Back centre',
+			8: 'Subwoofer'
+		};
+		*/
 		const id = reader.readStringTerminated(ascii);
 		const channels: Array<IID3V2.FrameValue.RVA2Channel> = [];
 		while (reader.unread() >= 3) {
 			const type = reader.readByte();
 			const adjustment = reader.readSInt(2); // 16-bit signed
-			const channel: IID3V2.FrameValue.RVA2Channel = {type, adjustment};
+			const channel: IID3V2.FrameValue.RVA2Channel = { type, adjustment };
 			while (reader.unread() >= 1) {
 				const bitspeakvolume = reader.readByte();
 				const bytesInPeak = bitspeakvolume > 0 ? Math.ceil(bitspeakvolume / 8) : 0;
@@ -76,11 +77,11 @@ export const FrameRelativeVolumeAdjustment2: IFrameImpl = {
 			}
 			channels.push(channel);
 		}
-		const value: IID3V2.FrameValue.RVA2 = {id, channels};
-		return {value};
+		const value: IID3V2.FrameValue.RVA2 = { id, channels };
+		return { value };
 	},
 	write: async (frame, stream) => {
-		const value = <IID3V2.FrameValue.RVA2>frame.value;
+		const value = frame.value as IID3V2.FrameValue.RVA2;
 		await stream.writeStringTerminated(value.id, ascii);
 		for (const channel of value.channels) {
 			await stream.writeByte(channel.type);
@@ -92,7 +93,5 @@ export const FrameRelativeVolumeAdjustment2: IFrameImpl = {
 			}
 		}
 	},
-	simplify: (_value: IID3V2.FrameValue.RVA2) => {
-		return null; // TODO simplify IID3V2.FrameValue.RVA2
-	}
+	simplify: (_value: IID3V2.FrameValue.RVA2) => null // TODO simplify IID3V2.FrameValue.RVA2
 };

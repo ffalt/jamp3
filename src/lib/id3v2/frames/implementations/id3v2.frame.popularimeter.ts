@@ -1,7 +1,7 @@
-import {IFrameImpl} from '../id3v2.frame';
-import {ascii} from '../../../common/encodings';
-import {IID3V2} from '../../id3v2.types';
-import {neededStoreBytes} from '../../../common/utils';
+import { IFrameImpl } from '../id3v2.frame';
+import { ascii } from '../../../common/encodings';
+import { IID3V2 } from '../../id3v2.types';
+import { neededStoreBytes } from '../../../common/utils';
 
 export const FramePopularimeter: IFrameImpl = {
 	/**
@@ -21,28 +21,27 @@ export const FramePopularimeter: IFrameImpl = {
 	 Rating          $xx
 	 Counter         $xx xx xx xx (xx ...)
 
-
 	 Popularimeter   "POP"
 	 Email to user   <textstring> $00
 	 Rating          $xx
 	 Counter         $xx xx xx xx (xx ...)
 	 */
-	parse: async (reader) => {
+	parse: async reader => {
 		const email = reader.readStringTerminated(ascii);
 		const rating = reader.readByte();
 		let count = 0;
 		if (reader.hasData()) {
 			try {
 				count = reader.readUInt(reader.unread());
-			} catch (_e: any) {
+			} catch {
 				count = 0;
 			}
 		}
-		const value: IID3V2.FrameValue.Popularimeter = {count, rating, email};
-		return {value, encoding: ascii};
+		const value: IID3V2.FrameValue.Popularimeter = { count, rating, email };
+		return { value, encoding: ascii };
 	},
 	write: async (frame, stream) => {
-		const value = <IID3V2.FrameValue.Popularimeter>frame.value;
+		const value = frame.value as IID3V2.FrameValue.Popularimeter;
 		await stream.writeStringTerminated(value.email, ascii);
 		await stream.writeByte(value.rating);
 		if (value.count > 0) {
@@ -52,7 +51,7 @@ export const FramePopularimeter: IFrameImpl = {
 	},
 	simplify: (value: IID3V2.FrameValue.Popularimeter) => {
 		if (value && value.email !== undefined) {
-			return value.email + (value.count !== undefined ? ';count=' + value.count : '') + (value.rating !== undefined ? ';rating=' + value.rating : '');
+			return value.email + (value.count === undefined ? '' : `;count=${value.count}`) + (value.rating === undefined ? '' : `;rating=${value.rating}`);
 		}
 		return null;
 	}

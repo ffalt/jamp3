@@ -1,6 +1,6 @@
-import {IID3V2} from './id3v2.types';
-import {ID3V2RawBuilder} from './id3v2.builder';
-import {ITagID} from '../common/types';
+import { IID3V2 } from './id3v2.types';
+import { ID3V2RawBuilder } from './id3v2.builder';
+import { ITagID } from '../common/types';
 
 /**
  * Class for
@@ -19,6 +19,7 @@ export class ID3V24TagBuilder implements IID3V2.Builder {
 		utf16be: 'utf16-be',
 		utf8: 'utf8'
 	};
+
 	rawBuilder: ID3V2RawBuilder;
 
 	constructor(encoding?: string) {
@@ -28,12 +29,12 @@ export class ID3V24TagBuilder implements IID3V2.Builder {
 	buildFrames(): Array<IID3V2.Frame> {
 		const result: Array<IID3V2.Frame> = [];
 		const frameValues = this.rawBuilder.build();
-		Object.keys(frameValues).forEach(id => {
+		for (const id of Object.keys(frameValues)) {
 			const list = frameValues[id];
 			for (const frame of list) {
 				result.push(frame);
 			}
-		});
+		}
 		return result;
 	}
 
@@ -124,7 +125,7 @@ export class ID3V24TagBuilder implements IID3V2.Builder {
 		return this;
 	}
 
-	/**	BPM: contains the number of beats per minute in the main part of the audio. The BPM is an integer and represented as a numerical string. **/
+	/** BPM: contains the number of beats per minute in the main part of the audio. The BPM is an integer and represented as a numerical string. **/
 	bpm(value?: string | number): ID3V24TagBuilder {
 		this.rawBuilder.text('TBPM', value ? value.toString() : undefined);
 		return this;
@@ -202,7 +203,8 @@ export class ID3V24TagBuilder implements IID3V2.Builder {
 		return this;
 	}
 
-	/** TENC: The 'Encoded by' frame contains the name of the person or organisation that encoded the audio file. This field may contain a copyright message, if the audio file also is copyrighted by the encoder. **/
+	/** TENC: The 'Encoded by' frame contains the name of the person or organization that encoded the audio file.
+	    This field may contain a copyright message, if the audio file also is copyrighted by the encoder. **/
 	encoder(value?: string): ID3V24TagBuilder {
 		this.rawBuilder.text('TENC', value);
 		return this;
@@ -258,7 +260,7 @@ export class ID3V24TagBuilder implements IID3V2.Builder {
 		return this;
 	}
 
-	/**TIPL: The 'Involved people list' is intended as a mapping between the function and a person
+	/** TIPL: The 'Involved people list' is intended as a mapping between the function and a person
 	 * @param group function, e.g. producer
 	 * @param value a name or comma seperated list of names
 	 * **/
@@ -668,7 +670,10 @@ export class ID3V24TagBuilder implements IID3V2.Builder {
 		return this;
 	}
 
-	/**  WOAR: The 'Official artist/performer webpage' frame is a URL pointing at the artists official webpage. There may be more than one "WOAR" frame in a tag if the audio contains more than one performer, but not with the same content. **/
+	/**
+	  WOAR: The 'Official artist/performer webpage' frame is a URL pointing at the artists official webpage.
+	  There may be more than one "WOAR" frame in a tag if the audio contains more than one performer, but not with the same content.
+	 **/
 	website(value?: string): ID3V24TagBuilder {
 		this.rawBuilder.text('WOAR', value);
 		return this;
@@ -683,5 +688,4 @@ export class ID3V24TagBuilder implements IID3V2.Builder {
 		this.rawBuilder.text('GRP1', value);
 		return this;
 	}
-
 }

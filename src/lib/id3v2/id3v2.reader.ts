@@ -1,13 +1,15 @@
-import {bitarray, flags, removeZeroString, unsynchsafe} from '../common/utils';
-import {BufferUtils} from '../common/buffer';
-import {ID3v2_FRAME_FLAGS1, ID3v2_FRAME_FLAGS2, ID3v2_FRAME_HEADER, ID3v2_FRAME_HEADER_LENGTHS, ID3v2_MARKER} from './id3v2.header.consts';
-import {IID3V2} from './id3v2.types';
-import {Readable} from 'stream';
-import {ITagID} from '../..';
-import {ReaderStream} from '../common/stream-reader';
-import {BufferReader} from '../common/buffer-reader';
-import {isValidFrameBinId} from './frames/id3v2.frame.match';
-import {ID3v2HeaderReader} from './id3v2.reader.header';
+import { bitarray, flags, removeZeroString, unsynchsafe } from '../common/utils';
+
+import { Readable } from 'node:stream';
+import { BufferUtils } from '../common/buffer';
+import { ID3v2_FRAME_FLAGS1, ID3v2_FRAME_FLAGS2, ID3v2_FRAME_HEADER, ID3v2_FRAME_HEADER_LENGTHS, ID3v2_MARKER } from './id3v2.header.consts';
+import { IID3V2 } from './id3v2.types';
+import { ITagID } from '../common/types';
+import { ReaderStream } from '../common/stream-reader';
+import { BufferReader } from '../common/buffer-reader';
+import { isValidFrameBinId } from './frames/id3v2.frame.match';
+import { ID3v2HeaderReader } from './id3v2.reader.header';
+import RawFrame = IID3V2.RawFrame;
 
 const ID3v2_MARKER_BUFFER = BufferUtils.fromString(ID3v2_MARKER);
 
@@ -15,13 +17,13 @@ export class ID3v2Reader {
 	headerReader = new ID3v2HeaderReader();
 
 	private async readRawTag(head: IID3V2.TagHeader, reader: ReaderStream): Promise<{ rest?: Buffer; tag?: IID3V2.RawTag }> {
-		const tag: IID3V2.RawTag = {id: ITagID.ID3v2, frames: [], start: 0, end: 0, head: head || {ver: 0, rev: 0, size: 0, valid: false}};
+		const tag: IID3V2.RawTag = { id: ITagID.ID3v2, frames: [], start: 0, end: 0, head: head || { ver: 0, rev: 0, size: 0, valid: false } };
 		let rest: Buffer | undefined;
 		if (tag.head.size > 0) {
 			const data = await reader.read(tag.head.size);
 			rest = await this.readFrames(data, tag);
 		}
-		return {rest, tag};
+		return { rest, tag };
 	}
 
 	private async scan(reader: ReaderStream): Promise<{ rest?: Buffer; tag?: IID3V2.RawTag }> {
@@ -52,7 +54,7 @@ export class ID3v2Reader {
 			return {};
 		}
 		if (!head.header) {
-			return {rest: head.rest};
+			return { rest: head.rest };
 		}
 		return await this.readRawTag(head.header, reader);
 	}
@@ -62,8 +64,8 @@ export class ID3v2Reader {
 		try {
 			await reader.openStream(stream);
 			return await this.scanReaderStream(reader);
-		} catch (e: any) {
-			return Promise.reject(e);
+		} catch (error) {
+			return Promise.reject(error);
 		}
 	}
 
@@ -74,9 +76,9 @@ export class ID3v2Reader {
 			const tag = await this.scanReaderStream(reader);
 			reader.close();
 			return tag;
-		} catch (e: any) {
+		} catch (error) {
 			reader.close();
-			return Promise.reject(e);
+			return Promise.reject(error);
 		}
 	}
 
@@ -121,6 +123,7 @@ export class ID3v2Reader {
 	}
 
 	private readFrame(reader: BufferReader, idbin: Buffer, tag: IID3V2.RawTag, skip: number): number {
+		let currentSkip = skip;
 		const markerLength = ID3v2_FRAME_HEADER_LENGTHS.MARKER[tag.head.ver];
 		const pos = reader.position;
 		const frame: IID3V2.RawFrame = this.defaultRawFrame(idbin, tag);
@@ -137,12 +140,12 @@ export class ID3v2Reader {
 			valid = false;
 		}
 		if (valid) {
-			if (skip > 0 && tag.frames.length > 0) {
-				const lastFrame = tag.frames[tag.frames.length - 1];
-				lastFrame.data = BufferUtils.concatBuffer(lastFrame.data, reader.data.slice(pos - skip - markerLength, pos - markerLength));
+			if (currentSkip > 0 && tag.frames.length > 0) {
+				const lastFrame = tag.frames.at(-1) as RawFrame;
+				lastFrame.data = BufferUtils.concatBuffer(lastFrame.data, reader.data.slice(pos - currentSkip - markerLength, pos - markerLength));
 				lastFrame.size = lastFrame.data.length;
 			}
-			skip = 0;
+			currentSkip = 0;
 			if (frame.size > 0) {
 				frame.data = (tag.head.v3 && tag.head.v3.flags.unsynchronisation) ?
 					reader.readUnsyncedBuffer(frame.size) :
@@ -151,8 +154,8 @@ export class ID3v2Reader {
 			tag.frames.push(frame);
 		} else {
 			reader.position = pos - (markerLength - 1);
-			skip++;
+			currentSkip++;
 		}
-		return skip;
+		return currentSkip;
 	}
 }

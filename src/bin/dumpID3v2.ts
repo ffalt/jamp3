@@ -1,9 +1,9 @@
 import fse from 'fs-extra';
-import {program} from 'commander';
+import { program } from 'commander';
 
-import {runTool} from '../lib/common/tool';
-import {ID3v2} from '../lib/id3v2/id3v2';
-import {toPrettyJsonWithBin} from '../lib/common/pretty-json';
+import { runTool } from '../lib/common/tool';
+import { ID3v2 } from '../lib/id3v2/id3v2';
+import { toPrettyJsonWithBin } from '../lib/common/pretty-json';
 
 import pack from '../../package.json';
 
@@ -15,7 +15,6 @@ program
 	.option('-f, --full', 'full tag output (simple otherwise)')
 	.option('-d, --dest <file>', 'destination analyze result file')
 	.parse(process.argv);
-
 
 const id3v2 = new ID3v2();
 
@@ -29,12 +28,7 @@ const result: Array<IDumpResult> = [];
 
 async function onFile(filename: string): Promise<void> {
 	const tag = await id3v2.read(filename);
-	let dump: IDumpResult;
-	if (tag) {
-		dump = {filename, tag: program.opts().full ? tag : ID3v2.simplify(tag)};
-	} else {
-		dump = {error: 'No tag found', filename};
-	}
+	const dump: IDumpResult = tag ? { filename, tag: program.opts().full ? tag : ID3v2.simplify(tag) } : { error: 'No tag found', filename };
 	if (program.opts().dest) {
 		result.push(dump);
 	} else if (program.opts().full) {
@@ -51,6 +45,6 @@ async function run(): Promise<void> {
 	}
 }
 
-run().catch(e => {
-	console.error(e);
+run().catch(error => {
+	console.error(error);
 });

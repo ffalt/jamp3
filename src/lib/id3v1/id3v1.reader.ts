@@ -1,40 +1,38 @@
-import {Markers} from '../common/marker';
-import {IID3V1} from './id3v1.types';
-import {BufferUtils} from '../common/buffer';
-import {Readable} from 'stream';
-import Debug from 'debug';
-import {ITagID} from '../..';
-import {ReaderStream} from '../common/stream-reader';
-import {BufferReader} from '../common/buffer-reader';
+import { Readable } from 'node:stream';
 
-const debug = Debug('id3v1-reader');
+import { Markers } from '../common/marker';
+import { IID3V1 } from './id3v1.types';
+import { BufferUtils } from '../common/buffer';
+import { ITagID } from '../common/types';
+import { ReaderStream } from '../common/stream-reader';
+import { BufferReader } from '../common/buffer-reader';
+
 export const ID3v1_MARKER = 'TAG';
 
 export class ID3v1Reader {
-
 	public readTag(data: Buffer): IID3V1.Tag | null {
-		/* v1
-		 Song Title		30 characters
-		 Artist	 		30 characters
-		 Album			30 characters
-		 Year			4 characters
-		 Comment		30 characters
-		 Genre			1 byte
-		 */
+		/*
+		 v1
+		 Song Title 30 characters
+		 Artist     30 characters
+		 Album      30 characters
+		 Year        4 characters
+		 Comment    30 characters
+		 Genre       1 byte
 
-		/* v1.1
-		 Song Title		30 characters
-		 Artist	 		30 characters
-		 Album			30 characters
-		 Year			4 characters
-		 Comment		28+null characters
-		 Track			1 byte
-		 Genre			1 byte
+		 v1.1
+		 Song Title 30 characters
+		 Artist     30 characters
+		 Album      30 characters
+		 Year        4 characters
+		 Comment    28 characters + null
+		 Track      1 byte
+		 Genre      1 byte
 		 */
 		if (data.length < 128 || !Markers.isMarker(data, 0, Markers.MARKERS.tag)) {
 			return null;
 		}
-		const tag: IID3V1.Tag = {id: ITagID.ID3v1, start: 0, end: 0, version: 0, value: {}};
+		const tag: IID3V1.Tag = { id: ITagID.ID3v1, start: 0, end: 0, version: 0, value: {} };
 		const reader = new BufferReader(data);
 		reader.position = 3;
 		const value: IID3V1.ID3v1Tag = {};
@@ -53,7 +51,6 @@ export class ID3v1Reader {
 		value.genreIndex = reader.readByte();
 		tag.value = value;
 		return tag;
-		// cb(null, tag);
 	}
 
 	async readReaderStream(reader: ReaderStream): Promise<IID3V1.Tag | undefined> {
@@ -61,7 +58,6 @@ export class ID3v1Reader {
 			return;
 		}
 		const index = await reader.scan(BufferUtils.fromString(ID3v1_MARKER));
-		debug('index', index);
 		if (index < 0) {
 			return;
 		}
@@ -88,8 +84,8 @@ export class ID3v1Reader {
 		try {
 			await reader.openStream(stream);
 			return await this.readReaderStream(reader);
-		} catch (e: any) {
-			return Promise.reject(e);
+		} catch (error) {
+			return Promise.reject(error);
 		}
 	}
 
@@ -100,23 +96,24 @@ export class ID3v1Reader {
 			const tag = await this.readReaderStream(reader);
 			reader.close();
 			return tag;
-		} catch (e: any) {
+		} catch (error) {
 			reader.close();
-			return Promise.reject(e);
+			return Promise.reject(error);
 		}
 	}
 
-
 	/**
 	 TODO: CUSTOMTAG tag
-
 	 TODO: APE tag
-
 	 TODO: Extended tag
 
-	 The extended tag is an extra data block before an ID3v1 tag, which extends the title, artist and album fields by 60 bytes each, offers a freetext genre, a one-byte (values 0–5) speed and the start and stop time of the music in the MP3 file, e.g., for fading in. If none of the fields are used, it will be automatically omitted.
+	 The extended tag is an extra data block before an ID3v1 tag, which extends the title, artist and album fields by 60 bytes each,
+	 offers a freetext genre, a one-byte (values 0–5) speed and the start and stop time of the music in the MP3 file, e.g., for fading in.
+	 If none of the fields are used, it will be automatically omitted.
 
-	 Some programs supporting ID3v1 frames can read the extended tag, but writing may leave stale values in the extended block. The extended block is not an official standard, and is only supported by few programs, not including XMMS or Winamp. The extended tag is sometimes referred to as the "enhanced" tag.
+	 Some programs supporting ID3v1 frames can read the extended tag, but writing may leave stale values in the extended block.
+	 The extended block is not an official standard, and is only supported by few programs, not including XMMS or Winamp.
+	 The extended tag is sometimes referred to as the "enhanced" tag.
 	 Layout
 
 	 Note: The extended tag is 227 bytes long, and placed before the ID3v1 tag.
@@ -130,5 +127,4 @@ export class ID3v1Reader {
 	 start-time    6    the start of the music as mmm:ss
 	 end-time    6    the end of the music as mmm:ss
 	 */
-
 }

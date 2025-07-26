@@ -1,31 +1,33 @@
-import {FrameIdAscii} from './implementations/id3v2.frame.id-ascii';
-import {FrameText} from './implementations/id3v2.frame.text';
-import {FrameUnknown} from './implementations/id3v2.frame.unknown';
-import {FrameTextConcatList} from './implementations/id3v2.frame.text-concat-list';
-import {FrameIdText} from './implementations/id3v2.frame.id-text';
-import {FrameAscii} from './implementations/id3v2.frame.ascii';
-import {FrameTextList} from './implementations/id3v2.frame.text-list';
-import {FrameETCO} from './implementations/id3v2.frame.event-timing';
-import {FrameLangDescText} from './implementations/id3v2.frame.lang-desc-text';
-import {FrameSYLT} from './implementations/id3v2.frame.synclyrics';
-import {FrameRelativeVolumeAdjustment} from './implementations/id3v2.frame.rva';
-import {FramePic} from './implementations/id3v2.frame.pic';
-import {FrameGEOB} from './implementations/id3v2.frame.generic-object';
-import {FramePlayCount} from './implementations/id3v2.frame.playcount';
-import {FramePopularimeter} from './implementations/id3v2.frame.popularimeter';
-import {FrameAENC} from './implementations/id3v2.frame.aenc';
-import {FrameLINK} from './implementations/id3v2.frame.linked-info';
-import {FrameIdBin} from './implementations/id3v2.frame.id-bin';
-import {FrameBooleanString} from './implementations/id3v2.frame.boolstring';
-import {FramePCST} from './implementations/id3v2.frame.pcst';
-import {FrameMusicCDId} from './implementations/id3v2.frame.musiccdid';
-import {FrameRelativeVolumeAdjustment2} from './implementations/id3v2.frame.rva2';
-import {FrameLangText} from './implementations/id3v2.frame.lang-text';
-import {FrameRGAD} from './implementations/id3v2.frame.gain-adjustment';
-import {FrameCTOC} from './implementations/id3v2.frame.chapter-toc';
-import {FrameCHAP} from './implementations/id3v2.frame.chapter';
-import {IID3V2} from '../id3v2.types';
-import {IFrameImpl} from './id3v2.frame';
+/* eslint-disable max-lines */
+
+import { FrameIdAscii } from './implementations/id3v2.frame.id-ascii';
+import { FrameText } from './implementations/id3v2.frame.text';
+import { FrameUnknown } from './implementations/id3v2.frame.unknown';
+import { FrameTextConcatList } from './implementations/id3v2.frame.text-concat-list';
+import { FrameIdText } from './implementations/id3v2.frame.id-text';
+import { FrameAscii } from './implementations/id3v2.frame.ascii';
+import { FrameTextList } from './implementations/id3v2.frame.text-list';
+import { FrameETCO } from './implementations/id3v2.frame.event-timing';
+import { FrameLangDescText } from './implementations/id3v2.frame.lang-desc-text';
+import { FrameSYLT } from './implementations/id3v2.frame.synclyrics';
+import { FrameRelativeVolumeAdjustment } from './implementations/id3v2.frame.rva';
+import { FramePic } from './implementations/id3v2.frame.pic';
+import { FrameGEOB } from './implementations/id3v2.frame.generic-object';
+import { FramePlayCount } from './implementations/id3v2.frame.playcount';
+import { FramePopularimeter } from './implementations/id3v2.frame.popularimeter';
+import { FrameAENC } from './implementations/id3v2.frame.aenc';
+import { FrameLINK } from './implementations/id3v2.frame.linked-info';
+import { FrameIdBin } from './implementations/id3v2.frame.id-bin';
+import { FrameBooleanString } from './implementations/id3v2.frame.boolstring';
+import { FramePCST } from './implementations/id3v2.frame.pcst';
+import { FrameMusicCDId } from './implementations/id3v2.frame.musiccdid';
+import { FrameRelativeVolumeAdjustment2 } from './implementations/id3v2.frame.rva2';
+import { FrameLangText } from './implementations/id3v2.frame.lang-text';
+import { FrameRGAD } from './implementations/id3v2.frame.gain-adjustment';
+import { FrameCTOC } from './implementations/id3v2.frame.chapter-toc';
+import { FrameCHAP } from './implementations/id3v2.frame.chapter';
+import { IID3V2 } from '../id3v2.types';
+import { IFrameImpl } from './id3v2.frame';
 
 export interface IFrameDef {
 	title: string;
@@ -35,7 +37,7 @@ export interface IFrameDef {
 	upgradeValue?: (value: any) => IID3V2.FrameValue.Base | undefined;
 }
 
-export const FrameDefs: { [id: string]: IFrameDef } = {
+export const FrameDefs: Record<string, IFrameDef> = {
 	// Other 2
 	'UFI': {
 		title: 'Unique file identifier',
@@ -673,7 +675,9 @@ export const FrameDefs: { [id: string]: IFrameDef } = {
 	},
 	'TOPE': {
 		/*
-		 The 'Original artist(s)/performer(s)' frame is intended for the performer(s) of the original recording, if for example the music in the file should be a cover of a previously released song. The performers are seperated with the "/" character.
+		 The 'Original artist(s)/performer(s)' frame is intended for the performer(s) of the original recording,
+		 if for example the music in the file should be a cover of a previously released song.
+		 The performers are seperated with the "/" character.
 		 */
 		title: 'Original artist',
 		versions: [3, 4],
@@ -689,7 +693,9 @@ export const FrameDefs: { [id: string]: IFrameDef } = {
 	},
 	'TOLY': {
 		/*
-		 The 'Original lyricist(s)/text writer(s)' frame is intended for the text writer(s) of the original recording, if for example the music in the file should be a cover of a previously released song. The text writers are seperated with the "/" character.
+		 The 'Original lyricist(s)/text writer(s)' frame is intended for the text writer(s) of the original recording,
+		 if for example the music in the file should be a cover of a previously released song.
+		 The text writers are seperated with the "/" character.
 		 */
 		title: 'Original lyricist',
 		versions: [3, 4],
@@ -730,7 +736,10 @@ export const FrameDefs: { [id: string]: IFrameDef } = {
 	},
 	'TKEY': {
 		/*
-		 The 'Initial key' frame contains the musical key in which the sound starts. It is represented as a string with a maximum length of three characters. The ground keys are represented with "A","B","C","D","E", "F" and "G" and halfkeys represented with "b" and "#". Minor is represented as "m". Example "Cbm". Off key is represented with an "o" only.
+		 The 'Initial key' frame contains the musical key in which the sound starts.
+		 It is represented as a string with a maximum length of three characters.
+		 The ground keys are represented with "A","B","C","D","E", "F" and "G" and halfkeys represented with "b" and "#". Minor is represented as "m".
+		 Example "Cbm". Off key is represented with an "o" only.
 		 */
 		title: 'Initial key',
 		versions: [3, 4],
@@ -738,7 +747,9 @@ export const FrameDefs: { [id: string]: IFrameDef } = {
 	},
 	'TLAN': {
 		/*
-		 The 'Language(s)' frame should contain the languages of the text or lyrics spoken or sung in the audio. The language is represented with three characters according to ISO-639-2. If more than one language is used in the text their language codes should follow according to their usage.
+		 The 'Language(s)' frame should contain the languages of the text or lyrics spoken or sung in the audio.
+		 The language is represented with three characters according to ISO-639-2.
+		 If more than one language is used in the text their language codes should follow according to their usage.
 		 */
 		title: 'Languages',
 		versions: [3, 4],
@@ -915,7 +926,8 @@ export const FrameDefs: { [id: string]: IFrameDef } = {
 	// -Other text frames
 	'TOFN': {
 		/*
-		 The 'Original filename' frame contains the preferred filename for the file, since some media doesn't allow the desired length of the filename. The filename is case sensitive and includes its suffix.
+		 The 'Original filename' frame contains the preferred filename for the file, since some media doesn't allow the desired length of the filename.
+		 The filename is case sensitive and includes its suffix.
 		 */
 		title: 'Original filename',
 		versions: [3, 4],
@@ -923,7 +935,9 @@ export const FrameDefs: { [id: string]: IFrameDef } = {
 	},
 	'TDLY': {
 		/*
-		 The 'Playlist delay' defines the numbers of milliseconds of silence between every song in a playlist. The player should use the "ETC" frame, if present, to skip initial silence and silence at the end of the audio to match the 'Playlist delay' time. The time is represented as a numeric string.
+		 The 'Playlist delay' defines the numbers of milliseconds of silence between every song in a playlist.
+		 The player should use the "ETC" frame, if present, to skip initial silence and silence at the end of the audio to match the 'Playlist delay' time.
+		 The time is represented as a numeric string.
 		 */
 		title: 'Playlist delay',
 		versions: [3, 4],
@@ -968,7 +982,9 @@ export const FrameDefs: { [id: string]: IFrameDef } = {
 	},
 	'TORY': {
 		/*
-		 The 'Original release year' frame is intended for the year when the original recording, if for example the music in the file should be a cover of a previously released song, was released. The field is formatted as in the "TYER" frame.
+		 The 'Original release year' frame is intended for the year when the original recording,
+		 if for example the music in the file should be a cover of a previously released song, was released.
+		 The field is formatted as in the "TYER" frame.
 		 */
 		title: 'Original release year',
 		versions: [3],
@@ -1598,16 +1614,15 @@ export const FrameDefs: { [id: string]: IFrameDef } = {
 		 The private data        <binary data>
 
 		 //TODO: implement known PRIV Tags
-		 AverageLevel 	N
-		 PeakValue 	N
-		 WM_MediaClassPrimaryID 	N
-		 WM_MediaClassSecondaryID 	N
-		 WM_Provider 	N
-		 WM_CollectionGroupID 	N
-		 WM_CollectionID 	N
-		 WM_ContentID 	N
-		 XMP 	- 	--> http://www.sno.phy.queensu.ca/~phil/exiftool/TagNames/XMP.html
-
+		 AverageLevel N
+		 PeakValue N
+		 WM_MediaClassPrimaryID N
+		 WM_MediaClassSecondaryID N
+		 WM_Provider N
+		 WM_CollectionGroupID N
+		 WM_CollectionID N
+		 WM_ContentID N
+		 XMP  - --> http://www.sno.phy.queensu.ca/~phil/exiftool/TagNames/XMP.html
 		 */
 		title: 'Private frame',
 		versions: [3, 4],
@@ -1811,11 +1826,9 @@ export const FrameDefs: { [id: string]: IFrameDef } = {
 		versions: [2],
 		impl: FrameText,
 		upgrade: 'TXXX',
-		upgradeValue: (value: IID3V2.FrameValue.Text): IID3V2.FrameValue.IdText => {
-			return {
-				id: '',
-				text: value.text
-			};
-		}
+		upgradeValue: (value: IID3V2.FrameValue.Text): IID3V2.FrameValue.IdText => ({
+			id: '',
+			text: value.text
+		})
 	}
 };

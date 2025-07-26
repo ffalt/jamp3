@@ -1,4 +1,4 @@
-import path from 'path';
+import path from 'node:path';
 
 export const IMP3TestPath = path.join(__dirname, '..', 'data', 'testfiles', 'mp3');
 export const IMP3TestDirectories = [

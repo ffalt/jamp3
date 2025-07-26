@@ -1,6 +1,6 @@
-import {IFrameImpl} from '../id3v2.frame';
-import {ascii} from '../../../common/encodings';
-import {IID3V2} from '../../id3v2.types';
+import { IFrameImpl } from '../id3v2.frame';
+import { ascii } from '../../../common/encodings';
+import { IID3V2 } from '../../id3v2.types';
 
 export const FrameLINK: IFrameImpl = {
 	/**
@@ -41,27 +41,25 @@ export const FrameLINK: IFrameImpl = {
 	 The "COMM", "SYLT" and "USLT" frames may be linked with three bytes of language descriptor directly followed by a content descriptor as additional ID data.
 	 */
 
-	parse: async (reader) => {
+	parse: async reader => {
 		const url = reader.readStringTerminated(ascii);
 		const id = reader.readStringTerminated(ascii);
-		const value: IID3V2.FrameValue.LinkedInfo = {url, id, additional: []};
+		const value: IID3V2.FrameValue.LinkedInfo = { url, id, additional: [] };
 		while (reader.hasData()) {
 			const additional = reader.readStringTerminated(ascii);
 			if (additional.length > 0) {
 				value.additional.push(additional);
 			}
 		}
-		return {value, encoding: ascii};
+		return { value, encoding: ascii };
 	},
 	write: async (frame, stream) => {
-		const value = <IID3V2.FrameValue.LinkedInfo>frame.value;
+		const value = frame.value as IID3V2.FrameValue.LinkedInfo;
 		await stream.writeStringTerminated(value.url, ascii);
 		await stream.writeStringTerminated(value.id, ascii);
 		for (const additional of value.additional) {
 			await stream.writeStringTerminated(additional, ascii);
 		}
 	},
-	simplify: (_value: IID3V2.FrameValue.LinkedInfo) => {
-		return null; // TODO simplify IID3V2.FrameValue.Link
-	}
+	simplify: (_value: IID3V2.FrameValue.LinkedInfo) => null // TODO simplify IID3V2.FrameValue.Link
 };

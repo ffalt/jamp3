@@ -8,6 +8,7 @@
     "rootDir": "src",
     "sourceMap": true,
     "strict": true,
+    "isolatedModules": true,
     "strictNullChecks": true,
     "noImplicitAny": true,
     "esModuleInterop": true,
@@ -15,6 +16,9 @@
     "declaration": true,
     "removeComments": true,
     "allowSyntheticDefaultImports": true,
+    "lib": [
+      "es2022"
+    ],
     "typeRoots": [
       "node_modules/@types",
       "src/@types"
@@ -27,7 +31,6 @@
   "exclude": [
     "data",
     "local",
-    "examples",
     "dist",
     "**/*.spec.ts"
   ]

@@ -1,4 +1,4 @@
-import {MP3Analyzer, IMP3Analyzer} from 'jam';
+import { MP3Analyzer, IMP3Analyzer } from 'jam';
 
 async function run(): Promise<void> {
 	const mp3Analyzer = new MP3Analyzer();
@@ -14,6 +14,4 @@ async function run(): Promise<void> {
 	console.log('report:', data);
 }
 
-run().catch(e => {
-	console.error(e);
-});
+run().catch(console.error);

@@ -1,6 +1,6 @@
-import {IFrameImpl} from '../id3v2.frame';
-import {isBitSetAt, neededStoreBytes} from '../../../common/utils';
-import {IID3V2} from '../../id3v2.types';
+import { IFrameImpl } from '../id3v2.frame';
+import { isBitSetAt, neededStoreBytes } from '../../../common/utils';
+import { IID3V2 } from '../../id3v2.types';
 
 export const FrameRelativeVolumeAdjustment: IFrameImpl = {
 	/**
@@ -19,9 +19,13 @@ export const FrameRelativeVolumeAdjustment: IFrameImpl = {
 
 	 In the increment/decrement field bit 0 is used to indicate the right channel and bit 1 is used to indicate the left channel. 1 is increment and 0 is decrement.
 
-	 The 'bits used for volume description' field is normally $10 (16 bits) for MPEG 2 layer I, II and III and MPEG 2.5. This value may not be $00. The volume is always represented with whole bytes, padded in the beginning (highest bits) when 'bits used for volume description' is not a multiple of eight.
+	 The 'bits used for volume description' field is normally $10 (16 bits) for MPEG 2 layer I, II and III and MPEG 2.5.
+	 This value may not be $00. The volume is always represented with whole bytes, padded in the beginning (highest bits) when
+	 'bits used for volume description' is not a multiple of eight.
 
-	 This datablock is then optionally followed by a volume definition for the left and right back channels. If this information is appended to the frame the first two channels will be treated as front channels. In the increment/decrement field bit 2 is used to indicate the right back channel and bit 3 for the left back channel.
+	 This datablock is then optionally followed by a volume definition for the left and right back channels.
+	 If this information is appended to the frame the first two channels will be treated as front channels.
+	 In the increment/decrement field bit 2 is used to indicate the right back channel and bit 3 for the left back channel.
 
 	 Relative volume change, right back      $xx xx (xx ...)
 	 Relative volume change, left back       $xx xx (xx ...)
@@ -41,13 +45,13 @@ export const FrameRelativeVolumeAdjustment: IFrameImpl = {
 
 	parse: async (reader, frame) => {
 		if (frame.data.length === 0) {
-			return {value: {}};
+			return { value: {} };
 		}
 		const flags = reader.readBitsByte();
 		const bitLength = reader.readBitsByte();
 		const byteLength = bitLength / 8;
 		if (byteLength <= 1 || byteLength > 4) {
-			return Promise.reject(Error('Unsupported description bit size of: ' + bitLength));
+			return Promise.reject(new Error(`Unsupported description bit size of: ${bitLength}`));
 		}
 		let val = reader.readUInt(byteLength);
 		const right = (isBitSetAt(flags, 0) || (val === 0) ? 1 : -1) * val;
@@ -80,28 +84,28 @@ export const FrameRelativeVolumeAdjustment: IFrameImpl = {
 			value.bass = (isBitSetAt(flags, 20) ? 1 : -1) * reader.readUInt(byteLength);
 			value.peakBass = reader.readUInt(byteLength);
 		}
-		return {value};
+		return { value };
 	},
 	write: async (frame, stream) => {
-		const value = <IID3V2.FrameValue.RVA>frame.value;
+		const value = frame.value as IID3V2.FrameValue.RVA;
 		const flags = [
 			0,
 			0,
-			value.bass !== undefined ? (value.bass >= 0 ? 0 : 1) : 0,
-			value.center !== undefined ? (value.center >= 0 ? 0 : 1) : 0,
-			value.leftBack !== undefined ? (value.leftBack >= 0 ? 0 : 1) : 0,
-			value.rightBack !== undefined ? (value.rightBack >= 0 ? 0 : 1) : 0,
+			value.bass === undefined ? 0 : (value.bass >= 0 ? 0 : 1),
+			value.center === undefined ? 0 : (value.center >= 0 ? 0 : 1),
+			value.leftBack === undefined ? 0 : (value.leftBack >= 0 ? 0 : 1),
+			value.rightBack === undefined ? 0 : (value.rightBack >= 0 ? 0 : 1),
 			value.left < 0 ? 0 : 1,
 			value.right < 0 ? 0 : 1
 		];
 		await stream.writeBitsByte(flags);
 		let byteLength = 2;
-		Object.keys(value).forEach(key => {
-			const num = <number>(<any>value)[key];
-			if (!isNaN(num)) {
+		for (const key of Object.keys(value)) {
+			const num = (value as any)[key] as number;
+			if (!Number.isNaN(num)) {
 				byteLength = Math.max(neededStoreBytes(Math.abs(num), 2), byteLength);
 			}
-		});
+		}
 		await stream.writeByte(byteLength * 8);
 		await stream.writeUInt(Math.abs(value.right), byteLength);
 		await stream.writeUInt(Math.abs(value.left), byteLength);
@@ -134,7 +138,5 @@ export const FrameRelativeVolumeAdjustment: IFrameImpl = {
 			await stream.writeUInt(value.peakCenter, byteLength);
 		}
 	},
-	simplify: (_value: IID3V2.FrameValue.RVA) => {
-		return null; // TODO simplify IID3V2.FrameValue.RVA
-	}
+	simplify: (_value: IID3V2.FrameValue.RVA) => null // TODO simplify IID3V2.FrameValue.RVA
 };

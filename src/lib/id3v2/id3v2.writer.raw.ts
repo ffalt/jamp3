@@ -1,9 +1,9 @@
-import {WriterStream} from '../common/stream-writer';
-import {IID3V2} from './id3v2.types';
-import {ID3v2_EXTHEADER, ID3v2_FRAME_FLAGS1, ID3v2_FRAME_FLAGS2, ID3v2_FRAME_HEADER, ID3v2_FRAME_HEADER_LENGTHS, ID3v2_HEADER_FLAGS} from './id3v2.header.consts';
-import {unflags} from '../common/utils';
-import {MemoryWriterStream} from '../common/stream-writer-memory';
-import {BufferUtils} from '../common/buffer';
+import { WriterStream } from '../common/stream-writer';
+import { IID3V2 } from './id3v2.types';
+import { ID3v2_EXTHEADER, ID3v2_FRAME_FLAGS1, ID3v2_FRAME_FLAGS2, ID3v2_FRAME_HEADER, ID3v2_FRAME_HEADER_LENGTHS, ID3v2_HEADER_FLAGS } from './id3v2.header.consts';
+import { unflags } from '../common/utils';
+import { MemoryWriterStream } from '../common/stream-writer-memory';
+import { BufferUtils } from '../common/buffer';
 
 export interface Id3v2RawWriterOptions {
 	paddingSize?: number;
@@ -23,15 +23,15 @@ export class Id3v2RawWriter {
 	}
 
 	private async buildHeaderFlagsV4(): Promise<{ flagBits: Array<number>; extendedHeaderBuffer?: Buffer }> {
-		this.head.v4 = this.head.v4 || {flags: {}};
+		this.head.v4 = this.head.v4 || { flags: {} };
 		this.head.v4.flags.unsynchronisation = false;
 		this.head.v4.flags.extendedheader = !!this.head.v4.extended;
 		const flagBits = unflags(ID3v2_HEADER_FLAGS[this.head.ver], this.head.v4.flags as any);
 		if (this.head.v4.extended) {
 			const extendedHeaderBuffer = await this.writeExtHeaderV4(this.head.v4.extended);
-			return {flagBits, extendedHeaderBuffer};
+			return { flagBits, extendedHeaderBuffer };
 		}
-		return {flagBits};
+		return { flagBits };
 	}
 
 	private async writeExtHeaderV4(_extended: IID3V2.TagHeaderExtendedVer4): Promise<Buffer> {
@@ -68,7 +68,6 @@ export class Id3v2RawWriter {
 		 value between 0 and 128 ($00 - $7f), followed by data that has the
 		 field length indicated by the length byte. If a flag has no attached
 		 data, the value $00 is used as length byte.
-
 
 		 b - Tag is an update
 
@@ -127,7 +126,7 @@ export class Id3v2RawWriter {
 		 Note that nothing is said about how many bytes is used to
 		 represent those characters, since it is encoding dependent. If a
 		 text frame consists of more than one string, the sum of the
-		 strungs is restricted as stated.
+		 strings is restricted as stated.
 
 		 s - Image encoding restrictions
 
@@ -142,19 +141,19 @@ export class Id3v2RawWriter {
 		 11  All images are exactly 64x64 pixels, unless required
 		 otherwise.
 		 */
-		return Promise.reject(Error('TODO extended header v2.4'));
+		return Promise.reject(new Error('TODO extended header v2.4'));
 	}
 
 	private async buildHeaderFlagsV3(): Promise<{ flagBits: Array<number>; extendedHeaderBuffer?: Buffer }> {
-		this.head.v3 = this.head.v3 || {flags: {}};
+		this.head.v3 = this.head.v3 || { flags: {} };
 		this.head.v3.flags.unsynchronisation = false;
 		this.head.v3.flags.extendedheader = !!this.head.v3.extended;
 		const flagBits = unflags(ID3v2_HEADER_FLAGS[this.head.ver], this.head.v3.flags as any);
 		if (this.head.v3.extended) {
 			const extendedHeaderBuffer = await this.writeExtHeaderV3(this.head.v3.extended);
-			return {flagBits, extendedHeaderBuffer};
+			return { flagBits, extendedHeaderBuffer };
 		}
-		return {flagBits};
+		return { flagBits };
 	}
 
 	private async writeExtHeaderV3(extended: IID3V2.TagHeaderExtendedVer3): Promise<Buffer> {
@@ -202,10 +201,10 @@ export class Id3v2RawWriter {
 	}
 
 	private async buildHeaderFlagsV2(): Promise<{ flagBits: Array<number>; extendedHeaderBuffer?: Buffer }> {
-		this.head.v2 = this.head.v2 || {flags: {}};
+		this.head.v2 = this.head.v2 || { flags: {} };
 		this.head.v2.flags.unsynchronisation = false;
 		const flagBits = unflags(ID3v2_HEADER_FLAGS[2], this.head.v2.flags as any);
-		return {flagBits};
+		return { flagBits };
 	}
 
 	private async buildHeaderFlags(): Promise<{ flagBits: Array<number>; extendedHeaderBuffer?: Buffer }> {
@@ -216,7 +215,7 @@ export class Id3v2RawWriter {
 		} else if (this.head.ver === 4) {
 			return await this.buildHeaderFlagsV4();
 		} else {
-			return {flagBits: unflags(ID3v2_HEADER_FLAGS[this.head.ver], {})};
+			return { flagBits: unflags(ID3v2_HEADER_FLAGS[this.head.ver], {}) };
 		}
 	}
 
@@ -280,17 +279,13 @@ export class Id3v2RawWriter {
 
 		await this.stream.writeAscii('ID3'); // ID3v2/file identifier
 		// ID3V2HEADER_FLAGS
-		await this.stream.writeByte(this.head.ver);  // ID3v2 version
+		await this.stream.writeByte(this.head.ver); // ID3v2 version
 		await this.stream.writeByte(this.head.rev); // ID3v2 rev version
 		const versionHead = await this.buildHeaderFlags();
 		this.head.flagBits = versionHead.flagBits;
 		await this.stream.writeBitsByte(versionHead.flagBits); // ID3v2 flags
 		const tagSize = this.calculateTagSize(frames, versionHead.extendedHeaderBuffer ? versionHead.extendedHeaderBuffer.length : 0);
-		if (this.head.ver > 2) {
-			await this.stream.writeSyncSafeInt(tagSize);
-		} else {
-			await this.stream.writeUInt4Byte(tagSize);
-		}
+		await (this.head.ver > 2 ? this.stream.writeSyncSafeInt(tagSize) : this.stream.writeUInt4Byte(tagSize));
 		if (versionHead.extendedHeaderBuffer) {
 			await this.stream.writeBuffer(versionHead.extendedHeaderBuffer);
 		}
@@ -315,7 +310,6 @@ export class Id3v2RawWriter {
 		 any padding between the frames or between the tag header and the
 		 frames. Furthermore it MUST NOT have any padding when a tag footer is
 		 added to the tag.
-
 
 		 3.4.   ID3v2 footer
 
@@ -440,7 +434,6 @@ export class Id3v2RawWriter {
 		 otherwise, 'preserved if tag is altered' and 'preserved if file is
 		 altered', i.e. %00000000.
 
-
 		 4.1.1. Frame status flags
 
 		 a - Tag alter preservation
@@ -453,7 +446,6 @@ export class Id3v2RawWriter {
 		 0     Frame should be preserved.
 		 1     Frame should be discarded.
 
-
 		 b - File alter preservation
 
 		 This flag tells the tag parser what to do with this frame if it is
@@ -463,7 +455,6 @@ export class Id3v2RawWriter {
 		 0     Frame should be preserved.
 		 1     Frame should be discarded.
 
-
 		 c - Read only
 
 		 This flag, if set, tells the software that the contents of this
@@ -472,7 +463,6 @@ export class Id3v2RawWriter {
 		 without knowledge of why the frame was flagged read only and
 		 without taking the proper means to compensate, e.g. recalculating
 		 the signature, the bit MUST be cleared.
-
 
 		 4.1.2. Frame format flags
 
@@ -486,7 +476,6 @@ export class Id3v2RawWriter {
 		 0     Frame does not contain group information
 		 1     Frame contains group information
 
-
 		 k - Compression
 
 		 This flag indicates whether or not the frame is compressed.
@@ -496,7 +485,6 @@ export class Id3v2RawWriter {
 		 1     Frame is compressed using zlib [zlib] deflate method.
 		 If set, this requires the 'Data Length Indicator' bit
 		 to be set as well.
-
 
 		 m - Encryption
 
@@ -536,11 +524,7 @@ export class Id3v2RawWriter {
 		 */
 		await this.stream.writeAscii(frame.id);
 		if (ID3v2_FRAME_HEADER_LENGTHS.SIZE[this.head.ver] === 4) {
-			if (ID3v2_FRAME_HEADER.SYNCSAVEINT.indexOf(this.head.ver) >= 0) {
-				await this.stream.writeSyncSafeInt(frame.size);
-			} else {
-				await this.stream.writeUInt4Byte(frame.size);
-			}
+			await (ID3v2_FRAME_HEADER.SYNCSAVEINT.includes(this.head.ver) ? this.stream.writeSyncSafeInt(frame.size) : this.stream.writeUInt4Byte(frame.size));
 		} else {
 			await this.stream.writeUInt3Byte(frame.size);
 		}

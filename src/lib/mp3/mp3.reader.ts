@@ -1,13 +1,13 @@
-import {Readable} from 'stream';
+import { Readable } from 'node:stream';
 import fse from 'fs-extra';
 
-import {IMP3} from './mp3.types';
-import {ID3v1Reader} from '../id3v1/id3v1.reader';
-import {ID3v2Reader} from '../id3v2/id3v2.reader';
-import {collapseRawHeader, MPEGFrameReader} from './mp3.mpeg.frame';
-import {BufferUtils} from '../common/buffer';
-import {getBestMPEGChain} from './mp3.mpeg.chain';
-import {ReaderStream} from '../common/stream-reader';
+import { IMP3 } from './mp3.types';
+import { ID3v1Reader } from '../id3v1/id3v1.reader';
+import { ID3v2Reader } from '../id3v2/id3v2.reader';
+import { collapseRawHeader, MPEGFrameReader } from './mp3.mpeg.frame';
+import { BufferUtils } from '../common/buffer';
+import { getBestMPEGChain } from './mp3.mpeg.chain';
+import { ReaderStream } from '../common/stream-reader';
 
 export interface MP3ReaderOptions extends IMP3.ReadOptions {
 	streamSize?: number;
@@ -15,12 +15,7 @@ export interface MP3ReaderOptions extends IMP3.ReadOptions {
 
 export class MP3Reader {
 	private options: MP3ReaderOptions = {};
-	private layout: IMP3.RawLayout = {
-		frameheaders: [],
-		headframes: [],
-		tags: [],
-		size: 0
-	};
+	private layout: IMP3.RawLayout = { frameheaders: [], headframes: [], tags: [], size: 0 };
 	private id3v2reader = new ID3v2Reader();
 	private id3v1reader = new ID3v1Reader();
 	private mpegFramereader = new MPEGFrameReader();
@@ -66,11 +61,11 @@ export class MP3Reader {
 		const header = this.mpegFramereader.readMPEGFrameHeader(chunk, pos);
 		if (header) {
 			this.scanid3v2 = false; // no more scanning for id3v2 after audio start
-			if (!this.scanMPEGFrame) {
+			if (this.scanMPEGFrame) {
+				return this.readFullMPEGFrame(chunk, pos, header);
+			} else {
 				header.offset = this.stream.pos - chunk.length + pos;
 				this.layout.frameheaders.push(collapseRawHeader(header));
-			} else {
-				return this.readFullMPEGFrame(chunk, pos, header);
 			}
 		}
 		return false;
@@ -139,17 +134,18 @@ export class MP3Reader {
 	}
 
 	private async processChunkID3v1(chunk: Buffer): Promise<boolean> {
+		let useChunk = chunk;
 		let pos = 0;
 		if (!this.stream.end && (this.stream.buffersLength > 200)) {
 			this.stream.skip(this.stream.buffersLength - 200);
-			chunk = this.stream.get(200);
+			useChunk = this.stream.get(200);
 			pos = 0;
 		}
-		while (chunk.length - pos >= 4) {
-			const c1 = chunk[pos];
-			const c2 = chunk[pos + 1];
-			const c3 = chunk[pos + 2];
-			if ((c1 === 84) && (c2 === 65) && (c3 === 71) && this.readID3V1(chunk, pos)) {
+		while (useChunk.length - pos >= 4) {
+			const c1 = useChunk[pos];
+			const c2 = useChunk[pos + 1];
+			const c3 = useChunk[pos + 2];
+			if ((c1 === 84) && (c2 === 65) && (c3 === 71) && this.readID3V1(useChunk, pos)) {
 				return true;
 			}
 			pos++;
@@ -218,7 +214,7 @@ export class MP3Reader {
 			return true;
 		}
 		if (chunk.length > 3) {
-			this.stream.unshift(chunk.slice(chunk.length - 3));
+			this.stream.unshift(chunk.subarray(-3));
 		}
 		return true;
 	}
@@ -227,7 +223,7 @@ export class MP3Reader {
 		if (this.stream.end) {
 			return;
 		}
-		const requestChunkLength = 20000;
+		const requestChunkLength = 20_000;
 		let go = true;
 		while (go) {
 			const data = await this.stream.read(requestChunkLength);
@@ -237,11 +233,11 @@ export class MP3Reader {
 			}
 			try {
 				go = await this.processChunk(data);
-			} catch (e: any) {
-				return Promise.reject(e);
+			} catch (error) {
+				return Promise.reject(error);
 			}
 		}
-		this.layout.size = (this.options.streamSize !== undefined) ? this.options.streamSize : this.stream.pos;
+		this.layout.size = (this.options.streamSize === undefined) ? this.stream.pos : this.options.streamSize;
 	}
 
 	private setOptions(options: MP3ReaderOptions): void {
@@ -260,15 +256,16 @@ export class MP3Reader {
 	async read(filename: string, options: MP3ReaderOptions): Promise<IMP3.RawLayout> {
 		this.setOptions(options);
 		if (!options.streamSize) {
-			options.streamSize = (await fse.stat(filename)).size;
+			const stat = await fse.stat(filename);
+			options.streamSize = stat.size;
 		}
 		await this.stream.open(filename);
 		try {
 			await this.scan();
 			this.stream.close();
-		} catch (e: any) {
+		} catch (error) {
 			this.stream.close();
-			return Promise.reject(e);
+			return Promise.reject(error);
 		}
 		return this.layout;
 	}

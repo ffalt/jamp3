@@ -1,6 +1,6 @@
-import {IID3V2} from '../id3v2/id3v2.types';
-import {IID3V1} from '../id3v1/id3v1.types';
-import {ITag} from '../common/types';
+import { IID3V2 } from '../id3v2/id3v2.types';
+import { IID3V1 } from '../id3v1/id3v1.types';
+import { ITag } from '../common/types';
 
 /**
  * Interfaces for class MP3
@@ -85,7 +85,7 @@ export namespace IMP3 {
 		frameCount: number;
 		/** number of audio frames declared in audio header */
 		frameCountDeclared: number;
-		/** number of bytes of audio*/
+		/** number of bytes of audio */
 		audioBytes: number;
 		/** number of bytes of audio declared in audio header */
 		audioBytesDeclared: number;
@@ -126,13 +126,13 @@ export namespace IMP3 {
 		/** Padding */
 		padded: boolean; // G
 		/** Protection */
-		protected: boolean;  // D
+		protected: boolean; // D
 		/** Copyright */
 		copyright: boolean; // K
 		/** Original */
-		original: boolean;  // L
+		original: boolean; // L
 		/** Private bit */
-		privatebit: number;  // H
+		privatebit: number; // H
 	}
 
 	/** MPEG Frame Header Object (Parsed) */
@@ -172,7 +172,7 @@ export namespace IMP3 {
 
 	/** MPEG Header VBRI */
 	export interface VBRI {
-		/** VBRI version*/
+		/** VBRI version */
 		version: number;
 		/** delay */
 		delay: number;

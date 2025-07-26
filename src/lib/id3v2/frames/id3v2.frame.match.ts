@@ -1,8 +1,8 @@
-import {FrameDefs, IFrameDef} from './id3v2.frame.defs';
-import {FrameText} from './implementations/id3v2.frame.text';
-import {FrameAscii} from './implementations/id3v2.frame.ascii';
-import {validCharKeyCode} from '../../common/utils';
-import {FrameUnknown} from './implementations/id3v2.frame.unknown';
+import { FrameDefs, IFrameDef } from './id3v2.frame.defs';
+import { FrameText } from './implementations/id3v2.frame.text';
+import { FrameAscii } from './implementations/id3v2.frame.ascii';
+import { validCharKeyCode } from '../../common/utils';
+import { FrameUnknown } from './implementations/id3v2.frame.unknown';
 
 interface IFrameMatch {
 	match: (id: string) => boolean;
@@ -21,9 +21,7 @@ export const Matcher: Array<IFrameMatch> = [
 		 Text encoding    $xx
 		 Information    <text string according to encoding>
 		 */
-		match: (id: string): boolean => {
-			return id[0] === 'T' && id !== 'TXX' && id !== 'TXXX';
-		},
+		match: (id: string): boolean => id[0] === 'T' && id !== 'TXX' && id !== 'TXXX',
 		matchBin: (id: Buffer): boolean => {
 			if (id[0] !== 84) {
 				return false;
@@ -49,10 +47,7 @@ export const Matcher: Array<IFrameMatch> = [
 		 <Header for 'URL link frame', ID: "W000" - "WZZZ", excluding "WXXX" described in 4.3.2.>
 		 URL <text string>
 		 */
-		match: (id: string): boolean => {
-			return (id[0] === 'W' && id !== 'WXX' && id !== 'WXXX');
-		}
-		,
+		match: (id: string): boolean => (id[0] === 'W' && id !== 'WXX' && id !== 'WXXX'),
 		matchBin: (id: Buffer): boolean => {
 			if (id[0] !== 87) {
 				return false;
@@ -69,8 +64,7 @@ export const Matcher: Array<IFrameMatch> = [
 		value: {
 			title: 'Unknown URL Field',
 			versions: [3, 4],
-			impl:
-			FrameAscii,
+			impl: FrameAscii
 		}
 	}
 ];
@@ -80,16 +74,17 @@ export function findId3v2FrameDef(id: string): IFrameDef | null {
 	if (f) {
 		return f;
 	}
-	for (let i = 0; i < Matcher.length; i++) {
-		if (Matcher[i].match(id)) {
-			return Matcher[i].value;
+	for (const element of Matcher) {
+		// eslint-disable-next-line unicorn/prefer-regexp-test
+		if (element.match(id)) {
+			return element.value;
 		}
 	}
 	return null;
 }
 
 export function matchFrame(id: string): IFrameDef {
-	return findId3v2FrameDef(id) || {title: 'Unknown Frame', impl: FrameUnknown, versions: [2, 3, 4]};
+	return findId3v2FrameDef(id) || { title: 'Unknown Frame', impl: FrameUnknown, versions: [2, 3, 4] };
 }
 
 interface IDBinTree {
@@ -102,29 +97,33 @@ let tree: IDBinTree;
 
 function fillTree() {
 	tree = {};
-	Object.keys(FrameDefs).forEach(key => {
+	for (const key of Object.keys(FrameDefs)) {
 		let node = tree;
 		for (let i = 0; i < key.length - 1; i++) {
-			const c = key.charCodeAt(i);
-			node[c] = node[c] || {};
-			node = node[c];
+			const c = key.codePointAt(i);
+			if (c !== undefined) {
+				node[c] = node[c] || {};
+				node = node[c];
+			}
 		}
-		const last = key.charCodeAt(key.length - 1);
-		node[last] = node[last] || {frameDef: FrameDefs[key]};
-	});
+		const last = key.codePointAt(key.length - 1);
+		if (last !== undefined) {
+			node[last] = node[last] || { frameDef: FrameDefs[key] };
+		}
+	}
 }
 
 function findId3v2FrameDefBuffer(id: Buffer): IFrameDef | undefined {
-	const last = id[id.length - 1];
+	let currentID = id;
+	const last = currentID.at(-1);
 	if (last === 32 || last === 0) {
-		id = id.slice(0, id.length - 1);
+		currentID = currentID.subarray(0, -1);
 	}
 	if (!tree) {
 		fillTree();
 	}
 	let node = tree;
-	for (let i = 0; i < id.length; i++) {
-		const c = id[i];
+	for (const c of currentID) {
 		if (!node[c]) {
 			node = tree;
 			break;
@@ -134,9 +133,9 @@ function findId3v2FrameDefBuffer(id: Buffer): IFrameDef | undefined {
 	if (node.frameDef) {
 		return node.frameDef;
 	}
-	for (let i = 0; i < Matcher.length; i++) {
-		if (Matcher[i].matchBin(id)) {
-			return Matcher[i].value;
+	for (const element of Matcher) {
+		if (element.matchBin(currentID)) {
+			return element.value;
 		}
 	}
 }
@@ -144,21 +143,3 @@ function findId3v2FrameDefBuffer(id: Buffer): IFrameDef | undefined {
 export function isValidFrameBinId(id: Buffer): boolean {
 	return !!findId3v2FrameDefBuffer(id);
 }
-
-/*
-export function isKnownFrameId(id: string): boolean {
-	return !!findId3v2FrameDef(id);
-}
-
-export function isValidFrameId(id: string): boolean {
-	if ((id.length < 3) || (!/[A-Z]/.exec(id[0]))) {
-		return false;
-	}
-	for (let i = 1; i < id.length; i++) {
-		if (!/[A-Z0-9]/.exec(id[i])) {
-			return false;
-		}
-	}
-	return id.length > 0;
-}
-*/

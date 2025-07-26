@@ -1,21 +1,17 @@
 import fse from 'fs-extra';
-import Debug from 'debug';
 
-import {ITestSpec} from '../common/test-spec';
-import {rawHeaderSize} from '../../src/lib/mp3/mp3.mpeg.frame';
-import {MP3} from '../../src/lib/mp3/mp3';
-
-const debug = Debug('mp3-test');
+import { ITestSpec } from '../common/spec';
+import { rawHeaderSize } from '../../src/lib/mp3/mp3.mpeg.frame';
+import { MP3 } from '../../src/lib/mp3/mp3';
 
 export async function testQuickMPEG(filename: string): Promise<void> {
-	debug('QuickMPEG', 'loading', filename);
-	const exists = await fse.pathExists(filename + '.frames.json');
+	const exists = await fse.pathExists(`${filename}.frames.json`);
 	if (!exists) {
 		throw new Error('Testset incomplete, missing filename.frames.json');
 	}
 	const mp3 = new MP3();
-	const compare: ITestSpec = await fse.readJSON(filename + '.frames.json');
-	const data = await mp3.read(filename, {mpeg: true, mpegQuick: true, id3v2: true});
+	const compare: ITestSpec = await fse.readJSON(`${filename}.frames.json`);
+	const data = await mp3.read(filename, { mpeg: true, mpegQuick: true, id3v2: true });
 	expect(data).toBeTruthy();
 	if (!data) {
 		return;
@@ -25,11 +21,11 @@ export async function testQuickMPEG(filename: string): Promise<void> {
 	if (compare.stream && data.mpeg) {
 		expect(data.mpeg.sampleRate).toBe(Number(compare.stream.sample_rate)); // , 'sampleRate not equal');
 		expect(data.mpeg.channels).toBe(compare.stream.channels); // , 'channels not equal');
-		expect('MP3 (' + data.mpeg.layer + ')').toBe(compare.stream.codec_long_name); // , 'codec_long_name not equal');
+		expect(`MP3 (${data.mpeg.layer})`).toBe(compare.stream.codec_long_name); // , 'codec_long_name not equal');
 
 		const a = data.mpeg.durationEstimate;
-		const b = parseFloat(compare.stream.duration);
-		let diff = parseFloat((a - b).toFixed(4));
+		const b = Number.parseFloat(compare.stream.duration);
+		let diff = Number.parseFloat((a - b).toFixed(4));
 		let diffAbs = Math.abs(diff);
 		if (diffAbs <= 1) {
 			return;
@@ -39,7 +35,7 @@ export async function testQuickMPEG(filename: string): Promise<void> {
 
 		if (data.mpeg.encoded === 'VBR') {
 			let audioBytes = data.size;
-			if (!data.frames || data.frames.audio.length < 20 && parseInt(compare.stream.nb_read_frames, 10) < 20) {
+			if (!data.frames || (data.frames.audio.length < 20 && Number.parseInt(compare.stream.nb_read_frames, 10) < 20)) {
 				return;
 			}
 			if (data.frames && data.frames.audio.length > 0) {
@@ -47,8 +43,8 @@ export async function testQuickMPEG(filename: string): Promise<void> {
 				if (data.id3v1) {
 					audioBytes -= (data.id3v1.end - data.id3v1.start);
 				}
-				const durationEstimate = (audioBytes * 8) / parseInt(compare.stream.bit_rate, 10);
-				diff = parseFloat((durationEstimate - b).toFixed(4));
+				const durationEstimate = (audioBytes * 8) / Number.parseInt(compare.stream.bit_rate, 10);
+				diff = Number.parseFloat((durationEstimate - b).toFixed(4));
 				diffAbs = Math.abs(diff);
 				if (diffAbs <= 1) {
 					return;

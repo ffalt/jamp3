@@ -1,4 +1,4 @@
-import path from 'path';
+import path from 'node:path';
 
 export const ID3v2TestPath = path.join(__dirname, '..', 'data', 'testfiles', 'id3v2');
 export const ID3v2TestDirectories = [
