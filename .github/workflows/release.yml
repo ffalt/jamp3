@@ -21,22 +21,19 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18.x
+          node-version: 22.x
 
       - name: Install Dependencies
-        run: |
-          npm install
+        run: npm install
 
       - name: Test
         run: npm run test
 
       - name: Build
-        run: |
-          npm run build:deploy
+        run: npm run build:deploy
 
       - name: Generate Releaselog
-        run: |
-          npm run build:releaselog
+        run: npm run build:releaselog
 
       - name: Build Release Branch Folder
         run: |
@@ -51,12 +48,11 @@ jobs:
           cp package.json ./deploy/
 
       - name: Deploy to Release Branch 🚀
-        uses: JamesIves/github-pages-deploy-action@releases/v3
+        uses: JamesIves/github-pages-deploy-action@releases/v4
         with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BRANCH: release # The branch the action should deploy to.
-          FOLDER: deploy # The folder the action should deploy.
-          CLEAN: true
+          branch: release # The branch the action should deploy to.
+          folder: deploy # The folder the action should deploy.
+          clean: true
 
       - name: Create Release Package
         run: |
@@ -64,15 +60,9 @@ jobs:
 
       - name: Create release
         id: create_release
-        uses: ncipollo/release-action@v1
+        uses: softprops/action-gh-release@v2
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          tag: ${{ github.ref }}
-          name: Release ${{ github.ref_name }}
-          bodyFile: ./RELEASELOG.md
-          draft: false
-          prerelease: false
-          artifacts: ./deploy/jamp3-release.zip
-          artifactContentType: application/zip
-          makeLatest: true
-
+          body_path: ./RELEASELOG.md
+          name: ${{ github.ref_name }}
+          files: |
+            ./deploy/jamp3-release.zip

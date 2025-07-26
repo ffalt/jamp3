@@ -16,16 +16,13 @@ jobs:
     - name: Install Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: 18.x
+        node-version: 22.x
     - name: Checkout submodules
       run: git submodule update --init --recursive
     - run: npm ci
     - run: npm run build
-    - name: Test & publish code coverage
-      uses: paambaati/codeclimate-action@v5
-      env:
-        CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
+    - run: npm run coverage
+    - uses: qltysh/qlty-action/coverage@v1
       with:
-        coverageCommand: npm run coverage
-        coverageLocations: ${{github.workspace}}/coverage/lcov.info:lcov
-        debug: true
+        token: ${{ secrets.QLTY_COVERAGE_TOKEN }}
+        files: coverage/lcov.info

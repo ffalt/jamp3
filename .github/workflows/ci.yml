@@ -5,7 +5,7 @@ on:
     branches: [ main ]
 
 jobs:
-  build:
+  ci:
     name: CI
     runs-on: ubuntu-latest
     steps:
@@ -13,7 +13,8 @@ jobs:
     - name: Install Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: 18.x
+        node-version: 22.x
+        cache: "npm"
     - name: Checkout submodules
       run: git submodule update --init --recursive
     - run: npm ci
