@@ -4,10 +4,10 @@ An id3 & mp3 library written in Typescript for NodeJS
 
 [![NPM](https://nodei.co/npm/jamp3.png?downloads=true&downloadRank=true&stars=true)](https://www.npmjs.com/package/jamp3)
 
-[![Test](https://github.com/ffalt/jamp3/workflows/Test/badge.svg)](https://github.com/ffalt/jamp3/actions?query=workflow%3ATest)
+[![Test](https://github.com/ffalt/jamp3/workflows/test/badge.svg)](https://github.com/ffalt/jamp3/actions?query=workflow%3Atest)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/9053f3b64ab847a39a1a4be470759bb7)](https://app.codacy.com/app/ffalt/jamp3?utm_source=github.com&utm_medium=referral&utm_content=ffalt/jamp3&utm_campaign=Badge_Grade_Dashboard)
-[![Maintainability](https://api.codeclimate.com/v1/badges/c1bc863edffe1b4047e9/maintainability)](https://codeclimate.com/github/ffalt/jamp3/maintainability)
-[![Test Coverage](https://api.codeclimate.com/v1/badges/c1bc863edffe1b4047e9/test_coverage)](https://codeclimate.com/github/ffalt/jamp3/test_coverage)
+[![Maintainability](https://qlty.sh/gh/ffalt/projects/jamp3/maintainability.svg)](https://qlty.sh/gh/ffalt/projects/jamp3)
+[![Code Coverage](https://qlty.sh/gh/ffalt/projects/jamp3/coverage.svg)](https://qlty.sh/gh/ffalt/projects/jamp3)
 [![Known Vulnerabilities](https://snyk.io/test/github/ffalt/jamp3/badge.svg)](https://snyk.io/test/github/ffalt/jamp3)
 [![total downloads](https://badgen.net/npm/dt/jamp3)](https://www.npmjs.com/package/jamp3)
 [![license](https://img.shields.io/github/license/ffalt/jamp3.svg)](http://opensource.org/licenses/MIT)
