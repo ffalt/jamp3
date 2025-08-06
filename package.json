@@ -52,7 +52,7 @@
     "eslint-plugin-unicorn": "60.0.0",
     "jest": "30.0.5",
     "standard-version": "9.5.0",
-    "tmp": "0.2.3",
+    "tmp": "0.2.4",
     "ts-jest": "29.4.0",
     "ts-node": "10.9.2",
     "typedoc": "0.28.7",
