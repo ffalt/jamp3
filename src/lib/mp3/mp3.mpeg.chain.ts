@@ -81,7 +81,11 @@ function buildMPEGChains(frames: Array<IMP3.FrameRawHeaderArray>, maxCheckFrames
 
 function findBestMPEGChain(frames: Array<IMP3.FrameRawHeaderArray>, maxCheckFrames: number, followMaxChain: number): IMPEGFrameChain | undefined {
 	const chains = buildMPEGChains(frames, maxCheckFrames, followMaxChain);
-	const bestChains = chains.filter(chain => chain.count > 0).sort((a, b) => b.count - a.count);
+	const bestChains =
+		chains
+			.filter(chain => chain.count > 0)
+			// eslint-disable-next-line unicorn/no-array-sort
+			.sort((a, b) => b.count - a.count);
 	return bestChains[0];
 }
 

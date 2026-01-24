@@ -36,6 +36,7 @@ export class ID3v1Reader {
 		const reader = new BufferReader(data);
 		reader.position = 3;
 		const value: IID3V1.ID3v1Tag = {};
+		// eslint-disable-next-line unicorn/no-immediate-mutation
 		value.title = reader.readFixedAutodectectString(30);
 		value.artist = reader.readFixedAutodectectString(30);
 		value.album = reader.readFixedAutodectectString(30);

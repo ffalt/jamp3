@@ -1018,4 +1018,4 @@ Options:
 
 ### Lint
 
-`npm run lint` to test the code style with tslint
+`npm run lint` to test the code style with eslint

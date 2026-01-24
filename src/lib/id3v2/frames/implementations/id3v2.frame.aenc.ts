@@ -40,5 +40,25 @@ export const FrameAENC: IFrameImpl = {
 		await stream.writeUInt2Byte(value.previewLength);
 		await stream.writeBuffer(value.bin);
 	},
-	simplify: (_value: IID3V2.FrameValue.AudioEncryption) => null // TODO simplify IID3V2.FrameValue.AudioEncryption
+	// Provide a concise string summary for simplified output: "<id>;start=<n>;length=<n>;bin=<bytes>"
+	simplify: (value: IID3V2.FrameValue.AudioEncryption) => {
+		if (!value || value.id === undefined) {
+			return null;
+		}
+		const parts: string[] = [];
+		// owner identifier
+		parts.push(value.id);
+		// preview start and length (include even when zero to be explicit)
+		if (value.previewStart !== undefined) {
+			parts.push(`start=${value.previewStart}`);
+		}
+		if (value.previewLength !== undefined) {
+			parts.push(`length=${value.previewLength}`);
+		}
+		// binary blob size
+		if (value.bin && value.bin.length > 0) {
+			parts.push(`bin=${value.bin.length}bytes`);
+		}
+		return parts.join(';');
+	}
 };
