@@ -127,8 +127,7 @@ export class MP3Reader {
 		if (this.options.streamSize !== undefined) {
 			return false;
 		}
-		// we are done here, but scroll to end to get full stream size
-		// TODO: better way to get the stream size?
+		// we are done here, but scroll to the end to get full stream size
 		await this.stream.consumeToEnd();
 		return false;
 	}

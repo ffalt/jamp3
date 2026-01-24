@@ -3,6 +3,7 @@ declare module 'memory-stream' {
 
 	class MemoryStream extends WriteStream {
 		toString(): string;
+		toBuffer(): Buffer;
 	}
 
 	export = MemoryStream;

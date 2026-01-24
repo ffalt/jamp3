@@ -48,7 +48,6 @@ function upgradeFrame(upgradeKey: string | undefined, dest: number): string | nu
 export function ensureID3v2FrameVersionDef(id: string, dest: number): string | null {
 	const def = FrameDefs[id];
 	if (!def) {
-		// TODO: matcher?
 		return null;
 	}
 	if (def.versions.includes(dest)) {

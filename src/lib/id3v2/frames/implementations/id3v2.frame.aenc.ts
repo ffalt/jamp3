@@ -45,17 +45,13 @@ export const FrameAENC: IFrameImpl = {
 		if (!value || value.id === undefined) {
 			return null;
 		}
-		const parts: string[] = [];
-		// owner identifier
-		parts.push(value.id);
-		// preview start and length (include even when zero to be explicit)
+		const parts: Array<string> = [value.id];
 		if (value.previewStart !== undefined) {
 			parts.push(`start=${value.previewStart}`);
 		}
 		if (value.previewLength !== undefined) {
 			parts.push(`length=${value.previewLength}`);
 		}
-		// binary blob size
 		if (value.bin && value.bin.length > 0) {
 			parts.push(`bin=${value.bin.length}bytes`);
 		}

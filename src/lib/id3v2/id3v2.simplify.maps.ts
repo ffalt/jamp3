@@ -176,12 +176,6 @@ export const DateUpgradeMap: Record<string, string> = {
 	'TIME': 'Time'
 };
 
-/**
- TODO: simplify following frames more like in style VORBISCOMMENT
- POPM    RATING:user@email
- Chapter tags        CHAPTERxxx
- */
-
 if (process.env.NODE_ENV === 'development') {
 	for (const key of Object.keys(FrameDefs)) {
 		const frame = findId3v2FrameDef(key);
