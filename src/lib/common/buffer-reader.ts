@@ -15,7 +15,7 @@ export class BufferReader {
 		const i = BufferUtils.scanBufferTextPos(this.data, enc.terminator, this.position);
 		const buf = this.data.subarray(this.position, i);
 		const result = (buf.length === 0) ? '' : enc.decode(buf);
-		this.position = i + enc.terminator.length;
+		this.position = (i === this.data.length) ? i : i + enc.terminator.length;
 		return result;
 	}
 
