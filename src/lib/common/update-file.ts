@@ -16,27 +16,29 @@ export async function updateFile(
 	}
 	const tmpFile = `${filename}.tempmp3`;
 	const bakFile = `${filename}.bak`;
-	const exists = await fse.pathExists(tmpFile);
-	if (exists) {
-		await fse.remove(tmpFile);
-	}
+	const cleanupTmp = async () => {
+		if (await fse.pathExists(tmpFile)) {
+			await fse.remove(tmpFile);
+		}
+	};
 	const fileWriterStream = new FileWriterStream();
 	await fileWriterStream.open(tmpFile);
 	try {
 		await process(layout, fileWriterStream);
+		await fileWriterStream.close();
+		const bakExists = await fse.pathExists(bakFile);
+		if (keepBackup) {
+			await (bakExists ? fse.remove(filename) : fse.rename(filename, bakFile));
+		} else if (!bakExists) {
+			await fse.rename(filename, bakFile);
+		}
+		await fse.rename(tmpFile, filename);
+		if (!keepBackup && !bakExists) {
+			await fse.remove(bakFile);
+		}
 	} catch (error) {
 		await fileWriterStream.close();
+		await cleanupTmp();
 		return Promise.reject(error);
-	}
-	await fileWriterStream.close();
-	const bakExists = await fse.pathExists(bakFile);
-	if (keepBackup) {
-		await (bakExists ? fse.remove(filename) : fse.rename(filename, bakFile));
-	} else if (!bakExists) {
-		await fse.rename(filename, bakFile);
-	}
-	await fse.rename(tmpFile, filename);
-	if (!keepBackup && !bakExists) {
-		await fse.remove(bakFile);
 	}
 }
