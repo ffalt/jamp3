@@ -227,6 +227,7 @@ export class MP3Reader {
 		while (go) {
 			const data = await this.stream.read(requestChunkLength);
 			if (!data || (data.length === 0)) {
+				// eslint-disable-next-line no-useless-assignment
 				go = false;
 				break;
 			}

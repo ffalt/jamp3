@@ -52,7 +52,7 @@ function compareID3v2SpecFrames(filename: string, specframes: Array<any> = [], f
 		} else if (list.length === 1) {
 			compareID3v2SpecFrame(filename, framespec, list[0]);
 		} else {
-			let sublist = [];
+			let sublist: Array<IID3V2.Frame>;
 			if (['POPM'].includes(framespec.id)) {
 				sublist = list.filter(f => (f.value as any).email === framespec.value.email);
 				if (sublist.length !== 1) {
