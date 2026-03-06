@@ -159,7 +159,9 @@ export class ID3v2 {
 		let skipped = false;
 		for (const tag of layout.tags) {
 			if ((tag.id === ITagID.ID3v2) && (start < tag.end)) {
-				specEnd = (tag as IID3V2.RawTag).head.size + tag.start + 10; // 10: header itself
+				const rawTag = tag as IID3V2.RawTag;
+				const footerSize = rawTag.head.v4?.flags.footer ? 10 : 0;
+				specEnd = rawTag.head.size + tag.start + 10 + footerSize; // 10: header itself, optional 10: footer
 				start = tag.end;
 				skipped = true;
 			}

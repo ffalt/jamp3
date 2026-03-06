@@ -3,6 +3,8 @@ import tmp from 'tmp';
 
 import { ID3v2 } from '../../src/lib/id3v2/id3v2';
 import { ID3V24TagBuilder } from '../../src/lib/id3v2/id3v2.builder.v24';
+import { Id3v2RawWriter } from '../../src/lib/id3v2/id3v2.writer.raw';
+import { MemoryWriterStream } from '../../src/lib/common/stream-writer-memory';
 
 const testNumber = 5;
 const testString = 'räksmörgåsЪЭЯ😀';
@@ -164,6 +166,74 @@ async function test24BuilderWrite(encoding: string): Promise<void> {
 	file.removeCallback();
 }
 
+async function test24BuilderWriteWithFooter(): Promise<void> {
+	const builder = new ID3V24TagBuilder('utf8');
+	builder.title('Test Title').artist('Test Artist');
+	const frames = builder.buildFrames();
+	const tag = builder.buildTag();
+	tag.head = { ver: 4, rev: 0, size: 0, valid: true, v4: { flags: { footer: true } } };
+
+	const file = tmp.fileSync();
+	try {
+		await fse.remove(file.name);
+		const id3 = new ID3v2();
+		await id3.write(file.name, tag, 4, 0, { keepBackup: false, paddingSize: 0 });
+
+		// verify written bytes: footer marker "3DI" must appear at end of tag
+		const raw = await id3.readRaw(file.name);
+		expect(raw).toBeTruthy();
+		if (!raw) return;
+		expect(raw.slice(-10).toString('ascii', 0, 3)).toBe('3DI');
+
+		// verify round-trip: reader must parse tag correctly with footer
+		const data = await id3.read(file.name);
+		expect(data).toBeTruthy();
+		if (!data) return;
+		expect(data.frames.length).toBe(frames.length);
+		expect(data.head?.v4?.flags.footer).toBe(true);
+	} catch (error) {
+		file.removeCallback();
+		return Promise.reject(error);
+	}
+	file.removeCallback();
+}
+
+async function test24FooterRawBytes(): Promise<void> {
+	// Verify the exact footer bytes written by Id3v2RawWriter
+	const head = { ver: 4, rev: 0, size: 0, valid: true, v4: { flags: { footer: true } } };
+
+	const memStream = new MemoryWriterStream();
+	const writer = new Id3v2RawWriter(memStream, head, { paddingSize: 0 }, []);
+	await writer.write();
+	const buf = memStream.toBuffer();
+
+	// total = 10 header + 0 frames + 10 footer (no padding allowed with footer)
+	expect(buf.length).toBe(20);
+	// header starts with "ID3"
+	expect(buf.slice(0, 3).toString('ascii')).toBe('ID3');
+	// footer starts with "3DI"
+	expect(buf.slice(10, 13).toString('ascii')).toBe('3DI');
+	// footer must be a copy of header: version, flags, and size must match
+	expect(buf[3]).toBe(buf[13]); // ver
+	expect(buf[4]).toBe(buf[14]); // rev
+	expect(buf[5]).toBe(buf[15]); // flags
+	expect(buf.slice(6, 10).equals(buf.slice(16, 20))).toBe(true); // size
+}
+
+async function test24FooterPaddingIgnored(): Promise<void> {
+	// When footer is set, padding must be suppressed
+	const head = { ver: 4, rev: 0, size: 0, valid: true, v4: { flags: { footer: true } } };
+
+	const memStream = new MemoryWriterStream();
+	const writer = new Id3v2RawWriter(memStream, head, { paddingSize: 500 }, []);
+	await writer.write();
+	const buf = memStream.toBuffer();
+
+	// Still 20 bytes: footer replaces padding
+	expect(buf.length).toBe(20);
+	expect(buf.slice(10, 13).toString('ascii')).toBe('3DI');
+}
+
 describe('Builder', () => {
 	describe('v2.4', () => {
 		describe.each(['iso-8859-1', 'ucs2', 'utf16-be', 'utf8'])('%s', testValue => {
@@ -173,6 +243,15 @@ describe('Builder', () => {
 			it('should write', async () => {
 				await test24BuilderWrite(testValue);
 			});
+		});
+		it('should write and read footer', async () => {
+			await test24BuilderWriteWithFooter();
+		});
+		it('should write correct footer bytes', async () => {
+			await test24FooterRawBytes();
+		});
+		it('should suppress padding when footer is set', async () => {
+			await test24FooterPaddingIgnored();
 		});
 	});
 });
