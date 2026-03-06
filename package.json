@@ -37,16 +37,16 @@
   },
   "dependencies": {
     "commander": "14.0.3",
-    "fs-extra": "11.3.3",
+    "fs-extra": "11.3.4",
     "iconv-lite": "0.7.2",
     "memory-stream": "1.0.0"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
-    "@stylistic/eslint-plugin": "5.9.0",
+    "@stylistic/eslint-plugin": "5.10.0",
     "@types/fs-extra": "11.0.4",
     "@types/jest": "30.0.0",
-    "@types/node": "25.3.3",
+    "@types/node": "25.3.5",
     "@types/tmp": "0.2.6",
     "conventional-changelog-cli": "5.0.0",
     "eslint": "10.0.2",
