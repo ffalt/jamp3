@@ -1,4 +1,5 @@
 export const ID3v2_MARKER = 'ID3';
+export const ID3v2_FOOTER_MARKER = '3DI';
 
 export const ID3v2_HEADER: {
 	SYNCSAVEINT: Array<number>;

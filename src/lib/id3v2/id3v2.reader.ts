@@ -2,7 +2,7 @@ import { bitarray, flags, removeZeroString, unsynchsafe } from '../common/utils'
 
 import { Readable } from 'node:stream';
 import { BufferUtils } from '../common/buffer';
-import { ID3v2_FRAME_FLAGS1, ID3v2_FRAME_FLAGS2, ID3v2_FRAME_HEADER, ID3v2_FRAME_HEADER_LENGTHS, ID3v2_MARKER } from './id3v2.header.consts';
+import { ID3v2_FRAME_FLAGS1, ID3v2_FRAME_FLAGS2, ID3v2_FRAME_HEADER, ID3v2_FRAME_HEADER_LENGTHS, ID3v2_HEADER, ID3v2_MARKER } from './id3v2.header.consts';
 import { IID3V2 } from './id3v2.types';
 import { ITagID } from '../common/types';
 import { ReaderStream } from '../common/stream-reader';
@@ -22,6 +22,9 @@ export class ID3v2Reader {
 		if (tag.head.size > 0) {
 			const data = await reader.read(tag.head.size);
 			rest = await this.readFrames(data, tag);
+		}
+		if (head.v4?.flags.footer) {
+			await reader.read(ID3v2_HEADER.SIZE); // consume 10-byte footer (3DI + ver + rev + flags + size)
 		}
 		return { rest, tag };
 	}

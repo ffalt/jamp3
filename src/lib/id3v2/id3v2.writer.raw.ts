@@ -1,6 +1,6 @@
 import { WriterStream } from '../common/stream-writer';
 import { IID3V2 } from './id3v2.types';
-import { ID3v2_EXTHEADER, ID3v2_FRAME_FLAGS1, ID3v2_FRAME_FLAGS2, ID3v2_FRAME_HEADER, ID3v2_FRAME_HEADER_LENGTHS, ID3v2_HEADER_FLAGS } from './id3v2.header.consts';
+import { ID3v2_EXTHEADER, ID3v2_FOOTER_MARKER, ID3v2_FRAME_FLAGS1, ID3v2_FRAME_FLAGS2, ID3v2_FRAME_HEADER, ID3v2_FRAME_HEADER_LENGTHS, ID3v2_HEADER_FLAGS } from './id3v2.header.consts';
 import { unflags } from '../common/utils';
 import { MemoryWriterStream } from '../common/stream-writer-memory';
 import { BufferUtils } from '../common/buffer';
@@ -14,6 +14,7 @@ export class Id3v2RawWriter {
 	frames: Array<IID3V2.RawFrame>;
 	head: IID3V2.TagHeader;
 	paddingSize: number;
+	private writtenTagSize = 0;
 
 	constructor(stream: WriterStream, head: IID3V2.TagHeader, options: Id3v2RawWriterOptions, frames?: Array<IID3V2.RawFrame>) {
 		this.stream = stream;
@@ -228,12 +229,12 @@ export class Id3v2RawWriter {
 		for (const frame of frames) {
 			framesSize = framesSize + frame.size + frameHeadSize;
 		}
-		const footerSize = 0;
-		return extendedHeaderSize + framesSize + footerSize + this.paddingSize;
+		// Footer and padding are mutually exclusive (spec section 3.3)
+		const padding = (this.head.ver === 4 && this.head.v4?.flags.footer) ? 0 : this.paddingSize;
+		return extendedHeaderSize + framesSize + padding;
 	}
 
 	private async writeHeader(frames: Array<IID3V2.RawFrame>): Promise<void> {
-		// TODO: currently no support for writing footer
 		// TODO: currently no support for unsynchronised writing
 
 		/**
@@ -285,6 +286,7 @@ export class Id3v2RawWriter {
 		this.head.flagBits = versionHead.flagBits;
 		await this.stream.writeBitsByte(versionHead.flagBits); // ID3v2 flags
 		const tagSize = this.calculateTagSize(frames, versionHead.extendedHeaderBuffer ? versionHead.extendedHeaderBuffer.length : 0);
+		this.writtenTagSize = tagSize;
 		await (this.head.ver > 2 ? this.stream.writeSyncSafeInt(tagSize) : this.stream.writeUInt4Byte(tagSize));
 		if (versionHead.extendedHeaderBuffer) {
 			await this.stream.writeBuffer(versionHead.extendedHeaderBuffer);
@@ -295,6 +297,28 @@ export class Id3v2RawWriter {
 		for (const frame of frames) {
 			await this.writeFrame(frame);
 		}
+	}
+
+	private async writeFooter(): Promise<void> {
+		/**
+		 3.4.   ID3v2 footer
+
+		 To speed up the process of locating an ID3v2 tag when searching from
+		 the end of a file, a footer can be added to the tag. It is REQUIRED
+		 to add a footer to an appended tag, i.e. a tag located after all
+		 audio data. The footer is a copy of the header, but with a different
+		 identifier.
+
+		 ID3v2 identifier           "3DI"
+		 ID3v2 version              $04 00
+		 ID3v2 flags                %abcd0000
+		 ID3v2 size             4 * %0xxxxxxx
+		 */
+		await this.stream.writeAscii(ID3v2_FOOTER_MARKER);
+		await this.stream.writeByte(this.head.ver);
+		await this.stream.writeByte(this.head.rev);
+		await this.stream.writeBitsByte(this.head.flagBits || []);
+		await this.stream.writeSyncSafeInt(this.writtenTagSize);
 	}
 
 	private async writeEnd(): Promise<void> {
@@ -310,21 +334,10 @@ export class Id3v2RawWriter {
 		 any padding between the frames or between the tag header and the
 		 frames. Furthermore it MUST NOT have any padding when a tag footer is
 		 added to the tag.
-
-		 3.4.   ID3v2 footer
-
-		 To speed up the process of locating an ID3v2 tag when searching from
-		 the end of a file, a footer can be added to the tag. It is REQUIRED
-		 to add a footer to an appended tag, i.e. a tag located after all
-		 audio data. The footer is a copy of the header, but with a different
-		 identifier.
-
-		 ID3v2 identifier           "3DI"
-		 ID3v2 version              $04 00
-		 ID3v2 flags                %abcd0000
-		 ID3v2 size             4 * %0xxxxxxx
 		 */
-		if (this.paddingSize > 0) {
+		if (this.head.ver === 4 && this.head.v4?.flags.footer) {
+			await this.writeFooter();
+		} else if (this.paddingSize > 0) {
 			await this.stream.writeBuffer(BufferUtils.zeroBuffer(this.paddingSize));
 		}
 	}
