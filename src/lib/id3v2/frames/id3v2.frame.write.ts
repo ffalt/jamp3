@@ -9,6 +9,7 @@ import { BufferUtils } from '../../common/buffer';
 import { ascii, Encodings, IEncoding } from '../../common/encodings';
 import { ensureID3v2FrameVersionDef } from './id3v2.frame.version';
 import { Id3v2RawWriter } from '../id3v2.writer.raw';
+import { applyUnsync } from './id3v2.frame.unsync';
 
 export async function writeRawSubFrames(frames: Array<IID3V2.Frame>, stream: WriterStream, head: IID3V2.TagHeader, defaultEncoding?: string): Promise<void> {
 	const writer = new Id3v2RawWriter(stream, head, { paddingSize: 0 });
@@ -66,6 +67,9 @@ async function writeRawFrame(frame: IID3V2.Frame, head: IID3V2.TagHeader, defaul
 			const dataLengthStream = new MemoryWriterStream();
 			await dataLengthStream.writeSyncSafeInt(data.length);
 			data = BufferUtils.concatBuffer(dataLengthStream.toBuffer(), data);
+		}
+		if ((frameHead.formatFlags) && (frameHead.formatFlags.unsynchronised)) {
+			data = applyUnsync(data);
 		}
 	}
 

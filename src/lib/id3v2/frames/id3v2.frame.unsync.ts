@@ -14,3 +14,33 @@ export function removeUnsync(data: Buffer): Buffer {
 	}
 	return result.slice(0, pos);
 }
+
+export function needsUnsync(data: Buffer): boolean {
+	for (let i = 0; i < data.length; i++) {
+		if (data[i] === 0xFF && (i + 1 >= data.length || data[i + 1] === 0x00 || data[i + 1] >= 0xE0)) {
+			return true;
+		}
+	}
+	return false;
+}
+
+export function applyUnsync(data: Buffer): Buffer {
+	if (!needsUnsync(data)) {
+		return data;
+	}
+	let count = 0;
+	for (let i = 0; i < data.length; i++) {
+		if (data[i] === 0xFF && (i + 1 >= data.length || data[i + 1] === 0x00 || data[i + 1] >= 0xE0)) {
+			count++;
+		}
+	}
+	const result = BufferUtils.zeroBuffer(data.length + count);
+	let pos = 0;
+	for (let i = 0; i < data.length; i++) {
+		result[pos++] = data[i];
+		if (data[i] === 0xFF && (i + 1 >= data.length || data[i + 1] === 0x00 || data[i + 1] >= 0xE0)) {
+			result[pos++] = 0x00;
+		}
+	}
+	return result;
+}

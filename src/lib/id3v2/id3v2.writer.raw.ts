@@ -4,6 +4,7 @@ import { ID3v2_EXTHEADER, ID3v2_FOOTER_MARKER, ID3v2_FRAME_FLAGS1, ID3v2_FRAME_F
 import { unflags } from '../common/utils';
 import { MemoryWriterStream } from '../common/stream-writer-memory';
 import { BufferUtils } from '../common/buffer';
+import { applyUnsync } from './frames/id3v2.frame.unsync';
 
 export interface Id3v2RawWriterOptions {
 	paddingSize?: number;
@@ -23,9 +24,13 @@ export class Id3v2RawWriter {
 		this.paddingSize = options.paddingSize === undefined ? 0 : options.paddingSize;
 	}
 
+	private tagLevelUnsync(): boolean {
+		return (this.head.ver <= 2 && !!this.head.v2?.flags.unsynchronisation) || (this.head.ver === 3 && !!this.head.v3?.flags.unsynchronisation);
+	}
+
 	private async buildHeaderFlagsV4(): Promise<{ flagBits: Array<number>; extendedHeaderBuffer?: Buffer }> {
 		this.head.v4 = this.head.v4 || { flags: {} };
-		this.head.v4.flags.unsynchronisation = false;
+		this.head.v4.flags.unsynchronisation = false; // v2.4 uses per-frame unsync via formatFlags
 		this.head.v4.flags.extendedheader = !!this.head.v4.extended;
 		const flagBits = unflags(ID3v2_HEADER_FLAGS[this.head.ver], this.head.v4.flags as any);
 		if (this.head.v4.extended) {
@@ -147,7 +152,6 @@ export class Id3v2RawWriter {
 
 	private async buildHeaderFlagsV3(): Promise<{ flagBits: Array<number>; extendedHeaderBuffer?: Buffer }> {
 		this.head.v3 = this.head.v3 || { flags: {} };
-		this.head.v3.flags.unsynchronisation = false;
 		this.head.v3.flags.extendedheader = !!this.head.v3.extended;
 		const flagBits = unflags(ID3v2_HEADER_FLAGS[this.head.ver], this.head.v3.flags as any);
 		if (this.head.v3.extended) {
@@ -203,7 +207,6 @@ export class Id3v2RawWriter {
 
 	private async buildHeaderFlagsV2(): Promise<{ flagBits: Array<number>; extendedHeaderBuffer?: Buffer }> {
 		this.head.v2 = this.head.v2 || { flags: {} };
-		this.head.v2.flags.unsynchronisation = false;
 		const flagBits = unflags(ID3v2_HEADER_FLAGS[2], this.head.v2.flags as any);
 		return { flagBits };
 	}
@@ -226,8 +229,11 @@ export class Id3v2RawWriter {
 			ID3v2_FRAME_HEADER_LENGTHS.MARKER[this.head.ver] +
 			ID3v2_FRAME_HEADER_LENGTHS.SIZE[this.head.ver] +
 			ID3v2_FRAME_HEADER_LENGTHS.FLAGS[this.head.ver];
+		const tagLevelUnsync = this.tagLevelUnsync();
 		for (const frame of frames) {
-			framesSize = framesSize + frame.size + frameHeadSize;
+			// For tag-level unsync (v2.2/v2.3): frame.size is pre-unsync; tag size counts actual on-disk bytes
+			const dataSize = tagLevelUnsync ? applyUnsync(frame.data).length : frame.size;
+			framesSize = framesSize + dataSize + frameHeadSize;
 		}
 		// Footer and padding are mutually exclusive (spec section 3.3)
 		const padding = (this.head.ver === 4 && this.head.v4?.flags.footer) ? 0 : this.paddingSize;
@@ -235,8 +241,6 @@ export class Id3v2RawWriter {
 	}
 
 	private async writeHeader(frames: Array<IID3V2.RawFrame>): Promise<void> {
-		// TODO: currently no support for unsynchronised writing
-
 		/**
 		 3.1.   ID3v2 header
 
@@ -542,16 +546,14 @@ export class Id3v2RawWriter {
 			await this.stream.writeUInt3Byte(frame.size);
 		}
 
-		// TODO: currently no support for unsynchronised writing
-		if (frame.formatFlags.unsynchronised) {
-			frame.formatFlags.unsynchronised = false;
-		}
-
 		if (ID3v2_FRAME_HEADER_LENGTHS.FLAGS[this.head.ver] !== 0) {
 			await this.stream.writeBitsByte(unflags(ID3v2_FRAME_FLAGS1[this.head.ver], frame.statusFlags));
 			await this.stream.writeBitsByte(unflags(ID3v2_FRAME_FLAGS2[this.head.ver], frame.formatFlags));
 		}
-		await this.stream.writeBuffer(frame.data);
+		// For v2.2/v2.3 tag-level unsync: apply unsync to frame data on the fly (frame.size stores pre-unsync size)
+		// For v2.4 per-frame unsync: data is already unsynchronized from writeRawFrame
+		const frameData = this.tagLevelUnsync() ? applyUnsync(frame.data) : frame.data;
+		await this.stream.writeBuffer(frameData);
 	}
 
 	async write(): Promise<void> {
