@@ -54,7 +54,7 @@ export class ID3v2 {
 		const reader = new ID3v2Reader();
 		const tag = await reader.read(filename);
 		if (tag) {
-			return await buildID3v2(tag);
+			return buildID3v2(tag);
 		}
 	}
 
@@ -67,7 +67,7 @@ export class ID3v2 {
 		const reader = new ID3v2Reader();
 		const tag = await reader.readStream(stream);
 		if (tag) {
-			return await buildID3v2(tag);
+			return buildID3v2(tag);
 		}
 	}
 
