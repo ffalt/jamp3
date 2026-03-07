@@ -389,11 +389,11 @@ export namespace IID3V2 {
 		size: number;
 		flags: FrameHeaderStatusFlags;
 		restrictions?: {
-			tagSize: string;
-			textEncoding: string;
-			textSize: string;
-			imageEncoding: string;
-			imageSize: string;
+			tagSize: number;
+			textEncoding: number;
+			textSize: number;
+			imageEncoding: number;
+			imageSize: number;
 		};
 		crc32?: number;
 	}

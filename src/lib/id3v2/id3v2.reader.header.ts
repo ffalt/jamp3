@@ -78,13 +78,13 @@ export class ID3v2HeaderReader {
 		}
 		if (exthead.flags.restrictions) {
 			pos++;
-			const r = bitarray(data[pos]);
+			const r = data[pos];
 			exthead.restrictions = {
-				tagSize: r[0].toString() + r[1].toString(),
-				textEncoding: r[2].toString(),
-				textSize: r[3].toString() + r[4].toString(),
-				imageEncoding: r[5].toString(),
-				imageSize: r[6].toString() + r[7].toString()
+				tagSize: (r >> 6) & 0x03,
+				textEncoding: (r >> 5) & 0x01,
+				textSize: (r >> 3) & 0x03,
+				imageEncoding: (r >> 2) & 0x01,
+				imageSize: r & 0x03
 			};
 		}
 		return { exthead };

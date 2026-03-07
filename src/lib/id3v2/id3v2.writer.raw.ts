@@ -40,8 +40,7 @@ export class Id3v2RawWriter {
 		return { flagBits };
 	}
 
-	private async writeExtHeaderV4(_extended: IID3V2.TagHeaderExtendedVer4): Promise<Buffer> {
-		console.error('WARNING: extended header 2.4 not implemented');
+	private async writeExtHeaderV4(extended: IID3V2.TagHeaderExtendedVer4): Promise<Buffer> {
 		/**
 		 ID3v2.4
 		 3.2. Extended header
@@ -147,7 +146,37 @@ export class Id3v2RawWriter {
 		 11  All images are exactly 64x64 pixels, unless required
 		 otherwise.
 		 */
-		return Promise.reject(new Error('TODO extended header v2.4'));
+		const extFlags = extended.flags || {};
+		const flagDataParts: Array<Buffer> = [];
+		if (extFlags.update) {
+			flagDataParts.push(Buffer.from([0x00]));
+		}
+		if (extFlags.crc) {
+			const crcBuf = Buffer.allocUnsafe(6);
+			crcBuf[0] = 0x05;
+			let val = extended.crc32 || 0;
+			for (let i = 5; i >= 1; i--) {
+				crcBuf[i] = val & 0x7F;
+				val >>>= 7;
+			}
+			flagDataParts.push(crcBuf);
+		}
+		if (extFlags.restrictions && extended.restrictions) {
+			const r = extended.restrictions;
+			const restrictionByte = (r.tagSize << 6) | (r.textEncoding << 5) | (r.textSize << 3) | (r.imageEncoding << 2) | r.imageSize;
+			flagDataParts.push(Buffer.from([0x01, restrictionByte]));
+		}
+		const flagData = flagDataParts.length > 0 ? Buffer.concat(flagDataParts) : Buffer.alloc(0);
+		// Total size = 4 (size field itself) + 1 (num flag bytes) + 1 (flags byte) + flagData
+		const totalSize = 4 + 1 + 1 + flagData.length;
+		const result = new MemoryWriterStream();
+		await result.writeSyncSafeInt(totalSize);
+		await result.writeByte(0x01);
+		await result.writeBitsByte(unflags(ID3v2_EXTHEADER[4].FLAGS, extFlags as any));
+		if (flagData.length > 0) {
+			await result.writeBuffer(flagData);
+		}
+		return result.toBuffer();
 	}
 
 	private async buildHeaderFlagsV3(): Promise<{ flagBits: Array<number>; extendedHeaderBuffer?: Buffer }> {
