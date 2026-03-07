@@ -108,7 +108,8 @@ function fillTree() {
 		}
 		const last = key.codePointAt(key.length - 1);
 		if (last !== undefined) {
-			node[last] = node[last] || { frameDef: FrameDefs[key] };
+			node[last] = node[last] || {};
+			node[last].frameDef = FrameDefs[key];
 		}
 	}
 }
