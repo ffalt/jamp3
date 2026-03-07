@@ -232,7 +232,7 @@ export class Id3v2RawWriter {
 		const tagLevelUnsync = this.tagLevelUnsync();
 		for (const frame of frames) {
 			// For tag-level unsync (v2.2/v2.3): frame.size is pre-unsync; tag size counts actual on-disk bytes
-			const dataSize = tagLevelUnsync ? applyUnsync(frame.data).length : frame.size;
+			const dataSize = (tagLevelUnsync && !frame.formatFlags.unsynchronised) ? applyUnsync(frame.data).length : frame.size;
 			framesSize = framesSize + dataSize + frameHeadSize;
 		}
 		// Footer and padding are mutually exclusive (spec section 3.3)
@@ -552,7 +552,7 @@ export class Id3v2RawWriter {
 		}
 		// For v2.2/v2.3 tag-level unsync: apply unsync to frame data on the fly (frame.size stores pre-unsync size)
 		// For v2.4 per-frame unsync: data is already unsynchronized from writeRawFrame
-		const frameData = this.tagLevelUnsync() ? applyUnsync(frame.data) : frame.data;
+		const frameData = (this.tagLevelUnsync() && !frame.formatFlags.unsynchronised) ? applyUnsync(frame.data) : frame.data;
 		await this.stream.writeBuffer(frameData);
 	}
 
