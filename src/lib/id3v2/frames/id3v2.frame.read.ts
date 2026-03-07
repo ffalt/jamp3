@@ -30,7 +30,7 @@ async function processRawFrame(frame: IID3V2.RawFrame, head: IID3V2.TagHeader): 
 				}
 				zlib.gunzip(data, (err2, result2) => {
 					if (!err2 && result2) {
-						frame.data = result;
+						frame.data = result2;
 						resolve();
 					}
 					reject('Decompressing frame failed');
