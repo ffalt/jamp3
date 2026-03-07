@@ -121,7 +121,7 @@ export class ID3v2 {
 		const head = await this.buildHead(tag, version, rev);
 		const raw_frames = await writeRawFrames(tag.frames, head, options.defaultEncoding);
 		const exists = await fse.pathExists(filename);
-		await (exists ? this.replaceTag(filename, raw_frames, head, opts) : this.writeTag(filename, raw_frames, head));
+		await (exists ? this.replaceTag(filename, raw_frames, head, opts) : this.writeTag(filename, raw_frames, head, opts));
 	}
 
 	private async buildHead(tag: IID3V2.ID3v2Tag, version: number, rev: number): Promise<IID3V2.TagHeader> {
@@ -140,12 +140,12 @@ export class ID3v2 {
 		return head;
 	}
 
-	private async writeTag(filename: string, frames: Array<IID3V2.RawFrame>, head: IID3V2.TagHeader): Promise<void> {
+	private async writeTag(filename: string, frames: Array<IID3V2.RawFrame>, head: IID3V2.TagHeader, options: IID3V2.WriteOptions): Promise<void> {
 		const stream = new FileWriterStream();
 		await stream.open(filename);
 		const writer = new ID3v2Writer();
 		try {
-			await writer.write(stream, frames, head, { paddingSize: 0 });
+			await writer.write(stream, frames, head, options);
 		} catch (error) {
 			await stream.close();
 			return Promise.reject(error);
@@ -166,11 +166,12 @@ export class ID3v2 {
 				skipped = true;
 			}
 		}
+		const tagAreaEnd = Math.max(start, specEnd);
 		if (layout.frameheaders.length > 0) {
 			const mediastart = rawHeaderOffSet(layout.frameheaders[0]);
-			start = Math.min(specEnd, mediastart);
+			start = Math.min(tagAreaEnd, mediastart);
 		} else {
-			start = Math.max(start, specEnd);
+			start = tagAreaEnd;
 		}
 		await fileWriter.copyFrom(filename, start);
 		return skipped;
