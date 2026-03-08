@@ -39,6 +39,16 @@ export class ID3V2FramesCollect {
 		};
 	}
 
+	clearFrames(key: string): void {
+		delete this.frameValues[key];
+	}
+
+	loadFrames(frames: Array<IID3V2.Frame>): void {
+		for (const frame of frames) {
+			this.frameValues[frame.id] = [...(this.frameValues[frame.id] || []), frame];
+		}
+	}
+
 	build(): IID3V2.Frames.Map {
 		return this.frameValues;
 	}

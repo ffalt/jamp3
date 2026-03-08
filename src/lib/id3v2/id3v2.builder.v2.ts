@@ -14,6 +14,16 @@ export abstract class ID3V2TagBuilder implements IID3V2.Builder {
 
 	abstract rev(): number;
 
+	/**
+	 * Load existing frames from a tag into the builder.
+	 * After calling this, subsequent setter calls will update or add to the existing frames.
+	 * Single-value frames (e.g. title, artist) will be replaced; multi-value frames (e.g. picture, comment) will be appended.
+	 */
+	loadTag(tag: IID3V2.Tag): this {
+		this.rawBuilder.loadFrames(tag.frames);
+		return this;
+	}
+
 	buildFrames(): Array<IID3V2.Frame> {
 		const result: Array<IID3V2.Frame> = [];
 		const frameValues = this.rawBuilder.build();
@@ -552,6 +562,88 @@ export abstract class ID3V2TagBuilder implements IID3V2.Builder {
 
 	keyTextList(id: string, group: string, value?: string) {
 		this.rawBuilder.keyTextList(id, group, value);
+		return this;
+	}
+
+	// Clear methods for multi-value (addFrame/addIDFrame) frames
+
+	clearAudioEncryption() {
+		this.rawBuilder.clearFrames('AENC');
+		return this;
+	}
+
+	clearComments() {
+		this.rawBuilder.clearFrames('COMM');
+		return this;
+	}
+
+	clearCustom() {
+		this.rawBuilder.clearFrames('TXXX');
+		return this;
+	}
+
+	clearEventTimingCodes() {
+		this.rawBuilder.clearFrames('ETCO');
+		return this;
+	}
+
+	clearLinkedInformation() {
+		this.rawBuilder.clearFrames('LINK');
+		return this;
+	}
+
+	clearLyrics() {
+		this.rawBuilder.clearFrames('USLT');
+		return this;
+	}
+
+	clearObjects() {
+		this.rawBuilder.clearFrames('GEOB');
+		return this;
+	}
+
+	clearPictures() {
+		this.rawBuilder.clearFrames('APIC');
+		return this;
+	}
+
+	clearPopularimeters() {
+		this.rawBuilder.clearFrames('POPM');
+		return this;
+	}
+
+	clearPriv() {
+		this.rawBuilder.clearFrames('PRIV');
+		return this;
+	}
+
+	clearRelativeVolumeAdjustment() {
+		this.rawBuilder.clearFrames('RVAD');
+		return this;
+	}
+
+	clearSynchronisedLyrics() {
+		this.rawBuilder.clearFrames('SYLT');
+		return this;
+	}
+
+	clearTermsOfUse() {
+		this.rawBuilder.clearFrames('USER');
+		return this;
+	}
+
+	clearUniqueFileIDs() {
+		this.rawBuilder.clearFrames('UFID');
+		return this;
+	}
+
+	clearURLs() {
+		this.rawBuilder.clearFrames('WXXX');
+		return this;
+	}
+
+	clearUnknown(id: string) {
+		this.rawBuilder.clearFrames(id);
 		return this;
 	}
 }

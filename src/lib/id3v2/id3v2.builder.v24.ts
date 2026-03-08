@@ -179,4 +179,24 @@ export class ID3V24TagBuilder extends ID3V2TagBuilder {
 		this.text('GRP1', value);
 		return this;
 	}
+
+	clearChapters(): ID3V24TagBuilder {
+		this.rawBuilder.clearFrames('CHAP');
+		return this;
+	}
+
+	clearChapterTOCs(): ID3V24TagBuilder {
+		this.rawBuilder.clearFrames('CTOC');
+		return this;
+	}
+
+	clearRelativeVolumeAdjustment2(): ID3V24TagBuilder {
+		this.rawBuilder.clearFrames('RVA2');
+		return this;
+	}
+
+	clearReplayGainAdjustment(): ID3V24TagBuilder {
+		this.rawBuilder.clearFrames('RGAD');
+		return this;
+	}
 }
