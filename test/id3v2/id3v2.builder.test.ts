@@ -105,7 +105,6 @@ async function fill24Builder(builder: ID3V24TagBuilder): Promise<void> {
 		.priv(testString, testBuffer)
 		.productionNotice(testString)
 		.relativeVolumeAdjustment(
-			testString,
 			testNumber, testNumber,
 			testNumber, testNumber,
 			testNumber, testNumber,

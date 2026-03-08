@@ -36,7 +36,6 @@ async function writeTagToBuffer(frames: Array<IID3V2.Frame>, head: IID3V2.TagHea
 }
 
 describe('ID3v2 Unsync', () => {
-
 	describe('needsUnsync', () => {
 		it('returns false for empty buffer', () => {
 			expect(needsUnsync(Buffer.alloc(0))).toBe(false);
@@ -102,14 +101,14 @@ describe('ID3v2 Unsync', () => {
 	});
 
 	describe('applyUnsync + removeUnsync round-trip', () => {
-		const cases: [string, Buffer][] = [
+		const cases: Array<[string, Buffer]> = [
 			['MPEG sync bytes', Buffer.from([0x00, 0xFF, 0xE0, 0x01])],
 			['FF followed by 00', Buffer.from([0xFF, 0x00, 0xFF, 0xFB])],
 			['UTF-16 LE BOM', Buffer.from([0x01, 0xFF, 0xFE, 0x41, 0x00, 0x6C, 0x00])],
 			['trailing FF', Buffer.from([0x01, 0xFF])],
 			['no unsync needed', Buffer.from([0xDE, 0xAD, 0xBE, 0xEF])],
 			['consecutive FF sequences', Buffer.from([0xFF, 0xE0, 0xFF, 0xE0])],
-			['single byte', Buffer.from([0xFF])],
+			['single byte', Buffer.from([0xFF])]
 		];
 		it.each(cases)('round-trips %s', (_name, data) => {
 			expect(removeUnsync(applyUnsync(data))).toEqual(data);
