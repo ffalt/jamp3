@@ -18,6 +18,7 @@ import { FramePopularimeter } from './implementations/id3v2.frame.popularimeter'
 import { FrameAENC } from './implementations/id3v2.frame.aenc';
 import { FrameLINK } from './implementations/id3v2.frame.linked-info';
 import { FrameIdBin } from './implementations/id3v2.frame.id-bin';
+import { FramePriv } from './implementations/id3v2.frame.priv';
 import { FrameBooleanString } from './implementations/id3v2.frame.boolstring';
 import { FramePCST } from './implementations/id3v2.frame.pcst';
 import { FrameMusicCDId } from './implementations/id3v2.frame.musiccdid';
@@ -1612,21 +1613,10 @@ export const FrameDefs: Record<string, IFrameDef> = {
 		 <Header for 'Private frame', ID: "PRIV">
 		 Owner identifier        <text string> $00
 		 The private data        <binary data>
-
-		 //TODO: implement known PRIV Tags
-		 AverageLevel N
-		 PeakValue N
-		 WM_MediaClassPrimaryID N
-		 WM_MediaClassSecondaryID N
-		 WM_Provider N
-		 WM_CollectionGroupID N
-		 WM_CollectionID N
-		 WM_ContentID N
-		 XMP  - --> http://www.sno.phy.queensu.ca/~phil/exiftool/TagNames/XMP.html
 		 */
 		title: 'Private frame',
 		versions: [3, 4],
-		impl: FrameIdBin
+		impl: FramePriv
 	},
 
 	// Others 3

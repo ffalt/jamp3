@@ -1,7 +1,39 @@
 import { FrameDefs } from './frames/id3v2.frame.defs';
 import { findId3v2FrameDef } from './frames/id3v2.frame.match';
 
-export const PRIVMap: Record<string, string> = {};
+export const PRIVMap: Record<string, string> = {
+	'AverageLevel': 'AVERAGELEVEL',
+	'PeakValue': 'PEAKVALUE',
+	'WM/MediaClassPrimaryID': 'WM_MEDIACLASSPRIMARYID',
+	'WM/MediaClassSecondaryID': 'WM_MEDIACLASSSECONDARYID',
+	'WM/WMContentID': 'WM_CONTENTID',
+	'WM/WMCollectionID': 'WM_COLLECTIONID',
+	'WM/WMCollectionGroupID': 'WM_COLLECTIONGROUPID',
+	'WM/Provider': 'WM_PROVIDER',
+	'WM/UniqueFileIdentifier': 'WM_UNIQUEFILEIDENTIFIER',
+	'WM/Mood': 'WM_MOOD'
+};
+
+export const PRIVNumericOwners = new Set(['AverageLevel', 'PeakValue']);
+
+export const PRIVGuidOwners = new Set([
+	'WM/MediaClassPrimaryID',
+	'WM/MediaClassSecondaryID',
+	'WM/WMContentID',
+	'WM/WMCollectionID',
+	'WM/WMCollectionGroupID'
+]);
+
+/** WM/ string attributes store a UTF-16 LE null-terminated string (WMT_TYPE_STRING). */
+export const PRIVWideStringOwners = new Set(['WM/Provider', 'WM/UniqueFileIdentifier', 'WM/Mood']);
+
+/** Known WM/MediaClassPrimaryID GUID values */
+export const WMMediaClassPrimaryIDs = {
+	music: 'D1607DBC-E323-4BE2-86A1-48A42A28441E',
+	video: 'DB9830BD-3AB3-4FAB-8A37-1A995F7FF74B',
+	nonMusicAudio: '01CD0F29-DA4E-4157-897B-6275D50C4F11',
+	other: 'FCF24A76-9A57-4036-990D-E35DD8B244E1'
+};
 
 export const COMMMap: Record<string, string> = {
 	'description': 'COMMENT',

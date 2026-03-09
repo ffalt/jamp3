@@ -34,6 +34,14 @@ export class ID3V2RawBuilder extends ID3V2FramesCollect {
 		this.addFrame<IID3V2.FrameValue.IdBin>(key, { id, bin: binary });
 	}
 
+	idNum(key: string, id: string, num: number) {
+		this.addFrame<IID3V2.FrameValue.IdNum>(key, { id, num });
+	}
+
+	idGuid(key: string, id: string, guid: string) {
+		this.addFrame<IID3V2.FrameValue.IdGuid>(key, { id, guid });
+	}
+
 	idLangText(key: string, value: string | undefined, lang: string | undefined, id: string | undefined) {
 		if (value) {
 			this.addIDFrame<IID3V2.FrameValue.LangDescText>(key, { id: id || '', language: lang || '', text: value });

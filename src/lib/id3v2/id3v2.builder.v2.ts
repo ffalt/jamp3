@@ -422,6 +422,41 @@ export abstract class ID3V2TagBuilder implements IID3V2.Builder {
 		return this;
 	}
 
+	averageLevel(value: number) {
+		this.rawBuilder.idNum('PRIV', 'AverageLevel', value);
+		return this;
+	}
+
+	peakValue(value: number) {
+		this.rawBuilder.idNum('PRIV', 'PeakValue', value);
+		return this;
+	}
+
+	wmMediaClassPrimaryID(guid: string) {
+		this.rawBuilder.idGuid('PRIV', 'WM/MediaClassPrimaryID', guid);
+		return this;
+	}
+
+	wmMediaClassSecondaryID(guid: string) {
+		this.rawBuilder.idGuid('PRIV', 'WM/MediaClassSecondaryID', guid);
+		return this;
+	}
+
+	wmProvider(value: string) {
+		this.rawBuilder.idText('PRIV', 'WM/Provider', value);
+		return this;
+	}
+
+	wmUniqueFileIdentifier(value: string) {
+		this.rawBuilder.idText('PRIV', 'WM/UniqueFileIdentifier', value);
+		return this;
+	}
+
+	wmMood(value: string) {
+		this.rawBuilder.idText('PRIV', 'WM/Mood', value);
+		return this;
+	}
+
 	relativeVolumeAdjustment(
 		right: number,
 		left: number,
@@ -537,6 +572,16 @@ export abstract class ID3V2TagBuilder implements IID3V2.Builder {
 
 	idBin(id: string, key: string, bin: Buffer) {
 		this.rawBuilder.idBin(id, key, bin);
+		return this;
+	}
+
+	idNum(id: string, key: string, num: number) {
+		this.rawBuilder.idNum(id, key, num);
+		return this;
+	}
+
+	idGuid(id: string, key: string, guid: string) {
+		this.rawBuilder.idGuid(id, key, guid);
 		return this;
 	}
 

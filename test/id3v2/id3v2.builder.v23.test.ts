@@ -7,6 +7,7 @@ import { ID3V23TagBuilder } from '../../src/lib/id3v2/id3v2.builder.v23';
 const testNumber = 5;
 const testString = 'räksmörgåsЪЭЯ😀';
 const testLanguage = 'xYz';
+const testGUID = '00000000-0000-0000-0000-000000000000';
 const testBuffer = Buffer.alloc(10, 0);
 
 async function fill23Builder(builder: ID3V23TagBuilder): Promise<void> {
@@ -108,6 +109,11 @@ async function fill23Builder(builder: ID3V23TagBuilder): Promise<void> {
 		.uniqueFileID(testString, testString)
 		.unknown('TTTT', testBuffer)
 		.url(testString, testString)
+		.wmMediaClassPrimaryID(testGUID)
+		.wmMediaClassSecondaryID(testGUID)
+		.wmProvider(testString)
+		.wmUniqueFileIdentifier(testString)
+		.wmMood(testString)
 		.website(testString)
 		.writer(testString);
 }

@@ -9,6 +9,7 @@ import { MemoryWriterStream } from '../../src/lib/common/stream-writer-memory';
 const testNumber = 5;
 const testString = 'räksmörgåsЪЭЯ😀';
 const testLanguage = 'xYz';
+const testGUID = '00000000-0000-0000-0000-000000000000';
 const testBuffer = Buffer.alloc(10, 0);
 
 async function fill24Builder(builder: ID3V24TagBuilder): Promise<void> {
@@ -103,6 +104,13 @@ async function fill24Builder(builder: ID3V24TagBuilder): Promise<void> {
 		.podcastURL(testString)
 		.popularimeter(testString, testNumber, testNumber)
 		.priv(testString, testBuffer)
+		.averageLevel(testNumber)
+		.peakValue(testNumber)
+		.wmMediaClassPrimaryID(testGUID)
+		.wmMediaClassSecondaryID(testGUID)
+		.wmProvider(testString)
+		.wmUniqueFileIdentifier(testString)
+		.wmMood(testString)
 		.productionNotice(testString)
 		.relativeVolumeAdjustment(
 			testNumber, testNumber,

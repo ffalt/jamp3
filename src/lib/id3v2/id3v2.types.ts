@@ -153,6 +153,17 @@ export namespace IID3V2 {
 			bin: Buffer;
 		}
 
+		export interface IdNum extends Base {
+			id: string;
+			num: number;
+		}
+
+		export interface IdGuid extends Base {
+			id: string;
+			/** GUID as uppercase string: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX */
+			guid: string;
+		}
+
 		export interface IdText extends Base {
 			id: string;
 			text: string;
