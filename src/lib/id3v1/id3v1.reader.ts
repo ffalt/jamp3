@@ -102,30 +102,4 @@ export class ID3v1Reader {
 			return Promise.reject(error);
 		}
 	}
-
-	/**
-	 TODO: CUSTOMTAG tag
-	 TODO: APE tag
-	 TODO: Extended tag
-
-	 The extended tag is an extra data block before an ID3v1 tag, which extends the title, artist and album fields by 60 bytes each,
-	 offers a freetext genre, a one-byte (values 0–5) speed and the start and stop time of the music in the MP3 file, e.g., for fading in.
-	 If none of the fields are used, it will be automatically omitted.
-
-	 Some programs supporting ID3v1 frames can read the extended tag, but writing may leave stale values in the extended block.
-	 The extended block is not an official standard, and is only supported by few programs, not including XMMS or Winamp.
-	 The extended tag is sometimes referred to as the "enhanced" tag.
-	 Layout
-
-	 Note: The extended tag is 227 bytes long, and placed before the ID3v1 tag.
-	 Field    Length    Description
-	 header    4    "TAG+"
-	 title    60    60 characters of the title
-	 artist    60    60 characters of the artist name
-	 album    60    60 characters of the album name
-	 speed    1    0=unset, 1=slow, 2= medium, 3=fast, 4=hardcore
-	 genre    30    A free-text field for the genre
-	 start-time    6    the start of the music as mmm:ss
-	 end-time    6    the end of the music as mmm:ss
-	 */
 }
