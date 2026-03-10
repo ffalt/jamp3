@@ -1,7 +1,7 @@
-import fs from 'fs';
-import {BufferUtils} from './buffer';
-import {synchsafe, unbitarray} from './utils';
-import {ascii, IEncoding} from './encodings';
+import fs from 'node:fs';
+import { BufferUtils } from './buffer';
+import { synchsafe, unbitarray } from './utils';
+import { ascii, IEncoding } from './encodings';
 import MemoryStream from 'memory-stream';
 
 export class WriterStream {
@@ -14,22 +14,22 @@ export class WriterStream {
 	private async _write(something: Buffer): Promise<void> {
 		if (!this.wstream.write(something)) {
 			// handle backpressure
-			return new Promise<void>((resolve, reject) => {
+			return new Promise<void>((resolve, _reject) => {
 				this.wstream.once('drain', () => {
 					resolve();
 				});
-			})
+			});
 		}
 	}
 
 	private async _writeString(something: string, encoding: BufferEncoding): Promise<void> {
 		if (!this.wstream.write(something, encoding)) {
 			// handle backpressure
-			return new Promise<void>((resolve, reject) => {
+			return new Promise<void>((resolve, _reject) => {
 				this.wstream.once('drain', () => {
 					resolve();
 				});
-			})
+			});
 		}
 	}
 
@@ -105,11 +105,12 @@ export class WriterStream {
 		return this.writeTerminator(enc);
 	}
 
-	async writeAsciiString(val: string, length: number): Promise<void> {
-		while (val.length < length) {
-			val += ' ';
+	async writeAsciiString(value: string, length: number): Promise<void> {
+		let current = value;
+		while (current.length < length) {
+			current += ' ';
 		}
-		return this._writeString(val.slice(0, length), 'ascii');
+		return this._writeString(current.slice(0, length), 'ascii');
 	}
 
 	async writeAscii(val: string): Promise<void> {
@@ -124,7 +125,7 @@ export class WriterStream {
 		const padding = size - buffer.length;
 		if (padding > 0) {
 			const pad = BufferUtils.zeroBuffer(padding);
-			buffer = BufferUtils.concatBuffer(buffer, pad);
+			return this.writeBuffer(BufferUtils.concatBuffer(buffer, pad));
 		}
 		return this.writeBuffer(buffer);
 	}
@@ -133,9 +134,4 @@ export class WriterStream {
 		const buf = ascii.encode(val.slice(0, size)).slice(0, size);
 		return this.writeFixedBuffer(buf, size);
 	}
-
-	// writeFixedUTF8String(val: string, size: number) {
-	// 	const buf = utf8.encode(val.slice(0, size)).slice(0, size);
-	// 	this.writeFixedBuffer(buf, size);
-	// }
 }

@@ -12,18 +12,18 @@ class BufferReader {
     }
     readStringTerminated(enc) {
         const i = buffer_1.BufferUtils.scanBufferTextPos(this.data, enc.terminator, this.position);
-        const buf = this.data.slice(this.position, i);
+        const buf = this.data.subarray(this.position, i);
         const result = (buf.length === 0) ? '' : enc.decode(buf);
-        this.position = i + enc.terminator.length;
+        this.position = (i === this.data.length) ? i : i + enc.terminator.length;
         return result;
     }
     readString(amount, enc) {
-        const result = enc.decode(this.data.slice(this.position, this.position + amount));
+        const result = enc.decode(this.data.subarray(this.position, this.position + amount));
         this.position += amount;
         return result;
     }
     rest() {
-        const result = this.data.slice(this.position);
+        const result = this.data.subarray(this.position);
         this.position += result.length;
         return result;
     }
@@ -69,11 +69,11 @@ class BufferReader {
         return encodings_1.Encodings[encoding] || encodings_1.ascii;
     }
     readStringBuffer(amount) {
-        let buf = this.data.slice(this.position, this.position + amount);
+        let buf = this.data.subarray(this.position, this.position + amount);
         this.position += amount;
         for (let i = 0; i < buf.length; i++) {
             if (buf[i] === 0) {
-                buf = buf.slice(0, i);
+                buf = buf.subarray(0, i);
                 break;
             }
         }
@@ -86,7 +86,7 @@ class BufferReader {
     readFixedAutodectectString(amount) {
         const buf = this.readStringBuffer(amount);
         let result = encodings_1.utf8.decode(buf);
-        if (result.indexOf('�') >= 0) {
+        if (result.includes('�')) {
             result = encodings_1.ascii.decode(buf);
         }
         return result;
@@ -98,17 +98,17 @@ class BufferReader {
         return this.position < this.data.length;
     }
     readBuffer(amount) {
-        const result = this.data.slice(this.position, this.position + amount);
+        const result = this.data.subarray(this.position, this.position + amount);
         this.position += amount;
         return result;
     }
     readUnsyncedBuffer(amount) {
-        let result = this.data.slice(this.position, this.position + amount);
+        let result = this.data.subarray(this.position, this.position + amount);
         let unsynced = (0, id3v2_frame_unsync_1.removeUnsync)(result);
         let stuffed = 0;
         while (unsynced.length < amount && (this.position + amount + stuffed < this.data.length)) {
             stuffed += amount - unsynced.length;
-            result = this.data.slice(this.position, this.position + amount + stuffed);
+            result = this.data.subarray(this.position, this.position + amount + stuffed);
             unsynced = (0, id3v2_frame_unsync_1.removeUnsync)(result);
         }
         this.position = this.position + amount + stuffed;

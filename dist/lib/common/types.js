@@ -5,5 +5,5 @@ var ITagID;
 (function (ITagID) {
     ITagID["ID3v1"] = "ID3v1";
     ITagID["ID3v2"] = "ID3v2";
-})(ITagID = exports.ITagID || (exports.ITagID = {}));
+})(ITagID || (exports.ITagID = ITagID = {}));
 //# sourceMappingURL=types.js.map

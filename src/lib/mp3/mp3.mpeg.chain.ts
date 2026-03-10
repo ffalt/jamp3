@@ -1,46 +1,39 @@
-import {IMP3} from './mp3.types';
-import {rawHeaderLayerIdx, rawHeaderOffSet, rawHeaderSize, rawHeaderVersionIdx} from './mp3.mpeg.frame';
-
-// function findIndexOfOffset(start: number, list: Array<IMP3.RawFrame>, offset: number): number {
-// 	for (let i = start; i < list.length; i++) {
-// 		if (list[i].header.offset === offset) {
-// 			return i;
-// 		} else if (list[i].header.offset > offset) {
-// 			return -1;
-// 		}
-// 	}
-// 	return -1;
-// }
+import { IMP3 } from './mp3.types';
+import { rawHeaderLayerIdx, rawHeaderOffSet, rawHeaderSize, rawHeaderVersionIdx } from './mp3.mpeg.frame';
 
 function followChain(frame: IMP3.FrameRawHeaderArray, pos: number, frames: Array<IMP3.FrameRawHeaderArray>): Array<IMP3.FrameRawHeaderArray> {
 	const result: Array<IMP3.FrameRawHeaderArray> = [];
 	// console.log('include start frame:', 'current:', {size: frame.header.size, offset: frame.header.offset});
-	result.push(frame);
-	frames = frames.filter(f => rawHeaderSize(f) > 0);
-	for (let i = pos + 1; i < frames.length; i++) {
-		const nextpos = rawHeaderOffSet(frame) + rawHeaderSize(frame);
-		const direct = getNextMatch(nextpos, i - 1, frames);
+	let useFrame = frame;
+	result.push(useFrame);
+	const useFrames = frames.filter(f => rawHeaderSize(f) > 0);
+	for (let i = pos + 1; i < useFrames.length; i++) {
+		const nextpos = rawHeaderOffSet(useFrame) + rawHeaderSize(useFrame);
+		const direct = getNextMatch(nextpos, i - 1, useFrames);
 		if (direct >= 0) {
-			const nextframe = frames[direct];
+			const nextframe = useFrames[direct];
 			result.push(nextframe);
 			// console.log('include direct frame:', 'current:', {size: nextframe.header.size, offset: nextframe.header.offset});
-			frame = nextframe;
+			useFrame = nextframe;
 			i = direct;
 		} else {
-			const nextframe = frames[i];
+			const nextframe = useFrames[i];
 			const diff = rawHeaderOffSet(nextframe) - nextpos;
 			if (diff === 0) {
 				result.push(nextframe);
 				// console.log('include direct diff frame:', 'current:', {size: nextframe.header.size, offset: nextframe.header.offset});
-				frame = nextframe;
+				useFrame = nextframe;
 			} else if (diff > 0) {
-				// TODO resync chain if nextframe.header.offset is larger
-				if ((rawHeaderVersionIdx(nextframe) === rawHeaderVersionIdx(frame) &&
-					rawHeaderLayerIdx(nextframe) === rawHeaderLayerIdx(frame))
-				) {
+				if (rawHeaderVersionIdx(nextframe) === rawHeaderVersionIdx(useFrame) && rawHeaderLayerIdx(nextframe) === rawHeaderLayerIdx(useFrame)) {
 					result.push(nextframe);
 					// console.log('include frame after gap:', 'diff:', diff, 'current:', {size: nextframe.header.size, offset: nextframe.header.offset}, 'last:', {size: frame.header.size, offset: frame.header.offset});
-					frame = nextframe;
+					useFrame = nextframe;
+					// Resync: after accepting a frame across a gap, jump to the next directly-connected frame
+					// to avoid pulling in false-positive frames between here and the expected next position
+					const resync = getNextMatch(rawHeaderOffSet(nextframe) + rawHeaderSize(nextframe), i, useFrames);
+					if (resync >= 0) {
+						i = resync - 1; // for loop will increment to resync on next iteration
+					}
 				} else {
 					// console.log('skipped frame after gap:', 'diff:', diff, 'current:', {size: nextframe.header.size, offset: nextframe.header.offset}, 'last:', {size: frame.header.size, offset: frame.header.offset});
 				}
@@ -75,8 +68,8 @@ function buildMPEGChains(frames: Array<IMP3.FrameRawHeaderArray>, maxCheckFrames
 	const count = Math.min(maxCheckFrames, frames.length);
 	for (let i = 0; i < count; i++) {
 		const frame = frames[i];
-		if (done.indexOf(frame) < 0) {
-			const chain = {frame, count: 0, pos: i};
+		if (!done.includes(frame)) {
+			const chain = { frame, count: 0, pos: i };
 			chains.push(chain);
 			done.push(frame);
 			let next = getNextMatch(rawHeaderOffSet(frame) + rawHeaderSize(frame), i, frames);
@@ -93,7 +86,11 @@ function buildMPEGChains(frames: Array<IMP3.FrameRawHeaderArray>, maxCheckFrames
 
 function findBestMPEGChain(frames: Array<IMP3.FrameRawHeaderArray>, maxCheckFrames: number, followMaxChain: number): IMPEGFrameChain | undefined {
 	const chains = buildMPEGChains(frames, maxCheckFrames, followMaxChain);
-	const bestChains = chains.filter(chain => chain.count > 0).sort((a, b) => b.count - a.count);
+	const bestChains =
+		chains
+			.filter(chain => chain.count > 0)
+			// eslint-disable-next-line unicorn/no-array-sort
+			.sort((a, b) => b.count - a.count);
 	return bestChains[0];
 }
 

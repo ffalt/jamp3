@@ -1,6 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.MPEGFrameReader = exports.expandRawHeader = exports.expandRawHeaderArray = exports.expandMPEGFrameFlags = exports.rawHeaderLayerIdx = exports.rawHeaderVersionIdx = exports.rawHeaderSize = exports.rawHeaderOffSet = exports.collapseRawHeader = void 0;
+exports.MPEGFrameReader = void 0;
+exports.collapseRawHeader = collapseRawHeader;
+exports.rawHeaderOffSet = rawHeaderOffSet;
+exports.rawHeaderSize = rawHeaderSize;
+exports.rawHeaderVersionIdx = rawHeaderVersionIdx;
+exports.rawHeaderLayerIdx = rawHeaderLayerIdx;
+exports.expandMPEGFrameFlags = expandMPEGFrameFlags;
+exports.expandRawHeaderArray = expandRawHeaderArray;
+exports.expandRawHeader = expandRawHeader;
 const mp3_mpeg_consts_1 = require("./mp3.mpeg.consts");
 const utils_1 = require("../common/utils");
 const buffer_reader_1 = require("../common/buffer-reader");
@@ -12,29 +20,24 @@ function collapseRawHeader(header) {
         header.back
     ];
 }
-exports.collapseRawHeader = collapseRawHeader;
 function rawHeaderOffSet(header) {
     return header[0];
 }
-exports.rawHeaderOffSet = rawHeaderOffSet;
 function rawHeaderSize(header) {
     return header[1];
 }
-exports.rawHeaderSize = rawHeaderSize;
 function rawHeaderVersionIdx(header) {
     return (header[2] >> 3) & 0x3;
 }
-exports.rawHeaderVersionIdx = rawHeaderVersionIdx;
 function rawHeaderLayerIdx(header) {
     return (header[2] >> 1) & 0x3;
 }
-exports.rawHeaderLayerIdx = rawHeaderLayerIdx;
 function expandMPEGFrameFlags(front, back, offset) {
-    const hasSync = (front & 0xFFE0) === 0xFFE0;
+    const hasSync = (front & 65504) === 65504;
     const validVer = (front & 0x18) !== 0x8;
     const validLayer = (front & 0x6) !== 0x0;
-    const validBitRate = (back & 0xF000) !== 0xF000;
-    const validSample = (back & 0xC00) !== 0xC00;
+    const validBitRate = (back & 61440) !== 61440;
+    const validSample = (back & 3072) !== 3072;
     if (!hasSync || !validVer || !validLayer || !validBitRate || !validSample) {
         return null;
     }
@@ -50,15 +53,19 @@ function expandMPEGFrameFlags(front, back, offset) {
     const copyright = ((back >> 3) & 0x1) === 1;
     const original = ((back >> 2) & 0x1) === 1;
     const emphasisIdx = back & 0x3;
-    if (mp3_mpeg_consts_1.mpeg_bitrates[versionIdx] && mp3_mpeg_consts_1.mpeg_bitrates[versionIdx][layerIdx] && (mp3_mpeg_consts_1.mpeg_bitrates[versionIdx][layerIdx][bitrateIdx] > 0) &&
-        mp3_mpeg_consts_1.mpeg_srates[versionIdx] && (mp3_mpeg_consts_1.mpeg_srates[versionIdx][sampleIdx] > 0) &&
-        mp3_mpeg_consts_1.mpeg_frame_samples[versionIdx] && (mp3_mpeg_consts_1.mpeg_frame_samples[versionIdx][layerIdx] > 0) &&
+    if (mp3_mpeg_consts_1.mpeg_bitrates[versionIdx] &&
+        mp3_mpeg_consts_1.mpeg_bitrates[versionIdx][layerIdx] &&
+        (mp3_mpeg_consts_1.mpeg_bitrates[versionIdx][layerIdx][bitrateIdx] > 0) &&
+        mp3_mpeg_consts_1.mpeg_srates[versionIdx] &&
+        (mp3_mpeg_consts_1.mpeg_srates[versionIdx][sampleIdx] > 0) &&
+        mp3_mpeg_consts_1.mpeg_frame_samples[versionIdx] &&
+        (mp3_mpeg_consts_1.mpeg_frame_samples[versionIdx][layerIdx] > 0) &&
         (mp3_mpeg_consts_1.mpeg_slot_size[layerIdx] > 0)) {
         const bitrate = mp3_mpeg_consts_1.mpeg_bitrates[versionIdx][layerIdx][bitrateIdx] * 1000;
         const samprate = mp3_mpeg_consts_1.mpeg_srates[versionIdx][sampleIdx];
         const samples = mp3_mpeg_consts_1.mpeg_frame_samples[versionIdx][layerIdx];
         const slot_size = mp3_mpeg_consts_1.mpeg_slot_size[layerIdx];
-        const bps = samples / 8.0;
+        const bps = samples / 8;
         const size = Math.floor(((bps * bitrate) / samprate)) + ((padded) ? slot_size : 0);
         return {
             offset,
@@ -81,7 +88,6 @@ function expandMPEGFrameFlags(front, back, offset) {
     }
     return null;
 }
-exports.expandMPEGFrameFlags = expandMPEGFrameFlags;
 function expandRawHeaderArray(header) {
     const result = expandMPEGFrameFlags(header[2], header[3], header[0]);
     if (!result) {
@@ -106,14 +112,12 @@ function expandRawHeaderArray(header) {
     }
     return result;
 }
-exports.expandRawHeaderArray = expandRawHeaderArray;
 function expandRawHeader(header) {
     const samplingRate = mp3_mpeg_consts_1.mpeg_srates[header.versionIdx][header.sampleIdx];
     const samples = mp3_mpeg_consts_1.mpeg_frame_samples[header.versionIdx][header.layerIdx];
     const time = samplingRate > 0 ? (samples / samplingRate) * 1000 : 0;
     return Object.assign(Object.assign({}, header), { time, version: mp3_mpeg_consts_1.mpeg_version_names_long[header.versionIdx], layer: mp3_mpeg_consts_1.mpeg_layer_names_long[header.layerIdx], channelMode: mp3_mpeg_consts_1.mpeg_channel_modes[header.modeIdx], channelType: mp3_mpeg_consts_1.mpeg_channel_mode_types[header.modeIdx], channelCount: mp3_mpeg_consts_1.mpeg_channel_count[header.modeIdx], extension: header.modeIdx === mp3_mpeg_consts_1.mpeg_channel_mode_jointstereoIdx ? mp3_mpeg_consts_1.mpeg_layer_joint_extension[header.layerIdx][header.modeExtIdx] : undefined, emphasis: mp3_mpeg_consts_1.mpeg_emphasis[header.emphasisIdx], samplingRate, bitRate: mp3_mpeg_consts_1.mpeg_bitrates[header.versionIdx][header.layerIdx][header.bitrateIdx] * 1000, samples });
 }
-exports.expandRawHeader = expandRawHeader;
 class MPEGFrameReader {
     readMPEGFrameHeader(buffer, offset) {
         if (buffer.length - offset < 4) {

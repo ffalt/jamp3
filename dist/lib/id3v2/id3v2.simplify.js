@@ -1,12 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.simplifyTag = exports.simplifyFrame = exports.simplifyInvolvedPeopleList = void 0;
+exports.simplifyInvolvedPeopleList = simplifyInvolvedPeopleList;
+exports.simplifyFrame = simplifyFrame;
+exports.simplifyTag = simplifyTag;
 const id3v2_simplify_maps_1 = require("./id3v2.simplify.maps");
 const id3v2_frame_version_1 = require("./frames/id3v2.frame.version");
 const id3v2_frame_match_1 = require("./frames/id3v2.frame.match");
 function slugIDValue(id, value, mapping) {
     if (value && value.id) {
-        return mapping[value.id] || mapping[value.id.toUpperCase()] || (id + '|' + value.id);
+        return mapping[value.id] || mapping[value.id.toUpperCase()] || (`${id}|${value.id}`);
     }
     if (value) {
         return id;
@@ -32,14 +34,13 @@ function simplifyInvolvedPeopleList(id, frame) {
                 list.push({ slug, text: val });
             }
             else {
-                list.push({ slug: id + '|' + value.list[i], text: val });
+                list.push({ slug: `${id}|${value.list[i]}`, text: val });
             }
         }
         i += 2;
     }
     return list;
 }
-exports.simplifyInvolvedPeopleList = simplifyInvolvedPeopleList;
 function simplifyValue(id, slug, frame) {
     const frameDef = (0, id3v2_frame_match_1.matchFrame)(id);
     const text = frameDef.impl.simplify(frame.value);
@@ -62,57 +63,64 @@ function simplifyValue(id, slug, frame) {
 }
 function simplifyFrame(frame, dropIDsList) {
     const id = (0, id3v2_frame_version_1.ensureID3v2FrameVersionDef)(frame.id, 4) || frame.id;
-    if (dropIDsList && dropIDsList.indexOf(frame.id) >= 0) {
+    if (dropIDsList && dropIDsList.includes(frame.id)) {
         return;
     }
     let slug = id3v2_simplify_maps_1.FramesMap[id];
-    if (id === 'UFID') {
-        slug = slugIDValue(id, frame.value, id3v2_simplify_maps_1.UFIDMap);
-    }
-    else if (id === 'TXXX') {
-        slug = slugIDValue(id, frame.value, id3v2_simplify_maps_1.TXXXMap);
-    }
-    else if (id === 'COMM') {
-        slug = slugIDValue(id, frame.value, id3v2_simplify_maps_1.COMMMap);
-    }
-    else if (id === 'PRIV') {
-        slug = slugIDValue(id, frame.value, id3v2_simplify_maps_1.PRIVMap);
-    }
-    else if (id === 'WXXX') {
-        slug = slugIDValue(id, frame.value, {});
-    }
-    else if (id === 'LINK') {
-        slug = slugIDValue(id, frame.value, {});
-    }
-    else if (id === 'TIPL' || id === 'TMCL') {
-        return simplifyInvolvedPeopleList(id, frame);
+    switch (id) {
+        case 'UFID': {
+            slug = slugIDValue(id, frame.value, id3v2_simplify_maps_1.UFIDMap);
+            break;
+        }
+        case 'TXXX': {
+            slug = slugIDValue(id, frame.value, id3v2_simplify_maps_1.TXXXMap);
+            break;
+        }
+        case 'COMM': {
+            slug = slugIDValue(id, frame.value, id3v2_simplify_maps_1.COMMMap);
+            break;
+        }
+        case 'PRIV': {
+            slug = slugIDValue(id, frame.value, id3v2_simplify_maps_1.PRIVMap);
+            break;
+        }
+        case 'WXXX': {
+            slug = slugIDValue(id, frame.value, {});
+            break;
+        }
+        case 'LINK': {
+            slug = slugIDValue(id, frame.value, {});
+            break;
+        }
+        case 'TIPL':
+        case 'TMCL': {
+            return simplifyInvolvedPeopleList(id, frame);
+        }
     }
     if (slug) {
         return simplifyValue(id, slug, frame);
     }
 }
-exports.simplifyFrame = simplifyFrame;
 function simplifyTag(tag, dropIDsList) {
     const result = {};
-    const slugcounter = {};
+    const slugCounter = {};
     const frames = tag.frames.filter(f => !id3v2_simplify_maps_1.DateUpgradeMap[f.id]);
-    const dateframes = tag.frames.filter(f => !!id3v2_simplify_maps_1.DateUpgradeMap[f.id]);
-    const dateFrame = (0, id3v2_frame_version_1.upgrade23DateFramesTov24Date)(dateframes);
+    const dateFrames = tag.frames.filter(f => !!id3v2_simplify_maps_1.DateUpgradeMap[f.id]);
+    const dateFrame = (0, id3v2_frame_version_1.upgrade23DateFramesTov24Date)(dateFrames);
     if (dateFrame) {
         frames.push(dateFrame);
     }
-    frames.forEach((frame) => {
+    for (const frame of frames) {
         const simples = simplifyFrame(frame, dropIDsList);
         if (simples) {
             for (const simple of simples) {
-                const count = (slugcounter[simple.slug] || 0) + 1;
-                slugcounter[simple.slug] = count;
-                const name = simple.slug + (count > 1 ? '|' + count : '');
+                const count = (slugCounter[simple.slug] || 0) + 1;
+                slugCounter[simple.slug] = count;
+                const name = simple.slug + (count > 1 ? `|${count}` : '');
                 result[name] = simple.text;
             }
         }
-    });
+    }
     return result;
 }
-exports.simplifyTag = simplifyTag;
 //# sourceMappingURL=id3v2.simplify.js.map

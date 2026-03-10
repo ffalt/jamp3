@@ -16,15 +16,15 @@ const commander_1 = require("commander");
 const fs_extra_1 = __importDefault(require("fs-extra"));
 const mp3_analyzer_1 = require("../lib/mp3/mp3.analyzer");
 const tool_1 = require("../lib/common/tool");
-const pack = require('../../package.json');
+const package_json_1 = __importDefault(require("../../package.json"));
 commander_1.program
-    .version(pack.version, '-v, --version')
+    .version(package_json_1.default.version, '-v, --version')
     .usage('[options] <fileOrDir>')
     .option('-i, --input <fileOrDir>', 'mp3 file or folder')
     .option('-r, --recursive', 'scan the folder recursive')
     .option('-w, --warnings', 'show results only for files with warnings')
     .option('-x, --ignoreXingOffOne', 'ignore most common error in off-by-one XING header declaration')
-    .option('-f, --format <format>', 'format of analyze result (plain|json)', /^(plain|json)$/i, 'plain')
+    .addOption(new commander_1.Option('-f, --format <format>', 'format of analyze result (plain|json)').choices(['plain', 'json']).default('plain'))
     .option('-d, --dest <file>', 'destination analyze result file')
     .parse(process.argv);
 const result = [];
@@ -33,19 +33,19 @@ function toPlain(report) {
     const sl = [report.filename];
     const features = [];
     if (report.frames) {
-        features.push(report.frames + ' Frames');
+        features.push(`${report.frames} Frames`);
     }
     if (report.durationMS) {
-        features.push('Duration ' + report.durationMS + 'ms');
+        features.push(`Duration ${report.durationMS}ms`);
     }
     if (report.mode) {
-        features.push(report.mode + (report.bitRate ? ' ' + report.bitRate : ''));
+        features.push(report.mode + (report.bitRate ? ` ${report.bitRate}` : ''));
     }
     if (report.format) {
         features.push(report.format);
     }
     if (report.channels) {
-        features.push('Channels ' + report.channels + (report.channelMode ? ' (' + report.channelMode + ')' : ''));
+        features.push(`Channels ${report.channels}${report.channelMode ? ` (${report.channelMode})` : ''}`);
     }
     if (report.header) {
         features.push(report.header);
@@ -59,9 +59,9 @@ function toPlain(report) {
     sl.push(features.join(', '));
     if (report.warnings.length > 0) {
         sl.push('WARNINGS:');
-        report.warnings.forEach(msg => {
-            sl.push(msg.msg + ' (expected: ' + msg.expected + ', actual: ' + msg.actual + ')');
-        });
+        for (const msg of report.warnings) {
+            sl.push(`${msg.msg} (expected: ${msg.expected}, actual: ${msg.actual})`);
+        }
     }
     return sl.join('\n');
 }
@@ -74,7 +74,7 @@ function onFile(filename) {
                 result.push(info);
             }
             else if (commander_1.program.opts().format === 'plain') {
-                console.log(toPlain(info) + '\n');
+                console.log(`${toPlain(info)}\n`);
             }
             else {
                 console.log(JSON.stringify(info, null, '\t'));
@@ -89,16 +89,13 @@ function run() {
         }
         yield (0, tool_1.runTool)(commander_1.program, onFile);
         if (commander_1.program.opts().dest) {
-            if (commander_1.program.opts().format === 'plain') {
-                yield fs_extra_1.default.writeFile(commander_1.program.opts().dest, result.map(r => toPlain(r)).join('\n'));
-            }
-            else {
-                yield fs_extra_1.default.writeFile(commander_1.program.opts().dest, JSON.stringify(result, null, '\t'));
-            }
+            yield fs_extra_1.default.writeFile(commander_1.program.opts().dest, commander_1.program.opts().format === 'plain' ?
+                result.map(r => toPlain(r)).join('\n') :
+                JSON.stringify(result, null, '\t'));
         }
     });
 }
-run().catch(e => {
-    console.error(e);
+run().catch(error => {
+    console.error(error);
 });
 //# sourceMappingURL=analyzeMP3.js.map

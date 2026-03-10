@@ -16,13 +16,7 @@ const id3v2_frame_write_1 = require("../id3v2.frame.write");
 exports.FramePic = {
     parse: (reader, frame, head) => __awaiter(void 0, void 0, void 0, function* () {
         const enc = reader.readEncoding();
-        let mimeType;
-        if (head.ver <= 2) {
-            mimeType = reader.readString(3, encodings_1.ascii);
-        }
-        else {
-            mimeType = reader.readStringTerminated(encodings_1.ascii);
-        }
+        const mimeType = head.ver <= 2 ? reader.readString(3, encodings_1.ascii) : reader.readStringTerminated(encodings_1.ascii);
         const pictureType = reader.readByte();
         const description = reader.readStringTerminated(enc);
         const value = { mimeType, pictureType: pictureType, description };
@@ -35,19 +29,15 @@ exports.FramePic = {
         return { value, encoding: enc };
     }),
     write: (frame, stream, head, defaultEncoding) => __awaiter(void 0, void 0, void 0, function* () {
+        var _a;
         const value = frame.value;
         const enc = (0, id3v2_frame_write_1.getWriteTextEncoding)(frame, head, defaultEncoding);
         yield stream.writeEncoding(enc);
         if (head.ver <= 2) {
-            if (value.url) {
-                yield stream.writeString('-->', encodings_1.ascii);
-            }
-            else {
-                yield stream.writeAsciiString(value.mimeType || '', 3);
-            }
+            yield (value.url ? stream.writeString('-->', encodings_1.ascii) : stream.writeAsciiString(value.mimeType || '', 3));
         }
         else {
-            yield stream.writeStringTerminated(value.url ? value.url : (value.mimeType || ''), encodings_1.ascii);
+            yield stream.writeStringTerminated((_a = value.url) !== null && _a !== void 0 ? _a : (value.mimeType || ''), encodings_1.ascii);
         }
         yield stream.writeByte(value.pictureType);
         yield stream.writeStringTerminated(value.description, enc);
@@ -60,7 +50,7 @@ exports.FramePic = {
     }),
     simplify: (value) => {
         if (value) {
-            return `<pic ${id3v2_consts_1.ID3V2ValueTypes.pictureType[value.pictureType] || 'unknown'};${value.mimeType};${value.bin ? value.bin.length + 'bytes' : value.url}>`;
+            return `<pic ${id3v2_consts_1.ID3V2ValueTypes.pictureType[value.pictureType] || 'unknown'};${value.mimeType};${value.bin ? `${value.bin.length}bytes` : value.url}>`;
         }
         return null;
     }

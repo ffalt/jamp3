@@ -29,6 +29,12 @@ class ID3V2RawBuilder extends id3v2_builder_collect_1.ID3V2FramesCollect {
     idBin(key, id, binary) {
         this.addFrame(key, { id, bin: binary });
     }
+    idNum(key, id, num) {
+        this.addFrame(key, { id, num });
+    }
+    idGuid(key, id, guid) {
+        this.addFrame(key, { id, guid });
+    }
     idLangText(key, value, lang, id) {
         if (value) {
             this.addIDFrame(key, { id: id || '', language: lang || '', text: value });
@@ -43,8 +49,7 @@ class ID3V2RawBuilder extends id3v2_builder_collect_1.ID3V2FramesCollect {
         if (value) {
             const frames = (this.frameValues[key] || []);
             const frame = (frames.length > 0) ? frames[0] : { id: key, value: { list: [] }, head: this.head() };
-            frame.value.list.push(group);
-            frame.value.list.push(value);
+            frame.value.list.push(group, value);
             this.replace(key, frame);
         }
     }
@@ -56,7 +61,7 @@ class ID3V2RawBuilder extends id3v2_builder_collect_1.ID3V2FramesCollect {
     }
     nrAndTotal(key, value, total) {
         if (value) {
-            const text = value.toString() + (total ? '/' + total.toString() : '');
+            const text = value.toString() + (total ? `/${total}` : '');
             this.replaceFrame(key, { text });
         }
     }

@@ -1,4 +1,3 @@
-/// <reference types="node" />
 import { IFrameDef } from './id3v2.frame.defs';
 interface IFrameMatch {
     match: (id: string) => boolean;

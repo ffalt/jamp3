@@ -17,7 +17,7 @@ exports.FramePlayCount = {
         try {
             num = reader.readUInt(frame.data.length);
         }
-        catch (e) {
+        catch (_a) {
             num = 0;
         }
         const value = { num };

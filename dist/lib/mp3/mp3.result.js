@@ -9,8 +9,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.prepareResult = exports.prepareResultID3v2 = exports.prepareResultID3v1 = void 0;
-const __1 = require("../..");
+exports.prepareResultID3v1 = prepareResultID3v1;
+exports.prepareResultID3v2 = prepareResultID3v2;
+exports.prepareResult = prepareResult;
+const types_1 = require("../common/types");
 const mp3_mpeg_chain_1 = require("./mp3.mpeg.chain");
 const mp3_mpeg_frame_1 = require("./mp3.mpeg.frame");
 const mp3_bitrate_1 = require("./mp3.bitrate");
@@ -22,18 +24,15 @@ function calculateDuration(frameCount, sampleCount, sampleRate) {
     return 0;
 }
 function buildFrames(chain, layout) {
-    const frames = {
+    return {
         audio: chain,
-        headers: layout.headframes.map(frame => {
-            return {
-                header: (0, mp3_mpeg_frame_1.expandRawHeader)((0, mp3_mpeg_frame_1.expandRawHeaderArray)(frame.header)),
-                mode: frame.mode,
-                xing: frame.xing,
-                vbri: frame.vbri
-            };
-        })
+        headers: layout.headframes.map(frame => ({
+            header: (0, mp3_mpeg_frame_1.expandRawHeader)((0, mp3_mpeg_frame_1.expandRawHeaderArray)(frame.header)),
+            mode: frame.mode,
+            xing: frame.xing,
+            vbri: frame.vbri
+        }))
     };
-    return frames;
 }
 function setResultBase(chain, mpeg) {
     const header = (0, mp3_mpeg_frame_1.expandRawHeader)((0, mp3_mpeg_frame_1.expandRawHeaderArray)(chain[0]));
@@ -49,7 +48,7 @@ function setResultEstimate(layout, chain, mpeg) {
     let audioBytes = layout.size;
     if (chain.length > 0) {
         audioBytes -= (0, mp3_mpeg_frame_1.rawHeaderOffSet)(chain[0]);
-        if (layout.tags.find(t => t.id === __1.ITagID.ID3v1)) {
+        if (layout.tags.some(t => t.id === types_1.ITagID.ID3v1)) {
             audioBytes -= 128;
         }
         mpeg.durationEstimate = (audioBytes * 8) / mpeg.bitRate;
@@ -107,24 +106,22 @@ function prepareResultMPEG(options, layout) {
 }
 function prepareResultID3v1(layout) {
     return __awaiter(this, void 0, void 0, function* () {
-        const id3v1s = layout.tags.filter((o) => o.id === __1.ITagID.ID3v1);
-        const id3v1 = id3v1s.length > 0 ? id3v1s[id3v1s.length - 1] : undefined;
+        const id3v1s = layout.tags.filter(o => o.id === types_1.ITagID.ID3v1);
+        const id3v1 = id3v1s.length > 0 ? id3v1s.at(-1) : undefined;
         if (id3v1 && id3v1.end === layout.size) {
             return id3v1;
         }
     });
 }
-exports.prepareResultID3v1 = prepareResultID3v1;
 function prepareResultID3v2(layout) {
     return __awaiter(this, void 0, void 0, function* () {
-        const id3v2s = layout.tags.filter(o => o.id === __1.ITagID.ID3v2);
+        const id3v2s = layout.tags.filter(o => o.id === types_1.ITagID.ID3v2);
         const id3v2raw = id3v2s.length > 0 ? id3v2s[0] : undefined;
         if (id3v2raw) {
             return yield (0, id3v2_frame_read_1.buildID3v2)(id3v2raw);
         }
     });
 }
-exports.prepareResultID3v2 = prepareResultID3v2;
 function prepareResult(options, layout) {
     return __awaiter(this, void 0, void 0, function* () {
         const result = { size: layout.size };
@@ -145,5 +142,4 @@ function prepareResult(options, layout) {
         return result;
     });
 }
-exports.prepareResult = prepareResult;
 //# sourceMappingURL=mp3.result.js.map

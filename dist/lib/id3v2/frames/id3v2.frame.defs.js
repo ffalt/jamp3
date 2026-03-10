@@ -19,6 +19,7 @@ const id3v2_frame_popularimeter_1 = require("./implementations/id3v2.frame.popul
 const id3v2_frame_aenc_1 = require("./implementations/id3v2.frame.aenc");
 const id3v2_frame_linked_info_1 = require("./implementations/id3v2.frame.linked-info");
 const id3v2_frame_id_bin_1 = require("./implementations/id3v2.frame.id-bin");
+const id3v2_frame_priv_1 = require("./implementations/id3v2.frame.priv");
 const id3v2_frame_boolstring_1 = require("./implementations/id3v2.frame.boolstring");
 const id3v2_frame_pcst_1 = require("./implementations/id3v2.frame.pcst");
 const id3v2_frame_musiccdid_1 = require("./implementations/id3v2.frame.musiccdid");
@@ -933,7 +934,7 @@ exports.FrameDefs = {
     'PRIV': {
         title: 'Private frame',
         versions: [3, 4],
-        impl: id3v2_frame_id_bin_1.FrameIdBin
+        impl: id3v2_frame_priv_1.FramePriv
     },
     'IPLS': {
         title: 'Involved people list',
@@ -1041,12 +1042,10 @@ exports.FrameDefs = {
         versions: [2],
         impl: id3v2_frame_text_1.FrameText,
         upgrade: 'TXXX',
-        upgradeValue: (value) => {
-            return {
-                id: '',
-                text: value.text
-            };
-        }
+        upgradeValue: (value) => ({
+            id: '',
+            text: value.text
+        })
     }
 };
 //# sourceMappingURL=id3v2.frame.defs.js.map

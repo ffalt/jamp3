@@ -1,12 +1,8 @@
-import {WriterStream} from './stream-writer';
+import { WriterStream } from './stream-writer';
+import MemoryStream from 'memory-stream';
 
 export class MemoryWriterStream extends WriterStream {
-
-	constructor() {
-		super();
-	}
-
 	toBuffer(): Buffer {
-		return (this.wstream as any).toBuffer(); // TODO: type Memorystream
+		return (this.wstream as MemoryStream).toBuffer();
 	}
 }

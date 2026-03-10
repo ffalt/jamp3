@@ -1,8 +1,7 @@
 export class BufferUtils {
-
-	static indexOfNr(buffer: Buffer, num: number, start?: number): number {
+	static indexOfNr(buffer: Buffer, num: number, start: number = 0): number {
 		const len = buffer.length;
-		for (let i = start || 0; i < len; i++) {
+		for (let i = start; i < len; i++) {
 			if (buffer[i] === num) {
 				return i;
 			}
@@ -64,5 +63,4 @@ export class BufferUtils {
 	public static zeroBuffer(size: number): Buffer {
 		return Buffer.alloc(size, 0);
 	}
-
 }

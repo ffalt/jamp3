@@ -1,6 +1,6 @@
-import {IFrameImpl} from '../id3v2.frame';
-import {IID3V2} from '../../id3v2.types';
-import {getWriteTextEncoding} from '../id3v2.frame.write';
+import { IFrameImpl } from '../id3v2.frame';
+import { IID3V2 } from '../../id3v2.types';
+import { getWriteTextEncoding } from '../id3v2.frame.write';
 
 export const FrameBooleanString: IFrameImpl = {
 	/**
@@ -13,15 +13,15 @@ export const FrameBooleanString: IFrameImpl = {
 
 	 This is written to a v2.2 tag as TCP.
 	 */
-	parse: async (reader) => {
+	parse: async reader => {
 		const enc = reader.readEncoding();
 		const intAsString = reader.readStringTerminated(enc);
-		const i = parseInt(intAsString, 10).toString();
-		const value: IID3V2.FrameValue.Bool = {bool: i === '1'};
-		return {value, encoding: enc};
+		const i = Number.parseInt(intAsString, 10).toString();
+		const value: IID3V2.FrameValue.Bool = { bool: i === '1' };
+		return { value, encoding: enc };
 	},
 	write: async (frame, stream, head, defaultEncoding) => {
-		const value = <IID3V2.FrameValue.Bool>frame.value;
+		const value = frame.value as IID3V2.FrameValue.Bool;
 		const enc = getWriteTextEncoding(frame, head, defaultEncoding);
 		await stream.writeEncoding(enc);
 		await stream.writeStringTerminated(value.bool ? '1' : '0', enc);

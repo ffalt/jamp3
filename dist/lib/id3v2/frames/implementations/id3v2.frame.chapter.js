@@ -38,7 +38,7 @@ exports.FrameCHAP = {
     }),
     simplify: (value) => {
         if (value && value.id && value.id.length > 0) {
-            return '<chapter ' + value.id + '>';
+            return `<chapter ${value.id}>`;
         }
         return null;
     }

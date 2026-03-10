@@ -13,7 +13,7 @@ class ID3V2FramesCollect {
         this.replace(key, { id: key, value, head: this.head() });
     }
     add(key, frame) {
-        this.frameValues[key] = (this.frameValues[key] || []).concat([frame]);
+        this.frameValues[key] = [...(this.frameValues[key] || []), frame];
     }
     addFrame(key, value) {
         this.add(key, { id: key, value, head: this.head() });
@@ -21,7 +21,8 @@ class ID3V2FramesCollect {
     addIDFrame(key, value) {
         const list = (this.frameValues[key] || [])
             .filter(f => f.value.id !== value.id);
-        this.frameValues[key] = list.concat([{ id: key, value, head: this.head() }]);
+        const frame = { id: key, value, head: this.head() };
+        this.frameValues[key] = [...list, frame];
     }
     head() {
         return {
@@ -30,6 +31,14 @@ class ID3V2FramesCollect {
             formatFlags: {},
             encoding: this.encoding
         };
+    }
+    clearFrames(key) {
+        delete this.frameValues[key];
+    }
+    loadFrames(frames) {
+        for (const frame of frames) {
+            this.frameValues[frame.id] = [...(this.frameValues[frame.id] || []), frame];
+        }
     }
     build() {
         return this.frameValues;

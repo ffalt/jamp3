@@ -1,7 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ID3v2_EXTHEADER = exports.ID3v2_FRAME_FLAGS1 = exports.ID3v2_FRAME_FLAGS2 = exports.ID3v2_FRAME_HEADER_LENGTHS = exports.ID3v2_FRAME_HEADER = exports.ID3v2_UnifiedENCODINGS = exports.ID3v2_ENCODINGS = exports.ID3v2_HEADER_FLAGS = exports.ID3v2_HEADER = exports.ID3v2_MARKER = void 0;
+exports.ID3v2_EXTHEADER = exports.ID3v2_FRAME_FLAGS1 = exports.ID3v2_FRAME_FLAGS2 = exports.ID3v2_FRAME_HEADER_LENGTHS = exports.ID3v2_FRAME_HEADER = exports.ID3v2_UnifiedENCODINGS = exports.ID3v2_ENCODINGS = exports.ID3v2_HEADER_FLAGS = exports.ID3v2_HEADER = exports.ID3v2_FOOTER_MARKER = exports.ID3v2_MARKER = void 0;
 exports.ID3v2_MARKER = 'ID3';
+exports.ID3v2_FOOTER_MARKER = '3DI';
 exports.ID3v2_HEADER = {
     SYNCSAVEINT: [3, 4],
     SIZE: 10

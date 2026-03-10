@@ -1,21 +1,16 @@
-export declare const PRIVMap: {
-    [key: string]: string;
+export declare const PRIVMap: Record<string, string>;
+export declare const PRIVNumericOwners: Set<string>;
+export declare const PRIVGuidOwners: Set<string>;
+export declare const PRIVWideStringOwners: Set<string>;
+export declare const WMMediaClassPrimaryIDs: {
+    music: string;
+    video: string;
+    nonMusicAudio: string;
+    other: string;
 };
-export declare const COMMMap: {
-    [key: string]: string;
-};
-export declare const UFIDMap: {
-    [key: string]: string;
-};
-export declare const TXXXMap: {
-    [key: string]: string;
-};
-export declare const FramesMap: {
-    [key: string]: string;
-};
-export declare const SplitFrameMap: {
-    [key: string]: Array<string>;
-};
-export declare const DateUpgradeMap: {
-    [key: string]: string;
-};
+export declare const COMMMap: Record<string, string>;
+export declare const UFIDMap: Record<string, string>;
+export declare const TXXXMap: Record<string, string>;
+export declare const FramesMap: Record<string, string>;
+export declare const SplitFrameMap: Record<string, Array<string>>;
+export declare const DateUpgradeMap: Record<string, string>;

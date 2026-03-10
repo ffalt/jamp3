@@ -49,7 +49,18 @@ exports.FrameRelativeVolumeAdjustment2 = {
         }
     }),
     simplify: (value) => {
-        return null;
+        if (!value || !value.id) {
+            return null;
+        }
+        const parts = [value.id];
+        for (const channel of value.channels || []) {
+            const chParts = [`type=${channel.type}`, `adj=${channel.adjustment}`];
+            if (channel.peak !== undefined) {
+                chParts.push(`peak=${channel.peak}`);
+            }
+            parts.push(chParts.join(','));
+        }
+        return parts.join(';');
     }
 };
 //# sourceMappingURL=id3v2.frame.rva2.js.map

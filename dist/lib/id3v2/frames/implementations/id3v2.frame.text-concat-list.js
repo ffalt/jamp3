@@ -22,7 +22,7 @@ exports.FrameTextConcatList = {
         while (reader.hasData()) {
             const appendtext = reader.readStringTerminated(enc);
             if (appendtext.length > 0) {
-                text += '/' + appendtext;
+                text += `/${appendtext}`;
             }
         }
         const value = { text };

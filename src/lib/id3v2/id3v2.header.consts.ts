@@ -1,4 +1,5 @@
 export const ID3v2_MARKER = 'ID3';
+export const ID3v2_FOOTER_MARKER = '3DI';
 
 export const ID3v2_HEADER: {
 	SYNCSAVEINT: Array<number>;
@@ -8,7 +9,7 @@ export const ID3v2_HEADER: {
 	SIZE: 10
 };
 
-export const ID3v2_HEADER_FLAGS: { [ver: number]: Array<string> } = {
+export const ID3v2_HEADER_FLAGS: Record<number, Array<string>> = {
 	2: [
 		'unsynchronisation',
 		'compression'
@@ -26,11 +27,7 @@ export const ID3v2_HEADER_FLAGS: { [ver: number]: Array<string> } = {
 	]
 };
 
-export const ID3v2_ENCODINGS: {
-	[version: number]: {
-		[id: string]: string;
-	};
-} = {
+export const ID3v2_ENCODINGS: Record<number, Record<string, string>> = {
 	2: {
 		'0': 'iso-8859-1',
 		'1': 'ucs2'
@@ -48,9 +45,7 @@ export const ID3v2_ENCODINGS: {
 	}
 };
 
-export const ID3v2_UnifiedENCODINGS: {
-	[id: string]: string;
-} = {
+export const ID3v2_UnifiedENCODINGS: Record<string, string> = {
 	'0': 'iso-8859-1',
 	'1': 'ucs2',
 	'2': 'utf16-be',
@@ -62,11 +57,7 @@ export const ID3v2_FRAME_HEADER: { SYNCSAVEINT: Array<number> } = {
 	SYNCSAVEINT: [4]
 };
 
-export const ID3v2_FRAME_HEADER_LENGTHS: {
-	[name: string]: {
-		[ver: number]: number;
-	};
-} = {
+export const ID3v2_FRAME_HEADER_LENGTHS: Record<string, Record<number, number>> = {
 	SIZE: {
 		2: 3,
 		3: 4,
@@ -84,9 +75,7 @@ export const ID3v2_FRAME_HEADER_LENGTHS: {
 	}
 };
 
-export const ID3v2_FRAME_FLAGS2: {
-	[ver: number]: Array<string>;
-} = {
+export const ID3v2_FRAME_FLAGS2: Record<number, Array<string>> = {
 	3: [
 		'compressed',
 		'encrypted',
@@ -103,9 +92,7 @@ export const ID3v2_FRAME_FLAGS2: {
 		'dataLengthIndicator'
 	]
 };
-export const ID3v2_FRAME_FLAGS1: {
-	[ver: number]: Array<string>;
-} = {
+export const ID3v2_FRAME_FLAGS1: Record<number, Array<string>> = {
 	3: [
 		'tagAlterPreservation',
 		'fileAlterPreservation',

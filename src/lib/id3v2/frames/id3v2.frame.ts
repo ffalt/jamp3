@@ -1,7 +1,7 @@
-import {BufferReader} from '../../common/buffer-reader';
-import {IID3V2} from '../id3v2.types';
-import {IEncoding} from '../../common/encodings';
-import {WriterStream} from '../../common/stream-writer';
+import { BufferReader } from '../../common/buffer-reader';
+import { IID3V2 } from '../id3v2.types';
+import { IEncoding } from '../../common/encodings';
+import { WriterStream } from '../../common/stream-writer';
 
 export interface IFrameImplParseResult {
 	value: IID3V2.FrameValue.Base;

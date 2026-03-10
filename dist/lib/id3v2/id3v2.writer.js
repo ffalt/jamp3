@@ -15,7 +15,7 @@ class ID3v2Writer {
     write(stream, frames, head, options) {
         return __awaiter(this, void 0, void 0, function* () {
             if (head.ver === 0 || head.ver > 4) {
-                return Promise.reject(Error('Unsupported Version'));
+                return Promise.reject(new Error('Unsupported Version'));
             }
             const writer = new id3v2_writer_raw_1.Id3v2RawWriter(stream, head, options, frames);
             yield writer.write();

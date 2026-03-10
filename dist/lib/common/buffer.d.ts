@@ -1,4 +1,3 @@
-/// <reference types="node" />
 export declare class BufferUtils {
     static indexOfNr(buffer: Buffer, num: number, start?: number): number;
     static indexOfNrs(buffer: Buffer, num: Array<number> | Buffer, start: number, stepWidth: number): number;

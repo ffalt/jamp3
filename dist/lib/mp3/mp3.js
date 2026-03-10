@@ -16,7 +16,7 @@ exports.MP3 = void 0;
 const fs_extra_1 = __importDefault(require("fs-extra"));
 const mp3_reader_1 = require("./mp3.reader");
 const mp3_mpeg_frame_1 = require("./mp3.mpeg.frame");
-const __1 = require("../..");
+const types_1 = require("../common/types");
 const update_file_1 = require("../common/update-file");
 const mp3_result_1 = require("./mp3.result");
 class MP3 {
@@ -48,10 +48,10 @@ class MP3 {
             let id2v2removed = false;
             yield (0, update_file_1.updateFile)(filename, opts, !!options.keepBackup, layout => {
                 for (const tag of layout.tags) {
-                    if (options.id3v2 && tag.id === __1.ITagID.ID3v2 && tag.end > 0) {
+                    if (options.id3v2 && tag.id === types_1.ITagID.ID3v2 && tag.end > 0) {
                         return true;
                     }
-                    else if (options.id3v1 && tag.id === __1.ITagID.ID3v1 && tag.end === stat.size && tag.start < stat.size) {
+                    else if (options.id3v1 && tag.id === types_1.ITagID.ID3v1 && tag.end === stat.size && tag.start < stat.size) {
                         return true;
                     }
                 }
@@ -61,27 +61,20 @@ class MP3 {
                 let finish = stat.size;
                 let specEnd = 0;
                 for (const tag of layout.tags) {
-                    if (tag.id === __1.ITagID.ID3v2 && options.id3v2) {
+                    if (tag.id === types_1.ITagID.ID3v2 && options.id3v2) {
                         if (start < tag.end) {
                             specEnd = tag.head.size + tag.start + 10;
                             start = tag.end;
                             id2v2removed = true;
                         }
                     }
-                    else if (tag.id === __1.ITagID.ID3v1 && options.id3v1 && tag.end === stat.size) {
-                        if (finish > tag.start) {
-                            finish = tag.start;
-                            id2v1removed = true;
-                        }
+                    else if (tag.id === types_1.ITagID.ID3v1 && options.id3v1 && tag.end === stat.size && finish > tag.start) {
+                        finish = tag.start;
+                        id2v1removed = true;
                     }
                 }
                 if (options.id3v2) {
-                    if (layout.frameheaders.length > 0) {
-                        start = (0, mp3_mpeg_frame_1.rawHeaderOffSet)(layout.frameheaders[0]);
-                    }
-                    else {
-                        start = Math.max(start, specEnd);
-                    }
+                    start = layout.frameheaders.length > 0 ? (0, mp3_mpeg_frame_1.rawHeaderOffSet)(layout.frameheaders[0]) : Math.max(start, specEnd);
                 }
                 if (finish > start) {
                     yield fileWriter.copyRange(filename, start, finish);

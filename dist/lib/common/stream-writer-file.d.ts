@@ -1,6 +1,5 @@
 import { WriterStream } from './stream-writer';
 export declare class FileWriterStream extends WriterStream {
-    constructor();
     open(filename: string): Promise<void>;
     close(): Promise<void>;
     private pipeStream;

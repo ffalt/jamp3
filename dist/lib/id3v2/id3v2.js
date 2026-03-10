@@ -37,7 +37,7 @@ class ID3v2 {
             const reader = new id3v2_reader_1.ID3v2Reader();
             const tag = yield reader.read(filename);
             if (tag) {
-                return yield (0, id3v2_frame_read_1.buildID3v2)(tag);
+                return (0, id3v2_frame_read_1.buildID3v2)(tag);
             }
         });
     }
@@ -46,7 +46,7 @@ class ID3v2 {
             const reader = new id3v2_reader_1.ID3v2Reader();
             const tag = yield reader.readStream(stream);
             if (tag) {
-                return yield (0, id3v2_frame_read_1.buildID3v2)(tag);
+                return (0, id3v2_frame_read_1.buildID3v2)(tag);
             }
         });
     }
@@ -79,12 +79,7 @@ class ID3v2 {
             const head = yield this.buildHead(tag, version, rev);
             const raw_frames = yield (0, id3v2_frame_write_1.writeRawFrames)(tag.frames, head, options.defaultEncoding);
             const exists = yield fs_extra_1.default.pathExists(filename);
-            if (!exists) {
-                yield this.writeTag(filename, raw_frames, head);
-            }
-            else {
-                yield this.replaceTag(filename, raw_frames, head, opts);
-            }
+            yield (exists ? this.replaceTag(filename, raw_frames, head, opts) : this.writeTag(filename, raw_frames, head, opts));
         });
     }
     buildHead(tag, version, rev) {
@@ -104,39 +99,43 @@ class ID3v2 {
             return head;
         });
     }
-    writeTag(filename, frames, head) {
+    writeTag(filename, frames, head, options) {
         return __awaiter(this, void 0, void 0, function* () {
             const stream = new stream_writer_file_1.FileWriterStream();
             yield stream.open(filename);
             const writer = new id3v2_writer_1.ID3v2Writer();
             try {
-                yield writer.write(stream, frames, head, { paddingSize: 0 });
+                yield writer.write(stream, frames, head, options);
             }
-            catch (e) {
+            catch (error) {
                 yield stream.close();
-                return Promise.reject(e);
+                return Promise.reject(error);
             }
             yield stream.close();
         });
     }
     copyAudio(filename, layout, fileWriter) {
         return __awaiter(this, void 0, void 0, function* () {
+            var _a;
             let start = 0;
             let specEnd = 0;
             let skipped = false;
             for (const tag of layout.tags) {
                 if ((tag.id === types_1.ITagID.ID3v2) && (start < tag.end)) {
-                    specEnd = tag.head.size + tag.start + 10;
+                    const rawTag = tag;
+                    const footerSize = ((_a = rawTag.head.v4) === null || _a === void 0 ? void 0 : _a.flags.footer) ? 10 : 0;
+                    specEnd = rawTag.head.size + tag.start + 10 + footerSize;
                     start = tag.end;
                     skipped = true;
                 }
             }
+            const tagAreaEnd = Math.max(start, specEnd);
             if (layout.frameheaders.length > 0) {
                 const mediastart = (0, mp3_mpeg_frame_1.rawHeaderOffSet)(layout.frameheaders[0]);
-                start = specEnd < mediastart ? specEnd : mediastart;
+                start = Math.min(tagAreaEnd, mediastart);
             }
             else {
-                start = Math.max(start, specEnd);
+                start = tagAreaEnd;
             }
             yield fileWriter.copyFrom(filename, start);
             return skipped;

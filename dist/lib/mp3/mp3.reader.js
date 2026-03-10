@@ -23,12 +23,7 @@ const stream_reader_1 = require("../common/stream-reader");
 class MP3Reader {
     constructor() {
         this.options = {};
-        this.layout = {
-            frameheaders: [],
-            headframes: [],
-            tags: [],
-            size: 0
-        };
+        this.layout = { frameheaders: [], headframes: [], tags: [], size: 0 };
         this.id3v2reader = new id3v2_reader_1.ID3v2Reader();
         this.id3v1reader = new id3v1_reader_1.ID3v1Reader();
         this.mpegFramereader = new mp3_mpeg_frame_1.MPEGFrameReader();
@@ -74,12 +69,12 @@ class MP3Reader {
         const header = this.mpegFramereader.readMPEGFrameHeader(chunk, pos);
         if (header) {
             this.scanid3v2 = false;
-            if (!this.scanMPEGFrame) {
-                header.offset = this.stream.pos - chunk.length + pos;
-                this.layout.frameheaders.push((0, mp3_mpeg_frame_1.collapseRawHeader)(header));
+            if (this.scanMPEGFrame) {
+                return this.readFullMPEGFrame(chunk, pos, header);
             }
             else {
-                return this.readFullMPEGFrame(chunk, pos, header);
+                header.offset = this.stream.pos - chunk.length + pos;
+                this.layout.frameheaders.push((0, mp3_mpeg_frame_1.collapseRawHeader)(header));
             }
         }
         return false;
@@ -88,7 +83,7 @@ class MP3Reader {
         if (this.demandData(chunk, pos)) {
             return true;
         }
-        const tag = this.id3v1reader.readTag(chunk.slice(pos, pos + 128));
+        const tag = this.id3v1reader.readTag(chunk.subarray(pos, pos + 128));
         if (!tag) {
             return false;
         }
@@ -96,10 +91,10 @@ class MP3Reader {
         tag.end = tag.start + 128;
         this.layout.tags.push(tag);
         if (!this.stream.end || chunk.length - 128 - pos > 0) {
-            this.stream.unshift(chunk.slice(pos + 1));
+            this.stream.unshift(chunk.subarray(pos + 1));
         }
         else {
-            this.stream.unshift(chunk.slice(pos + 128));
+            this.stream.unshift(chunk.subarray(pos + 128));
         }
         return true;
     }
@@ -113,7 +108,7 @@ class MP3Reader {
                 return false;
             }
             const start = this.stream.pos - chunk.length + pos;
-            this.stream.unshift(chunk.slice(pos));
+            this.stream.unshift(chunk.subarray(pos));
             const result = yield this.id3v2reader.readReaderStream(this.stream);
             if (result) {
                 let rest = result.rest || buffer_1.BufferUtils.zeroBuffer(0);
@@ -129,7 +124,7 @@ class MP3Reader {
                     }
                 }
                 else {
-                    rest = rest.slice(1);
+                    rest = rest.subarray(1);
                 }
                 this.stream.unshift(rest);
                 return true;
@@ -137,7 +132,7 @@ class MP3Reader {
             return false;
         });
     }
-    processChunkToEnd(chunk) {
+    processChunkToEnd(_chunk) {
         return __awaiter(this, void 0, void 0, function* () {
             if (this.options.streamSize !== undefined) {
                 return false;
@@ -148,17 +143,18 @@ class MP3Reader {
     }
     processChunkID3v1(chunk) {
         return __awaiter(this, void 0, void 0, function* () {
+            let useChunk = chunk;
             let pos = 0;
             if (!this.stream.end && (this.stream.buffersLength > 200)) {
                 this.stream.skip(this.stream.buffersLength - 200);
-                chunk = this.stream.get(200);
+                useChunk = this.stream.get(200);
                 pos = 0;
             }
-            while (chunk.length - pos >= 4) {
-                const c1 = chunk[pos];
-                const c2 = chunk[pos + 1];
-                const c3 = chunk[pos + 2];
-                if ((c1 === 84) && (c2 === 65) && (c3 === 71) && this.readID3V1(chunk, pos)) {
+            while (useChunk.length - pos >= 4) {
+                const c1 = useChunk[pos];
+                const c2 = useChunk[pos + 1];
+                const c3 = useChunk[pos + 2];
+                if ((c1 === 84) && (c2 === 65) && (c3 === 71) && this.readID3V1(useChunk, pos)) {
                     return true;
                 }
                 pos++;
@@ -179,7 +175,9 @@ class MP3Reader {
                 else if (this.scanMpeg && c1 === 255 && this.readMPEGFrame(chunk, pos)) {
                     return true;
                 }
-                else if (this.scanid3v1 && c1 === 84 && c2 === 65 && c3 === 71 && this.readID3V1(chunk, pos)) {
+                else if (this.scanid3v1 && this.isInID3v1Range(chunk, pos) &&
+                    c1 === 84 && c2 === 65 && c3 === 71 &&
+                    this.readID3V1(chunk, pos)) {
                     return true;
                 }
                 pos++;
@@ -197,7 +195,7 @@ class MP3Reader {
                 if ((c1 === 73 && c2 === 68 && c3 === 51) && (yield this.readID3V2(chunk, pos))) {
                     return true;
                 }
-                else if ((c1 === 84 && c2 === 65 && c3 === 71) && this.readID3V1(chunk, pos)) {
+                else if ((c1 === 84 && c2 === 65 && c3 === 71) && this.isInID3v1Range(chunk, pos) && this.readID3V1(chunk, pos)) {
                     return true;
                 }
                 pos++;
@@ -205,9 +203,16 @@ class MP3Reader {
             return false;
         });
     }
+    isInID3v1Range(chunk, pos) {
+        if (this.options.streamSize === undefined) {
+            return true;
+        }
+        const absolutePos = this.stream.pos - chunk.length + pos;
+        return absolutePos >= this.options.streamSize - 200;
+    }
     demandData(chunk, pos) {
         if (!this.stream.end && (chunk.length - pos) < 200) {
-            this.stream.unshift(chunk.slice(pos));
+            this.stream.unshift(chunk.subarray(pos));
             return true;
         }
         return false;
@@ -234,7 +239,7 @@ class MP3Reader {
                 return true;
             }
             if (chunk.length > 3) {
-                this.stream.unshift(chunk.slice(chunk.length - 3));
+                this.stream.unshift(chunk.subarray(-3));
             }
             return true;
         });
@@ -255,11 +260,11 @@ class MP3Reader {
                 try {
                     go = yield this.processChunk(data);
                 }
-                catch (e) {
-                    return Promise.reject(e);
+                catch (error) {
+                    return Promise.reject(error);
                 }
             }
-            this.layout.size = (this.options.streamSize !== undefined) ? this.options.streamSize : this.stream.pos;
+            this.layout.size = (this.options.streamSize === undefined) ? this.stream.pos : this.options.streamSize;
         });
     }
     setOptions(options) {
@@ -278,16 +283,17 @@ class MP3Reader {
         return __awaiter(this, void 0, void 0, function* () {
             this.setOptions(options);
             if (!options.streamSize) {
-                options.streamSize = (yield fs_extra_1.default.stat(filename)).size;
+                const stat = yield fs_extra_1.default.stat(filename);
+                options.streamSize = stat.size;
             }
             yield this.stream.open(filename);
             try {
                 yield this.scan();
                 this.stream.close();
             }
-            catch (e) {
+            catch (error) {
                 this.stream.close();
-                return Promise.reject(e);
+                return Promise.reject(error);
             }
             return this.layout;
         });

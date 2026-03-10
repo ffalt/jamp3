@@ -1,6 +1,6 @@
-import {IFrameImpl} from '../id3v2.frame';
-import {ascii} from '../../../common/encodings';
-import {IID3V2} from '../../id3v2.types';
+import { IFrameImpl } from '../id3v2.frame';
+import { ascii } from '../../../common/encodings';
+import { IID3V2 } from '../../id3v2.types';
 
 export const FrameAENC: IFrameImpl = {
 	/**
@@ -19,28 +19,42 @@ export const FrameAENC: IFrameImpl = {
 	 Preview length          $xx xx
 	 Encryption info         <binary data>
 	 */
-	parse: async (reader) => {
+	parse: async reader => {
 		const id = reader.readStringTerminated(ascii);
 		if (reader.unread() < 2) {
-			return Promise.reject(Error('Not enough data'));
+			return Promise.reject(new Error('Not enough data'));
 		}
 		const previewStart = reader.readUInt2Byte();
 		if (reader.unread() < 2) {
-			return Promise.reject(Error('Not enough data'));
+			return Promise.reject(new Error('Not enough data'));
 		}
 		const previewLength = reader.readUInt2Byte();
 		const bin = reader.rest();
-		const value: IID3V2.FrameValue.AudioEncryption = {id, previewStart, previewLength, bin};
-		return {value, encoding: ascii};
+		const value: IID3V2.FrameValue.AudioEncryption = { id, previewStart, previewLength, bin };
+		return { value, encoding: ascii };
 	},
 	write: async (frame, stream) => {
-		const value = <IID3V2.FrameValue.AudioEncryption>frame.value;
+		const value = frame.value as IID3V2.FrameValue.AudioEncryption;
 		await stream.writeStringTerminated(value.id, ascii);
 		await stream.writeUInt2Byte(value.previewStart);
 		await stream.writeUInt2Byte(value.previewLength);
 		await stream.writeBuffer(value.bin);
 	},
+	// Provide a concise string summary for simplified output: "<id>;start=<n>;length=<n>;bin=<bytes>"
 	simplify: (value: IID3V2.FrameValue.AudioEncryption) => {
-		return null; // TODO simplify IID3V2.FrameValue.AudioEncryption
+		if (!value || value.id === undefined) {
+			return null;
+		}
+		const parts: Array<string> = [value.id];
+		if (value.previewStart !== undefined) {
+			parts.push(`start=${value.previewStart}`);
+		}
+		if (value.previewLength !== undefined) {
+			parts.push(`length=${value.previewLength}`);
+		}
+		if (value.bin && value.bin.length > 0) {
+			parts.push(`bin=${value.bin.length}bytes`);
+		}
+		return parts.join(';');
 	}
 };

@@ -1,5 +1,4 @@
-/// <reference types="node" />
-import { Readable } from 'stream';
+import { Readable } from 'node:stream';
 import { IMP3 } from './mp3.types';
 export interface MP3ReaderOptions extends IMP3.ReadOptions {
     streamSize?: number;
@@ -24,6 +23,7 @@ export declare class MP3Reader {
     private processChunkID3v1;
     private processChunkID3v1AndID3v2AndMpeg;
     private processChunkID3v1AndID3v2;
+    private isInID3v1Range;
     private demandData;
     private processChunk;
     private scan;

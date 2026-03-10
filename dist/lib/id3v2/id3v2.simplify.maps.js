@@ -1,9 +1,35 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.DateUpgradeMap = exports.SplitFrameMap = exports.FramesMap = exports.TXXXMap = exports.UFIDMap = exports.COMMMap = exports.PRIVMap = void 0;
+exports.DateUpgradeMap = exports.SplitFrameMap = exports.FramesMap = exports.TXXXMap = exports.UFIDMap = exports.COMMMap = exports.WMMediaClassPrimaryIDs = exports.PRIVWideStringOwners = exports.PRIVGuidOwners = exports.PRIVNumericOwners = exports.PRIVMap = void 0;
 const id3v2_frame_defs_1 = require("./frames/id3v2.frame.defs");
 const id3v2_frame_match_1 = require("./frames/id3v2.frame.match");
-exports.PRIVMap = {};
+exports.PRIVMap = {
+    'AverageLevel': 'AVERAGELEVEL',
+    'PeakValue': 'PEAKVALUE',
+    'WM/MediaClassPrimaryID': 'WM_MEDIACLASSPRIMARYID',
+    'WM/MediaClassSecondaryID': 'WM_MEDIACLASSSECONDARYID',
+    'WM/WMContentID': 'WM_CONTENTID',
+    'WM/WMCollectionID': 'WM_COLLECTIONID',
+    'WM/WMCollectionGroupID': 'WM_COLLECTIONGROUPID',
+    'WM/Provider': 'WM_PROVIDER',
+    'WM/UniqueFileIdentifier': 'WM_UNIQUEFILEIDENTIFIER',
+    'WM/Mood': 'WM_MOOD'
+};
+exports.PRIVNumericOwners = new Set(['AverageLevel', 'PeakValue']);
+exports.PRIVGuidOwners = new Set([
+    'WM/MediaClassPrimaryID',
+    'WM/MediaClassSecondaryID',
+    'WM/WMContentID',
+    'WM/WMCollectionID',
+    'WM/WMCollectionGroupID'
+]);
+exports.PRIVWideStringOwners = new Set(['WM/Provider', 'WM/UniqueFileIdentifier', 'WM/Mood']);
+exports.WMMediaClassPrimaryIDs = {
+    music: 'D1607DBC-E323-4BE2-86A1-48A42A28441E',
+    video: 'DB9830BD-3AB3-4FAB-8A37-1A995F7FF74B',
+    nonMusicAudio: '01CD0F29-DA4E-4157-897B-6275D50C4F11',
+    other: 'FCF24A76-9A57-4036-990D-E35DD8B244E1'
+};
 exports.COMMMap = {
     'description': 'COMMENT',
     'comment': 'COMMENT'
@@ -172,23 +198,23 @@ exports.DateUpgradeMap = {
     'TIME': 'Time'
 };
 if (process.env.NODE_ENV === 'development') {
-    Object.keys(id3v2_frame_defs_1.FrameDefs).forEach(key => {
+    for (const key of Object.keys(id3v2_frame_defs_1.FrameDefs)) {
         const frame = (0, id3v2_frame_match_1.findId3v2FrameDef)(key);
-        if (!frame) {
-            console.error('DEVELOPER ERROR: Unknown frame id \'' + key + '\' in simplify list');
-        }
-        else {
-            const slug = (['TXXX', 'UFID', 'COMM', 'PRIV', 'WXXX', 'LINK', 'TIPL', 'TMCL'].indexOf(key) >= 0) || exports.FramesMap[key] ||
-                exports.TXXXMap[key] || exports.UFIDMap[key] || exports.COMMMap[key] || exports.PRIVMap[key] || exports.SplitFrameMap[key] || exports.DateUpgradeMap[key];
+        if (frame) {
+            const slug = ['TXXX', 'UFID', 'COMM', 'PRIV', 'WXXX', 'LINK', 'TIPL', 'TMCL'].includes(key) ||
+                exports.FramesMap[key] || exports.TXXXMap[key] || exports.UFIDMap[key] || exports.COMMMap[key] || exports.PRIVMap[key] || exports.SplitFrameMap[key] || exports.DateUpgradeMap[key];
             if (!slug) {
-                if (frame.versions.indexOf(4) >= 0) {
-                    console.error('DEVELOPER ERROR: Add a slug for the 2.4 frame \'' + key + '\': \'' + id3v2_frame_defs_1.FrameDefs[key].title.toLowerCase().replace(/ /g, '_') + '\',');
+                if (frame.versions.includes(4)) {
+                    console.error(`DEVELOPER ERROR: Add a slug for the 2.4 frame '${key}': '${id3v2_frame_defs_1.FrameDefs[key].title.toLowerCase().replaceAll(' ', '_')}',`);
                 }
                 else if (!frame.upgrade) {
-                    console.error('DEVELOPER ERROR: Add a slug for the ' + frame.versions.join('/') + ' frame \'' + key + '\': \'' + id3v2_frame_defs_1.FrameDefs[key].title.toLowerCase().replace(/ /g, '_') + '\',');
+                    console.error(`DEVELOPER ERROR: Add a slug for the ${frame.versions.join('/')} frame '${key}': '${id3v2_frame_defs_1.FrameDefs[key].title.toLowerCase().replaceAll(' ', '_')}',`);
                 }
             }
         }
-    });
+        else {
+            console.error(`DEVELOPER ERROR: Unknown frame id '${key}' in simplify list`);
+        }
+    }
 }
 //# sourceMappingURL=id3v2.simplify.maps.js.map

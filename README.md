@@ -1,20 +1,20 @@
 # jamp3
 
-An id3 & mp3 library written in Typescript for NodeJS
+An ID3 & MP3 library written in TypeScript for Node.js
 
 [![NPM](https://nodei.co/npm/jamp3.png?downloads=true&downloadRank=true&stars=true)](https://www.npmjs.com/package/jamp3)
 
-[![Test](https://github.com/ffalt/jamp3/workflows/Test/badge.svg)](https://github.com/ffalt/jamp3/actions?query=workflow%3ATest)
+[![Test](https://github.com/ffalt/jamp3/workflows/test/badge.svg)](https://github.com/ffalt/jamp3/actions?query=workflow%3Atest)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/9053f3b64ab847a39a1a4be470759bb7)](https://app.codacy.com/app/ffalt/jamp3?utm_source=github.com&utm_medium=referral&utm_content=ffalt/jamp3&utm_campaign=Badge_Grade_Dashboard)
-[![Maintainability](https://api.codeclimate.com/v1/badges/c1bc863edffe1b4047e9/maintainability)](https://codeclimate.com/github/ffalt/jamp3/maintainability)
-[![Test Coverage](https://api.codeclimate.com/v1/badges/c1bc863edffe1b4047e9/test_coverage)](https://codeclimate.com/github/ffalt/jamp3/test_coverage)
+[![Maintainability](https://qlty.sh/gh/ffalt/projects/jamp3/maintainability.svg)](https://qlty.sh/gh/ffalt/projects/jamp3)
+[![Code Coverage](https://qlty.sh/gh/ffalt/projects/jamp3/coverage.svg)](https://qlty.sh/gh/ffalt/projects/jamp3)
 [![Known Vulnerabilities](https://snyk.io/test/github/ffalt/jamp3/badge.svg)](https://snyk.io/test/github/ffalt/jamp3)
 [![total downloads](https://badgen.net/npm/dt/jamp3)](https://www.npmjs.com/package/jamp3)
 [![license](https://img.shields.io/github/license/ffalt/jamp3.svg)](http://opensource.org/licenses/MIT)
 
 Motivation for this yet-another-id3-library: 
 
-*   On the fly & async & only as much as needed
+*   On-the-fly, async & only read as much as needed
   
     Only loads small parts of the file stream at a time. So that 100MB of e.g. podcast-episode.mp3 is not read completely in memory to get 100kb for an ID3v2 at the beginning of a file.
 
@@ -24,11 +24,11 @@ Motivation for this yet-another-id3-library:
 
 *   Read MPEG frames information
 
-    While reading the tag, you may want read the duration/bitrate/... of the audio stream.
+    While reading the tag, you may want to read the duration/bitrate/... of the audio stream.
 
 *   Write support
 
-    ID3v2/ID3v1 can be removed or written.
+    ID3v2/ID3v1 can be updated, removed or written.
 
     For ID3v2.4 an easy-to-use build helper is available. For more complex use, you can write other versions and even non-standard combinations of ID3v2 frames.
   
@@ -61,16 +61,18 @@ Motivation for this yet-another-id3-library:
     *   [Test](#test)
     *   [Coverage](#coverage)
     *   [Lint](#lint)
+*   [Contributing](#contributing)
+*   [License](#license)
 
 ## Installation
 
-into project:
+Into project:
 
 ```bash
 npm i jamp3
 ```
 
-or global:
+Or global:
 ```bash
 npm -g i jamp3
 ```
@@ -83,7 +85,7 @@ npm -g i jamp3
 
 [Class Documentation](https://ffalt.github.io/jamp3/classes/id3v1_id3v1.ID3v1.html)
 
-#### reading ID3v1
+#### Reading ID3v1
 
 ```typescript
 import {ID3v1} from 'jamp3';
@@ -121,7 +123,7 @@ Example as [typescript](examples/snippet_id3v1-read.ts) [javascript](examples/sn
 ```
 </details>
 
-#### writing ID3v1
+#### Writing ID3v1
 
 ```typescript
 import {ID3v1, IID3V1} from 'jamp3';
@@ -156,7 +158,7 @@ Example as [typescript](examples/snippet_id3v1-write.ts) [javascript](examples/s
 
 [Class Documentation](https://ffalt.github.io/jamp3/classes/id3v2_id3v2.ID3v2.html)
 
-#### reading ID3v2
+#### Reading ID3v2
 
 ```typescript
 import {ID3v2} from 'jamp3';
@@ -447,7 +449,7 @@ Example as [typescript](examples/snippet_id3v2-read.ts) [javascript](examples/sn
 ```
 </details>
 
-#### writing ID3v2 with Helper
+#### Writing ID3v2 with Helper
 [Class Documentation](https://ffalt.github.io/jamp3/classes/id3v2_id3v2_builder_v24.ID3V24TagBuilder.html)
 
 ```typescript
@@ -476,9 +478,52 @@ run().catch(e => {
     console.error(e);
 });
 ```
-Example as [typescript](examples/snippet_id3v2-build.ts) [javascript](examples/snippet_id3v2-build.js) 
+Example as [typescript](examples/snippet_id3v2-4-build.ts) [javascript](examples/snippet_id3v2-4-build.js)
 
-#### writing ID3v2 Raw
+#### Updating ID3v2 with Helper
+
+Load the existing tag into the builder to preserve all frames, then use setters to update single-value frames or `clear…()` + setter pairs to replace multi-value frames.
+
+Single-value frames (title, artist, album, …) are always replaced when you call their setter.
+Multi-value frames (picture, comment, lyrics, …) are appended — call the matching `clear…()` method first if you want to replace rather than add.
+
+```typescript
+import {ID3v2, ID3V24TagBuilder, IID3V2} from 'jamp3';
+import {readFileSync} from 'fs';
+
+async function run(): Promise<void> {
+    const id3v2 = new ID3v2();
+    const filename = 'demo.mp3';
+
+    // Read the existing tag
+    const existingTag = await id3v2.read(filename);
+
+    // Initialize the builder from the existing tag to preserve all frames
+    const builder = new ID3V24TagBuilder(ID3V24TagBuilder.encodings.utf8);
+    if (existingTag) {
+        builder.loadTag(existingTag);
+    }
+
+    const coverBuffer = readFileSync('cover.jpg');
+    builder
+        .title('Updated title')
+        .artist('Updated artist')
+        .clearPictures()                               // remove existing artwork
+        .picture(3, '', 'image/jpeg', coverBuffer);    // attach new artwork
+
+    const options: IID3V2.WriteOptions = {
+        keepBackup: true, // keep a filename.mp3.bak copy of the original file
+        paddingSize: 10   // add padding zeros between id3v2 and the audio (in bytes)
+    };
+    await id3v2.writeBuilder(filename, builder, options);
+    console.log('id3v2.4 updated');
+}
+
+run().catch(console.error);
+```
+Example as [typescript](examples/snippet_id3v2-4-update.ts) [javascript](examples/snippet_id3v2-4-update.js)
+
+#### Writing ID3v2 Raw
 
 ```typescript
 import {ID3v2, IID3V2} from 'jamp3';
@@ -524,7 +569,7 @@ Example as [typescript](examples/snippet_id3v2-write.ts) [javascript](examples/s
 
 [Class Documentation](https://ffalt.github.io/jamp3/classes/mp3_mp3.MP3.html)
 
-#### reading MP3
+#### Reading MP3
 
 ```typescript
 import {IMP3, MP3} from 'jamp3';
@@ -552,9 +597,9 @@ Example as [typescript](examples/snippet_mp3-read.ts) [javascript](examples/snip
 
 Note: MP3 Duration
 
-if the mp3 does include a VBR/CBR header, the declared header values are used for duration calculation
+If the MP3 does include a VBR/CBR header, the declared header values are used for duration calculation.
 
-if the mp3 does NOT include a VBR/CBR header: 
+If the MP3 does NOT include a VBR/CBR header: 
 *   with option {mpegQuick: true}: only a few audio frames are read and the duration is estimated 
 *   with option {mpegQuick: false}: all audio frames are read and the duration is calculated 
 
@@ -592,8 +637,8 @@ if the mp3 does NOT include a VBR/CBR header:
 
 ## Command Line Tools
 
-If you install this package global 'npm install -g' following tools are available in your command line.
-If you install into your project the following tools are available in '{your project}/node_modules/.bin/'
+If you install this package globally (`npm install -g`), the following tools are available in your command line.
+If you install it into your project, the following tools are available in `{your project}/node_modules/.bin/`.
 
 ### mp3-analyze
 
@@ -605,10 +650,10 @@ Options:
 
   -v, --version            output the version number
   -i, --input <fileOrDir>  mp3 file or folder
-  -r, --recursive          scan the folder recursive
+  -r, --recursive          scan the folder recursively
   -w, --warnings           show results only for files with warnings
-  -f, --format <format>    format of analyze result (plain|json) (default: plain)
-  -d, --dest <file>        destination analyze result file
+  -f, --format <format>    format of analysis result (plain|json) (default: plain)
+  -d, --dest <file>        destination analysis result file
   -h, --help               output usage information
 
 ```
@@ -660,9 +705,9 @@ Options:
 
   -v, --version            output the version number
   -i, --input <fileOrDir>  mp3 file or folder
-  -r, --recursive          dump the folder recursive
+  -r, --recursive          dump the folder recursively
   -f, --full               full tag output (simple otherwise)
-  -d, --dest <file>        destination analyze result file
+  -d, --dest <file>        destination analysis result file
   -h, --help               output usage information
 ```
 
@@ -969,8 +1014,8 @@ Options:
 
   -v, --version            output the version number
   -i, --input <fileOrDir>  mp3 file or folder
-  -r, --recursive          dump the folder recursive
-  -d, --dest <file>        destination analyze result file
+  -r, --recursive          dump the folder recursively
+  -d, --dest <file>        destination analysis result file
   -h, --help               output usage information
 ```
 
@@ -1010,7 +1055,7 @@ Options:
 
 ### Test
 
-`npm run test` to run the the jest tests
+`npm run test` to run the jest tests
 
 ### Coverage
 
@@ -1018,4 +1063,12 @@ Options:
 
 ### Lint
 
-`npm run lint` to test the code style with tslint
+`npm run lint` to test the code style with eslint
+
+## Contributing
+
+Contributions are welcome! Please open an issue or submit a pull request on GitHub.
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.

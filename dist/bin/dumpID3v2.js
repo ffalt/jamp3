@@ -17,9 +17,9 @@ const commander_1 = require("commander");
 const tool_1 = require("../lib/common/tool");
 const id3v2_1 = require("../lib/id3v2/id3v2");
 const pretty_json_1 = require("../lib/common/pretty-json");
-const pack = require('../../package.json');
+const package_json_1 = __importDefault(require("../../package.json"));
 commander_1.program
-    .version(pack.version, '-v, --version')
+    .version(package_json_1.default.version, '-v, --version')
     .usage('[options]')
     .option('-i, --input <fileOrDir>', 'mp3 file or folder')
     .option('-r, --recursive', 'dump the folder recursive')
@@ -31,13 +31,7 @@ const result = [];
 function onFile(filename) {
     return __awaiter(this, void 0, void 0, function* () {
         const tag = yield id3v2.read(filename);
-        let dump;
-        if (tag) {
-            dump = { filename, tag: commander_1.program.opts().full ? tag : id3v2_1.ID3v2.simplify(tag) };
-        }
-        else {
-            dump = { error: 'No tag found', filename };
-        }
+        const dump = tag ? { filename, tag: commander_1.program.opts().full ? tag : id3v2_1.ID3v2.simplify(tag) } : { error: 'No tag found', filename };
         if (commander_1.program.opts().dest) {
             result.push(dump);
         }
@@ -57,7 +51,7 @@ function run() {
         }
     });
 }
-run().catch(e => {
-    console.error(e);
+run().catch(error => {
+    console.error(error);
 });
 //# sourceMappingURL=dumpID3v2.js.map

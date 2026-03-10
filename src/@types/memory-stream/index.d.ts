@@ -1,11 +1,10 @@
 declare module 'memory-stream' {
-
-	import {WriteStream} from 'fs';
+	import { WriteStream } from 'node:fs';
 
 	class MemoryStream extends WriteStream {
 		toString(): string;
+		toBuffer(): Buffer;
 	}
 
 	export = MemoryStream;
-
 }

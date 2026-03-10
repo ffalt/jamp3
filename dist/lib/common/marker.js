@@ -5,7 +5,7 @@ class Markers {
     static makeMarker(str) {
         const mark = [];
         for (let i = 0; i < str.length; i++) {
-            mark.push(str.charCodeAt(i));
+            mark.push(str.codePointAt(i) || 0);
         }
         return mark;
     }

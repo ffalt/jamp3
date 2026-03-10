@@ -14,21 +14,18 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.FileWriterStream = void 0;
 const stream_writer_1 = require("./stream-writer");
-const fs_1 = __importDefault(require("fs"));
+const node_fs_1 = __importDefault(require("node:fs"));
 class FileWriterStream extends stream_writer_1.WriterStream {
-    constructor() {
-        super();
-    }
     open(filename) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                this.wstream = fs_1.default.createWriteStream(filename);
+                this.wstream = node_fs_1.default.createWriteStream(filename);
             }
-            catch (err) {
-                return Promise.reject(err);
+            catch (error) {
+                return Promise.reject(error);
             }
-            return new Promise((resolve, reject) => {
-                this.wstream.once('open', (fd) => {
+            return new Promise((resolve, _reject) => {
+                this.wstream.once('open', () => {
                     resolve();
                 });
             });
@@ -36,7 +33,7 @@ class FileWriterStream extends stream_writer_1.WriterStream {
     }
     close() {
         return __awaiter(this, void 0, void 0, function* () {
-            return new Promise((resolve, reject) => {
+            return new Promise((resolve, _reject) => {
                 this.wstream.on('close', () => {
                     resolve();
                 });
@@ -47,29 +44,20 @@ class FileWriterStream extends stream_writer_1.WriterStream {
     pipeStream(readstream) {
         return __awaiter(this, void 0, void 0, function* () {
             return new Promise((resolve, reject) => {
-                readstream.on('error', (err) => {
-                    return reject(err);
-                });
-                readstream.on('end', (err) => {
-                    if (err) {
-                        reject(err);
-                    }
-                    else {
-                        resolve();
-                    }
-                });
+                readstream.on('error', error => reject(error));
+                readstream.on('end', () => resolve());
                 readstream.pipe(this.wstream, { end: false });
             });
         });
     }
     copyRange(filename, start, finish) {
         return __awaiter(this, void 0, void 0, function* () {
-            return this.pipeStream(fs_1.default.createReadStream(filename, { start, end: finish }));
+            return this.pipeStream(node_fs_1.default.createReadStream(filename, { start, end: finish }));
         });
     }
     copyFrom(filename, position) {
         return __awaiter(this, void 0, void 0, function* () {
-            return this.pipeStream(fs_1.default.createReadStream(filename, { start: position }));
+            return this.pipeStream(node_fs_1.default.createReadStream(filename, { start: position }));
         });
     }
 }

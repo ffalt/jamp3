@@ -1,42 +1,35 @@
-/* tslint:disable:no-bitwise */
-
 // http://en.wikipedia.org/wiki/Synchsafe
 
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 import fse from 'fs-extra';
 
 export function isBitSetAt(byte: number, bit: number) {
 	return (byte & 1 << bit) !== 0;
 }
 
-export function flags(names: Array<string>, values: Array<number>): {
-	[name: string]: boolean;
-} {
-	const result: {
-		[name: string]: boolean;
-	} = {};
-	names.forEach((name, i) => {
+export function flags(names: Array<string>, values: Array<number>): Record<string, boolean> {
+	const result: Record<string, boolean> = {};
+	for (const [i, name] of names.entries()) {
 		result[name] = !!values[i];
-	});
+	}
 	return result;
 }
 
-export function unflags(names: Array<string>, flagsObj?: { [name: string]: boolean | undefined }): Array<number> {
-	return names.map(name => {
-		return flagsObj && flagsObj[name] ? 1 : 0;
-	});
+export function unflags(names: Array<string>, flagsObj?: Record<string, boolean | undefined>): Array<number> {
+	return names.map(name => flagsObj && flagsObj[name] ? 1 : 0);
 }
 
 export function synchsafe(input: number): number {
+	let current = input;
 	let out;
 	let mask = 0x7F;
-	while (mask ^ 0x7FFFFFFF) {
-		out = input & ~mask;
+	while (mask ^ 0x7F_FF_FF_FF) {
+		out = current & ~mask;
 		out = out << 1;
-		out = out | (input & mask);
+		out = out | (current & mask);
 		mask = ((mask + 1) << 8) - 1;
-		input = out;
+		current = out;
 	}
 	if (out === undefined) {
 		return 0;
@@ -45,7 +38,7 @@ export function synchsafe(input: number): number {
 }
 
 export function unsynchsafe(input: number): number {
-	let out = 0, mask = 0x7F000000;
+	let out = 0, mask = 0x7F_00_00_00;
 	while (mask) {
 		out = out >> 1;
 		out = out | (input & mask);
@@ -55,10 +48,6 @@ export function unsynchsafe(input: number): number {
 		return 0;
 	}
 	return out;
-}
-
-export function log2(x: number): number {
-	return Math.log(x) * Math.LOG2E;
 }
 
 export function bitarray(byte: number): Array<number> {
@@ -87,27 +76,26 @@ export function isBit(field: number, nr: number): boolean {
 
 export function removeZeroString(s: string): string {
 	for (let j = 0; j < s.length; j++) {
-		if (s.charCodeAt(j) === 0) {
-			s = s.slice(0, j);
-			break;
+		if (s.codePointAt(j) === 0) {
+			return s.slice(0, j);
 		}
 	}
 	return s;
 }
 
 export function neededStoreBytes(num: number, min: number) {
-	let result = Math.ceil((Math.floor(log2(num) + 1) + 1) / 8);
+	let result = Math.ceil((Math.floor(Math.log2(num) + 1) + 1) / 8);
 	result = Math.max(result, min);
 	return result;
 }
 
 export async function fileRangeToBuffer(filename: string, start: number, end: number): Promise<Buffer> {
-	const chunks: Array<Buffer> = [];
+	const chunks: Array<Buffer<ArrayBufferLike>> = [];
 	return new Promise<Buffer>((resolve, reject) => {
 		try {
-			const readStream = fs.createReadStream(filename, {start, end});
-			readStream.on('data', (chunk: Buffer) => {
-				chunks.push(chunk);
+			const readStream = fs.createReadStream(filename, { start, end });
+			readStream.on('data', chunk => {
+				chunks.push(chunk as Buffer<ArrayBufferLike>);
 			});
 			readStream.on('error', e => {
 				reject(e);
@@ -115,8 +103,8 @@ export async function fileRangeToBuffer(filename: string, start: number, end: nu
 			readStream.on('close', () => {
 				resolve(Buffer.concat(chunks));
 			});
-		} catch (e: any) {
-			return reject(e);
+		} catch (error) {
+			return reject(error);
 		}
 	});
 }
@@ -130,7 +118,7 @@ export async function collectFiles(dir: string, ext: Array<string>, recursive: b
 			if (recursive) {
 				await collectFiles(sub, ext, recursive, onFileCB);
 			}
-		} else if ((ext.indexOf(path.extname(f).toLowerCase()) >= 0)) {
+		} else if ((ext.includes(path.extname(f).toLowerCase()))) {
 			await onFileCB(sub);
 		}
 	}

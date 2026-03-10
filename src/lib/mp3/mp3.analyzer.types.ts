@@ -1,11 +1,19 @@
-import {IID3V1, IID3V2} from '../..';
+import { IID3V1 } from '../id3v1/id3v1.types';
+import { IID3V2 } from '../id3v2/id3v2.types';
 
 /**
  * Interfaces for class MP3Analyzer
  */
 export namespace IMP3Analyzer {
 
-	export import Warning = IID3V2.Warning;
+	export interface Warning {
+		/** msg of warning */
+		msg: string;
+		/** expected value */
+		expected: number | string | boolean;
+		/** found value */
+		actual: number | string | boolean;
+	}
 
 	export interface Options {
 		/** test for mpeg warnings */

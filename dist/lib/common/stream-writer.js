@@ -24,7 +24,7 @@ class WriterStream {
     _write(something) {
         return __awaiter(this, void 0, void 0, function* () {
             if (!this.wstream.write(something)) {
-                return new Promise((resolve, reject) => {
+                return new Promise((resolve, _reject) => {
                     this.wstream.once('drain', () => {
                         resolve();
                     });
@@ -35,7 +35,7 @@ class WriterStream {
     _writeString(something, encoding) {
         return __awaiter(this, void 0, void 0, function* () {
             if (!this.wstream.write(something, encoding)) {
-                return new Promise((resolve, reject) => {
+                return new Promise((resolve, _reject) => {
                     this.wstream.once('drain', () => {
                         resolve();
                     });
@@ -129,12 +129,13 @@ class WriterStream {
             return this.writeTerminator(enc);
         });
     }
-    writeAsciiString(val, length) {
+    writeAsciiString(value, length) {
         return __awaiter(this, void 0, void 0, function* () {
-            while (val.length < length) {
-                val += ' ';
+            let current = value;
+            while (current.length < length) {
+                current += ' ';
             }
-            return this._writeString(val.slice(0, length), 'ascii');
+            return this._writeString(current.slice(0, length), 'ascii');
         });
     }
     writeAscii(val) {
@@ -152,7 +153,7 @@ class WriterStream {
             const padding = size - buffer.length;
             if (padding > 0) {
                 const pad = buffer_1.BufferUtils.zeroBuffer(padding);
-                buffer = buffer_1.BufferUtils.concatBuffer(buffer, pad);
+                return this.writeBuffer(buffer_1.BufferUtils.concatBuffer(buffer, pad));
             }
             return this.writeBuffer(buffer);
         });

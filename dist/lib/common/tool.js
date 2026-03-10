@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.runTool = void 0;
+exports.runTool = runTool;
 const fs_extra_1 = __importDefault(require("fs-extra"));
 const utils_1 = require("./utils");
 function runTool(program, onFile) {
@@ -22,16 +22,10 @@ function runTool(program, onFile) {
             input = program.args[0];
         }
         if (!input || input.length === 0) {
-            return Promise.reject(Error('must specify a filename/directory'));
+            return Promise.reject(new Error('must specify a filename/directory'));
         }
         const stat = yield fs_extra_1.default.stat(input);
-        if (stat.isDirectory()) {
-            yield (0, utils_1.collectFiles)(input, ['.mp3'], program.opts().recursive, onFile);
-        }
-        else {
-            yield onFile(input);
-        }
+        yield (stat.isDirectory() ? (0, utils_1.collectFiles)(input, ['.mp3'], program.opts().recursive, onFile) : onFile(input));
     });
 }
-exports.runTool = runTool;
 //# sourceMappingURL=tool.js.map

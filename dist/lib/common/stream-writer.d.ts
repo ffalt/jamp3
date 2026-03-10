@@ -1,5 +1,4 @@
-/// <reference types="node" />
-import fs from 'fs';
+import fs from 'node:fs';
 import { IEncoding } from './encodings';
 export declare class WriterStream {
     protected wstream: fs.WriteStream;
@@ -20,7 +19,7 @@ export declare class WriterStream {
     writeEncoding(enc: IEncoding): Promise<void>;
     writeString(val: string, enc: IEncoding): Promise<void>;
     writeStringTerminated(val: string, enc: IEncoding): Promise<void>;
-    writeAsciiString(val: string, length: number): Promise<void>;
+    writeAsciiString(value: string, length: number): Promise<void>;
     writeAscii(val: string): Promise<void>;
     writeTerminator(enc: IEncoding): Promise<void>;
     writeFixedBuffer(buffer: Buffer, size: number): Promise<void>;

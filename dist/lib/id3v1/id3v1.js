@@ -13,10 +13,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ID3v1 = void 0;
+const fs_extra_1 = __importDefault(require("fs-extra"));
 const id3v1_reader_1 = require("./id3v1.reader");
 const id3v1_writer_1 = require("./id3v1.writer");
-const fs_extra_1 = __importDefault(require("fs-extra"));
-const __1 = require("../..");
+const types_1 = require("../common/types");
 const update_file_1 = require("../common/update-file");
 const stream_writer_file_1 = require("../common/stream-writer-file");
 class ID3v1 {
@@ -39,7 +39,7 @@ class ID3v1 {
             yield (0, update_file_1.updateFile)(filename, { id3v1: true }, !!options.keepBackup, () => true, (layout, fileWriter) => __awaiter(this, void 0, void 0, function* () {
                 let finish = stat.size;
                 for (const t of layout.tags) {
-                    if (t.id === __1.ITagID.ID3v1) {
+                    if (t.id === types_1.ITagID.ID3v1) {
                         removed = true;
                         if (finish > t.start) {
                             finish = t.start;
@@ -54,12 +54,7 @@ class ID3v1 {
     write(filename, tag, version, options) {
         return __awaiter(this, void 0, void 0, function* () {
             const exists = yield fs_extra_1.default.pathExists(filename);
-            if (!exists) {
-                yield this.writeTag(filename, tag, version);
-            }
-            else {
-                yield this.replaceTag(filename, tag, version, !!options.keepBackup);
-            }
+            yield (exists ? this.replaceTag(filename, tag, version, !!options.keepBackup) : this.writeTag(filename, tag, version));
         });
     }
     writeTag(filename, tag, version) {
@@ -70,9 +65,9 @@ class ID3v1 {
             try {
                 yield writer.write(stream, tag, version);
             }
-            catch (e) {
+            catch (error) {
                 yield stream.close();
-                return Promise.reject(e);
+                return Promise.reject(error);
             }
             yield stream.close();
         });
@@ -83,10 +78,8 @@ class ID3v1 {
             yield (0, update_file_1.updateFile)(filename, { id3v1: true }, keepBackup, () => true, (layout, fileWriter) => __awaiter(this, void 0, void 0, function* () {
                 let finish = stat.size;
                 for (const t of layout.tags) {
-                    if (t.id === __1.ITagID.ID3v1) {
-                        if (finish > t.start) {
-                            finish = t.start;
-                        }
+                    if (t.id === types_1.ITagID.ID3v1 && finish > t.start) {
+                        finish = t.start;
                     }
                 }
                 yield fileWriter.copyRange(filename, 0, finish);

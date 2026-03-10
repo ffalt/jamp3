@@ -13,7 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ReaderStream = void 0;
-const fs_1 = __importDefault(require("fs"));
+const node_fs_1 = __importDefault(require("node:fs"));
 const buffer_1 = require("./buffer");
 class ReaderStream {
     constructor() {
@@ -49,9 +49,7 @@ class ReaderStream {
                 if (!this.readableStream) {
                     return Promise.reject('Invalid Stream');
                 }
-                this.readableStream.on('error', (err) => {
-                    return reject(err);
-                });
+                this.readableStream.on('error', error => reject(error));
                 this.readableStream.on('end', () => {
                     this.end = true;
                     this.streamEnd = true;
@@ -61,27 +59,25 @@ class ReaderStream {
                         w();
                     }
                 });
-                this.readableStream.on('data', (chunk) => {
+                this.readableStream.on('data', chunk => {
                     if (this.streamOnData) {
                         this.streamOnData(chunk);
                     }
                 });
-                this.waiting = () => {
-                    resolve();
-                };
+                this.waiting = () => resolve();
             });
         });
     }
     open(filename) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                this.readableStream = fs_1.default.createReadStream(filename);
+                this.readableStream = node_fs_1.default.createReadStream(filename);
             }
-            catch (err) {
-                return Promise.reject(err);
+            catch (error) {
+                return Promise.reject(error);
             }
             if (!this.readableStream) {
-                return Promise.reject(Error('Could not open file ' + filename));
+                return Promise.reject(new Error(`Could not open file ${filename}`));
             }
             yield this.openStream(this.readableStream);
         });
@@ -108,9 +104,9 @@ class ReaderStream {
     }
     getBufferLength() {
         let result = 0;
-        this.buffers.forEach(buf => {
-            result += buf.length;
-        });
+        for (const buffer of this.buffers) {
+            result += buffer.length;
+        }
         return result;
     }
     resume() {
@@ -119,7 +115,7 @@ class ReaderStream {
                 this.streamEnd = true;
                 return;
             }
-            return new Promise((resolve, reject) => {
+            return new Promise((resolve, _reject) => {
                 this.waiting = () => {
                     resolve();
                 };
@@ -140,7 +136,7 @@ class ReaderStream {
             const need = amount - givenLength;
             if (need < b.length) {
                 givenLength += need;
-                this.buffers[i] = b.slice(need);
+                this.buffers[i] = b.subarray(need);
                 break;
             }
             else {
@@ -160,8 +156,8 @@ class ReaderStream {
             const b = this.buffers[i];
             const need = amount - givenLength;
             if (need < b.length) {
-                destBuffers.push(b.slice(0, need));
-                this.buffers[i] = b.slice(need);
+                destBuffers.push(b.subarray(0, need));
+                this.buffers[i] = b.subarray(need);
                 break;
             }
             else {
@@ -178,17 +174,13 @@ class ReaderStream {
     }
     read(amount) {
         return __awaiter(this, void 0, void 0, function* () {
-            amount = Math.max(1, amount);
-            if ((this.buffersLength >= amount)) {
-                const result = this.get(amount);
+            const toRead = Math.max(1, amount);
+            if ((this.buffersLength >= toRead)) {
+                const result = this.get(toRead);
                 this.end = this.streamEnd && this.buffersLength === 0;
                 return result;
             }
-            if (!this.streamEnd) {
-                yield this.resume();
-                return yield this.read(amount);
-            }
-            else {
+            if (this.streamEnd) {
                 if (this.buffersLength === 0) {
                     return buffer_1.BufferUtils.zeroBuffer(0);
                 }
@@ -198,6 +190,10 @@ class ReaderStream {
                 this.pos += result.length;
                 this.end = this.streamEnd;
                 return result;
+            }
+            else {
+                yield this.resume();
+                return yield this.read(toRead);
             }
         });
     }
@@ -218,7 +214,7 @@ class ReaderStream {
             const index = buffer_1.BufferUtils.indexOfBuffer(result, buffer);
             if (index >= 0) {
                 this.pos += index;
-                this.buffers = [result.slice(index)];
+                this.buffers = [result.subarray(index)];
                 return this.pos;
             }
             else {

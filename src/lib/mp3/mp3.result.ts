@@ -1,9 +1,11 @@
-import {IMP3} from './mp3.types';
-import {IID3V1, IID3V2, ITagID} from '../..';
-import {filterBestMPEGChain} from './mp3.mpeg.chain';
-import {expandRawHeader, expandRawHeaderArray, rawHeaderOffSet} from './mp3.mpeg.frame';
-import {analyzeBitrateMode} from './mp3.bitrate';
-import {buildID3v2} from '../id3v2/frames/id3v2.frame.read';
+import { IMP3 } from './mp3.types';
+import { ITagID } from '../common/types';
+import { filterBestMPEGChain } from './mp3.mpeg.chain';
+import { expandRawHeader, expandRawHeaderArray, rawHeaderOffSet } from './mp3.mpeg.frame';
+import { analyzeBitrateMode } from './mp3.bitrate';
+import { buildID3v2 } from '../id3v2/frames/id3v2.frame.read';
+import { IID3V1 } from '../id3v1/id3v1.types';
+import { IID3V2 } from '../id3v2/id3v2.types';
 
 function calculateDuration(frameCount: number, sampleCount: number, sampleRate: number): number {
 	if (frameCount > 0 && sampleCount > 0 && sampleRate > 0) {
@@ -13,18 +15,15 @@ function calculateDuration(frameCount: number, sampleCount: number, sampleRate: 
 }
 
 function buildFrames(chain: Array<IMP3.FrameRawHeaderArray>, layout: IMP3.RawLayout): IMP3.MPEGFrames {
-	const frames: IMP3.MPEGFrames = {
+	return {
 		audio: chain,
-		headers: layout.headframes.map(frame => {
-			return {
-				header: expandRawHeader(expandRawHeaderArray(frame.header)),
-				mode: frame.mode,
-				xing: frame.xing,
-				vbri: frame.vbri
-			};
-		})
+		headers: layout.headframes.map(frame => ({
+			header: expandRawHeader(expandRawHeaderArray(frame.header)),
+			mode: frame.mode,
+			xing: frame.xing,
+			vbri: frame.vbri
+		}))
 	};
-	return frames;
 }
 
 function setResultBase(chain: Array<IMP3.FrameRawHeaderArray>, mpeg: IMP3.MPEG) {
@@ -42,7 +41,7 @@ function setResultEstimate(layout: IMP3.RawLayout, chain: Array<IMP3.FrameRawHea
 	let audioBytes = layout.size;
 	if (chain.length > 0) {
 		audioBytes -= rawHeaderOffSet(chain[0]);
-		if (layout.tags.find(t => t.id === ITagID.ID3v1)) {
+		if (layout.tags.some(t => t.id === ITagID.ID3v1)) {
 			audioBytes -= 128;
 		}
 		mpeg.durationEstimate = (audioBytes * 8) / mpeg.bitRate;
@@ -96,19 +95,19 @@ async function prepareResultMPEG(options: IMP3.ReadOptions, layout: IMP3.RawLayo
 	if (headframe) {
 		setResultHeadFrame(headframe, mpeg);
 	}
-	return {mpeg, frames};
+	return { mpeg, frames };
 }
 
 export async function prepareResultID3v1(layout: IMP3.RawLayout): Promise<IID3V1.Tag | undefined> {
-	const id3v1s: Array<IID3V1.Tag> = <Array<IID3V1.Tag>>layout.tags.filter((o) => o.id === ITagID.ID3v1);
-	const id3v1: IID3V1.Tag | undefined = id3v1s.length > 0 ? id3v1s[id3v1s.length - 1] : undefined;
+	const id3v1s: Array<IID3V1.Tag> = layout.tags.filter(o => o.id === ITagID.ID3v1) as Array<IID3V1.Tag>;
+	const id3v1: IID3V1.Tag | undefined = id3v1s.length > 0 ? id3v1s.at(-1) : undefined;
 	if (id3v1 && id3v1.end === layout.size) {
 		return id3v1;
 	}
 }
 
 export async function prepareResultID3v2(layout: IMP3.RawLayout): Promise<IID3V2.Tag | undefined> {
-	const id3v2s: Array<IID3V2.RawTag> = <Array<IID3V2.RawTag>>layout.tags.filter(o => o.id === ITagID.ID3v2);
+	const id3v2s: Array<IID3V2.RawTag> = layout.tags.filter(o => o.id === ITagID.ID3v2) as Array<IID3V2.RawTag>;
 	const id3v2raw: IID3V2.RawTag | undefined = id3v2s.length > 0 ? id3v2s[0] : undefined; // if there are more than one id3v2 tags, we take the first
 	if (id3v2raw) {
 		return await buildID3v2(id3v2raw);
@@ -116,7 +115,7 @@ export async function prepareResultID3v2(layout: IMP3.RawLayout): Promise<IID3V2
 }
 
 export async function prepareResult(options: IMP3.ReadOptions, layout: IMP3.RawLayout): Promise<IMP3.Result> {
-	const result: IMP3.Result = {size: layout.size};
+	const result: IMP3.Result = { size: layout.size };
 	if (options.raw) {
 		result.raw = layout;
 	}
@@ -127,7 +126,7 @@ export async function prepareResult(options: IMP3.ReadOptions, layout: IMP3.RawL
 		result.id3v2 = await prepareResultID3v2(layout);
 	}
 	if (options.mpeg || options.mpegQuick) {
-		const {mpeg, frames} = await prepareResultMPEG(options, layout);
+		const { mpeg, frames } = await prepareResultMPEG(options, layout);
 		result.mpeg = mpeg;
 		result.frames = frames;
 	}

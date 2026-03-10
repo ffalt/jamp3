@@ -1,8 +1,8 @@
-import {IFrameImpl} from '../id3v2.frame';
-import {ascii} from '../../../common/encodings';
-import {IID3V2} from '../../id3v2.types';
-import {writeRawSubFrames} from '../id3v2.frame.write';
-import {readSubFrames} from '../id3v2.frame.read';
+import { IFrameImpl } from '../id3v2.frame';
+import { ascii } from '../../../common/encodings';
+import { IID3V2 } from '../../id3v2.types';
+import { writeRawSubFrames } from '../id3v2.frame.write';
+import { readSubFrames } from '../id3v2.frame.read';
 
 export const FrameCHAP: IFrameImpl = {
 	/**
@@ -22,11 +22,11 @@ export const FrameCHAP: IFrameImpl = {
 		const offsetEnd = reader.readUInt4Byte();
 		const bin = reader.rest();
 		const subframes = await readSubFrames(bin, head);
-		const value: IID3V2.FrameValue.Chapter = {id, start, end, offset, offsetEnd};
-		return {value, encoding: ascii, subframes};
+		const value: IID3V2.FrameValue.Chapter = { id, start, end, offset, offsetEnd };
+		return { value, encoding: ascii, subframes };
 	},
 	write: async (frame, stream, head, defaultEncoding) => {
-		const value = <IID3V2.FrameValue.Chapter>frame.value;
+		const value = frame.value as IID3V2.FrameValue.Chapter;
 		await stream.writeStringTerminated(value.id, ascii);
 		await stream.writeUInt4Byte(value.start);
 		await stream.writeUInt4Byte(value.end);
@@ -38,7 +38,7 @@ export const FrameCHAP: IFrameImpl = {
 	},
 	simplify: (value: IID3V2.FrameValue.Chapter) => {
 		if (value && value.id && value.id.length > 0) {
-			return '<chapter ' + value.id + '>';
+			return `<chapter ${value.id}>`;
 		}
 		return null;
 	}

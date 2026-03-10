@@ -1,4 +1,3 @@
-/// <reference types="node" />
 import { IID3V2 } from './id3v2.types';
 import { ID3V2FramesCollect } from './id3v2.builder.collect';
 export declare class ID3V2RawBuilder extends ID3V2FramesCollect {
@@ -11,6 +10,8 @@ export declare class ID3V2RawBuilder extends ID3V2FramesCollect {
         timestamp: number;
     }>): void;
     idBin(key: string, id: string, binary: Buffer): void;
+    idNum(key: string, id: string, num: number): void;
+    idGuid(key: string, id: string, guid: string): void;
     idLangText(key: string, value: string | undefined, lang: string | undefined, id: string | undefined): void;
     idText(key: string, id: string, value: string | undefined): void;
     keyTextList(key: string, group: string, value?: string): void;

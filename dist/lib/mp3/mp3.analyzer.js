@@ -12,7 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.MP3Analyzer = void 0;
 const mp3_1 = require("./mp3");
 const mp3_mpeg_frame_1 = require("./mp3.mpeg.frame");
-const __1 = require("../..");
+const types_1 = require("../common/types");
 const id3v2_check_1 = require("../id3v2/id3v2.check");
 class MP3Analyzer {
     analyzeID3v2(data) {
@@ -23,22 +23,20 @@ class MP3Analyzer {
     }
     analyzeID3v1(data) {
         const result = [];
-        const lastframe = data.frames && data.frames.audio.length > 0 ? data.frames.audio[data.frames.audio.length - 1] : undefined;
-        if (data.raw && lastframe) {
-            const audioEnd = (0, mp3_mpeg_frame_1.rawHeaderOffSet)(lastframe) + (0, mp3_mpeg_frame_1.rawHeaderSize)(lastframe);
-            let id3v1s = data.raw.tags.filter(t => t.id === __1.ITagID.ID3v1 && t.start >= audioEnd);
+        const lastFrame = data.frames && data.frames.audio.length > 0 ? data.frames.audio.at(-1) : undefined;
+        if (data.raw && lastFrame) {
+            const audioEnd = (0, mp3_mpeg_frame_1.rawHeaderOffSet)(lastFrame) + (0, mp3_mpeg_frame_1.rawHeaderSize)(lastFrame);
+            let id3v1s = data.raw.tags.filter(t => t.id === types_1.ITagID.ID3v1 && t.start >= audioEnd);
             if (id3v1s.length > 0) {
                 if (id3v1s.length > 1) {
-                    id3v1s = id3v1s.filter(t => {
-                        return t.value && t.value.title && t.value.title[0] !== 'E' && t.value.title[1] !== 'X' && t.end !== data.size;
-                    });
+                    id3v1s = id3v1s.filter(t => t.value && t.value.title && t.value.title[0] !== 'E' && t.value.title[1] !== 'X' && t.end !== data.size);
                 }
                 if (id3v1s.length > 1) {
                     result.push({ msg: 'ID3v1: Multiple tags', expected: 1, actual: id3v1s.length });
                 }
                 if (id3v1s.length > 0) {
-                    const id3v1 = id3v1s[id3v1s.length - 1];
-                    if (id3v1.end !== data.size) {
+                    const id3v1 = id3v1s.at(-1);
+                    if (id3v1 && id3v1.end !== data.size) {
                         result.push({ msg: 'ID3v1: Invalid tag position, not at end of file', expected: (data.size - 128), actual: id3v1.start });
                     }
                 }
@@ -53,12 +51,12 @@ class MP3Analyzer {
             return result;
         }
         let nextdata = (0, mp3_mpeg_frame_1.rawHeaderOffSet)(data.frames.audio[0]) + (0, mp3_mpeg_frame_1.rawHeaderSize)(data.frames.audio[0]);
-        data.frames.audio.slice(1).forEach((f, index) => {
+        for (const [index, f] of data.frames.audio.slice(1).entries()) {
             if (nextdata !== (0, mp3_mpeg_frame_1.rawHeaderOffSet)(f)) {
-                result.push({ msg: 'MPEG: stream error at position ' + nextdata + ', gap after frame ' + (index + 1), expected: 0, actual: (0, mp3_mpeg_frame_1.rawHeaderOffSet)(f) - nextdata });
+                result.push({ msg: `MPEG: stream error at position ${nextdata}, gap after frame ${index + 1}`, expected: 0, actual: (0, mp3_mpeg_frame_1.rawHeaderOffSet)(f) - nextdata });
             }
             nextdata = (0, mp3_mpeg_frame_1.rawHeaderOffSet)(f) + (0, mp3_mpeg_frame_1.rawHeaderSize)(f);
-        });
+        }
         const audiostart = (0, mp3_mpeg_frame_1.rawHeaderOffSet)(data.frames.audio[0]);
         if (data.id3v2 && data.id3v2.head) {
             const shouldaudiostart = data.id3v2.start + data.id3v2.head.size + 10;
@@ -92,18 +90,16 @@ class MP3Analyzer {
         if (!ignoreXingOffOne &&
             (data.mpeg.frameCount - data.mpeg.frameCountDeclared === 1) &&
             (data.mpeg.audioBytes - data.mpeg.audioBytesDeclared === head.header.size)) {
-            result.push({ msg: 'XING: Wrong ' + head.mode + ' declaration (frameCount and audioBytes must include the ' + head.mode + ' Header itself)', expected: data.mpeg.frameCount, actual: data.mpeg.frameCountDeclared });
+            result.push({ msg: `XING: Wrong ${head.mode} declaration (frameCount and audioBytes must include the ${head.mode} Header itself)`, expected: data.mpeg.frameCount, actual: data.mpeg.frameCountDeclared });
         }
         else {
-            if (data.mpeg.frameCount !== data.mpeg.frameCountDeclared) {
-                if (!ignoreXingOffOne || Math.abs(data.mpeg.frameCount - data.mpeg.frameCountDeclared) !== 1) {
-                    result.push({ msg: 'XING: Wrong number of frames declared in ' + head.mode + ' Header', expected: data.mpeg.frameCount, actual: data.mpeg.frameCountDeclared });
-                }
+            if (data.mpeg.frameCount !== data.mpeg.frameCountDeclared &&
+                (!ignoreXingOffOne || Math.abs(data.mpeg.frameCount - data.mpeg.frameCountDeclared) !== 1)) {
+                result.push({ msg: `XING: Wrong number of frames declared in ${head.mode} Header`, expected: data.mpeg.frameCount, actual: data.mpeg.frameCountDeclared });
             }
-            if (data.mpeg.audioBytes !== data.mpeg.audioBytesDeclared) {
-                if (!ignoreXingOffOne || data.mpeg.audioBytes + head.header.size - data.mpeg.audioBytesDeclared === 0) {
-                    result.push({ msg: 'XING: Wrong number of data bytes declared in ' + head.mode + ' Header', expected: data.mpeg.audioBytes, actual: data.mpeg.audioBytesDeclared });
-                }
+            if (data.mpeg.audioBytes !== data.mpeg.audioBytesDeclared &&
+                (!ignoreXingOffOne || data.mpeg.audioBytes + head.header.size - data.mpeg.audioBytesDeclared === 0)) {
+                result.push({ msg: `XING: Wrong number of data bytes declared in ${head.mode} Header`, expected: data.mpeg.audioBytes, actual: data.mpeg.audioBytesDeclared });
             }
         }
         return result;
@@ -113,7 +109,7 @@ class MP3Analyzer {
             const mp3 = new mp3_1.MP3();
             const data = yield mp3.read(filename, { id3v1: true, id3v2: true, mpeg: true, raw: true });
             if (!data || !data.mpeg || !data.frames) {
-                return Promise.reject(Error('No mpeg data in file:' + filename));
+                return Promise.reject(new Error(`No mpeg data in file:${filename}`));
             }
             const head = data.frames.headers[0];
             const info = {
@@ -123,28 +119,25 @@ class MP3Analyzer {
                 channelMode: data.mpeg.mode && data.mpeg.mode.length > 0 ? data.mpeg.mode : undefined,
                 channels: data.mpeg.channels,
                 durationMS: data.mpeg.durationRead * 1000,
-                format: data.mpeg.version && data.mpeg.version.length > 0 ? ('MPEG ' + data.mpeg.version + ' ' + data.mpeg.layer).trim() : 'unknown',
+                format: data.mpeg.version && data.mpeg.version.length > 0 ? (`MPEG ${data.mpeg.version} ${data.mpeg.layer}`).trim() : 'unknown',
                 header: head ? head.mode : undefined,
                 frames: data.mpeg.frameCount,
                 id3v1: !!data.id3v1,
                 id3v2: !!data.id3v2,
                 warnings: [],
-                tags: {
-                    id3v1: data.id3v1,
-                    id3v2: data.id3v2,
-                }
+                tags: { id3v1: data.id3v1, id3v2: data.id3v2 }
             };
             if (options.mpeg) {
-                info.warnings = info.warnings.concat(this.analyzeMPEG(data));
+                info.warnings = [...info.warnings, ...this.analyzeMPEG(data)];
             }
             if (options.xing) {
-                info.warnings = info.warnings.concat(this.analyzeXING(data, !!options.ignoreXingOffOne));
+                info.warnings = [...info.warnings, ...this.analyzeXING(data, !!options.ignoreXingOffOne)];
             }
             if (options.id3v1) {
-                info.warnings = info.warnings.concat(this.analyzeID3v1(data));
+                info.warnings = [...info.warnings, ...this.analyzeID3v1(data)];
             }
             if (options.id3v2 && data.id3v2) {
-                info.warnings = info.warnings.concat(this.analyzeID3v2(data));
+                info.warnings = [...info.warnings, ...this.analyzeID3v2(data)];
             }
             return info;
         });

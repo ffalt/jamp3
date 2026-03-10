@@ -20,8 +20,6 @@ exports.FramePCST = {
         const value = frame.value;
         yield stream.writeUInt4Byte(value.num);
     }),
-    simplify: (value) => {
-        return value.num.toString();
-    }
+    simplify: (value) => value.num.toString()
 };
 //# sourceMappingURL=id3v2.frame.pcst.js.map

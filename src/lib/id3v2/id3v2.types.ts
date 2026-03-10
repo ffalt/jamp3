@@ -1,4 +1,4 @@
-import {ITag} from '../common/types';
+import { ITag } from '../common/types';
 
 export namespace IID3V2 {
 
@@ -6,6 +6,11 @@ export namespace IID3V2 {
 	export namespace FrameValue {
 
 		export interface Base {
+			deprecated?: boolean;
+		}
+
+		export interface IdBase extends Base {
+			id: string;
 		}
 
 		export interface IdAscii extends Base {
@@ -35,7 +40,7 @@ export namespace IID3V2 {
 			mimeType?: string;
 		}
 
-		export interface Bin {
+		export interface Bin extends Base {
 			bin: Buffer;
 		}
 
@@ -148,6 +153,17 @@ export namespace IID3V2 {
 			bin: Buffer;
 		}
 
+		export interface IdNum extends Base {
+			id: string;
+			num: number;
+		}
+
+		export interface IdGuid extends Base {
+			id: string;
+			/** GUID as uppercase string: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX */
+			guid: string;
+		}
+
 		export interface IdText extends Base {
 			id: string;
 			text: string;
@@ -223,9 +239,7 @@ export namespace IID3V2 {
 
 	/** ID3v2 Frame Types */
 	export namespace Frames {
-		export interface Map {
-			[key: string]: Array<Frame>;
-		}
+		export type Map = Record<string, Array<Frame>>;
 
 		export interface TextFrame extends Frame {
 			value: FrameValue.Text;
@@ -386,11 +400,11 @@ export namespace IID3V2 {
 		size: number;
 		flags: FrameHeaderStatusFlags;
 		restrictions?: {
-			tagSize: string;
-			textEncoding: string;
-			textSize: string;
-			imageEncoding: string;
-			imageSize: string;
+			tagSize: number;
+			textEncoding: number;
+			textSize: number;
+			imageEncoding: number;
+			imageSize: number;
 		};
 		crc32?: number;
 	}
@@ -605,4 +619,3 @@ export namespace IID3V2 {
 		keepBackup?: boolean;
 	}
 }
-

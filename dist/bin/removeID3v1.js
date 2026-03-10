@@ -8,13 +8,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const commander_1 = require("commander");
 const mp3_1 = require("../lib/mp3/mp3");
 const tool_1 = require("../lib/common/tool");
-const pack = require('../../package.json');
+const package_json_1 = __importDefault(require("../../package.json"));
 commander_1.program
-    .version(pack.version, '-v, --version')
+    .version(package_json_1.default.version, '-v, --version')
     .usage('[options]')
     .option('-i, --input <fileOrDir>', 'mp3 file or folder to remove ID3v1')
     .option('-r, --recursive', 'scan the folder recursive')
@@ -61,7 +64,7 @@ function run() {
         yield (0, tool_1.runTool)(commander_1.program, onFile);
     });
 }
-run().catch(e => {
-    console.error(e);
+run().catch(error => {
+    console.error(error);
 });
 //# sourceMappingURL=removeID3v1.js.map

@@ -1,7 +1,8 @@
-import {MP3Reader, MP3ReaderOptions} from '../mp3/mp3.reader';
 import fse from 'fs-extra';
-import {IMP3} from '../..';
-import {FileWriterStream} from './stream-writer-file';
+
+import { MP3Reader, MP3ReaderOptions } from '../mp3/mp3.reader';
+import { FileWriterStream } from './stream-writer-file';
+import { IMP3 } from '../mp3/mp3.types';
 
 export async function updateFile(
 	filename: string, options: MP3ReaderOptions, keepBackup: boolean,
@@ -13,34 +14,31 @@ export async function updateFile(
 	if (!canProcess(layout)) {
 		return;
 	}
-	const tmpFile = filename + '.tempmp3';
-	const bakFile = filename + '.bak';
-	const exists = await fse.pathExists(tmpFile);
-	if (exists) {
-		await fse.remove(tmpFile);
-	}
+	const tmpFile = `${filename}.tempmp3`;
+	const bakFile = `${filename}.bak`;
+	const cleanupTmp = async () => {
+		if (await fse.pathExists(tmpFile)) {
+			await fse.remove(tmpFile);
+		}
+	};
 	const fileWriterStream = new FileWriterStream();
 	await fileWriterStream.open(tmpFile);
 	try {
 		await process(layout, fileWriterStream);
-	} catch (e: any) {
 		await fileWriterStream.close();
-		return Promise.reject(e);
-	}
-	await fileWriterStream.close();
-	const bakExists = await fse.pathExists(bakFile);
-	if (keepBackup) {
-		if (!bakExists) {
+		const bakExists = await fse.pathExists(bakFile);
+		if (keepBackup) {
+			await (bakExists ? fse.remove(filename) : fse.rename(filename, bakFile));
+		} else if (!bakExists) {
 			await fse.rename(filename, bakFile);
-		} else {
-			// we have already a .bak which will be not touched
-			await fse.remove(filename);
 		}
-	} else if (!bakExists) {
-		await fse.rename(filename, bakFile);
-	}
-	await fse.rename(tmpFile, filename);
-	if (!keepBackup && !bakExists) {
-		await fse.remove(bakFile);
+		await fse.rename(tmpFile, filename);
+		if (!keepBackup && !bakExists) {
+			await fse.remove(bakFile);
+		}
+	} catch (error) {
+		await fileWriterStream.close();
+		await cleanupTmp();
+		return Promise.reject(error);
 	}
 }

@@ -39,7 +39,7 @@ class ID3v1Writer {
     write(stream, tag, version) {
         return __awaiter(this, void 0, void 0, function* () {
             if (version < 0 || version > 1) {
-                return Promise.reject(Error('Unsupported Version'));
+                return Promise.reject(new Error('Unsupported Version'));
             }
             const writer = new Id3v1RawWriter(stream, tag, version);
             yield writer.write();

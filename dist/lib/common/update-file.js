@@ -12,9 +12,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateFile = void 0;
-const mp3_reader_1 = require("../mp3/mp3.reader");
+exports.updateFile = updateFile;
 const fs_extra_1 = __importDefault(require("fs-extra"));
+const mp3_reader_1 = require("../mp3/mp3.reader");
 const stream_writer_file_1 = require("./stream-writer-file");
 function updateFile(filename, options, keepBackup, canProcess, process) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -23,39 +23,35 @@ function updateFile(filename, options, keepBackup, canProcess, process) {
         if (!canProcess(layout)) {
             return;
         }
-        const tmpFile = filename + '.tempmp3';
-        const bakFile = filename + '.bak';
-        const exists = yield fs_extra_1.default.pathExists(tmpFile);
-        if (exists) {
-            yield fs_extra_1.default.remove(tmpFile);
-        }
+        const tmpFile = `${filename}.tempmp3`;
+        const bakFile = `${filename}.bak`;
+        const cleanupTmp = () => __awaiter(this, void 0, void 0, function* () {
+            if (yield fs_extra_1.default.pathExists(tmpFile)) {
+                yield fs_extra_1.default.remove(tmpFile);
+            }
+        });
         const fileWriterStream = new stream_writer_file_1.FileWriterStream();
         yield fileWriterStream.open(tmpFile);
         try {
             yield process(layout, fileWriterStream);
-        }
-        catch (e) {
             yield fileWriterStream.close();
-            return Promise.reject(e);
-        }
-        yield fileWriterStream.close();
-        const bakExists = yield fs_extra_1.default.pathExists(bakFile);
-        if (keepBackup) {
-            if (!bakExists) {
+            const bakExists = yield fs_extra_1.default.pathExists(bakFile);
+            if (keepBackup) {
+                yield (bakExists ? fs_extra_1.default.remove(filename) : fs_extra_1.default.rename(filename, bakFile));
+            }
+            else if (!bakExists) {
                 yield fs_extra_1.default.rename(filename, bakFile);
             }
-            else {
-                yield fs_extra_1.default.remove(filename);
+            yield fs_extra_1.default.rename(tmpFile, filename);
+            if (!keepBackup && !bakExists) {
+                yield fs_extra_1.default.remove(bakFile);
             }
         }
-        else if (!bakExists) {
-            yield fs_extra_1.default.rename(filename, bakFile);
-        }
-        yield fs_extra_1.default.rename(tmpFile, filename);
-        if (!keepBackup && !bakExists) {
-            yield fs_extra_1.default.remove(bakFile);
+        catch (error) {
+            yield fileWriterStream.close();
+            yield cleanupTmp();
+            return Promise.reject(error);
         }
     });
 }
-exports.updateFile = updateFile;
 //# sourceMappingURL=update-file.js.map

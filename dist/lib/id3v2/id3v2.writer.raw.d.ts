@@ -8,7 +8,9 @@ export declare class Id3v2RawWriter {
     frames: Array<IID3V2.RawFrame>;
     head: IID3V2.TagHeader;
     paddingSize: number;
+    private writtenTagSize;
     constructor(stream: WriterStream, head: IID3V2.TagHeader, options: Id3v2RawWriterOptions, frames?: Array<IID3V2.RawFrame>);
+    private tagLevelUnsync;
     private buildHeaderFlagsV4;
     private writeExtHeaderV4;
     private buildHeaderFlagsV3;
@@ -18,6 +20,7 @@ export declare class Id3v2RawWriter {
     private calculateTagSize;
     private writeHeader;
     private writeFrames;
+    private writeFooter;
     private writeEnd;
     writeFrame(frame: IID3V2.RawFrame): Promise<void>;
     write(): Promise<void>;

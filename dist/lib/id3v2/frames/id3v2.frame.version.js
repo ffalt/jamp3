@@ -1,31 +1,28 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ensureID3v2FrameVersionDef = exports.upgrade23DateFramesTov24Date = void 0;
+exports.upgrade23DateFramesTov24Date = upgrade23DateFramesTov24Date;
+exports.ensureID3v2FrameVersionDef = ensureID3v2FrameVersionDef;
 const id3v2_frame_defs_1 = require("./id3v2.frame.defs");
 function upgrade23DateFramesTov24Date(dateFrames) {
-    const year = dateFrames.find(f => ['TYER', 'TYE'].indexOf(f.id) >= 0);
-    const date = dateFrames.find(f => ['TDAT', 'TDA'].indexOf(f.id) >= 0);
-    const time = dateFrames.find(f => ['TIME', 'TIM'].indexOf(f.id) >= 0);
+    const year = dateFrames.find(f => ['TYER', 'TYE'].includes(f.id));
+    const date = dateFrames.find(f => ['TDAT', 'TDA'].includes(f.id));
+    const time = dateFrames.find(f => ['TIME', 'TIM'].includes(f.id));
     if (!year && !date && !time) {
         return;
     }
     const result = [];
-    if (year && year.value && year.value.hasOwnProperty('text')) {
+    if (year && year.value && Object.hasOwn(year.value, 'text')) {
         result.push(year.value.text);
     }
-    if (date && date.value && date.value.hasOwnProperty('text')) {
+    if (date && date.value && Object.hasOwn(date.value, 'text')) {
         result.push(date.value.text);
     }
-    if (time && time.value && time.value.hasOwnProperty('text')) {
+    if (time && time.value && Object.hasOwn(time.value, 'text')) {
         result.push(time.value.text);
     }
-    return {
-        id: 'TDRC',
-        title: 'Recording time',
-        value: { text: result.join('-') }
-    };
+    const value = { text: result.join('-') };
+    return { id: 'TDRC', title: 'Recording time', value };
 }
-exports.upgrade23DateFramesTov24Date = upgrade23DateFramesTov24Date;
 function downgradeFrame(id, dest) {
     const downgradeKey = Object.keys(id3v2_frame_defs_1.FrameDefs).find(key => id3v2_frame_defs_1.FrameDefs[key].upgrade === id);
     if (!downgradeKey) {
@@ -60,5 +57,4 @@ function ensureID3v2FrameVersionDef(id, dest) {
     }
     return upgradeFrame(def.upgrade, dest);
 }
-exports.ensureID3v2FrameVersionDef = ensureID3v2FrameVersionDef;
 //# sourceMappingURL=id3v2.frame.version.js.map

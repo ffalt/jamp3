@@ -22,7 +22,7 @@ exports.FrameMusicCDId = {
     }),
     simplify: (value) => {
         if (value && value.bin && value.bin.length > 0) {
-            return '<bin ' + value.bin.length + 'bytes>';
+            return `<bin ${value.bin.length}bytes>`;
         }
         return null;
     }

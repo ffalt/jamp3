@@ -15,13 +15,23 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -32,8 +42,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.readID3v2Frame = exports.readSubFrames = exports.buildID3v2 = void 0;
-const zlib = __importStar(require("zlib"));
+exports.buildID3v2 = buildID3v2;
+exports.readSubFrames = readSubFrames;
+exports.readID3v2Frame = readID3v2Frame;
+const zlib = __importStar(require("node:zlib"));
 const types_1 = require("../../common/types");
 const buffer_reader_1 = require("../../common/buffer-reader");
 const id3v2_header_consts_1 = require("../id3v2.header.consts");
@@ -43,7 +55,7 @@ const id3v2_frame_unsync_1 = require("./id3v2.frame.unsync");
 function processRawFrame(frame, head) {
     return __awaiter(this, void 0, void 0, function* () {
         if ((frame.formatFlags) && (frame.formatFlags.encrypted)) {
-            return Promise.reject(Error('Frame Encryption currently not supported'));
+            return Promise.reject(new Error('Frame Encryption currently not supported'));
         }
         if ((frame.formatFlags) && (frame.formatFlags.unsynchronised)) {
             frame.data = (0, id3v2_frame_unsync_1.removeUnsync)(frame.data);
@@ -52,7 +64,7 @@ function processRawFrame(frame, head) {
             let data = frame.data;
             if (frame.formatFlags.compressed) {
                 const sizebytes = id3v2_header_consts_1.ID3v2_FRAME_HEADER_LENGTHS.SIZE[head.ver];
-                data = data.slice(sizebytes);
+                data = data.subarray(sizebytes);
             }
             return new Promise((resolve, reject) => {
                 zlib.inflate(data, (err, result) => {
@@ -62,7 +74,7 @@ function processRawFrame(frame, head) {
                     }
                     zlib.gunzip(data, (err2, result2) => {
                         if (!err2 && result2) {
-                            frame.data = result;
+                            frame.data = result2;
                             resolve();
                         }
                         reject('Decompressing frame failed');
@@ -71,7 +83,7 @@ function processRawFrame(frame, head) {
             });
         }
         else if ((frame.formatFlags) && (frame.formatFlags.dataLengthIndicator)) {
-            frame.data = frame.data.slice(4);
+            frame.data = frame.data.subarray(4);
         }
     });
 }
@@ -91,7 +103,6 @@ function buildID3v2(tag) {
         };
     });
 }
-exports.buildID3v2 = buildID3v2;
 function readSubFrames(bin, head) {
     return __awaiter(this, void 0, void 0, function* () {
         const subtag = { id: types_1.ITagID.ID3v2, head, frames: [], start: 0, end: 0 };
@@ -101,14 +112,13 @@ function readSubFrames(bin, head) {
         return t.frames;
     });
 }
-exports.readSubFrames = readSubFrames;
 function readID3v2Frame(rawFrame, head) {
     return __awaiter(this, void 0, void 0, function* () {
         const f = (0, id3v2_frame_match_1.matchFrame)(rawFrame.id);
         let groupId;
         if (rawFrame.formatFlags && rawFrame.formatFlags.grouping) {
             groupId = rawFrame.data[0];
-            rawFrame.data = rawFrame.data.slice(1);
+            rawFrame.data = rawFrame.data.subarray(1);
         }
         const frame = {
             id: rawFrame.id,
@@ -133,8 +143,8 @@ function readID3v2Frame(rawFrame, head) {
                 frame.subframes = result.subframes;
             }
         }
-        catch (e) {
-            frame.invalid = e.toString();
+        catch (error) {
+            frame.invalid = error.toString();
             frame.value = { bin: rawFrame.data };
         }
         if (groupId) {
@@ -144,5 +154,4 @@ function readID3v2Frame(rawFrame, head) {
         return frame;
     });
 }
-exports.readID3v2Frame = readID3v2Frame;
 //# sourceMappingURL=id3v2.frame.read.js.map

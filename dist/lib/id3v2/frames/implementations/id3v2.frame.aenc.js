@@ -15,11 +15,11 @@ exports.FrameAENC = {
     parse: (reader) => __awaiter(void 0, void 0, void 0, function* () {
         const id = reader.readStringTerminated(encodings_1.ascii);
         if (reader.unread() < 2) {
-            return Promise.reject(Error('Not enough data'));
+            return Promise.reject(new Error('Not enough data'));
         }
         const previewStart = reader.readUInt2Byte();
         if (reader.unread() < 2) {
-            return Promise.reject(Error('Not enough data'));
+            return Promise.reject(new Error('Not enough data'));
         }
         const previewLength = reader.readUInt2Byte();
         const bin = reader.rest();
@@ -34,7 +34,20 @@ exports.FrameAENC = {
         yield stream.writeBuffer(value.bin);
     }),
     simplify: (value) => {
-        return null;
+        if (!value || value.id === undefined) {
+            return null;
+        }
+        const parts = [value.id];
+        if (value.previewStart !== undefined) {
+            parts.push(`start=${value.previewStart}`);
+        }
+        if (value.previewLength !== undefined) {
+            parts.push(`length=${value.previewLength}`);
+        }
+        if (value.bin && value.bin.length > 0) {
+            parts.push(`bin=${value.bin.length}bytes`);
+        }
+        return parts.join(';');
     }
 };
 //# sourceMappingURL=id3v2.frame.aenc.js.map

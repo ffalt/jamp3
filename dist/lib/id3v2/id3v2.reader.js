@@ -13,7 +13,7 @@ exports.ID3v2Reader = void 0;
 const utils_1 = require("../common/utils");
 const buffer_1 = require("../common/buffer");
 const id3v2_header_consts_1 = require("./id3v2.header.consts");
-const __1 = require("../..");
+const types_1 = require("../common/types");
 const stream_reader_1 = require("../common/stream-reader");
 const buffer_reader_1 = require("../common/buffer-reader");
 const id3v2_frame_match_1 = require("./frames/id3v2.frame.match");
@@ -25,11 +25,15 @@ class ID3v2Reader {
     }
     readRawTag(head, reader) {
         return __awaiter(this, void 0, void 0, function* () {
-            const tag = { id: __1.ITagID.ID3v2, frames: [], start: 0, end: 0, head: head || { ver: 0, rev: 0, size: 0, valid: false } };
+            var _a;
+            const tag = { id: types_1.ITagID.ID3v2, frames: [], start: 0, end: 0, head: head || { ver: 0, rev: 0, size: 0, valid: false } };
             let rest;
             if (tag.head.size > 0) {
                 const data = yield reader.read(tag.head.size);
                 rest = yield this.readFrames(data, tag);
+            }
+            if ((_a = head.v4) === null || _a === void 0 ? void 0 : _a.flags.footer) {
+                yield reader.read(id3v2_header_consts_1.ID3v2_HEADER.SIZE);
             }
             return { rest, tag };
         });
@@ -77,8 +81,8 @@ class ID3v2Reader {
                 yield reader.openStream(stream);
                 return yield this.scanReaderStream(reader);
             }
-            catch (e) {
-                return Promise.reject(e);
+            catch (error) {
+                return Promise.reject(error);
             }
         });
     }
@@ -91,9 +95,9 @@ class ID3v2Reader {
                 reader.close();
                 return tag;
             }
-            catch (e) {
+            catch (error) {
                 reader.close();
-                return Promise.reject(e);
+                return Promise.reject(error);
             }
         });
     }
@@ -139,6 +143,7 @@ class ID3v2Reader {
         };
     }
     readFrame(reader, idbin, tag, skip) {
+        let currentSkip = skip;
         const markerLength = id3v2_header_consts_1.ID3v2_FRAME_HEADER_LENGTHS.MARKER[tag.head.ver];
         const pos = reader.position;
         const frame = this.defaultRawFrame(idbin, tag);
@@ -155,12 +160,12 @@ class ID3v2Reader {
             valid = false;
         }
         if (valid) {
-            if (skip > 0 && tag.frames.length > 0) {
-                const lastFrame = tag.frames[tag.frames.length - 1];
-                lastFrame.data = buffer_1.BufferUtils.concatBuffer(lastFrame.data, reader.data.slice(pos - skip - markerLength, pos - markerLength));
+            if (currentSkip > 0 && tag.frames.length > 0) {
+                const lastFrame = tag.frames.at(-1);
+                lastFrame.data = buffer_1.BufferUtils.concatBuffer(lastFrame.data, reader.data.slice(pos - currentSkip - markerLength, pos - markerLength));
                 lastFrame.size = lastFrame.data.length;
             }
-            skip = 0;
+            currentSkip = 0;
             if (frame.size > 0) {
                 frame.data = (tag.head.v3 && tag.head.v3.flags.unsynchronisation) ?
                     reader.readUnsyncedBuffer(frame.size) :
@@ -170,9 +175,9 @@ class ID3v2Reader {
         }
         else {
             reader.position = pos - (markerLength - 1);
-            skip++;
+            currentSkip++;
         }
-        return skip;
+        return currentSkip;
     }
 }
 exports.ID3v2Reader = ID3v2Reader;

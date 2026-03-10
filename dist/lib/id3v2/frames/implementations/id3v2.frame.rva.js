@@ -20,7 +20,7 @@ exports.FrameRelativeVolumeAdjustment = {
         const bitLength = reader.readBitsByte();
         const byteLength = bitLength / 8;
         if (byteLength <= 1 || byteLength > 4) {
-            return Promise.reject(Error('Unsupported description bit size of: ' + bitLength));
+            return Promise.reject(new Error(`Unsupported description bit size of: ${bitLength}`));
         }
         let val = reader.readUInt(byteLength);
         const right = ((0, utils_1.isBitSetAt)(flags, 0) || (val === 0) ? 1 : -1) * val;
@@ -60,21 +60,21 @@ exports.FrameRelativeVolumeAdjustment = {
         const flags = [
             0,
             0,
-            value.bass !== undefined ? (value.bass >= 0 ? 0 : 1) : 0,
-            value.center !== undefined ? (value.center >= 0 ? 0 : 1) : 0,
-            value.leftBack !== undefined ? (value.leftBack >= 0 ? 0 : 1) : 0,
-            value.rightBack !== undefined ? (value.rightBack >= 0 ? 0 : 1) : 0,
+            value.bass === undefined ? 0 : (value.bass >= 0 ? 0 : 1),
+            value.center === undefined ? 0 : (value.center >= 0 ? 0 : 1),
+            value.leftBack === undefined ? 0 : (value.leftBack >= 0 ? 0 : 1),
+            value.rightBack === undefined ? 0 : (value.rightBack >= 0 ? 0 : 1),
             value.left < 0 ? 0 : 1,
             value.right < 0 ? 0 : 1
         ];
         yield stream.writeBitsByte(flags);
         let byteLength = 2;
-        Object.keys(value).forEach(key => {
+        for (const key of Object.keys(value)) {
             const num = value[key];
-            if (!isNaN(num)) {
+            if (!Number.isNaN(num)) {
                 byteLength = Math.max((0, utils_1.neededStoreBytes)(Math.abs(num), 2), byteLength);
             }
-        });
+        }
         yield stream.writeByte(byteLength * 8);
         yield stream.writeUInt(Math.abs(value.right), byteLength);
         yield stream.writeUInt(Math.abs(value.left), byteLength);
@@ -112,7 +112,41 @@ exports.FrameRelativeVolumeAdjustment = {
         }
     }),
     simplify: (value) => {
-        return null;
+        if (!value) {
+            return null;
+        }
+        const parts = [`right=${value.right}`, `left=${value.left}`];
+        if (value.peakRight !== undefined) {
+            parts.push(`peakRight=${value.peakRight}`);
+        }
+        if (value.peakLeft !== undefined) {
+            parts.push(`peakLeft=${value.peakLeft}`);
+        }
+        if (value.rightBack !== undefined) {
+            parts.push(`rightBack=${value.rightBack}`);
+        }
+        if (value.leftBack !== undefined) {
+            parts.push(`leftBack=${value.leftBack}`);
+        }
+        if (value.peakRightBack !== undefined) {
+            parts.push(`peakRightBack=${value.peakRightBack}`);
+        }
+        if (value.peakLeftBack !== undefined) {
+            parts.push(`peakLeftBack=${value.peakLeftBack}`);
+        }
+        if (value.center !== undefined) {
+            parts.push(`center=${value.center}`);
+        }
+        if (value.peakCenter !== undefined) {
+            parts.push(`peakCenter=${value.peakCenter}`);
+        }
+        if (value.bass !== undefined) {
+            parts.push(`bass=${value.bass}`);
+        }
+        if (value.peakBass !== undefined) {
+            parts.push(`peakBass=${value.peakBass}`);
+        }
+        return parts.join(';');
     }
 };
 //# sourceMappingURL=id3v2.frame.rva.js.map

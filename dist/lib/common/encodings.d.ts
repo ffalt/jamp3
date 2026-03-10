@@ -1,4 +1,3 @@
-/// <reference types="node" />
 export interface IEncoding {
     name: string;
     byte: number;
@@ -7,9 +6,7 @@ export interface IEncoding {
     encode: (val: string) => Buffer;
     decode: (buffer: Buffer) => string;
 }
-export declare const Encodings: {
-    [name: string]: IEncoding;
-};
+export declare const Encodings: Record<string, IEncoding>;
 export declare const ascii: IEncoding;
 export declare const binary: IEncoding;
 export declare const utf8: IEncoding;

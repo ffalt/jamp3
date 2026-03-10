@@ -45,7 +45,20 @@ exports.FrameSYLT = {
         }
     }),
     simplify: (value) => {
-        return null;
+        if (!value) {
+            return null;
+        }
+        const parts = [
+            `lang=${value.language}`,
+            `format=${value.timestampFormat}`,
+            `contentType=${value.contentType}`,
+            `id=${value.id}`
+        ];
+        const events = (value.events || []).map(e => `${e.text}@${e.timestamp}`);
+        if (events.length > 0) {
+            parts.push(events.join('|'));
+        }
+        return parts.join(';');
     }
 };
 //# sourceMappingURL=id3v2.frame.synclyrics.js.map

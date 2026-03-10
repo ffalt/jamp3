@@ -2,9 +2,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BufferUtils = void 0;
 class BufferUtils {
-    static indexOfNr(buffer, num, start) {
+    static indexOfNr(buffer, num, start = 0) {
         const len = buffer.length;
-        for (let i = start || 0; i < len; i++) {
+        for (let i = start; i < len; i++) {
             if (buffer[i] === num) {
                 return i;
             }

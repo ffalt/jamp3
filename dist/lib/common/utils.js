@@ -12,46 +12,54 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.validCharKeyCode = exports.collectFiles = exports.fileRangeToBuffer = exports.neededStoreBytes = exports.removeZeroString = exports.isBit = exports.bitarray2 = exports.unbitarray = exports.bitarray = exports.log2 = exports.unsynchsafe = exports.synchsafe = exports.unflags = exports.flags = exports.isBitSetAt = void 0;
-const fs_1 = __importDefault(require("fs"));
-const path_1 = __importDefault(require("path"));
+exports.isBitSetAt = isBitSetAt;
+exports.flags = flags;
+exports.unflags = unflags;
+exports.synchsafe = synchsafe;
+exports.unsynchsafe = unsynchsafe;
+exports.bitarray = bitarray;
+exports.unbitarray = unbitarray;
+exports.bitarray2 = bitarray2;
+exports.isBit = isBit;
+exports.removeZeroString = removeZeroString;
+exports.neededStoreBytes = neededStoreBytes;
+exports.fileRangeToBuffer = fileRangeToBuffer;
+exports.collectFiles = collectFiles;
+exports.validCharKeyCode = validCharKeyCode;
+const node_fs_1 = __importDefault(require("node:fs"));
+const node_path_1 = __importDefault(require("node:path"));
 const fs_extra_1 = __importDefault(require("fs-extra"));
 function isBitSetAt(byte, bit) {
     return (byte & 1 << bit) !== 0;
 }
-exports.isBitSetAt = isBitSetAt;
 function flags(names, values) {
     const result = {};
-    names.forEach((name, i) => {
+    for (const [i, name] of names.entries()) {
         result[name] = !!values[i];
-    });
+    }
     return result;
 }
-exports.flags = flags;
 function unflags(names, flagsObj) {
-    return names.map(name => {
-        return flagsObj && flagsObj[name] ? 1 : 0;
-    });
+    return names.map(name => flagsObj && flagsObj[name] ? 1 : 0);
 }
-exports.unflags = unflags;
 function synchsafe(input) {
+    let current = input;
     let out;
     let mask = 0x7F;
-    while (mask ^ 0x7FFFFFFF) {
-        out = input & ~mask;
+    while (mask ^ 2147483647) {
+        out = current & ~mask;
         out = out << 1;
-        out = out | (input & mask);
+        out = out | (current & mask);
         mask = ((mask + 1) << 8) - 1;
-        input = out;
+        current = out;
     }
     if (out === undefined) {
         return 0;
     }
     return out;
 }
-exports.synchsafe = synchsafe;
 function unsynchsafe(input) {
-    let out = 0, mask = 0x7F000000;
+    let out = 0, mask = 2130706432;
     while (mask) {
         out = out >> 1;
         out = out | (input & mask);
@@ -62,15 +70,9 @@ function unsynchsafe(input) {
     }
     return out;
 }
-exports.unsynchsafe = unsynchsafe;
-function log2(x) {
-    return Math.log(x) * Math.LOG2E;
-}
-exports.log2 = log2;
 function bitarray(byte) {
     return [128, 64, 32, 16, 8, 4, 2, 1].map(offset => (byte & offset) === offset ? 1 : 0);
 }
-exports.bitarray = bitarray;
 function unbitarray(bitsarray) {
     let result = 0;
     for (let i = 0; i < 8; ++i) {
@@ -78,7 +80,6 @@ function unbitarray(bitsarray) {
     }
     return result;
 }
-exports.unbitarray = unbitarray;
 function bitarray2(byte) {
     const b = [];
     for (let i = 0; i < 8; ++i) {
@@ -86,34 +87,29 @@ function bitarray2(byte) {
     }
     return b;
 }
-exports.bitarray2 = bitarray2;
 function isBit(field, nr) {
     return !!(field & nr);
 }
-exports.isBit = isBit;
 function removeZeroString(s) {
     for (let j = 0; j < s.length; j++) {
-        if (s.charCodeAt(j) === 0) {
-            s = s.slice(0, j);
-            break;
+        if (s.codePointAt(j) === 0) {
+            return s.slice(0, j);
         }
     }
     return s;
 }
-exports.removeZeroString = removeZeroString;
 function neededStoreBytes(num, min) {
-    let result = Math.ceil((Math.floor(log2(num) + 1) + 1) / 8);
+    let result = Math.ceil((Math.floor(Math.log2(num) + 1) + 1) / 8);
     result = Math.max(result, min);
     return result;
 }
-exports.neededStoreBytes = neededStoreBytes;
 function fileRangeToBuffer(filename, start, end) {
     return __awaiter(this, void 0, void 0, function* () {
         const chunks = [];
         return new Promise((resolve, reject) => {
             try {
-                const readStream = fs_1.default.createReadStream(filename, { start, end });
-                readStream.on('data', (chunk) => {
+                const readStream = node_fs_1.default.createReadStream(filename, { start, end });
+                readStream.on('data', chunk => {
                     chunks.push(chunk);
                 });
                 readStream.on('error', e => {
@@ -123,33 +119,30 @@ function fileRangeToBuffer(filename, start, end) {
                     resolve(Buffer.concat(chunks));
                 });
             }
-            catch (e) {
-                return reject(e);
+            catch (error) {
+                return reject(error);
             }
         });
     });
 }
-exports.fileRangeToBuffer = fileRangeToBuffer;
 function collectFiles(dir, ext, recursive, onFileCB) {
     return __awaiter(this, void 0, void 0, function* () {
         const files1 = yield fs_extra_1.default.readdir(dir);
         for (const f of files1) {
-            const sub = path_1.default.join(dir, f);
+            const sub = node_path_1.default.join(dir, f);
             const stat = yield fs_extra_1.default.stat(sub);
             if (stat.isDirectory()) {
                 if (recursive) {
                     yield collectFiles(sub, ext, recursive, onFileCB);
                 }
             }
-            else if ((ext.indexOf(path_1.default.extname(f).toLowerCase()) >= 0)) {
+            else if ((ext.includes(node_path_1.default.extname(f).toLowerCase()))) {
                 yield onFileCB(sub);
             }
         }
     });
 }
-exports.collectFiles = collectFiles;
 function validCharKeyCode(c) {
     return ((c >= 48) && (c < 58)) || ((c >= 65) && (c < 91));
 }
-exports.validCharKeyCode = validCharKeyCode;
 //# sourceMappingURL=utils.js.map

@@ -15,7 +15,7 @@ exports.FrameBooleanString = {
     parse: (reader) => __awaiter(void 0, void 0, void 0, function* () {
         const enc = reader.readEncoding();
         const intAsString = reader.readStringTerminated(enc);
-        const i = parseInt(intAsString, 10).toString();
+        const i = Number.parseInt(intAsString, 10).toString();
         const value = { bool: i === '1' };
         return { value, encoding: enc };
     }),

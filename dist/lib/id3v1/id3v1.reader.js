@@ -8,25 +8,20 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ID3v1Reader = exports.ID3v1_MARKER = void 0;
 const marker_1 = require("../common/marker");
 const buffer_1 = require("../common/buffer");
-const debug_1 = __importDefault(require("debug"));
-const __1 = require("../..");
+const types_1 = require("../common/types");
 const stream_reader_1 = require("../common/stream-reader");
 const buffer_reader_1 = require("../common/buffer-reader");
-const debug = (0, debug_1.default)('id3v1-reader');
 exports.ID3v1_MARKER = 'TAG';
 class ID3v1Reader {
     readTag(data) {
         if (data.length < 128 || !marker_1.Markers.isMarker(data, 0, marker_1.Markers.MARKERS.tag)) {
             return null;
         }
-        const tag = { id: __1.ITagID.ID3v1, start: 0, end: 0, version: 0, value: {} };
+        const tag = { id: types_1.ITagID.ID3v1, start: 0, end: 0, version: 0, value: {} };
         const reader = new buffer_reader_1.BufferReader(data);
         reader.position = 3;
         const value = {};
@@ -53,7 +48,6 @@ class ID3v1Reader {
                 return;
             }
             const index = yield reader.scan(buffer_1.BufferUtils.fromString(exports.ID3v1_MARKER));
-            debug('index', index);
             if (index < 0) {
                 return;
             }
@@ -82,8 +76,8 @@ class ID3v1Reader {
                 yield reader.openStream(stream);
                 return yield this.readReaderStream(reader);
             }
-            catch (e) {
-                return Promise.reject(e);
+            catch (error) {
+                return Promise.reject(error);
             }
         });
     }
@@ -96,9 +90,9 @@ class ID3v1Reader {
                 reader.close();
                 return tag;
             }
-            catch (e) {
+            catch (error) {
                 reader.close();
-                return Promise.reject(e);
+                return Promise.reject(error);
             }
         });
     }

@@ -1,6 +1,6 @@
 {
   "name": "jamp3",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "author": "ffalt",
   "license": "MIT",
   "description": "mp3, id3v1, id3v2 - reader & writer",
@@ -13,49 +13,24 @@
     "cli"
   ],
   "bin": {
-    "mp3-analyze": "./bin/analyzeMP3.js",
-    "id3v2-dump": "./bin/dumpID3v2.js",
-    "id3v1-dump": "./bin/dumpID3v1.js",
-    "id3v1-remove": "./bin/removeID3v1.js"
+    "mp3-analyze": "bin/analyzeMP3.js",
+    "id3v2-dump": "bin/dumpID3v2.js",
+    "id3v1-dump": "bin/dumpID3v1.js",
+    "id3v1-remove": "bin/removeID3v1.js"
   },
   "scripts": {
-    "clean": "rimraf dist",
-    "build": "npm run clean && npm run build:commonjs",
-    "build:commonjs": "tsc",
+    "clean": "rm -Rf dist",
+    "build": "npm run clean && npm run build:dist",
+    "build:dist": "tsc",
     "build:deploy": "npm run build",
-    "build:docs": "typedoc --options ./typedocconfig.ts && touch ./docs/.nojekyll",
+    "build:docs": "typedoc --options typedoc.json && touch ./docs/.nojekyll",
     "build:releaselog": "conventional-changelog -p angular -r 2 -o RELEASELOG.md",
     "test": "jest",
-    "lint": "eslint ./src --ext .js,.ts",
-    "lint:fix": "eslint --fix ./src --ext .js,.ts",
-    "release": "standard-version -a",
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix .",
+    "check": "qlty check --all",
+    "release": "npx commit-and-tag-version -a",
     "coverage": "jest --coverage"
-  },
-  "dependencies": {
-    "commander": "9.1.0",
-    "debug": "4.3.4",
-    "fs-extra": "10.0.1",
-    "iconv-lite": "0.6.3",
-    "memory-stream": "1.0.0"
-  },
-  "devDependencies": {
-    "@types/debug": "4.1.7",
-    "@types/fs-extra": "9.0.13",
-    "@types/jest": "27.4.1",
-    "@types/node": "17.0.23",
-    "@types/tmp": "0.2.3",
-    "@typescript-eslint/eslint-plugin": "5.16.0",
-    "@typescript-eslint/parser": "5.16.0",
-    "conventional-changelog-cli": "2.2.2",
-    "eslint": "8.12.0",
-    "jest": "27.5.1",
-    "rimraf": "3.0.2",
-    "standard-version": "9.3.2",
-    "tmp": "0.2.1",
-    "ts-jest": "27.1.4",
-    "ts-node": "10.7.0",
-    "typedoc": "0.22.13",
-    "typescript": "4.6.3"
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -67,9 +42,35 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/ffalt/jamp3.git"
+    "url": "git+https://github.com/ffalt/jamp3.git"
   },
   "engines": {
-    "node": ">=12.0.0"
+    "node": ">=22"
+  },
+  "dependencies": {
+    "commander": "14.0.3",
+    "fs-extra": "11.3.4",
+    "iconv-lite": "0.7.2",
+    "memory-stream": "1.0.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@stylistic/eslint-plugin": "5.10.0",
+    "@types/fs-extra": "11.0.4",
+    "@types/jest": "30.0.0",
+    "@types/node": "25.4.0",
+    "@types/tmp": "0.2.6",
+    "conventional-changelog": "7.2.0",
+    "conventional-changelog-angular": "^8.3.0",
+    "eslint": "10.0.3",
+    "eslint-plugin-jest": "29.15.0",
+    "eslint-plugin-unicorn": "63.0.0",
+    "jest": "30.3.0",
+    "tmp": "0.2.5",
+    "ts-jest": "29.4.6",
+    "ts-node": "10.9.2",
+    "typedoc": "0.28.17",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.57.0"
   }
 }

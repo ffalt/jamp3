@@ -1,8 +1,8 @@
-import {IFrameImpl} from '../id3v2.frame';
-import {ascii} from '../../../common/encodings';
-import {IID3V2} from '../../id3v2.types';
-import {ID3V2ValueTypes} from '../../id3v2.consts';
-import {getWriteTextEncoding} from '../id3v2.frame.write';
+import { IFrameImpl } from '../id3v2.frame';
+import { ascii } from '../../../common/encodings';
+import { IID3V2 } from '../../id3v2.types';
+import { ID3V2ValueTypes } from '../../id3v2.consts';
+import { getWriteTextEncoding } from '../id3v2.frame.write';
 
 export const FramePic: IFrameImpl = {
 	/**
@@ -23,34 +23,25 @@ export const FramePic: IFrameImpl = {
 	 */
 	parse: async (reader, frame, head) => {
 		const enc = reader.readEncoding();
-		let mimeType;
-		if (head.ver <= 2) {
-			mimeType = reader.readString(3, ascii);
-		} else {
-			mimeType = reader.readStringTerminated(ascii);
-		}
+		const mimeType = head.ver <= 2 ? reader.readString(3, ascii) : reader.readStringTerminated(ascii);
 		const pictureType = reader.readByte();
 		const description = reader.readStringTerminated(enc);
-		const value: IID3V2.FrameValue.Pic = {mimeType, pictureType: pictureType, description};
+		const value: IID3V2.FrameValue.Pic = { mimeType, pictureType: pictureType, description };
 		if (mimeType === '-->') {
 			value.url = reader.readStringTerminated(enc);
 		} else {
 			value.bin = reader.rest();
 		}
-		return {value, encoding: enc};
+		return { value, encoding: enc };
 	},
 	write: async (frame, stream, head, defaultEncoding) => {
-		const value = <IID3V2.FrameValue.Pic>frame.value;
+		const value = frame.value as IID3V2.FrameValue.Pic;
 		const enc = getWriteTextEncoding(frame, head, defaultEncoding);
 		await stream.writeEncoding(enc);
 		if (head.ver <= 2) {
-			if (value.url) {
-				await stream.writeString('-->', ascii);
-			} else {
-				await stream.writeAsciiString(value.mimeType || '', 3);
-			}
+			await (value.url ? stream.writeString('-->', ascii) : stream.writeAsciiString(value.mimeType || '', 3));
 		} else {
-			await stream.writeStringTerminated(value.url ? value.url : (value.mimeType || ''), ascii);
+			await stream.writeStringTerminated(value.url ?? (value.mimeType || ''), ascii);
 		}
 		await stream.writeByte(value.pictureType);
 		await stream.writeStringTerminated(value.description, enc);
@@ -62,7 +53,7 @@ export const FramePic: IFrameImpl = {
 	},
 	simplify: (value: IID3V2.FrameValue.Pic) => {
 		if (value) {
-			return `<pic ${ID3V2ValueTypes.pictureType[value.pictureType] || 'unknown'};${value.mimeType};${value.bin ? value.bin.length + 'bytes' : value.url}>`;
+			return `<pic ${ID3V2ValueTypes.pictureType[value.pictureType] || 'unknown'};${value.mimeType};${value.bin ? `${value.bin.length}bytes` : value.url}>`;
 		}
 		return null;
 	}

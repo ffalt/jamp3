@@ -32,7 +32,14 @@ exports.FrameGEOB = {
         yield stream.writeBuffer(value.bin);
     }),
     simplify: (value) => {
-        return null;
+        if (!value) {
+            return null;
+        }
+        const parts = [value.mimeType, value.filename, value.contentDescription];
+        if (value.bin && value.bin.length > 0) {
+            parts.push(`bin=${value.bin.length}bytes`);
+        }
+        return parts.join(';');
     }
 };
 //# sourceMappingURL=id3v2.frame.generic-object.js.map

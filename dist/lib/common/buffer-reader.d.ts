@@ -1,4 +1,3 @@
-/// <reference types="node" />
 import { IEncoding } from './encodings';
 export declare class BufferReader {
     data: Buffer;

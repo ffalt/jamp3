@@ -3,9 +3,9 @@ import {
 	mpeg_channel_modes, mpeg_emphasis, mpeg_frame_samples, mpeg_layer_joint_extension,
 	mpeg_layer_names_long, mpeg_slot_size, mpeg_srates, mpeg_version_names_long
 } from './mp3.mpeg.consts';
-import {IMP3} from './mp3.types';
-import {isBit} from '../common/utils';
-import {BufferReader} from '../common/buffer-reader';
+import { IMP3 } from './mp3.types';
+import { isBit } from '../common/utils';
+import { BufferReader } from '../common/buffer-reader';
 
 export function collapseRawHeader(header: IMP3.FrameRawHeader): IMP3.FrameRawHeaderArray {
 	return [
@@ -35,11 +35,11 @@ export function rawHeaderLayerIdx(header: IMP3.FrameRawHeaderArray): number {
 export function expandMPEGFrameFlags(front: number, back: number, offset: number): IMP3.FrameRawHeader | null {
 	// AAAAAAAA: frame sync must be 11111111
 	// AAA: frame sync must be 111
-	const hasSync = (front & 0xFFE0) === 0xFFE0;
+	const hasSync = (front & 0xFF_E0) === 0xFF_E0;
 	const validVer = (front & 0x18) !== 0x8;
 	const validLayer = (front & 0x6) !== 0x0;
-	const validBitRate = (back & 0xF000) !== 0xF000;
-	const validSample = (back & 0xC00) !== 0xC00;
+	const validBitRate = (back & 0xF0_00) !== 0xF0_00;
+	const validSample = (back & 0xC_00) !== 0xC_00;
 	if (!hasSync || !validVer || !validLayer || !validBitRate || !validSample) {
 		return null;
 	}
@@ -67,18 +67,23 @@ export function expandMPEGFrameFlags(front: number, back: number, offset: number
 	const original = ((back >> 2) & 0x1) === 1;
 	// MM: Emphasis
 	const emphasisIdx = back & 0x3;
-	if (mpeg_bitrates[versionIdx] && mpeg_bitrates[versionIdx][layerIdx] && (mpeg_bitrates[versionIdx][layerIdx][bitrateIdx] > 0) &&
-		mpeg_srates[versionIdx] && (mpeg_srates[versionIdx][sampleIdx] > 0) &&
-		mpeg_frame_samples[versionIdx] && (mpeg_frame_samples[versionIdx][layerIdx] > 0) &&
+	if (
+		mpeg_bitrates[versionIdx] &&
+		mpeg_bitrates[versionIdx][layerIdx] &&
+		(mpeg_bitrates[versionIdx][layerIdx][bitrateIdx] > 0) &&
+		mpeg_srates[versionIdx] &&
+		(mpeg_srates[versionIdx][sampleIdx] > 0) &&
+		mpeg_frame_samples[versionIdx] &&
+		(mpeg_frame_samples[versionIdx][layerIdx] > 0) &&
 		(mpeg_slot_size[layerIdx] > 0)
 	) {
 		const bitrate = mpeg_bitrates[versionIdx][layerIdx][bitrateIdx] * 1000;
 		const samprate = mpeg_srates[versionIdx][sampleIdx];
 		const samples = mpeg_frame_samples[versionIdx][layerIdx];
 		const slot_size = mpeg_slot_size[layerIdx];
-		const bps = samples / 8.0;
+		const bps = samples / 8;
 		/**
-		 Frame Size = ( (Samples Per Frame / 8 * Bitrate) / Sampling Rate) + Padding Size
+		 Frame Size = ((Samples Per Frame / 8 * Bitrate) / Sampling Rate) + Padding Size
 		 Because of rounding errors, the official formula to calculate the frame size is a little bit different.
 		 According to the ISO standards, you have to calculate the frame size in slots (see 2. MPEG Audio Format),
 		 then truncate this number to an integer, and after that multiply it with the slot size.
@@ -160,7 +165,6 @@ export function expandRawHeader(header: IMP3.FrameRawHeader): IMP3.FrameHeader {
 }
 
 export class MPEGFrameReader {
-
 	public readMPEGFrameHeader(buffer: Buffer, offset: number): IMP3.FrameRawHeader | null {
 		// at least 4 bytes
 		if (buffer.length - offset < 4) {
@@ -180,19 +184,19 @@ export class MPEGFrameReader {
 		 2.2. Verifying CRC
 
 		 If the protection bit in the header is not set, the frame contains a 16 bit CRC (Cyclic Redundancy Checksum). This checksum directly follows the frame header and is a big-endian WORD.
-		  To verify this checksum you have to calculate it for the frame and compare the calculated CRC with the stored CRC. If they aren't equal probably a transfer error has appeared.
-		   It is also helpful to check the CRC to verify that you really found the beginning of a frame, because the sync bits do in same cases also occur within the data section of a frame.
+		 To verify this checksum you have to calculate it for the frame and compare the calculated CRC with the stored CRC. If they aren't equal probably a transfer error has appeared.
+		 It is also helpful to check the CRC to verify that you really found the beginning of a frame, because the sync bits do in same cases also occur within the data section of a frame.
 
 		 The CRC is calculated by applying the CRC-16 algorithm (with the generator polynom 0x8005) to a part of the frame. The following data is considered for the CRC: the last two bytes of
 		 the header and a number of bits from the audio data which follows the checksum after the header. The checksum itself must be skipped for CRC calculation. Unfortunately there is no
-		  easy way to compute the number of frames which are necessary for the checksum calculation in Layer II. Therefore I left it out in the code. You would need other information apart
-		  from the header to calculate the necessary bits. However it is possible to compute the number of protected bits in Layer I and Layer III only with the information from the header.
+		 easy way to compute the number of frames which are necessary for the checksum calculation in Layer II. Therefore I left it out in the code. You would need other information apart
+		 from the header to calculate the necessary bits. However it is possible to compute the number of protected bits in Layer I and Layer III only with the information from the header.
 
 		 For Layer III, you consider the complete side information for the CRC calculation. The side information follows the header or the CRC in Layer III files. It contains information
 		 about the general decoding of the frame, but doesn't contain the actual encoded audio samples. The following table shows the size of the side information for all Layer III files.
-		 2.2.1 Layer III side information size (in bytes) 	MPEG 1 	MPEG 2/2.5 (LSF)
-		 Stereo, Joint Stereo, Dual Channel 	32 	17
-		 Mono 	17 	9
+		 2.2.1 Layer III side information size (in bytes)  MPEG 1   MPEG 2/2.5 (LSF)
+		 Stereo, Joint Stereo, Dual Channel                32       17
+		 Mono                                              17       9
 
 		 For Layer I files, you must consider the mode extension (see table 2.1.6) from the header. Then you can calculate the number of bits which are necessary for CRC calculation
 		 by applying the following formula:
@@ -203,7 +207,6 @@ export class MPEGFrameReader {
 		 This can be read as two times the number of stereo subbands plus the number of mono subbands and the result multiplied with 4. For simple mono frames, this equals 128,
 		 because the number of channels is one and the bound of intensity stereo is 32, meaning that there is no intensity stereo. For stereo frames this is 256.
 		 For more information have a look at the CRC code in the class CMPAFrame.
-		 }
 		 */
 	}
 
@@ -211,35 +214,34 @@ export class MPEGFrameReader {
 		/*
 		 LAME header
 		 -----------
-
-		 120 bytes	Xing header
-		 9 bytes		lame version string (for example, "LAME3.12 (beta 6)")
-		 1 byte		revision and vbr method:
-		 4 bits		revision
-		 4 bits		vbr method
-		 1 byte		lowpass filter frequency
-		 4 bytes		peak signal amplitude
-		 2 bytes		radio replay gain
-		 2 bytes		audiohpile replay gain
-		 1 byte 		flags 1:
-		 4 bits		auth type
-		 1 bit			Naoki's psycho acoustic model was used
-		 1 bit			safe joint
-		 1 bit			no gap more
-		 1 bit			no gap previous
-		 1 byte		abr bitrate (0xFF means invalid)
-		 12 bits		encoding delay
-		 12 bits		encoding padding
-		 1 byte		flags 2:
-		 2 bits		noise shaping
-		 3 bits		stereo mode
-		 1 bit			non optimal
-		 2 bits		source frequency
-		 1 byte		unused
-		 2 bytes		preset value
-		 4 bytes		music length
-		 2 bytes		music crc
-		 2 bytes		crc
+		 120 bytes Xing header
+		 9 bytes lame version string (for example, "LAME3.12 (beta 6)")
+		 1 byte  revision and vbr method:
+		 4 bits  revision
+		 4 bits  vbr method
+		 1 byte  lowpass filter frequency
+		 4 bytes peak signal amplitude
+		 2 bytes radio replay gain
+		 2 bytes audiohpile replay gain
+		 1 byte  flags 1:
+		 4 bits  auth type
+		 1 bit   Naoki's psycho acoustic model was used
+		 1 bit   safe joint
+		 1 bit   no gap more
+		 1 bit   no gap previous
+		 1 byte  abr bitrate (0xFF means invalid)
+		 12 bits encoding delay
+		 12 bits encoding padding
+		 1 byte  flags 2:
+		 2 bits  noise shaping
+		 3 bits  stereo mode
+		 1 bit   non optimal
+		 2 bits  source frequency
+		 1 byte  unused
+		 2 bytes preset value
+		 4 bytes music length
+		 2 bytes music crc
+		 2 bytes crc
 
 		 Values of vbr method:
 		 0: ? (-vbr 5)
@@ -274,7 +276,9 @@ export class MPEGFrameReader {
 	private readVbri(data: Buffer, frame: IMP3.RawFrame, offset: number): number {
 		/** http://www.codeproject.com/Articles/8295/MPEG-Audio-Frame-Header#VBRIHeader
 		 2.3.2 VBRI Header
-		 This header is only used by MPEG audio files encoded with the Fraunhofer Encoder as far as I know. It is different from the XING header. You find it exactly 32 bytes after the end of the first MPEG audio header in the file. (Note that the position is zero-based; position, length and example are each in byte-format.)
+		 This header is only used by MPEG audio files encoded with the Fraunhofer Encoder as far as I know. It is different from the XING header.
+		 You find it exactly 32 bytes after the end of the first MPEG audio header in the file.
+		 (Note that the position is zero-based; position, length and example are each in byte-format.)
 		 Position    Length    Meaning    Example
 		 0            4        VBR header ID in 4 ASCII chars, always 'VBRI', not NULL-terminated    'VBRI'
 		 4            2        Version ID as Big-Endian WORD    1
@@ -338,7 +342,6 @@ export class MPEGFrameReader {
 		 Every TOC entry contains the size of the n-th frame. Calculating the position
 		 of the 3rd frame should look as following: header_size + toc[0] + toc[1] + toc[2]
 
-
 		 8, 12, 16, 108, 112 or 116    4    Quality indicator as Big-Endian DWORD from 0 - best quality to 100 - worst quality (optional)    0
 
 		 According to this format, a XING header must only contain the ID and the flags. All other fields are optional and depend on the flags which are set.
@@ -374,7 +377,7 @@ export class MPEGFrameReader {
 	}
 
 	public readFrame(chunk: Buffer, offset: number, header: IMP3.FrameRawHeader): { offset: number; frame: IMP3.RawFrame } {
-		const frame: IMP3.RawFrame = {header: collapseRawHeader(header)};
+		const frame: IMP3.RawFrame = { header: collapseRawHeader(header) };
 		let off = 0;
 		const length = offset + Math.min(40, chunk.length - 4 - offset);
 		for (let i = offset; i < length; i++) {
@@ -384,7 +387,7 @@ export class MPEGFrameReader {
 			const c4 = chunk[i + 3];
 			if (
 				(c === 88 && c2 === 105 && c3 === 110 && c4 === 103) || // Xing
-				(c === 73 && c2 === 110 && c3 === 102 && c4 === 111)  // Info
+				(c === 73 && c2 === 110 && c3 === 102 && c4 === 111) // Info
 			) {
 				off = this.readXing(chunk, frame, i);
 			} else if (c === 86 && c2 === 66 && c3 === 82 && c4 === 73) { // VBRI
@@ -394,7 +397,6 @@ export class MPEGFrameReader {
 				break;
 			}
 		}
-		return {offset: off, frame};
+		return { offset: off, frame };
 	}
-
 }

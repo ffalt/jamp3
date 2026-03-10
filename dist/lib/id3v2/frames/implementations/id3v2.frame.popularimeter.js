@@ -21,7 +21,7 @@ exports.FramePopularimeter = {
             try {
                 count = reader.readUInt(reader.unread());
             }
-            catch (e) {
+            catch (_a) {
                 count = 0;
             }
         }
@@ -39,7 +39,7 @@ exports.FramePopularimeter = {
     }),
     simplify: (value) => {
         if (value && value.email !== undefined) {
-            return value.email + (value.count !== undefined ? ';count=' + value.count : '') + (value.rating !== undefined ? ';rating=' + value.rating : '');
+            return value.email + (value.count === undefined ? '' : `;count=${value.count}`) + (value.rating === undefined ? '' : `;rating=${value.rating}`);
         }
         return null;
     }

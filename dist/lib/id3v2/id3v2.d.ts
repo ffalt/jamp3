@@ -1,5 +1,4 @@
-/// <reference types="node" />
-import { Readable } from 'stream';
+import { Readable } from 'node:stream';
 import { IID3V2 } from './id3v2.types';
 export declare class ID3v2 {
     static check(tag: IID3V2.Tag): Array<IID3V2.Warning>;

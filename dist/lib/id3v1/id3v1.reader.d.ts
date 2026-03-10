@@ -1,6 +1,5 @@
-/// <reference types="node" />
+import { Readable } from 'node:stream';
 import { IID3V1 } from './id3v1.types';
-import { Readable } from 'stream';
 import { ReaderStream } from '../common/stream-reader';
 export declare const ID3v1_MARKER = "TAG";
 export declare class ID3v1Reader {

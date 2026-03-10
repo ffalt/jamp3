@@ -25,7 +25,11 @@ exports.FrameRGAD = {
         yield stream.writeSInt2Byte(value.audiophileAdjustment);
     }),
     simplify: (value) => {
-        return null;
+        if (!value) {
+            return null;
+        }
+        const parts = [`peak=${value.peak}`, `radio=${value.radioAdjustment}`, `audiophile=${value.audiophileAdjustment}`];
+        return parts.join(';');
     }
 };
 //# sourceMappingURL=id3v2.frame.gain-adjustment.js.map

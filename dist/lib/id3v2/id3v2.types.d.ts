@@ -1,8 +1,11 @@
-/// <reference types="node" />
 import { ITag } from '../common/types';
 export declare namespace IID3V2 {
     namespace FrameValue {
         interface Base {
+            deprecated?: boolean;
+        }
+        interface IdBase extends Base {
+            id: string;
         }
         interface IdAscii extends Base {
             id: string;
@@ -24,7 +27,7 @@ export declare namespace IID3V2 {
             bin?: Buffer;
             mimeType?: string;
         }
-        interface Bin {
+        interface Bin extends Base {
             bin: Buffer;
         }
         interface Number extends Base {
@@ -119,6 +122,14 @@ export declare namespace IID3V2 {
             id: string;
             bin: Buffer;
         }
+        interface IdNum extends Base {
+            id: string;
+            num: number;
+        }
+        interface IdGuid extends Base {
+            id: string;
+            guid: string;
+        }
         interface IdText extends Base {
             id: string;
             text: string;
@@ -167,9 +178,7 @@ export declare namespace IID3V2 {
         groupId?: number;
     }
     namespace Frames {
-        interface Map {
-            [key: string]: Array<Frame>;
-        }
+        type Map = Record<string, Array<Frame>>;
         interface TextFrame extends Frame {
             value: FrameValue.Text;
         }
@@ -287,11 +296,11 @@ export declare namespace IID3V2 {
         size: number;
         flags: FrameHeaderStatusFlags;
         restrictions?: {
-            tagSize: string;
-            textEncoding: string;
-            textSize: string;
-            imageEncoding: string;
-            imageSize: string;
+            tagSize: number;
+            textEncoding: number;
+            textSize: number;
+            imageEncoding: number;
+            imageSize: number;
         };
         crc32?: number;
     }

@@ -1,7 +1,7 @@
-import {IFrameImpl} from '../id3v2.frame';
-import {ascii} from '../../../common/encodings';
-import {IID3V2} from '../../id3v2.types';
-import {getWriteTextEncoding} from '../id3v2.frame.write';
+import { IFrameImpl } from '../id3v2.frame';
+import { ascii } from '../../../common/encodings';
+import { IID3V2 } from '../../id3v2.types';
+import { getWriteTextEncoding } from '../id3v2.frame.write';
 
 export const FrameGEOB: IFrameImpl = {
 	/**
@@ -16,17 +16,17 @@ export const FrameGEOB: IFrameImpl = {
 	 Content description     $00 (00)
 	 Encapsulated object     <binary data>
 	 */
-	parse: async (reader) => {
+	parse: async reader => {
 		const enc = reader.readEncoding();
 		const mimeType = reader.readStringTerminated(ascii);
 		const filename = reader.readStringTerminated(enc);
 		const contentDescription = reader.readStringTerminated(enc);
 		const bin = reader.rest();
-		const value: IID3V2.FrameValue.GEOB = {mimeType, filename, contentDescription, bin};
-		return {value, encoding: enc};
+		const value: IID3V2.FrameValue.GEOB = { mimeType, filename, contentDescription, bin };
+		return { value, encoding: enc };
 	},
 	write: async (frame, stream, head, defaultEncoding) => {
-		const value = <IID3V2.FrameValue.GEOB>frame.value;
+		const value = frame.value as IID3V2.FrameValue.GEOB;
 		const enc = getWriteTextEncoding(frame, head, defaultEncoding);
 		await stream.writeEncoding(enc);
 		await stream.writeStringTerminated(value.mimeType, ascii);
@@ -35,6 +35,13 @@ export const FrameGEOB: IFrameImpl = {
 		await stream.writeBuffer(value.bin);
 	},
 	simplify: (value: IID3V2.FrameValue.GEOB) => {
-		return null; // TODO IID3V2.FrameValue.GEOB
+		if (!value) {
+			return null;
+		}
+		const parts: Array<string> = [value.mimeType, value.filename, value.contentDescription];
+		if (value.bin && value.bin.length > 0) {
+			parts.push(`bin=${value.bin.length}bytes`);
+		}
+		return parts.join(';');
 	}
 };

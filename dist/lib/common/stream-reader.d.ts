@@ -1,5 +1,4 @@
-/// <reference types="node" />
-import { Readable } from 'stream';
+import { Readable } from 'node:stream';
 export declare class ReaderStream {
     readableStream: Readable | null;
     buffers: Array<Buffer>;
@@ -18,9 +17,9 @@ export declare class ReaderStream {
     close(): void;
     private getBufferLength;
     private resume;
-    get(amount: number): Buffer;
+    get(amount: number): Buffer<ArrayBufferLike>;
     skip(amount: number): void;
-    getAndPrepend(amount: number, prepend: Array<Buffer>): Buffer;
+    getAndPrepend(amount: number, prepend: Array<Buffer>): Buffer<ArrayBufferLike>;
     read(amount: number): Promise<Buffer>;
     unshift(buffer: Buffer): void;
     scan(buffer: Buffer): Promise<number>;

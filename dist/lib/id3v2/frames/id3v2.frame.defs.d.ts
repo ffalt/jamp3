@@ -7,6 +7,4 @@ export interface IFrameDef {
     upgrade?: string;
     upgradeValue?: (value: any) => IID3V2.FrameValue.Base | undefined;
 }
-export declare const FrameDefs: {
-    [id: string]: IFrameDef;
-};
+export declare const FrameDefs: Record<string, IFrameDef>;

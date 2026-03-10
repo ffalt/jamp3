@@ -33,7 +33,14 @@ exports.FrameLINK = {
         }
     }),
     simplify: (value) => {
-        return null;
+        if (!value || !value.url) {
+            return null;
+        }
+        const parts = [value.url, value.id];
+        for (const a of value.additional || []) {
+            parts.push(a);
+        }
+        return parts.join(';');
     }
 };
 //# sourceMappingURL=id3v2.frame.linked-info.js.map

@@ -31,7 +31,11 @@ exports.FrameETCO = {
         }
     }),
     simplify: (value) => {
-        return null;
+        if (!value) {
+            return null;
+        }
+        const events = (value.events || []).map(e => `${e.type}@${e.timestamp}`);
+        return [`format=${value.format}`, ...events].join(';');
     }
 };
 //# sourceMappingURL=id3v2.frame.event-timing.js.map

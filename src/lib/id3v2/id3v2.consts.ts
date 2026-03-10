@@ -1,4 +1,4 @@
-const ID3v2_ValuePicTypes: { [name: string]: string } = {
+const ID3v2_ValuePicTypes: Record<string, string> = {
 	'0': 'Other',
 	'1': '32x32 pixels \'file icon\' (PNG only)',
 	'2': 'Other file icon',
@@ -22,7 +22,7 @@ const ID3v2_ValuePicTypes: { [name: string]: string } = {
 	'20': 'Publisher/Studio logotype'
 };
 
-const ID3v2_ValueRelativeVolumeAdjustment2ChannelTypes: { [name: string]: string } = {
+const ID3v2_ValueRelativeVolumeAdjustment2ChannelTypes: Record<string, string> = {
 	'0': 'Other',
 	'1': 'Master volume',
 	'2': 'Front right',
