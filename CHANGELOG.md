@@ -4,7 +4,6 @@ All notable changes to this project will be documented in this file. See [commit
 
 ## [0.6.0](https://github.com/ffalt/jamp3/compare/v0.5.0...v0.6.0) (2026-03-10)
 
-
 ### Features
 
 * add buildspec and ffprobe scripts for ID3v2/ID3v1 test spec file generation ([2697a06](https://github.com/ffalt/jamp3/commit/2697a06c146cb46fcd84d8c22d969d170d73cf60))
@@ -19,7 +18,6 @@ All notable changes to this project will be documented in this file. See [commit
 * **mp3:** enhance ID3v1 detection with range check for stream size ([cf4d1ed](https://github.com/ffalt/jamp3/commit/cf4d1ed13c1baec43cc691d53e406a423afd28c2)), closes [#96](https://github.com/ffalt/jamp3/issues/96)
 * **mp3:** implement frame resynchronization after gap detection ([ac5fc75](https://github.com/ffalt/jamp3/commit/ac5fc75fc13fe13eb7176cf5f40b3151c278a622))
 
-
 ### Bug Fixes
 
 * **compressed frames:** correct frame data assignment in ID3v2 frame reading ([4034c10](https://github.com/ffalt/jamp3/commit/4034c100d5c8bd74d28e1ac366da1c9f67e00fc3))
@@ -32,6 +30,11 @@ All notable changes to this project will be documented in this file. See [commit
 * improve type declaration for sublist in ID3v2 spec test ([d40b70a](https://github.com/ffalt/jamp3/commit/d40b70adb5e63d888f1789d72b82f3a676bb064a))
 * reorder ID3v2 test directories for consistency ([0374569](https://github.com/ffalt/jamp3/commit/03745697fb4de94862a4eea01c102d8421ce7c09))
 * update hash in testfiles for consistency ([e5d37f1](https://github.com/ffalt/jamp3/commit/e5d37f17114ef7cc4b9933ee0c85de34023a6a7d))
+
+### ⚠ BREAKING CHANGES
+
+* **deps:** require node 22 as minimum version
+
 
 ## [0.5.0](https://github.com/ffalt/jamp3/compare/v0.4.3...v0.5.0) (2022-03-26)
 
