@@ -1,6 +1,3 @@
-import { FrameDefs } from './frames/id3v2.frame.defs';
-import { findId3v2FrameDef } from './frames/id3v2.frame.match';
-
 export const PRIVMap: Record<string, string> = {
 	'AverageLevel': 'AVERAGELEVEL',
 	'PeakValue': 'PEAKVALUE',
@@ -207,23 +204,3 @@ export const DateUpgradeMap: Record<string, string> = {
 	'TDAT': 'Date',
 	'TIME': 'Time'
 };
-
-if (process.env.NODE_ENV === 'development') {
-	for (const key of Object.keys(FrameDefs)) {
-		const frame = findId3v2FrameDef(key);
-		if (frame) {
-			const slug =
-				['TXXX', 'UFID', 'COMM', 'PRIV', 'WXXX', 'LINK', 'TIPL', 'TMCL'].includes(key) ||
-				FramesMap[key] || TXXXMap[key] || UFIDMap[key] || COMMMap[key] || PRIVMap[key] || SplitFrameMap[key] || DateUpgradeMap[key];
-			if (!slug) {
-				if (frame.versions.includes(4)) {
-					console.error(`DEVELOPER ERROR: Add a slug for the 2.4 frame '${key}': '${FrameDefs[key].title.toLowerCase().replaceAll(' ', '_')}',`);
-				} else if (!frame.upgrade) {
-					console.error(`DEVELOPER ERROR: Add a slug for the ${frame.versions.join('/')} frame '${key}': '${FrameDefs[key].title.toLowerCase().replaceAll(' ', '_')}',`);
-				}
-			}
-		} else {
-			console.error(`DEVELOPER ERROR: Unknown frame id '${key}' in simplify list`);
-		}
-	}
-}

@@ -1,8 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DateUpgradeMap = exports.SplitFrameMap = exports.FramesMap = exports.TXXXMap = exports.UFIDMap = exports.COMMMap = exports.WMMediaClassPrimaryIDs = exports.PRIVWideStringOwners = exports.PRIVGuidOwners = exports.PRIVNumericOwners = exports.PRIVMap = void 0;
-const id3v2_frame_defs_1 = require("./frames/id3v2.frame.defs");
-const id3v2_frame_match_1 = require("./frames/id3v2.frame.match");
 exports.PRIVMap = {
     'AverageLevel': 'AVERAGELEVEL',
     'PeakValue': 'PEAKVALUE',
@@ -197,24 +195,4 @@ exports.DateUpgradeMap = {
     'TDAT': 'Date',
     'TIME': 'Time'
 };
-if (process.env.NODE_ENV === 'development') {
-    for (const key of Object.keys(id3v2_frame_defs_1.FrameDefs)) {
-        const frame = (0, id3v2_frame_match_1.findId3v2FrameDef)(key);
-        if (frame) {
-            const slug = ['TXXX', 'UFID', 'COMM', 'PRIV', 'WXXX', 'LINK', 'TIPL', 'TMCL'].includes(key) ||
-                exports.FramesMap[key] || exports.TXXXMap[key] || exports.UFIDMap[key] || exports.COMMMap[key] || exports.PRIVMap[key] || exports.SplitFrameMap[key] || exports.DateUpgradeMap[key];
-            if (!slug) {
-                if (frame.versions.includes(4)) {
-                    console.error(`DEVELOPER ERROR: Add a slug for the 2.4 frame '${key}': '${id3v2_frame_defs_1.FrameDefs[key].title.toLowerCase().replaceAll(' ', '_')}',`);
-                }
-                else if (!frame.upgrade) {
-                    console.error(`DEVELOPER ERROR: Add a slug for the ${frame.versions.join('/')} frame '${key}': '${id3v2_frame_defs_1.FrameDefs[key].title.toLowerCase().replaceAll(' ', '_')}',`);
-                }
-            }
-        }
-        else {
-            console.error(`DEVELOPER ERROR: Unknown frame id '${key}' in simplify list`);
-        }
-    }
-}
 //# sourceMappingURL=id3v2.simplify.maps.js.map
