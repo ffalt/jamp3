@@ -13,10 +13,10 @@
     "cli"
   ],
   "bin": {
-    "mp3-analyze": "./bin/analyzeMP3.js",
-    "id3v2-dump": "./bin/dumpID3v2.js",
-    "id3v1-dump": "./bin/dumpID3v1.js",
-    "id3v1-remove": "./bin/removeID3v1.js"
+    "mp3-analyze": "bin/analyzeMP3.js",
+    "id3v2-dump": "bin/dumpID3v2.js",
+    "id3v1-dump": "bin/dumpID3v1.js",
+    "id3v1-remove": "bin/removeID3v1.js"
   },
   "scripts": {
     "clean": "rm -Rf dist",
@@ -42,7 +42,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/ffalt/jamp3.git"
+    "url": "git+https://github.com/ffalt/jamp3.git"
   },
   "engines": {
     "node": ">=22"
