@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.6.1](https://github.com/ffalt/jamp3/compare/v0.6.0...v0.6.1) (2026-03-10)
+
+
+### Bug Fixes
+
+* **ts:** circular import in dev mode ([1d2bd6c](https://github.com/ffalt/jamp3/commit/1d2bd6cadb20733888b9cdedb042825ba4952954))
+
 ## [0.6.0](https://github.com/ffalt/jamp3/compare/v0.5.0...v0.6.0) (2026-03-10)
 
 ### Features
