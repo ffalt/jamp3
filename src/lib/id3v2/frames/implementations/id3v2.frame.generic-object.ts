@@ -34,5 +34,14 @@ export const FrameGEOB: IFrameImpl = {
 		await stream.writeStringTerminated(value.contentDescription, enc);
 		await stream.writeBuffer(value.bin);
 	},
-	simplify: (_value: IID3V2.FrameValue.GEOB) => null // TODO IID3V2.FrameValue.GEOB
+	simplify: (value: IID3V2.FrameValue.GEOB) => {
+		if (!value) {
+			return null;
+		}
+		const parts: Array<string> = [value.mimeType, value.filename, value.contentDescription];
+		if (value.bin && value.bin.length > 0) {
+			parts.push(`bin=${value.bin.length}bytes`);
+		}
+		return parts.join(';');
+	}
 };

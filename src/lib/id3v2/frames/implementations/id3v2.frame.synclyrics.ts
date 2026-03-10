@@ -99,5 +99,20 @@ export const FrameSYLT: IFrameImpl = {
 			await stream.writeUInt4Byte(event.timestamp);
 		}
 	},
-	simplify: (_value: IID3V2.FrameValue.SynchronisedLyrics) => null // TODO IID3V2.FrameValue.SynchronisedLyrics IID3V2.FrameValue.Link
+	simplify: (value: IID3V2.FrameValue.SynchronisedLyrics) => {
+		if (!value) {
+			return null;
+		}
+		const parts: Array<string> = [
+			`lang=${value.language}`,
+			`format=${value.timestampFormat}`,
+			`contentType=${value.contentType}`,
+			`id=${value.id}`
+		];
+		const events = (value.events || []).map(e => `${e.text}@${e.timestamp}`);
+		if (events.length > 0) {
+			parts.push(events.join('|'));
+		}
+		return parts.join(';');
+	}
 };

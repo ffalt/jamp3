@@ -1,5 +1,4 @@
 import { loadSpec, omit, toNonBinJson } from '../common/common';
-
 import { IID3V2 } from '../../src/lib/id3v2/id3v2.types';
 import { ID3v2 } from '../../src/lib/id3v2/id3v2';
 
@@ -140,7 +139,7 @@ function compareID3v2SpecFrames(filename: string, specframes: Array<any> = [], f
 					throw new Error(`Spec frame not found:${JSON.stringify(framespec)}${toNonBinJson(frames)}`);
 				}
 			} else {
-				throw new Error(`TODO: Implement Spec matching:${JSON.stringify(framespec)}`);
+				throw new Error(`Implement Spec matching:${JSON.stringify(framespec)}`);
 			}
 			compareID3v2SpecFrame(filename, framespec, sublist[0]);
 		}

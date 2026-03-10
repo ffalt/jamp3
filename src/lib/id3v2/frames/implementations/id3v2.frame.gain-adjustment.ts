@@ -29,5 +29,11 @@ export const FrameRGAD: IFrameImpl = {
 		await stream.writeSInt2Byte(value.radioAdjustment);
 		await stream.writeSInt2Byte(value.audiophileAdjustment);
 	},
-	simplify: (_value: IID3V2.FrameValue.ReplayGainAdjustment) => null // TODO IID3V2.FrameValue.ReplayGainAdjustment IID3V2.FrameValue.Link
+	simplify: (value: IID3V2.FrameValue.ReplayGainAdjustment) => {
+		if (!value) {
+			return null;
+		}
+		const parts: Array<string> = [`peak=${value.peak}`, `radio=${value.radioAdjustment}`, `audiophile=${value.audiophileAdjustment}`];
+		return parts.join(';');
+	}
 };
