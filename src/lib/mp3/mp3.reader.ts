@@ -162,7 +162,11 @@ export class MP3Reader {
 				return true;
 			} else if (this.scanMpeg && c1 === 255 && this.readMPEGFrame(chunk, pos)) {
 				return true;
-			} else if (this.scanid3v1 && c1 === 84 && c2 === 65 && c3 === 71 && this.readID3V1(chunk, pos)) {
+			} else if (
+				this.scanid3v1 && this.isInID3v1Range(chunk, pos) &&
+				c1 === 84 && c2 === 65 && c3 === 71 &&
+				this.readID3V1(chunk, pos)
+			) {
 				return true;
 			}
 			pos++;
@@ -178,12 +182,20 @@ export class MP3Reader {
 			const c3 = chunk[pos + 2];
 			if ((c1 === 73 && c2 === 68 && c3 === 51) && (await this.readID3V2(chunk, pos))) {
 				return true;
-			} else if ((c1 === 84 && c2 === 65 && c3 === 71) && this.readID3V1(chunk, pos)) {
+			} else if ((c1 === 84 && c2 === 65 && c3 === 71) && this.isInID3v1Range(chunk, pos) && this.readID3V1(chunk, pos)) {
 				return true;
 			}
 			pos++;
 		}
 		return false;
+	}
+
+	private isInID3v1Range(chunk: Buffer, pos: number): boolean {
+		if (this.options.streamSize === undefined) {
+			return true;
+		}
+		const absolutePos = this.stream.pos - chunk.length + pos;
+		return absolutePos >= this.options.streamSize - 200;
 	}
 
 	private demandData(chunk: Buffer, pos: number): boolean {
