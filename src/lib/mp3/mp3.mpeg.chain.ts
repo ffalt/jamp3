@@ -24,11 +24,16 @@ function followChain(frame: IMP3.FrameRawHeaderArray, pos: number, frames: Array
 				// console.log('include direct diff frame:', 'current:', {size: nextframe.header.size, offset: nextframe.header.offset});
 				useFrame = nextframe;
 			} else if (diff > 0) {
-				// TODO resync chain if nextframe.header.offset is larger
 				if (rawHeaderVersionIdx(nextframe) === rawHeaderVersionIdx(useFrame) && rawHeaderLayerIdx(nextframe) === rawHeaderLayerIdx(useFrame)) {
 					result.push(nextframe);
 					// console.log('include frame after gap:', 'diff:', diff, 'current:', {size: nextframe.header.size, offset: nextframe.header.offset}, 'last:', {size: frame.header.size, offset: frame.header.offset});
 					useFrame = nextframe;
+					// Resync: after accepting a frame across a gap, jump to the next directly-connected frame
+					// to avoid pulling in false-positive frames between here and the expected next position
+					const resync = getNextMatch(rawHeaderOffSet(nextframe) + rawHeaderSize(nextframe), i, useFrames);
+					if (resync >= 0) {
+						i = resync - 1; // for loop will increment to resync on next iteration
+					}
 				} else {
 					// console.log('skipped frame after gap:', 'diff:', diff, 'current:', {size: nextframe.header.size, offset: nextframe.header.offset}, 'last:', {size: frame.header.size, offset: frame.header.offset});
 				}
