@@ -29,8 +29,23 @@
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
     "check": "qlty check --all",
-    "release": "standard-version -a",
+    "release": "npx commit-and-tag-version -a",
     "coverage": "jest --coverage"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "bin",
+    "dist",
+    "src",
+    "LICENSE"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ffalt/jamp3.git"
+  },
+  "engines": {
+    "node": ">=22"
   },
   "overrides": {
     "@conventional-changelog/git-client": "2.5.1"
@@ -46,34 +61,18 @@
     "@stylistic/eslint-plugin": "5.10.0",
     "@types/fs-extra": "11.0.4",
     "@types/jest": "30.0.0",
-    "@types/node": "25.3.5",
+    "@types/node": "25.4.0",
     "@types/tmp": "0.2.6",
     "conventional-changelog-cli": "5.0.0",
-    "eslint": "10.0.2",
+    "eslint": "10.0.3",
     "eslint-plugin-jest": "29.15.0",
     "eslint-plugin-unicorn": "63.0.0",
-    "jest": "30.2.0",
-    "standard-version": "9.5.0",
+    "jest": "30.3.0",
     "tmp": "0.2.5",
     "ts-jest": "29.4.6",
     "ts-node": "10.9.2",
     "typedoc": "0.28.17",
     "typescript": "5.9.3",
-    "typescript-eslint": "8.56.1"
-  },
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "files": [
-    "bin",
-    "dist",
-    "src",
-    "LICENSE"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ffalt/jamp3.git"
-  },
-  "engines": {
-    "node": ">=18.0.0"
+    "typescript-eslint": "8.57.0"
   }
 }
