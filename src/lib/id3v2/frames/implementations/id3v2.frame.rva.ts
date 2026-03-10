@@ -138,5 +138,41 @@ export const FrameRelativeVolumeAdjustment: IFrameImpl = {
 			await stream.writeUInt(value.peakCenter, byteLength);
 		}
 	},
-	simplify: (_value: IID3V2.FrameValue.RVA) => null // TODO simplify IID3V2.FrameValue.RVA
+	simplify: (value: IID3V2.FrameValue.RVA) => {
+		if (!value) {
+			return null;
+		}
+		const parts: Array<string> = [`right=${value.right}`, `left=${value.left}`];
+		if (value.peakRight !== undefined) {
+			parts.push(`peakRight=${value.peakRight}`);
+		}
+		if (value.peakLeft !== undefined) {
+			parts.push(`peakLeft=${value.peakLeft}`);
+		}
+		if (value.rightBack !== undefined) {
+			parts.push(`rightBack=${value.rightBack}`);
+		}
+		if (value.leftBack !== undefined) {
+			parts.push(`leftBack=${value.leftBack}`);
+		}
+		if (value.peakRightBack !== undefined) {
+			parts.push(`peakRightBack=${value.peakRightBack}`);
+		}
+		if (value.peakLeftBack !== undefined) {
+			parts.push(`peakLeftBack=${value.peakLeftBack}`);
+		}
+		if (value.center !== undefined) {
+			parts.push(`center=${value.center}`);
+		}
+		if (value.peakCenter !== undefined) {
+			parts.push(`peakCenter=${value.peakCenter}`);
+		}
+		if (value.bass !== undefined) {
+			parts.push(`bass=${value.bass}`);
+		}
+		if (value.peakBass !== undefined) {
+			parts.push(`peakBass=${value.peakBass}`);
+		}
+		return parts.join(';');
+	}
 };

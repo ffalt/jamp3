@@ -93,5 +93,18 @@ export const FrameRelativeVolumeAdjustment2: IFrameImpl = {
 			}
 		}
 	},
-	simplify: (_value: IID3V2.FrameValue.RVA2) => null // TODO simplify IID3V2.FrameValue.RVA2
+	simplify: (value: IID3V2.FrameValue.RVA2) => {
+		if (!value || !value.id) {
+			return null;
+		}
+		const parts: Array<string> = [value.id];
+		for (const channel of value.channels || []) {
+			const chParts = [`type=${channel.type}`, `adj=${channel.adjustment}`];
+			if (channel.peak !== undefined) {
+				chParts.push(`peak=${channel.peak}`);
+			}
+			parts.push(chParts.join(','));
+		}
+		return parts.join(';');
+	}
 };
