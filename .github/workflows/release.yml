@@ -30,7 +30,7 @@ jobs:
         run: npm run test
 
       - name: Build
-        run: npm run build:deploy
+        run: npm run build
 
       - name: Generate Releaselog
         run: npm run build:releaselog
