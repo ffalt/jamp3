@@ -1,5 +1,6 @@
-import { compareID3v2Save } from './id3v2.compare';
-import { ID3v2 } from '../../src/lib/id3v2/id3v2';
+import { compareID3v2Save } from './id3v2.compare.js';
+import { ID3v2 } from '../../src/lib/id3v2/id3v2.js';
+import { expect } from '@jest/globals';
 
 export async function testLoadSaveCompare(filename: string): Promise<void> {
 	const id3 = new ID3v2();

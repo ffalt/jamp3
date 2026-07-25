@@ -1,10 +1,11 @@
 import tmp from 'tmp';
 import fse from 'fs-extra';
+import { expect } from '@jest/globals';
 
-import { ID3v2 } from '../../src/lib/id3v2/id3v2';
-import { ID3V24TagBuilder } from '../../src/lib/id3v2/id3v2.builder.v24';
-import { IMP3 } from '../../src/lib/mp3/mp3.types';
-import { MP3 } from '../../src/lib/mp3/mp3';
+import { ID3v2 } from '../../src/lib/id3v2/id3v2.js';
+import { ID3V24TagBuilder } from '../../src/lib/id3v2/id3v2.builder.v24.js';
+import { IMP3 } from '../../src/lib/mp3/mp3.types.js';
+import { MP3 } from '../../src/lib/mp3/mp3.js';
 
 async function compareRemovalAudio(before: IMP3.Result, after: IMP3.Result): Promise<void> {
 	if (!before.frames || !after.frames) {

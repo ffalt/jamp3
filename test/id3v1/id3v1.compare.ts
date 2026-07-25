@@ -1,10 +1,11 @@
 import fse from 'fs-extra';
 import tmp from 'tmp';
+import { expect } from '@jest/globals';
 
-import { ID3v1 } from '../../src/lib/id3v1/id3v1';
-import { IID3V1 } from '../../src/lib/id3v1/id3v1.types';
-import { ITagID } from '../../src/lib/common/types';
-import { loadSpec } from '../common/common';
+import { ID3v1 } from '../../src/lib/id3v1/id3v1.js';
+import { IID3V1 } from '../../src/lib/id3v1/id3v1.types.js';
+import { ITagID } from '../../src/lib/common/types.js';
+import { loadSpec } from '../common/common.js';
 
 async function compareTags(a: IID3V1.Tag, b: IID3V1.Tag): Promise<void> {
 	expect(b.version).toBe(a.version);

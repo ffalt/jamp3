@@ -1,4 +1,4 @@
-import { BufferUtils } from '../../common/buffer';
+import { BufferUtils } from '../../common/buffer.js';
 
 export function removeUnsync(data: Buffer): Buffer {
 	const result = BufferUtils.zeroBuffer(data.length);

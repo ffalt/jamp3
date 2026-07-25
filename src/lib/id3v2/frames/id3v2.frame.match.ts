@@ -1,8 +1,8 @@
-import { FrameDefs, IFrameDef } from './id3v2.frame.defs';
-import { FrameText } from './implementations/id3v2.frame.text';
-import { FrameAscii } from './implementations/id3v2.frame.ascii';
-import { validCharKeyCode } from '../../common/utils';
-import { FrameUnknown } from './implementations/id3v2.frame.unknown';
+import { FrameDefs, IFrameDef } from './id3v2.frame.defs.js';
+import { FrameText } from './implementations/id3v2.frame.text.js';
+import { FrameAscii } from './implementations/id3v2.frame.ascii.js';
+import { validCharKeyCode } from '../../common/utils.js';
+import { FrameUnknown } from './implementations/id3v2.frame.unknown.js';
 
 interface IFrameMatch {
 	match: (id: string) => boolean;
@@ -31,7 +31,7 @@ export const Matcher: Array<IFrameMatch> = [
 				if (!validCharKeyCode(id[i])) {
 					return false;
 				}
-				allX = allX && (id[i] === 88);
+				allX &&= (id[i] === 88);
 			}
 			return !allX;
 		},
@@ -57,7 +57,7 @@ export const Matcher: Array<IFrameMatch> = [
 				if (!validCharKeyCode(id[i])) {
 					return false;
 				}
-				allX = allX && (id[i] === 88);
+				allX &&= (id[i] === 88);
 			}
 			return !allX;
 		},
@@ -75,7 +75,6 @@ export function findId3v2FrameDef(id: string): IFrameDef | null {
 		return f;
 	}
 	for (const element of Matcher) {
-		// eslint-disable-next-line unicorn/prefer-regexp-test
 		if (element.match(id)) {
 			return element.value;
 		}
@@ -97,19 +96,19 @@ let tree: IDBinTree;
 
 function fillTree() {
 	tree = {};
-	for (const key of Object.keys(FrameDefs)) {
+	for (const [key, frameDef] of Object.entries(FrameDefs)) {
 		let node = tree;
 		for (let i = 0; i < key.length - 1; i++) {
 			const c = key.codePointAt(i);
 			if (c !== undefined) {
-				node[c] = node[c] || {};
+				node[c] ||= {};
 				node = node[c];
 			}
 		}
 		const last = key.codePointAt(key.length - 1);
 		if (last !== undefined) {
-			node[last] = node[last] || {};
-			node[last].frameDef = FrameDefs[key];
+			node[last] ||= {};
+			node[last].frameDef = frameDef;
 		}
 	}
 }

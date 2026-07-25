@@ -1,8 +1,9 @@
 import fse from 'fs-extra';
+import { expect } from '@jest/globals';
 
-import { ITestSpec } from '../common/spec';
-import { rawHeaderSize } from '../../src/lib/mp3/mp3.mpeg.frame';
-import { MP3 } from '../../src/lib/mp3/mp3';
+import { ITestSpec } from '../common/spec.js';
+import { rawHeaderSize } from '../../src/lib/mp3/mp3.mpeg.frame.js';
+import { MP3 } from '../../src/lib/mp3/mp3.js';
 
 export async function testQuickMPEG(filename: string): Promise<void> {
 	const exists = await fse.pathExists(`${filename}.frames.json`);

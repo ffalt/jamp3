@@ -1,19 +1,19 @@
 import fse from 'fs-extra';
 import { Readable } from 'node:stream';
 
-import { ID3v2Reader } from './id3v2.reader';
-import { ID3v2Writer } from './id3v2.writer';
-import { IID3V2 } from './id3v2.types';
-import { fileRangeToBuffer } from '../common/utils';
-import { updateFile } from '../common/update-file';
-import { ITagID } from '../common/types';
-import { rawHeaderOffSet } from '../mp3/mp3.mpeg.frame';
-import { checkID3v2 } from './id3v2.check';
-import { simplifyTag } from './id3v2.simplify';
-import { FileWriterStream } from '../common/stream-writer-file';
-import { writeRawFrames } from './frames/id3v2.frame.write';
-import { buildID3v2 } from './frames/id3v2.frame.read';
-import { IMP3 } from '../mp3/mp3.types';
+import { ID3v2Reader } from './id3v2.reader.js';
+import { ID3v2Writer } from './id3v2.writer.js';
+import { IID3V2 } from './id3v2.types.js';
+import { fileRangeToBuffer } from '../common/utils.js';
+import { updateFile } from '../common/update-file.js';
+import { ITagID } from '../common/types.js';
+import { rawHeaderOffSet } from '../mp3/mp3.mpeg.frame.js';
+import { checkID3v2 } from './id3v2.check.js';
+import { simplifyTag } from './id3v2.simplify.js';
+import { FileWriterStream } from '../common/stream-writer-file.js';
+import { writeRawFrames } from './frames/id3v2.frame.write.js';
+import { buildID3v2 } from './frames/id3v2.frame.read.js';
+import { IMP3 } from '../mp3/mp3.types.js';
 
 /**
  * Class for
@@ -158,13 +158,15 @@ export class ID3v2 {
 		let specEnd = 0;
 		let skipped = false;
 		for (const tag of layout.tags) {
-			if ((tag.id === ITagID.ID3v2) && (start < tag.end)) {
-				const rawTag = tag as IID3V2.RawTag;
-				const footerSize = rawTag.head.v4?.flags.footer ? 10 : 0;
-				specEnd = rawTag.head.size + tag.start + 10 + footerSize; // 10: header itself, optional 10: footer
-				start = tag.end;
-				skipped = true;
+			if (!((tag.id === ITagID.ID3v2) && (start < tag.end))) {
+				continue;
 			}
+
+			const rawTag = tag as IID3V2.RawTag;
+			const footerSize = rawTag.head.v4?.flags.footer ? 10 : 0;
+			specEnd = rawTag.head.size + tag.start + 10 + footerSize; // 10: header itself, optional 10: footer
+			start = tag.end;
+			skipped = true;
 		}
 		const tagAreaEnd = Math.max(start, specEnd);
 		if (layout.frameheaders.length > 0) {

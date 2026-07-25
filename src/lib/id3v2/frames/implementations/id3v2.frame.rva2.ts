@@ -1,7 +1,7 @@
-import { IFrameImpl } from '../id3v2.frame';
-import { ascii } from '../../../common/encodings';
-import { IID3V2 } from '../../id3v2.types';
-import { neededStoreBytes } from '../../../common/utils';
+import { IFrameImpl } from '../id3v2.frame.js';
+import { ascii } from '../../../common/encodings.js';
+import { IID3V2 } from '../../id3v2.types.js';
+import { neededStoreBytes } from '../../../common/utils.js';
 
 export const FrameRelativeVolumeAdjustment2: IFrameImpl = {
 	/**
@@ -98,7 +98,8 @@ export const FrameRelativeVolumeAdjustment2: IFrameImpl = {
 			return null;
 		}
 		const parts: Array<string> = [value.id];
-		for (const channel of value.channels || []) {
+		const channels = value.channels || [];
+		for (const channel of channels) {
 			const chParts = [`type=${channel.type}`, `adj=${channel.adjustment}`];
 			if (channel.peak !== undefined) {
 				chParts.push(`peak=${channel.peak}`);

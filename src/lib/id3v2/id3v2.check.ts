@@ -1,5 +1,5 @@
-import { IID3V2 } from './id3v2.types';
-import { findId3v2FrameDef } from './frames/id3v2.frame.match';
+import { IID3V2 } from './id3v2.types.js';
+import { findId3v2FrameDef } from './frames/id3v2.frame.match.js';
 
 export function checkID3v2(id3v2: IID3V2.ID3v2Tag): Array<IID3V2.Warning> {
 	const result: Array<IID3V2.Warning> = [];

@@ -1,6 +1,6 @@
 import { Readable } from 'node:stream';
 import fs from 'node:fs';
-import { BufferUtils } from './buffer';
+import { BufferUtils } from './buffer.js';
 
 export class ReaderStream {
 	readableStream: Readable | null = null;
@@ -128,10 +128,9 @@ export class ReaderStream {
 				givenLength += need;
 				this.buffers[i] = b.subarray(need);
 				break;
-			} else {
-				givenLength += b.length;
-				i++;
 			}
+			givenLength += b.length;
+			i++;
 		}
 		this.pos += givenLength;
 		this.buffers = this.buffers.slice(i);
@@ -149,11 +148,10 @@ export class ReaderStream {
 				destBuffers.push(b.subarray(0, need));
 				this.buffers[i] = b.subarray(need);
 				break;
-			} else {
-				destBuffers.push(b);
-				givenLength += b.length;
-				i++;
 			}
+			destBuffers.push(b);
+			givenLength += b.length;
+			i++;
 		}
 		this.buffers = this.buffers.slice(i);
 		this.buffersLength = this.getBufferLength();
@@ -179,19 +177,20 @@ export class ReaderStream {
 			this.pos += result.length;
 			this.end = this.streamEnd;
 			return result;
-		} else {
-			await this.resume();
-			return await this.read(toRead);
 		}
+		await this.resume();
+		return await this.read(toRead);
 	}
 
 	public unshift(buffer: Buffer) {
-		if (buffer.length > 0) {
-			this.buffers.unshift(buffer);
-			this.buffersLength = this.getBufferLength();
-			this.pos -= buffer.length;
-			this.end = this.streamEnd && this.buffersLength === 0;
+		if (buffer.length === 0) {
+			return;
 		}
+
+		this.buffers.unshift(buffer);
+		this.buffersLength = this.getBufferLength();
+		this.pos -= buffer.length;
+		this.end = this.streamEnd && this.buffersLength === 0;
 	}
 
 	async scan(buffer: Buffer): Promise<number> {
@@ -204,15 +203,14 @@ export class ReaderStream {
 			this.pos += index;
 			this.buffers = [result.subarray(index)];
 			return this.pos;
-		} else {
-			if (this.end) {
-				return -1;
-			}
-			this.pos += result.length;
-			this.buffers = [];
-			this.buffersLength = 0;
-			await this.resume();
-			return this.scan(buffer);
 		}
+		if (this.end) {
+			return -1;
+		}
+		this.pos += result.length;
+		this.buffers = [];
+		this.buffersLength = 0;
+		await this.resume();
+		return this.scan(buffer);
 	}
 }

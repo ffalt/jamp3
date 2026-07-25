@@ -1,15 +1,15 @@
 import * as zlib from 'node:zlib';
 
-import { IID3V2 } from '../id3v2.types';
-import { WriterStream } from '../../common/stream-writer';
-import { MemoryWriterStream } from '../../common/stream-writer-memory';
-import { matchFrame } from './id3v2.frame.match';
-import { ID3v2_FRAME_HEADER_LENGTHS } from '../id3v2.header.consts';
-import { BufferUtils } from '../../common/buffer';
-import { ascii, Encodings, IEncoding } from '../../common/encodings';
-import { ensureID3v2FrameVersionDef } from './id3v2.frame.version';
-import { Id3v2RawWriter } from '../id3v2.writer.raw';
-import { applyUnsync } from './id3v2.frame.unsync';
+import { IID3V2 } from '../id3v2.types.js';
+import { WriterStream } from '../../common/stream-writer.js';
+import { MemoryWriterStream } from '../../common/stream-writer-memory.js';
+import { matchFrame } from './id3v2.frame.match.js';
+import { ID3v2_FRAME_HEADER_LENGTHS } from '../id3v2.header.consts.js';
+import { BufferUtils } from '../../common/buffer.js';
+import { ascii, Encodings, IEncoding } from '../../common/encodings.js';
+import { ensureID3v2FrameVersionDef } from './id3v2.frame.version.js';
+import { Id3v2RawWriter } from '../id3v2.writer.raw.js';
+import { applyUnsync } from './id3v2.frame.unsync.js';
 
 export async function writeRawSubFrames(frames: Array<IID3V2.Frame>, stream: WriterStream, head: IID3V2.TagHeader, defaultEncoding?: string): Promise<void> {
 	const writer = new Id3v2RawWriter(stream, head, { paddingSize: 0 });

@@ -1,11 +1,13 @@
 import fse from 'fs-extra';
-import { ID3v2 } from '../../src/lib/id3v2/id3v2';
-import { IID3V2 } from '../../src/lib/id3v2/id3v2.types';
-import { collectTestFilesSync } from '../common/common';
-import { testLoadSaveCompare } from './id3v2.load-save-compare';
-import { testLoadSaveSpec } from './id3v2.spec';
-import { ID3v2TestDirectories, ID3v2TestPath } from './id3v2.config';
 import tmp from 'tmp';
+import { describe, expect, it } from '@jest/globals';
+
+import { ID3v2 } from '../../src/lib/id3v2/id3v2.js';
+import { IID3V2 } from '../../src/lib/id3v2/id3v2.types.js';
+import { collectTestFilesSync } from '../common/common.js';
+import { testLoadSaveCompare } from './id3v2.load-save-compare.js';
+import { testLoadSaveSpec } from './id3v2.spec.js';
+import { ID3v2TestDirectories, ID3v2TestPath } from './id3v2.config.js';
 
 const testSingleFile: string | undefined = undefined;
 

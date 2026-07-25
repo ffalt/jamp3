@@ -1,6 +1,6 @@
-import { IFrameImpl } from '../id3v2.frame';
-import { isBitSetAt, neededStoreBytes } from '../../../common/utils';
-import { IID3V2 } from '../../id3v2.types';
+import { IFrameImpl } from '../id3v2.frame.js';
+import { isBitSetAt, neededStoreBytes } from '../../../common/utils.js';
+import { IID3V2 } from '../../id3v2.types.js';
 
 export const FrameRelativeVolumeAdjustment: IFrameImpl = {
 	/**
@@ -54,9 +54,9 @@ export const FrameRelativeVolumeAdjustment: IFrameImpl = {
 			return Promise.reject(new Error(`Unsupported description bit size of: ${bitLength}`));
 		}
 		let val = reader.readUInt(byteLength);
-		const right = (isBitSetAt(flags, 0) || (val === 0) ? 1 : -1) * val;
+		const right = ((val === 0) || isBitSetAt(flags, 0) ? 1 : -1) * val;
 		val = reader.readUInt(byteLength);
-		const left = (isBitSetAt(flags, 1) || (val === 0) ? 1 : -1) * val;
+		const left = ((val === 0) || isBitSetAt(flags, 1) ? 1 : -1) * val;
 		const value: IID3V2.FrameValue.RVA = {
 			right, left
 		};
@@ -91,17 +91,16 @@ export const FrameRelativeVolumeAdjustment: IFrameImpl = {
 		const flags = [
 			0,
 			0,
-			value.bass === undefined ? 0 : (value.bass >= 0 ? 0 : 1),
-			value.center === undefined ? 0 : (value.center >= 0 ? 0 : 1),
-			value.leftBack === undefined ? 0 : (value.leftBack >= 0 ? 0 : 1),
-			value.rightBack === undefined ? 0 : (value.rightBack >= 0 ? 0 : 1),
+			(value.bass === undefined) || (value.bass >= 0) ? 0 : 1,
+			(value.center === undefined) || (value.center >= 0) ? 0 : 1,
+			(value.leftBack === undefined) || (value.leftBack >= 0) ? 0 : 1,
+			(value.rightBack === undefined) || (value.rightBack >= 0) ? 0 : 1,
 			value.left < 0 ? 0 : 1,
 			value.right < 0 ? 0 : 1
 		];
 		await stream.writeBitsByte(flags);
 		let byteLength = 2;
-		for (const key of Object.keys(value)) {
-			const num = (value as any)[key] as number;
+		for (const num of Object.values(value)) {
 			if (!Number.isNaN(num)) {
 				byteLength = Math.max(neededStoreBytes(Math.abs(num), 2), byteLength);
 			}

@@ -13,11 +13,11 @@
 
 import fse from 'fs-extra';
 
-import { ID3v2 } from '../../src/lib/id3v2/id3v2';
-import { ID3v1 } from '../../src/lib/id3v1/id3v1';
-import { IID3V2 } from '../../src/lib/id3v2/id3v2.types';
-import { ITestSpecFrame } from '../common/spec';
-import { probe } from './ffprobe';
+import { ID3v2 } from '../../src/lib/id3v2/id3v2.js';
+import { ID3v1 } from '../../src/lib/id3v1/id3v1.js';
+import { IID3V2 } from '../../src/lib/id3v2/id3v2.types.js';
+import { ITestSpecFrame } from '../common/spec.js';
+import { probe } from './ffprobe.js';
 import path from 'node:path';
 
 function omitBin(obj: any): any {

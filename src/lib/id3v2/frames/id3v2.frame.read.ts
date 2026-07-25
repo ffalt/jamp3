@@ -1,13 +1,29 @@
 import * as zlib from 'node:zlib';
+import { promisify } from 'node:util';
 
-import { IID3V2 } from '../id3v2.types';
-import { ITagID } from '../../common/types';
-import { BufferReader } from '../../common/buffer-reader';
-import { ID3v2_FRAME_HEADER_LENGTHS } from '../id3v2.header.consts';
-import { ID3v2Reader } from '../id3v2.reader';
-import { matchFrame } from './id3v2.frame.match';
-import { removeUnsync } from './id3v2.frame.unsync';
-import { IFrameImplParseResult } from './id3v2.frame';
+import { IID3V2 } from '../id3v2.types.js';
+import { ITagID } from '../../common/types.js';
+import { BufferReader } from '../../common/buffer-reader.js';
+import { ID3v2_FRAME_HEADER_LENGTHS } from '../id3v2.header.consts.js';
+import { ID3v2Reader } from '../id3v2.reader.js';
+import { matchFrame } from './id3v2.frame.match.js';
+import { removeUnsync } from './id3v2.frame.unsync.js';
+import { IFrameImplParseResult } from './id3v2.frame.js';
+
+const inflate = promisify(zlib.inflate);
+const gunzip = promisify(zlib.gunzip);
+
+async function decompressFrameData(data: Buffer): Promise<Buffer> {
+	try {
+		return await inflate(data);
+	} catch {
+		try {
+			return await gunzip(data);
+		} catch {
+			throw new Error('Decompressing frame failed');
+		}
+	}
+}
 
 async function processRawFrame(frame: IID3V2.RawFrame, head: IID3V2.TagHeader): Promise<void> {
 	if ((frame.formatFlags) && (frame.formatFlags.encrypted)) {
@@ -22,22 +38,10 @@ async function processRawFrame(frame: IID3V2.RawFrame, head: IID3V2.TagHeader): 
 			const sizebytes = ID3v2_FRAME_HEADER_LENGTHS.SIZE[head.ver];
 			data = data.subarray(sizebytes);
 		}
-		return new Promise<void>((resolve, reject) => {
-			zlib.inflate(data, (err, result) => {
-				if (!err && result) {
-					frame.data = result;
-					resolve();
-				}
-				zlib.gunzip(data, (err2, result2) => {
-					if (!err2 && result2) {
-						frame.data = result2;
-						resolve();
-					}
-					reject('Decompressing frame failed');
-				});
-			});
-		});
-	} else if ((frame.formatFlags) && (frame.formatFlags.dataLengthIndicator)) {
+		frame.data = await decompressFrameData(data);
+		return;
+	}
+	if ((frame.formatFlags) && (frame.formatFlags.dataLengthIndicator)) {
 		/*
 		 p - Data length indicator
 			 The data length indicator is the value one would write
@@ -88,11 +92,10 @@ export async function readID3v2Frame(rawFrame: IID3V2.RawFrame, head: IID3V2.Tag
 		},
 		value: {}
 	};
-	let result: IFrameImplParseResult | undefined;
 	try {
 		await processRawFrame(rawFrame, head);
 		const reader = new BufferReader(rawFrame.data);
-		result = await f.impl.parse(reader, rawFrame, head);
+		const result: IFrameImplParseResult = await f.impl.parse(reader, rawFrame, head);
 		if (frame.head) {
 			frame.head.encoding = result.encoding ? result.encoding.name : undefined;
 		}

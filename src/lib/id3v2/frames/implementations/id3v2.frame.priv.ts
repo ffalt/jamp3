@@ -1,8 +1,8 @@
 import iconv from 'iconv-lite';
-import { IFrameImpl } from '../id3v2.frame';
-import { ascii } from '../../../common/encodings';
-import { IID3V2 } from '../../id3v2.types';
-import { PRIVGuidOwners, PRIVNumericOwners, PRIVWideStringOwners } from '../../id3v2.simplify.maps';
+import { IFrameImpl } from '../id3v2.frame.js';
+import { ascii } from '../../../common/encodings.js';
+import { IID3V2 } from '../../id3v2.types.js';
+import { PRIVGuidOwners, PRIVNumericOwners, PRIVWideStringOwners } from '../../id3v2.simplify.maps.js';
 
 type PrivValue = IID3V2.FrameValue.IdBin | IID3V2.FrameValue.IdNum | IID3V2.FrameValue.IdGuid | IID3V2.FrameValue.IdText;
 

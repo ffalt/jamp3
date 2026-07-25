@@ -1,10 +1,9 @@
 {
   "compilerOptions": {
-    "target": "es6",
-    "module": "node16",
-    "moduleResolution": "node16",
+    "target": "ES2020",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "outDir": "dist",
-    "baseUrl": "./",
     "rootDir": "src",
     "sourceMap": true,
     "strict": true,
@@ -19,19 +18,22 @@
     "lib": [
       "es2022"
     ],
+    "types": [
+      "node"
+    ],
     "typeRoots": [
-      "node_modules/@types",
-      "src/@types"
+      "./node_modules/@types",
+      "./src/@types"
     ]
   },
   "include": [
-    "src/types.d.ts",
-    "src/**/*"
+    "./src/types.d.ts",
+    "./src/**/*"
   ],
   "exclude": [
-    "data",
-    "local",
-    "dist",
+    "./data",
+    "./local",
+    "./dist",
     "**/*.spec.ts"
   ]
 }

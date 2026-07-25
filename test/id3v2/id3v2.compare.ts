@@ -1,14 +1,15 @@
 import fse from 'fs-extra';
 import tmp from 'tmp';
+import { expect } from '@jest/globals';
 
-import { ID3v2 } from '../../src/lib/id3v2/id3v2';
-import { IID3V2 } from '../../src/lib/id3v2/id3v2.types';
-import { MP3 } from '../../src/lib/mp3/mp3';
-import { BufferUtils } from '../../src/lib/common/buffer';
-import { rawHeaderOffSet } from '../../src/lib/mp3/mp3.mpeg.frame';
-import { matchFrame } from '../../src/lib/id3v2/frames/id3v2.frame.match';
-import { ensureID3v2FrameVersionDef } from '../../src/lib/id3v2/frames/id3v2.frame.version';
-import { omit } from '../common/common';
+import { ID3v2 } from '../../src/lib/id3v2/id3v2.js';
+import { IID3V2 } from '../../src/lib/id3v2/id3v2.types.js';
+import { MP3 } from '../../src/lib/mp3/mp3.js';
+import { BufferUtils } from '../../src/lib/common/buffer.js';
+import { rawHeaderOffSet } from '../../src/lib/mp3/mp3.mpeg.frame.js';
+import { matchFrame } from '../../src/lib/id3v2/frames/id3v2.frame.match.js';
+import { ensureID3v2FrameVersionDef } from '../../src/lib/id3v2/frames/id3v2.frame.version.js';
+import { omit } from '../common/common.js';
 
 export async function compareID3v2Tags(a: IID3V2.Tag, b: IID3V2.Tag): Promise<void> {
 	expect(b.frames.length).toBe(a.frames.length); // 'Not the same frame count: ' + b.frames.map(f => f.id) + ' vs. ' + a.frames.map(f => f.id));

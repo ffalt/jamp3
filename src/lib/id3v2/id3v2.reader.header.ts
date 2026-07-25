@@ -1,8 +1,8 @@
-import { bitarray, flags, unsynchsafe } from '../common/utils';
-import { Markers } from '../common/marker';
-import { ID3v2_EXTHEADER, ID3v2_HEADER } from './id3v2.header.consts';
-import { IID3V2 } from './id3v2.types';
-import { ReaderStream } from '../common/stream-reader';
+import { bitarray, flags, unsynchsafe } from '../common/utils.js';
+import { Markers } from '../common/marker.js';
+import { ID3v2_EXTHEADER, ID3v2_HEADER } from './id3v2.header.consts.js';
+import { IID3V2 } from './id3v2.types.js';
+import { ReaderStream } from '../common/stream-reader.js';
 
 export class ID3v2HeaderReader {
 	private async readID3ExtendedHeaderV3(reader: ReaderStream): Promise<{ rest?: Buffer; exthead: IID3V2.TagHeaderExtendedVer3 }> {
@@ -157,7 +157,8 @@ export class ID3v2HeaderReader {
 			const extended = await this.readID3ExtendedHeaderV3(reader);
 			header.v3.extended = extended.exthead;
 			return { header, rest: extended.rest };
-		} else if (header.v4 && header.v4.flags.extendedheader) {
+		}
+		if (header.v4 && header.v4.flags.extendedheader) {
 			const extended = await this.readID3ExtendedHeaderV4(reader);
 			header.v4.extended = extended.exthead;
 			return { header, rest: extended.rest };

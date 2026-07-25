@@ -1,6 +1,6 @@
-import { IID3V2 } from './id3v2.types';
-import { ID3V2RawBuilder } from './id3v2.builder';
-import { ITagID } from '../common/types';
+import { IID3V2 } from './id3v2.types.js';
+import { ID3V2RawBuilder } from './id3v2.builder.js';
+import { ITagID } from '../common/types.js';
 
 export abstract class ID3V2TagBuilder implements IID3V2.Builder {
 	public rawBuilder: ID3V2RawBuilder;
@@ -27,8 +27,7 @@ export abstract class ID3V2TagBuilder implements IID3V2.Builder {
 	buildFrames(): Array<IID3V2.Frame> {
 		const result: Array<IID3V2.Frame> = [];
 		const frameValues = this.rawBuilder.build();
-		for (const id of Object.keys(frameValues)) {
-			const list = frameValues[id];
+		for (const list of Object.values(frameValues)) {
 			for (const frame of list) {
 				result.push(frame);
 			}
@@ -156,8 +155,8 @@ export abstract class ID3V2TagBuilder implements IID3V2.Builder {
 		return this;
 	}
 
-	eventTimingCodes(timeStampFormat: number, events: Array<{ type: number; timestamp: number }>) {
-		this.rawBuilder.eventTimingCodes('ETCO', timeStampFormat, events);
+	eventTimingCodes(timestampFormat: number, events: Array<{ type: number; timestamp: number }>) {
+		this.rawBuilder.eventTimingCodes('ETCO', timestampFormat, events);
 		return this;
 	}
 
@@ -198,7 +197,7 @@ export abstract class ID3V2TagBuilder implements IID3V2.Builder {
 
 	isCompilation(value?: boolean | number | string) {
 		if (value !== undefined) {
-			this.bool('TCMP', value === 1 || value === 'true' || value === true);
+			this.bool('TCMP', [1, 'true', true].includes(value));
 		}
 		return this;
 	}
@@ -304,6 +303,7 @@ export abstract class ID3V2TagBuilder implements IID3V2.Builder {
 	}
 
 	mbTrackID(value?: string) {
+		// eslint-disable-next-line unicorn/prefer-https
 		return this.uniqueFileID('http://musicbrainz.org', value);
 	}
 

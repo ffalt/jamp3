@@ -1,10 +1,11 @@
 import fse from 'fs-extra';
 import tmp from 'tmp';
 
-import { ID3v2 } from '../../src/lib/id3v2/id3v2';
-import { ID3V24TagBuilder } from '../../src/lib/id3v2/id3v2.builder.v24';
-import { Id3v2RawWriter } from '../../src/lib/id3v2/id3v2.writer.raw';
-import { MemoryWriterStream } from '../../src/lib/common/stream-writer-memory';
+import { ID3v2 } from '../../src/lib/id3v2/id3v2.js';
+import { ID3V24TagBuilder } from '../../src/lib/id3v2/id3v2.builder.v24.js';
+import { Id3v2RawWriter } from '../../src/lib/id3v2/id3v2.writer.raw.js';
+import { MemoryWriterStream } from '../../src/lib/common/stream-writer-memory.js';
+import { describe, expect, it } from '@jest/globals';
 
 const testNumber = 5;
 const testString = 'räksmörgåsЪЭЯ😀';

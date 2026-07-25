@@ -1,9 +1,9 @@
-import { IFrameImpl } from '../id3v2.frame';
-import { ascii } from '../../../common/encodings';
-import { isBitSetAt } from '../../../common/utils';
-import { IID3V2 } from '../../id3v2.types';
-import { writeRawSubFrames } from '../id3v2.frame.write';
-import { readSubFrames } from '../id3v2.frame.read';
+import { IFrameImpl } from '../id3v2.frame.js';
+import { ascii } from '../../../common/encodings.js';
+import { isBitSetAt } from '../../../common/utils.js';
+import { IID3V2 } from '../../id3v2.types.js';
+import { writeRawSubFrames } from '../id3v2.frame.write.js';
+import { readSubFrames } from '../id3v2.frame.read.js';
 
 export const FrameCTOC: IFrameImpl = {
 	/**
@@ -39,7 +39,7 @@ export const FrameCTOC: IFrameImpl = {
 		const topLevel = isBitSetAt(bits, 1);
 		let entrycount = reader.readBitsByte();
 		if (entrycount < 0) {
-			entrycount = (entrycount * -1) + 2;
+			entrycount = (-entrycount) + 2;
 		}
 		const children: Array<string> = [];
 		while (reader.hasData()) {

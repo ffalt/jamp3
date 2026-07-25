@@ -1,5 +1,5 @@
-import { WriterStream } from './stream-writer';
 import MemoryStream from 'memory-stream';
+import { WriterStream } from './stream-writer.js';
 
 export class MemoryWriterStream extends WriterStream {
 	toBuffer(): Buffer {

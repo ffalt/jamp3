@@ -1,5 +1,5 @@
-import { IMP3 } from './mp3.types';
-import { rawHeaderLayerIdx, rawHeaderOffSet, rawHeaderSize, rawHeaderVersionIdx } from './mp3.mpeg.frame';
+import { IMP3 } from './mp3.types.js';
+import { rawHeaderLayerIdx, rawHeaderOffSet, rawHeaderSize, rawHeaderVersionIdx } from './mp3.mpeg.frame.js';
 
 function followChain(frame: IMP3.FrameRawHeaderArray, pos: number, frames: Array<IMP3.FrameRawHeaderArray>): Array<IMP3.FrameRawHeaderArray> {
 	const result: Array<IMP3.FrameRawHeaderArray> = [];
@@ -49,7 +49,8 @@ function getNextMatch(offset: number, pos: number, frames: Array<IMP3.FrameRawHe
 	for (let j = pos + 1; j < frames.length; j++) {
 		if (rawHeaderOffSet(frames[j]) === offset) {
 			return j;
-		} else if (rawHeaderOffSet(frames[j]) > offset) {
+		}
+		if (rawHeaderOffSet(frames[j]) > offset) {
 			return -1;
 		}
 	}

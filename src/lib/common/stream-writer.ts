@@ -1,8 +1,8 @@
 import fs from 'node:fs';
-import { BufferUtils } from './buffer';
-import { synchsafe, unbitarray } from './utils';
-import { ascii, IEncoding } from './encodings';
 import MemoryStream from 'memory-stream';
+import { BufferUtils } from './buffer.js';
+import { synchsafe, unbitarray } from './utils.js';
+import { ascii, IEncoding } from './encodings.js';
 
 export class WriterStream {
 	protected wstream: fs.WriteStream;

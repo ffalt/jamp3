@@ -1,8 +1,9 @@
 import fse from 'fs-extra';
 import tmp from 'tmp';
+import { describe, expect, it } from '@jest/globals';
 
-import { ID3v2 } from '../../src/lib/id3v2/id3v2';
-import { ID3V23TagBuilder } from '../../src/lib/id3v2/id3v2.builder.v23';
+import { ID3v2 } from '../../src/lib/id3v2/id3v2.js';
+import { ID3V23TagBuilder } from '../../src/lib/id3v2/id3v2.builder.v23.js';
 
 const testNumber = 5;
 const testString = 'räksmörgåsЪЭЯ😀';

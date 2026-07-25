@@ -1,11 +1,11 @@
 import { program, Option } from 'commander';
 import fse from 'fs-extra';
 
-import { MP3Analyzer } from '../lib/mp3/mp3.analyzer';
-import { IMP3Analyzer } from '../lib/mp3/mp3.analyzer.types';
-import { runTool } from '../lib/common/tool';
+import { MP3Analyzer } from '../lib/mp3/mp3.analyzer.js';
+import { IMP3Analyzer } from '../lib/mp3/mp3.analyzer.types.js';
+import { runTool } from '../lib/common/tool.js';
 
-import pack from '../../package.json';
+import pack from '../../package.json' with { type: "json" };
 
 program
 	.version(pack.version, '-v, --version')

@@ -1,4 +1,4 @@
-// http://en.wikipedia.org/wiki/Synchsafe
+// https://en.wikipedia.org/wiki/Synchsafe
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -26,8 +26,8 @@ export function synchsafe(input: number): number {
 	let mask = 0x7F;
 	while (mask ^ 0x7F_FF_FF_FF) {
 		out = current & ~mask;
-		out = out << 1;
-		out = out | (current & mask);
+		out <<= 1;
+		out |= (current & mask);
 		mask = ((mask + 1) << 8) - 1;
 		current = out;
 	}
@@ -40,9 +40,9 @@ export function synchsafe(input: number): number {
 export function unsynchsafe(input: number): number {
 	let out = 0, mask = 0x7F_00_00_00;
 	while (mask) {
-		out = out >> 1;
-		out = out | (input & mask);
-		mask = mask >> 8;
+		out >>= 1;
+		out |= (input & mask);
+		mask >>= 8;
 	}
 	if (out === undefined) {
 		return 0;

@@ -1,15 +1,16 @@
 import path from 'node:path';
 import fse from 'fs-extra';
 import tmp from 'tmp';
+import { describe, expect, it } from '@jest/globals';
 
-import { applyUnsync, needsUnsync, removeUnsync } from '../../src/lib/id3v2/frames/id3v2.frame.unsync';
-import { MemoryWriterStream } from '../../src/lib/common/stream-writer-memory';
-import { Id3v2RawWriter } from '../../src/lib/id3v2/id3v2.writer.raw';
-import { ID3v2Reader } from '../../src/lib/id3v2/id3v2.reader';
-import { buildID3v2 } from '../../src/lib/id3v2/frames/id3v2.frame.read';
-import { writeRawFrames } from '../../src/lib/id3v2/frames/id3v2.frame.write';
-import { IID3V2 } from '../../src/lib/id3v2/id3v2.types';
-import { ID3v2 } from '../../src/lib/id3v2/id3v2';
+import { applyUnsync, needsUnsync, removeUnsync } from '../../src/lib/id3v2/frames/id3v2.frame.unsync.js';
+import { MemoryWriterStream } from '../../src/lib/common/stream-writer-memory.js';
+import { Id3v2RawWriter } from '../../src/lib/id3v2/id3v2.writer.raw.js';
+import { ID3v2Reader } from '../../src/lib/id3v2/id3v2.reader.js';
+import { buildID3v2 } from '../../src/lib/id3v2/frames/id3v2.frame.read.js';
+import { writeRawFrames } from '../../src/lib/id3v2/frames/id3v2.frame.write.js';
+import { IID3V2 } from '../../src/lib/id3v2/id3v2.types.js';
+import { ID3v2 } from '../../src/lib/id3v2/id3v2.js';
 
 const UNSYNC_TEST_PATH = path.join(__dirname, '..', 'data', 'testfiles', 'id3v2', 'agrundma');
 

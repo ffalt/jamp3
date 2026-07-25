@@ -1,5 +1,5 @@
-import { ID3V2TagBuilder } from './id3v2.builder.v2';
-import { IID3V2 } from './id3v2.types';
+import { ID3V2TagBuilder } from './id3v2.builder.v2.js';
+import { IID3V2 } from './id3v2.types.js';
 
 /**
  * Class for
@@ -87,7 +87,7 @@ export class ID3V24TagBuilder extends ID3V2TagBuilder {
 
 	isPodcast(value?: boolean | number | string): ID3V24TagBuilder {
 		if (value !== undefined) {
-			this.number('PCST', value === 1 || value === 'true' || value === true ? 1 : 0);
+			this.number('PCST', [1, 'true', true].includes(value) ? 1 : 0);
 		}
 		return this;
 	}

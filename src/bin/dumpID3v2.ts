@@ -1,11 +1,11 @@
 import fse from 'fs-extra';
 import { program } from 'commander';
 
-import { runTool } from '../lib/common/tool';
-import { ID3v2 } from '../lib/id3v2/id3v2';
-import { toPrettyJsonWithBin } from '../lib/common/pretty-json';
+import { runTool } from '../lib/common/tool.js';
+import { ID3v2 } from '../lib/id3v2/id3v2.js';
+import { toPrettyJsonWithBin } from '../lib/common/pretty-json.js';
 
-import pack from '../../package.json';
+import pack from '../../package.json' with { type: "json" };
 
 program
 	.version(pack.version, '-v, --version')

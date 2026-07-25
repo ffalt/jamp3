@@ -1,10 +1,10 @@
-import { IID3V1 } from '../id3v1/id3v1.types';
-import { MP3 } from './mp3';
-import { IMP3 } from './mp3.types';
-import { rawHeaderOffSet, rawHeaderSize } from './mp3.mpeg.frame';
-import { ITagID } from '../common/types';
-import { checkID3v2 } from '../id3v2/id3v2.check';
-import { IMP3Analyzer } from './mp3.analyzer.types';
+import { IID3V1 } from '../id3v1/id3v1.types.js';
+import { MP3 } from './mp3.js';
+import { IMP3 } from './mp3.types.js';
+import { rawHeaderOffSet, rawHeaderSize } from './mp3.mpeg.frame.js';
+import { ITagID } from '../common/types.js';
+import { checkID3v2 } from '../id3v2/id3v2.check.js';
+import { IMP3Analyzer } from './mp3.analyzer.types.js';
 
 /**
  * Class for
@@ -35,7 +35,7 @@ export class MP3Analyzer {
 	private analyzeID3v1(data: IMP3.Result): Array<IMP3Analyzer.Warning> {
 		const result: Array<IMP3Analyzer.Warning> = [];
 		const lastFrame: IMP3.FrameRawHeaderArray | undefined = data.frames && data.frames.audio.length > 0 ? data.frames.audio.at(-1) : undefined;
-		if (data.raw && lastFrame) {
+		if (lastFrame && data.raw) {
 			const audioEnd = rawHeaderOffSet(lastFrame) + rawHeaderSize(lastFrame);
 			let id3v1s: Array<IID3V1.Tag> = data.raw.tags.filter(t => t.id === ITagID.ID3v1 && t.start >= audioEnd) as Array<IID3V1.Tag>;
 			if (id3v1s.length > 0) {
@@ -126,7 +126,7 @@ export class MP3Analyzer {
 			}
 			if (
 				data.mpeg.audioBytes !== data.mpeg.audioBytesDeclared &&
-				(!ignoreXingOffOne || data.mpeg.audioBytes + head.header.size - data.mpeg.audioBytesDeclared === 0)
+				(!ignoreXingOffOne || data.mpeg.audioBytes + head.header.size === data.mpeg.audioBytesDeclared)
 			) {
 				result.push({ msg: `XING: Wrong number of data bytes declared in ${head.mode} Header`, expected: data.mpeg.audioBytes, actual: data.mpeg.audioBytesDeclared });
 			}

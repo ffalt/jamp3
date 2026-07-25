@@ -1,6 +1,7 @@
-import { loadSpec, omit, toNonBinJson } from '../common/common';
-import { IID3V2 } from '../../src/lib/id3v2/id3v2.types';
-import { ID3v2 } from '../../src/lib/id3v2/id3v2';
+import { loadSpec, omit, toNonBinJson } from '../common/common.js';
+import { IID3V2 } from '../../src/lib/id3v2/id3v2.types.js';
+import { ID3v2 } from '../../src/lib/id3v2/id3v2.js';
+import { expect } from '@jest/globals';
 
 function compareID3v2SpecFrame(filename: string, framespec: any, frame: IID3V2.Frame) {
 	const frameHead = frame.head;
@@ -10,15 +11,17 @@ function compareID3v2SpecFrame(filename: string, framespec: any, frame: IID3V2.F
 	}
 	const formatFlags = frameHead.formatFlags || {};
 	if (framespec.formatFlags) {
-		for (const flag of Object.keys(framespec.formatFlags)) {
-			expect(formatFlags[flag]).toBe(framespec.formatFlags[flag]); // 'Flag values not equal for frame ' + framespec.id + ' flag ' + flag + ' frame: ' + JSON.stringify(frame));
+		for (const [flag, specValue] of Object.entries(framespec.formatFlags)) {
+			expect(formatFlags[flag]).toBe(specValue); // 'Flag values not equal for frame ' + framespec.id + ' flag ' + flag + ' frame: ' + JSON.stringify(frame));
 		}
 	}
-	for (const flag of Object.keys(formatFlags)) {
-		if (formatFlags[flag]) {
-			expect(framespec.formatFlags).toBeTruthy(); //  'SpecError: Flag values must be specified for frame ' + framespec.id + ' flag ' + flag);
-			expect(formatFlags[flag]).toBe(framespec.formatFlags[flag]); // 'SpecError: All Flag values must be correctly specified for frame ' + framespec.id + ' flag ' + flag);
+	for (const [flag, value] of Object.entries(formatFlags)) {
+		if (!value) {
+			continue;
 		}
+
+		expect(framespec.formatFlags).toBeTruthy(); //  'SpecError: Flag values must be specified for frame ' + framespec.id + ' flag ' + flag);
+		expect(value).toBe(framespec.formatFlags[flag]); // 'SpecError: All Flag values must be correctly specified for frame ' + framespec.id + ' flag ' + flag);
 	}
 	if (framespec.binSize !== undefined) {
 		expect((frame.value as any).bin.length).toBe(framespec.binSize);
@@ -43,12 +46,30 @@ function compareID3v2SpecFrame(filename: string, framespec: any, frame: IID3V2.F
 	}
 }
 
+/**
+ * Position of framespec amongst the spec frames matching the given predicate,
+ * so multiple frames with the same id are compared in order of appearance.
+ */
+function specFrameNr(specframes: Array<any>, framespec: any, matches: (sf: any) => boolean): number {
+	let nr = -1;
+	for (const sf of specframes) {
+		if (matches(sf)) {
+			nr++;
+		}
+		if (sf === framespec) {
+			return nr;
+		}
+	}
+	return nr;
+}
+
 function compareID3v2SpecFrames(filename: string, specframes: Array<any> = [], frames: Array<IID3V2.Frame>) {
 	for (const framespec of specframes) {
 		const list: Array<IID3V2.Frame> = frames.filter(f => f.id === framespec.id);
 		if (list.length === 0) {
 			throw new Error(`Spec frame not found:${JSON.stringify(framespec)}`);
-		} else if (list.length === 1) {
+		}
+		if (list.length === 1) {
 			compareID3v2SpecFrame(filename, framespec, list[0]);
 		} else {
 			let sublist: Array<IID3V2.Frame>;
@@ -60,19 +81,7 @@ function compareID3v2SpecFrames(filename: string, specframes: Array<any> = [], f
 			} else if (['GEOB'].includes(framespec.id)) {
 				sublist = list;
 				if (sublist.length > 1) {
-					let done = false;
-					let nr = -1;
-					for (const sf of specframes) {
-						if (!done) {
-							if (sf.id === framespec.id) {
-								nr++;
-							}
-							if (sf === framespec) {
-								done = true;
-							}
-						}
-					}
-					sublist[0] = sublist[nr];
+					sublist[0] = sublist[specFrameNr(specframes, framespec, sf => sf.id === framespec.id)];
 				}
 			} else if (['APIC', 'PIC'].includes(framespec.id)) {
 				sublist = list.filter(f => (f.value as any).pictureType === framespec.value.pictureType);
@@ -80,19 +89,7 @@ function compareID3v2SpecFrames(filename: string, specframes: Array<any> = [], f
 					throw new Error(`Spec frame not found:${JSON.stringify(framespec)}`);
 				}
 				if (sublist.length > 1) {
-					let done = false;
-					let nr = -1;
-					for (const sf of specframes) {
-						if (!done) {
-							if (sf.id === framespec.id && sf.value.pictureType === framespec.value.pictureType) {
-								nr++;
-							}
-							if (sf === framespec) {
-								done = true;
-							}
-						}
-					}
-					sublist[0] = sublist[nr];
+					sublist[0] = sublist[specFrameNr(specframes, framespec, sf => sf.id === framespec.id && sf.value.pictureType === framespec.value.pictureType)];
 				}
 			} else if (['TIT2', 'TPE1', 'TALB', 'TRCK', 'TRK'].includes(framespec.id)) {
 				sublist = list.filter(f => (f.value as any).text === framespec.value.text);
@@ -100,19 +97,7 @@ function compareID3v2SpecFrames(filename: string, specframes: Array<any> = [], f
 					throw new Error(`Spec frame not found:${JSON.stringify(framespec)}`);
 				}
 				if (sublist.length > 1) {
-					let done = false;
-					let nr = -1;
-					for (const sf of specframes) {
-						if (!done) {
-							if (sf.id === framespec.id) {
-								nr++;
-							}
-							if (sf === framespec) {
-								done = true;
-							}
-						}
-					}
-					sublist[0] = sublist[nr];
+					sublist[0] = sublist[specFrameNr(specframes, framespec, sf => sf.id === framespec.id)];
 				}
 			} else if (['WOAR'].includes(framespec.id)) {
 				sublist = list.filter(f => (f.value as any).text === framespec.value.text);
@@ -122,19 +107,7 @@ function compareID3v2SpecFrames(filename: string, specframes: Array<any> = [], f
 			} else if (['TXXX', 'PRIV', 'WXXX', 'CHAP', 'CTOC', 'COMM', 'COM', 'RVA2', 'TRC'].includes(framespec.id)) {
 				sublist = list.filter(f => (f.value as any).id === framespec.value.id);
 				if (sublist.length > 1) {
-					let done = false;
-					let nr = -1;
-					for (const sf of specframes) {
-						if (!done) {
-							if (sf.id === framespec.id) {
-								nr++;
-							}
-							if (sf === framespec) {
-								done = true;
-							}
-						}
-					}
-					sublist[0] = sublist[nr];
+					sublist[0] = sublist[specFrameNr(specframes, framespec, sf => sf.id === framespec.id)];
 				} else if (sublist.length !== 1) {
 					throw new Error(`Spec frame not found:${JSON.stringify(framespec)}${toNonBinJson(frames)}`);
 				}

@@ -1,5 +1,5 @@
 import iconv from 'iconv-lite';
-import { BufferUtils } from './buffer';
+import { BufferUtils } from './buffer.js';
 
 export interface IEncoding {
 	name: string;

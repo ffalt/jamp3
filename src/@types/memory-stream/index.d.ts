@@ -6,5 +6,5 @@ declare module 'memory-stream' {
 		toBuffer(): Buffer;
 	}
 
-	export = MemoryStream;
+	export default MemoryStream;
 }

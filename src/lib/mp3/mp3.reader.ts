@@ -1,13 +1,13 @@
 import { Readable } from 'node:stream';
 import fse from 'fs-extra';
 
-import { IMP3 } from './mp3.types';
-import { ID3v1Reader } from '../id3v1/id3v1.reader';
-import { ID3v2Reader } from '../id3v2/id3v2.reader';
-import { collapseRawHeader, MPEGFrameReader } from './mp3.mpeg.frame';
-import { BufferUtils } from '../common/buffer';
-import { getBestMPEGChain } from './mp3.mpeg.chain';
-import { ReaderStream } from '../common/stream-reader';
+import { IMP3 } from './mp3.types.js';
+import { ID3v1Reader } from '../id3v1/id3v1.reader.js';
+import { ID3v2Reader } from '../id3v2/id3v2.reader.js';
+import { collapseRawHeader, MPEGFrameReader } from './mp3.mpeg.frame.js';
+import { BufferUtils } from '../common/buffer.js';
+import { getBestMPEGChain } from './mp3.mpeg.chain.js';
+import { ReaderStream } from '../common/stream-reader.js';
 
 export interface MP3ReaderOptions extends IMP3.ReadOptions {
 	streamSize?: number;
@@ -38,7 +38,7 @@ export class MP3Reader {
 			}
 			this.layout.frameheaders.push(a.frame.header);
 			if (this.options.mpegQuick) {
-				this.hasMPEGHeadFrame = this.hasMPEGHeadFrame || !!a.frame.mode;
+				this.hasMPEGHeadFrame ||= !!a.frame.mode;
 				if (this.layout.frameheaders.length % 50 === 0) {
 					if (this.hasMPEGHeadFrame) {
 						this.scanMpeg = false;
@@ -63,10 +63,9 @@ export class MP3Reader {
 			this.scanid3v2 = false; // no more scanning for id3v2 after audio start
 			if (this.scanMPEGFrame) {
 				return this.readFullMPEGFrame(chunk, pos, header);
-			} else {
-				header.offset = this.stream.pos - chunk.length + pos;
-				this.layout.frameheaders.push(collapseRawHeader(header));
 			}
+			header.offset = this.stream.pos - chunk.length + pos;
+			this.layout.frameheaders.push(collapseRawHeader(header));
 		}
 		return false;
 	}
@@ -82,7 +81,7 @@ export class MP3Reader {
 		tag.start = this.stream.pos - chunk.length + pos;
 		tag.end = tag.start + 128;
 		this.layout.tags.push(tag);
-		if (!this.stream.end || chunk.length - 128 - pos > 0) {
+		if (!this.stream.end || chunk.length - 128 > pos) {
 			// we need to rewind and scan, there are several unfortunate other tags which may be detected as valid td3v1, e.g. "APETAGEX", "TAG+", "CUSTOMTAG" or just a equal looking stream position
 			this.stream.unshift(chunk.subarray(pos + 1));
 		} else {
@@ -158,13 +157,18 @@ export class MP3Reader {
 			const c1 = chunk[pos];
 			const c2 = chunk[pos + 1];
 			const c3 = chunk[pos + 2];
+			// eslint-disable-next-line unicorn/prefer-simple-condition-first
 			if (this.scanid3v2 && c1 === 73 && c2 === 68 && c3 === 51 && (await this.readID3V2(chunk, pos))) {
 				return true;
-			} else if (this.scanMpeg && c1 === 255 && this.readMPEGFrame(chunk, pos)) {
+			}
+			// eslint-disable-next-line unicorn/prefer-simple-condition-first
+			if (this.scanMpeg && c1 === 255 && this.readMPEGFrame(chunk, pos)) {
 				return true;
-			} else if (
-				this.scanid3v1 && this.isInID3v1Range(chunk, pos) &&
-				c1 === 84 && c2 === 65 && c3 === 71 &&
+			}
+			if (
+				// eslint-disable-next-line unicorn/prefer-simple-condition-first
+				this.scanid3v1 && c1 === 84 && c2 === 65 && c3 === 71 &&
+				this.isInID3v1Range(chunk, pos) &&
 				this.readID3V1(chunk, pos)
 			) {
 				return true;
@@ -182,7 +186,8 @@ export class MP3Reader {
 			const c3 = chunk[pos + 2];
 			if ((c1 === 73 && c2 === 68 && c3 === 51) && (await this.readID3V2(chunk, pos))) {
 				return true;
-			} else if ((c1 === 84 && c2 === 65 && c3 === 71) && this.isInID3v1Range(chunk, pos) && this.readID3V1(chunk, pos)) {
+			}
+			if ((c1 === 84 && c2 === 65 && c3 === 71) && this.isInID3v1Range(chunk, pos) && this.readID3V1(chunk, pos)) {
 				return true;
 			}
 			pos++;
@@ -213,7 +218,8 @@ export class MP3Reader {
 		}
 		if (!this.scanMpeg && !this.scanid3v2 && !this.scanid3v1) {
 			return this.processChunkToEnd(chunk);
-		} else if (!this.scanMpeg && !this.scanid3v2) {
+		}
+		if (!this.scanMpeg && !this.scanid3v2) {
 			if (await this.processChunkID3v1(chunk)) {
 				return true;
 			}

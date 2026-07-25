@@ -1,10 +1,11 @@
 import fse from 'fs-extra';
+import { expect } from '@jest/globals';
 
-import { MP3 } from '../../src/lib/mp3/mp3';
-import { IMP3 } from '../../src/lib/mp3/mp3.types';
-import { ITestSpec, ITestSpecFrame } from '../common/spec';
-import { filterBestMPEGChain } from '../../src/lib/mp3/mp3.mpeg.chain';
-import { expandRawHeader, expandRawHeaderArray, rawHeaderOffSet } from '../../src/lib/mp3/mp3.mpeg.frame';
+import { MP3 } from '../../src/lib/mp3/mp3.js';
+import { IMP3 } from '../../src/lib/mp3/mp3.types.js';
+import { ITestSpec, ITestSpecFrame } from '../common/spec.js';
+import { filterBestMPEGChain } from '../../src/lib/mp3/mp3.mpeg.chain.js';
+import { expandRawHeader, expandRawHeaderArray, rawHeaderOffSet } from '../../src/lib/mp3/mp3.mpeg.frame.js';
 
 async function loadFramesCompareProbe(filename: string, result: IMP3.Result): Promise<void> {
 	const compare: ITestSpec = await fse.readJSON(`${filename}.frames.json`);
@@ -30,7 +31,7 @@ async function loadFramesCompareProbe(filename: string, result: IMP3.Result): Pr
 	if (frames.length !== compareFrames.length) {
 		const missing: Array<number> = [];
 		for (const frame of frames) {
-			if (!compareFrames.some(f => f.offset === rawHeaderOffSet(frame))) {
+			if (compareFrames.every(f => f.offset !== rawHeaderOffSet(frame))) {
 				missing.push(rawHeaderOffSet(frame));
 			}
 		}
@@ -40,7 +41,7 @@ async function loadFramesCompareProbe(filename: string, result: IMP3.Result): Pr
 		}
 		const missing2: Array<number> = [];
 		for (const frame of compareFrames) {
-			if (!frames.some(f => rawHeaderOffSet(f) === frame.offset)) {
+			if (frames.every(f => rawHeaderOffSet(f) !== frame.offset)) {
 				missing2.push(frame.offset);
 			}
 		}

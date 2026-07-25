@@ -1,12 +1,12 @@
 import { Readable } from 'node:stream';
 import fse from 'fs-extra';
 
-import { ID3v1Reader } from './id3v1.reader';
-import { ID3v1Writer } from './id3v1.writer';
-import { IID3V1 } from './id3v1.types';
-import { ITagID } from '../common/types';
-import { updateFile } from '../common/update-file';
-import { FileWriterStream } from '../common/stream-writer-file';
+import { ID3v1Reader } from './id3v1.reader.js';
+import { ID3v1Writer } from './id3v1.writer.js';
+import { IID3V1 } from './id3v1.types.js';
+import { ITagID } from '../common/types.js';
+import { updateFile } from '../common/update-file.js';
+import { FileWriterStream } from '../common/stream-writer-file.js';
 
 /**
  * Class for
@@ -51,11 +51,13 @@ export class ID3v1 {
 		await updateFile(filename, { id3v1: true }, !!options.keepBackup, () => true, async (layout, fileWriter): Promise<void> => {
 			let finish = stat.size;
 			for (const t of layout.tags) {
-				if (t.id === ITagID.ID3v1) {
-					removed = true;
-					if (finish > t.start) {
-						finish = t.start;
-					}
+				if (t.id !== ITagID.ID3v1) {
+					continue;
+				}
+
+				removed = true;
+				if (finish > t.start) {
+					finish = t.start;
 				}
 			}
 			await fileWriter.copyRange(filename, 0, finish);

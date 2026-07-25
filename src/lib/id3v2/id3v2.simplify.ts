@@ -1,7 +1,7 @@
-import { IID3V2 } from './id3v2.types';
-import { COMMMap, DateUpgradeMap, FramesMap, PRIVMap, SplitFrameMap, TXXXMap, UFIDMap } from './id3v2.simplify.maps';
-import { ensureID3v2FrameVersionDef, upgrade23DateFramesTov24Date } from './frames/id3v2.frame.version';
-import { matchFrame } from './frames/id3v2.frame.match';
+import { IID3V2 } from './id3v2.types.js';
+import { COMMMap, DateUpgradeMap, FramesMap, PRIVMap, SplitFrameMap, TXXXMap, UFIDMap } from './id3v2.simplify.maps.js';
+import { ensureID3v2FrameVersionDef, upgrade23DateFramesTov24Date } from './frames/id3v2.frame.version.js';
+import { matchFrame } from './frames/id3v2.frame.match.js';
 
 function slugIDValue(id: string, value: { id: string }, mapping: Record<string, string>): string | undefined {
 	if (value && value.id) {

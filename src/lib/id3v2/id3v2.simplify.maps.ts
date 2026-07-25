@@ -38,6 +38,7 @@ export const COMMMap: Record<string, string> = {
 };
 
 export const UFIDMap: Record<string, string> = {
+	// eslint-disable-next-line unicorn/prefer-https
 	'http://musicbrainz.org': 'MUSICBRAINZ_TRACKID'
 };
 

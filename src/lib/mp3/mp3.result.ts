@@ -1,11 +1,11 @@
-import { IMP3 } from './mp3.types';
-import { ITagID } from '../common/types';
-import { filterBestMPEGChain } from './mp3.mpeg.chain';
-import { expandRawHeader, expandRawHeaderArray, rawHeaderOffSet } from './mp3.mpeg.frame';
-import { analyzeBitrateMode } from './mp3.bitrate';
-import { buildID3v2 } from '../id3v2/frames/id3v2.frame.read';
-import { IID3V1 } from '../id3v1/id3v1.types';
-import { IID3V2 } from '../id3v2/id3v2.types';
+import { IMP3 } from './mp3.types.js';
+import { ITagID } from '../common/types.js';
+import { filterBestMPEGChain } from './mp3.mpeg.chain.js';
+import { expandRawHeader, expandRawHeaderArray, rawHeaderOffSet } from './mp3.mpeg.frame.js';
+import { analyzeBitrateMode } from './mp3.bitrate.js';
+import { buildID3v2 } from '../id3v2/frames/id3v2.frame.read.js';
+import { IID3V1 } from '../id3v1/id3v1.types.js';
+import { IID3V2 } from '../id3v2/id3v2.types.js';
 
 function calculateDuration(frameCount: number, sampleCount: number, sampleRate: number): number {
 	if (frameCount > 0 && sampleCount > 0 && sampleRate > 0) {

@@ -1,6 +1,6 @@
-import { IFrameImpl } from '../id3v2.frame';
-import { IID3V2 } from '../../id3v2.types';
-import { ascii } from '../../../common/encodings';
+import { IFrameImpl } from '../id3v2.frame.js';
+import { IID3V2 } from '../../id3v2.types.js';
+import { ascii } from '../../../common/encodings.js';
 
 export const FrameIdAscii: IFrameImpl = {
 	/**

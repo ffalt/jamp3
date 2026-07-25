@@ -1,13 +1,13 @@
 import fse from 'fs-extra';
 import { Readable } from 'node:stream';
 
-import { IMP3 } from './mp3.types';
-import { MP3Reader, MP3ReaderOptions } from './mp3.reader';
-import { IID3V2 } from '../id3v2/id3v2.types';
-import { rawHeaderOffSet } from './mp3.mpeg.frame';
-import { ITagID } from '../common/types';
-import { updateFile } from '../common/update-file';
-import { prepareResult } from './mp3.result';
+import { IMP3 } from './mp3.types.js';
+import { MP3Reader, MP3ReaderOptions } from './mp3.reader.js';
+import { IID3V2 } from '../id3v2/id3v2.types.js';
+import { rawHeaderOffSet } from './mp3.mpeg.frame.js';
+import { ITagID } from '../common/types.js';
+import { updateFile } from '../common/update-file.js';
+import { prepareResult } from './mp3.result.js';
 
 /**
  * Class for
@@ -66,7 +66,8 @@ export class MP3 {
 				for (const tag of layout.tags) {
 					if (options.id3v2 && tag.id === ITagID.ID3v2 && tag.end > 0) {
 						return true;
-					} else if (options.id3v1 && tag.id === ITagID.ID3v1 && tag.end === stat.size && tag.start < stat.size) {
+					}
+					if (options.id3v1 && tag.id === ITagID.ID3v1 && tag.end === stat.size && tag.start < stat.size) {
 						return true;
 					}
 				}

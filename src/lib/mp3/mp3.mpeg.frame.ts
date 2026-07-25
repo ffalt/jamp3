@@ -2,10 +2,10 @@ import {
 	mpeg_bitrates, mpeg_channel_count, mpeg_channel_mode_jointstereoIdx, mpeg_channel_mode_types,
 	mpeg_channel_modes, mpeg_emphasis, mpeg_frame_samples, mpeg_layer_joint_extension,
 	mpeg_layer_names_long, mpeg_slot_size, mpeg_srates, mpeg_version_names_long
-} from './mp3.mpeg.consts';
-import { IMP3 } from './mp3.types';
-import { isBit } from '../common/utils';
-import { BufferReader } from '../common/buffer-reader';
+} from './mp3.mpeg.consts.js';
+import { IMP3 } from './mp3.types.js';
+import { isBit } from '../common/utils.js';
+import { BufferReader } from '../common/buffer-reader.js';
 
 export function collapseRawHeader(header: IMP3.FrameRawHeader): IMP3.FrameRawHeaderArray {
 	return [
@@ -179,7 +179,7 @@ export class MPEGFrameReader {
 
 	private verfiyCRC() {
 		/**
-		 http://www.codeproject.com/Articles/8295/MPEG-Audio-Frame-Header#CRC
+		 https://www.codeproject.com/Articles/8295/MPEG-Audio-Frame-Header#CRC
 		 var verifyCRC = function(){
 		 2.2. Verifying CRC
 
@@ -274,7 +274,7 @@ export class MPEGFrameReader {
 	}
 
 	private readVbri(data: Buffer, frame: IMP3.RawFrame, offset: number): number {
-		/** http://www.codeproject.com/Articles/8295/MPEG-Audio-Frame-Header#VBRIHeader
+		/** https://www.codeproject.com/Articles/8295/MPEG-Audio-Frame-Header#VBRIHeader
 		 2.3.2 VBRI Header
 		 This header is only used by MPEG audio files encoded with the Fraunhofer Encoder as far as I know. It is different from the XING header.
 		 You find it exactly 32 bytes after the end of the first MPEG audio header in the file.
@@ -315,7 +315,7 @@ export class MPEGFrameReader {
 
 	private readXing(data: Buffer, frame: IMP3.RawFrame, offset: number): number {
 		/**
-		 http://www.codeproject.com/Articles/8295/MPEG-Audio-Frame-Header#XINGHeader
+		 https://www.codeproject.com/Articles/8295/MPEG-Audio-Frame-Header#XINGHeader
 		 This header is often (but unfortunately not always) added to files which are encoded with variable bitrate mode.
 		 This header stands after the first MPEG audio header at a specific position.
 		 The whole first frame which contains the XING header is a valid but empty audio frame, so even decoders which don't consider this header can decode the file.
@@ -347,7 +347,7 @@ export class MPEGFrameReader {
 		 According to this format, a XING header must only contain the ID and the flags. All other fields are optional and depend on the flags which are set.
 		 Sometimes this header is also added to CBR files. It then often has the ID 'Info' instead of 'Xing'.
 
-		 There exists the LAME extension to this header, which is used by the common LAME Encoder, http://gabriel.mp3-tech.org/mp3infotag.html#versionstring
+		 There exists the LAME extension to this header, which is used by the common LAME Encoder, https://gabriel.mp3-tech.org/mp3infotag.html#versionstring
 		 */
 		const reader = new BufferReader(data);
 		reader.position = offset;

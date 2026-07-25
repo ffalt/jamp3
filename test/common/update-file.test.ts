@@ -1,6 +1,8 @@
-import { updateFile } from '../../src/lib/common/update-file';
 import tmp from 'tmp';
 import fse from 'fs-extra';
+import { describe, expect, it } from '@jest/globals';
+
+import { updateFile } from '../../src/lib/common/update-file.js';
 
 describe('updateFile', () => {
 	it('should keep an existing .bak file untouched with keepBackup=true', async () => {

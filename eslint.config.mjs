@@ -41,9 +41,18 @@ const unicornRules = {
 	"unicorn/no-null": "off",
 	"unicorn/no-array-reduce": "off",
 	"unicorn/throw-new-error": "off",
+	"unicorn/no-impossible-length-comparison": "off",
+	"unicorn/no-unsafe-string-replacement": "off",
+	"unicorn/no-top-level-assignment-in-function": "off",
+	"unicorn/prefer-await": "off",
+	"unicorn/no-computed-property-existence-check": "off",
 	"unicorn/no-process-exit": "off",
 	"unicorn/no-useless-undefined": "off",
-	"unicorn/prefer-top-level-await": "off"
+	"unicorn/prefer-number-coercion": "off",
+	"unicorn/prefer-top-level-await": "off",
+	"unicorn/consistent-boolean-name": "off",
+	"unicorn/consistent-class-member-order": "off",
+	"unicorn/name-replacements": "off"
 };
 
 const stylisticRules = {

@@ -1,6 +1,6 @@
-import { IFrameImpl } from '../id3v2.frame';
-import { ascii } from '../../../common/encodings';
-import { IID3V2 } from '../../id3v2.types';
+import { IFrameImpl } from '../id3v2.frame.js';
+import { ascii } from '../../../common/encodings.js';
+import { IID3V2 } from '../../id3v2.types.js';
 
 export const FrameLINK: IFrameImpl = {
 	/**
@@ -66,7 +66,8 @@ export const FrameLINK: IFrameImpl = {
 			return null;
 		}
 		const parts = [value.url, value.id];
-		for (const a of value.additional || []) {
+		const additional = value.additional || [];
+		for (const a of additional) {
 			parts.push(a);
 		}
 		return parts.join(';');

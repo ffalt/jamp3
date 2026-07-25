@@ -1,5 +1,5 @@
-import { WriterStream } from './stream-writer';
 import fs from 'node:fs';
+import { WriterStream } from './stream-writer.js';
 
 export class FileWriterStream extends WriterStream {
 	async open(filename: string): Promise<void> {

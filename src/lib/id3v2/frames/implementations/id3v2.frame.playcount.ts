@@ -1,6 +1,6 @@
-import { IFrameImpl } from '../id3v2.frame';
-import { IID3V2 } from '../../id3v2.types';
-import { neededStoreBytes } from '../../../common/utils';
+import { IFrameImpl } from '../id3v2.frame.js';
+import { IID3V2 } from '../../id3v2.types.js';
+import { neededStoreBytes } from '../../../common/utils.js';
 
 export const FramePlayCount: IFrameImpl = {
 	/**

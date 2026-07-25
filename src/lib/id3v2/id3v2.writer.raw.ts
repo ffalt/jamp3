@@ -1,10 +1,10 @@
-import { WriterStream } from '../common/stream-writer';
-import { IID3V2 } from './id3v2.types';
-import { ID3v2_EXTHEADER, ID3v2_FOOTER_MARKER, ID3v2_FRAME_FLAGS1, ID3v2_FRAME_FLAGS2, ID3v2_FRAME_HEADER, ID3v2_FRAME_HEADER_LENGTHS, ID3v2_HEADER_FLAGS } from './id3v2.header.consts';
-import { unflags } from '../common/utils';
-import { MemoryWriterStream } from '../common/stream-writer-memory';
-import { BufferUtils } from '../common/buffer';
-import { applyUnsync } from './frames/id3v2.frame.unsync';
+import { WriterStream } from '../common/stream-writer.js';
+import { IID3V2 } from './id3v2.types.js';
+import { ID3v2_EXTHEADER, ID3v2_FOOTER_MARKER, ID3v2_FRAME_FLAGS1, ID3v2_FRAME_FLAGS2, ID3v2_FRAME_HEADER, ID3v2_FRAME_HEADER_LENGTHS, ID3v2_HEADER_FLAGS } from './id3v2.header.consts.js';
+import { unflags } from '../common/utils.js';
+import { MemoryWriterStream } from '../common/stream-writer-memory.js';
+import { BufferUtils } from '../common/buffer.js';
+import { applyUnsync } from './frames/id3v2.frame.unsync.js';
 
 export interface Id3v2RawWriterOptions {
 	paddingSize?: number;
@@ -29,7 +29,7 @@ export class Id3v2RawWriter {
 	}
 
 	private async buildHeaderFlagsV4(): Promise<{ flagBits: Array<number>; extendedHeaderBuffer?: Buffer }> {
-		this.head.v4 = this.head.v4 || { flags: {} };
+		this.head.v4 ||= { flags: {} };
 		this.head.v4.flags.unsynchronisation = false; // v2.4 uses per-frame unsync via formatFlags
 		this.head.v4.flags.extendedheader = !!this.head.v4.extended;
 		const flagBits = unflags(ID3v2_HEADER_FLAGS[this.head.ver], this.head.v4.flags as any);
@@ -180,7 +180,7 @@ export class Id3v2RawWriter {
 	}
 
 	private async buildHeaderFlagsV3(): Promise<{ flagBits: Array<number>; extendedHeaderBuffer?: Buffer }> {
-		this.head.v3 = this.head.v3 || { flags: {} };
+		this.head.v3 ||= { flags: {} };
 		this.head.v3.flags.extendedheader = !!this.head.v3.extended;
 		const flagBits = unflags(ID3v2_HEADER_FLAGS[this.head.ver], this.head.v3.flags as any);
 		if (this.head.v3.extended) {
@@ -235,7 +235,7 @@ export class Id3v2RawWriter {
 	}
 
 	private async buildHeaderFlagsV2(): Promise<{ flagBits: Array<number>; extendedHeaderBuffer?: Buffer }> {
-		this.head.v2 = this.head.v2 || { flags: {} };
+		this.head.v2 ||= { flags: {} };
 		const flagBits = unflags(ID3v2_HEADER_FLAGS[2], this.head.v2.flags as any);
 		return { flagBits };
 	}
@@ -243,13 +243,14 @@ export class Id3v2RawWriter {
 	private async buildHeaderFlags(): Promise<{ flagBits: Array<number>; extendedHeaderBuffer?: Buffer }> {
 		if (this.head.ver <= 2) {
 			return this.buildHeaderFlagsV2();
-		} else if (this.head.ver === 3) {
-			return await this.buildHeaderFlagsV3();
-		} else if (this.head.ver === 4) {
-			return await this.buildHeaderFlagsV4();
-		} else {
-			return { flagBits: unflags(ID3v2_HEADER_FLAGS[this.head.ver], {}) };
 		}
+		if (this.head.ver === 3) {
+			return await this.buildHeaderFlagsV3();
+		}
+		if (this.head.ver === 4) {
+			return await this.buildHeaderFlagsV4();
+		}
+		return { flagBits: unflags(ID3v2_HEADER_FLAGS[this.head.ver], {}) };
 	}
 
 	private calculateTagSize(frames: Array<IID3V2.RawFrame>, extendedHeaderSize: number): number {

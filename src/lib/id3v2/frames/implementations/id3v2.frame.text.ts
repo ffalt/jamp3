@@ -1,7 +1,7 @@
-import { IFrameImpl } from '../id3v2.frame';
-import { utf8 } from '../../../common/encodings';
-import { IID3V2 } from '../../id3v2.types';
-import { getWriteTextEncoding } from '../id3v2.frame.write';
+import { IFrameImpl } from '../id3v2.frame.js';
+import { utf8 } from '../../../common/encodings.js';
+import { IID3V2 } from '../../id3v2.types.js';
+import { getWriteTextEncoding } from '../id3v2.frame.write.js';
 
 export const FrameText: IFrameImpl = {
 	/**

@@ -1,23 +1,24 @@
-import { BufferUtils } from '../../src/lib/common/buffer';
-import { synchsafe, unsynchsafe } from '../../src/lib/common/utils';
-import { ID3v2_ENCODINGS } from '../../src/lib/id3v2/id3v2.header.consts';
-import { IID3V2 } from '../../src/lib/id3v2/id3v2.types';
-import { ID3V2ValueTypes } from '../../src/lib/id3v2/id3v2.consts';
-import { MemoryWriterStream } from '../../src/lib/common/stream-writer-memory';
-import { BufferReader } from '../../src/lib/common/buffer-reader';
-import { IFrameImpl } from '../../src/lib/id3v2/frames/id3v2.frame';
-import { FrameIdAscii } from '../../src/lib/id3v2/frames/implementations/id3v2.frame.id-ascii';
-import { FrameIdBin } from '../../src/lib/id3v2/frames/implementations/id3v2.frame.id-bin';
-import { FrameText } from '../../src/lib/id3v2/frames/implementations/id3v2.frame.text';
-import { FrameLangDescText } from '../../src/lib/id3v2/frames/implementations/id3v2.frame.lang-desc-text';
-import { FramePic } from '../../src/lib/id3v2/frames/implementations/id3v2.frame.pic';
-import { FrameAscii } from '../../src/lib/id3v2/frames/implementations/id3v2.frame.ascii';
-import { FrameIdText } from '../../src/lib/id3v2/frames/implementations/id3v2.frame.id-text';
-import { FramePlayCount } from '../../src/lib/id3v2/frames/implementations/id3v2.frame.playcount';
-import { FrameMusicCDId } from '../../src/lib/id3v2/frames/implementations/id3v2.frame.musiccdid';
-import { FramePopularimeter } from '../../src/lib/id3v2/frames/implementations/id3v2.frame.popularimeter';
-import { FrameBooleanString } from '../../src/lib/id3v2/frames/implementations/id3v2.frame.boolstring';
-import { FrameUnknown } from '../../src/lib/id3v2/frames/implementations/id3v2.frame.unknown';
+import { BufferUtils } from '../../src/lib/common/buffer.js';
+import { synchsafe, unsynchsafe } from '../../src/lib/common/utils.js';
+import { ID3v2_ENCODINGS } from '../../src/lib/id3v2/id3v2.header.consts.js';
+import { IID3V2 } from '../../src/lib/id3v2/id3v2.types.js';
+import { ID3V2ValueTypes } from '../../src/lib/id3v2/id3v2.consts.js';
+import { MemoryWriterStream } from '../../src/lib/common/stream-writer-memory.js';
+import { BufferReader } from '../../src/lib/common/buffer-reader.js';
+import { IFrameImpl } from '../../src/lib/id3v2/frames/id3v2.frame.js';
+import { FrameIdAscii } from '../../src/lib/id3v2/frames/implementations/id3v2.frame.id-ascii.js';
+import { FrameIdBin } from '../../src/lib/id3v2/frames/implementations/id3v2.frame.id-bin.js';
+import { FrameText } from '../../src/lib/id3v2/frames/implementations/id3v2.frame.text.js';
+import { FrameLangDescText } from '../../src/lib/id3v2/frames/implementations/id3v2.frame.lang-desc-text.js';
+import { FramePic } from '../../src/lib/id3v2/frames/implementations/id3v2.frame.pic.js';
+import { FrameAscii } from '../../src/lib/id3v2/frames/implementations/id3v2.frame.ascii.js';
+import { FrameIdText } from '../../src/lib/id3v2/frames/implementations/id3v2.frame.id-text.js';
+import { FramePlayCount } from '../../src/lib/id3v2/frames/implementations/id3v2.frame.playcount.js';
+import { FrameMusicCDId } from '../../src/lib/id3v2/frames/implementations/id3v2.frame.musiccdid.js';
+import { FramePopularimeter } from '../../src/lib/id3v2/frames/implementations/id3v2.frame.popularimeter.js';
+import { FrameBooleanString } from '../../src/lib/id3v2/frames/implementations/id3v2.frame.boolstring.js';
+import { FrameUnknown } from '../../src/lib/id3v2/frames/implementations/id3v2.frame.unknown.js';
+import { describe, expect, it } from '@jest/globals';
 
 describe('SyncSaveInt', () => {
 	it('should calculate back & forth', () => {
@@ -49,7 +50,7 @@ describe('ID3v2Frames', () => {
 		'äöüé',
 		''
 	];
-	const encodings = Object.keys(ID3v2_ENCODINGS[version]).map(key => ID3v2_ENCODINGS[version][key]);
+	const encodings = Object.values(ID3v2_ENCODINGS[version]).map(value => value);
 
 	const ints = [0, 1, 42, 2_147_483_647, 2_147_483_648];
 
@@ -178,8 +179,8 @@ describe('ID3v2Frames', () => {
 		});
 	});
 
-	const pictureTypes: Array<{ key: number; name: string }> = Object.keys(ID3V2ValueTypes.pictureType)
-		.map(key => ({ key: Number.parseInt(key, 10), name: ID3V2ValueTypes.pictureType[key] }));
+	const pictureTypes: Array<{ key: number; name: string }> = Object.entries(ID3V2ValueTypes.pictureType)
+		.map(([key, name]) => ({ key: Number.parseInt(key, 10), name }));
 	describe('Pic', () => {
 		describe.each(encodings)('Encoding: %s', enc => {
 			describe.each(pictureTypes)('PicType: %o', pictureType => {

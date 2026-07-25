@@ -1,14 +1,13 @@
-import { bitarray, flags, removeZeroString, unsynchsafe } from '../common/utils';
-
 import { Readable } from 'node:stream';
-import { BufferUtils } from '../common/buffer';
-import { ID3v2_FRAME_FLAGS1, ID3v2_FRAME_FLAGS2, ID3v2_FRAME_HEADER, ID3v2_FRAME_HEADER_LENGTHS, ID3v2_HEADER, ID3v2_MARKER } from './id3v2.header.consts';
-import { IID3V2 } from './id3v2.types';
-import { ITagID } from '../common/types';
-import { ReaderStream } from '../common/stream-reader';
-import { BufferReader } from '../common/buffer-reader';
-import { isValidFrameBinId } from './frames/id3v2.frame.match';
-import { ID3v2HeaderReader } from './id3v2.reader.header';
+import { bitarray, flags, removeZeroString, unsynchsafe } from '../common/utils.js';
+import { BufferUtils } from '../common/buffer.js';
+import { ID3v2_FRAME_FLAGS1, ID3v2_FRAME_FLAGS2, ID3v2_FRAME_HEADER, ID3v2_FRAME_HEADER_LENGTHS, ID3v2_HEADER, ID3v2_MARKER } from './id3v2.header.consts.js';
+import { IID3V2 } from './id3v2.types.js';
+import { ITagID } from '../common/types.js';
+import { ReaderStream } from '../common/stream-reader.js';
+import { BufferReader } from '../common/buffer-reader.js';
+import { isValidFrameBinId } from './frames/id3v2.frame.match.js';
+import { ID3v2HeaderReader } from './id3v2.reader.header.js';
 import RawFrame = IID3V2.RawFrame;
 
 const ID3v2_MARKER_BUFFER = BufferUtils.fromString(ID3v2_MARKER);

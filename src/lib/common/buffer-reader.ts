@@ -1,7 +1,7 @@
-import { ascii, utf8, IEncoding, Encodings } from './encodings';
-import { BufferUtils } from './buffer';
-import { ID3v2_UnifiedENCODINGS } from '../id3v2/id3v2.header.consts';
-import { removeUnsync } from '../id3v2/frames/id3v2.frame.unsync';
+import { ascii, utf8, IEncoding, Encodings } from './encodings.js';
+import { BufferUtils } from './buffer.js';
+import { ID3v2_UnifiedENCODINGS } from '../id3v2/id3v2.header.consts.js';
+import { removeUnsync } from '../id3v2/frames/id3v2.frame.unsync.js';
 
 export class BufferReader {
 	data: Buffer;

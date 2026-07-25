@@ -1,7 +1,9 @@
-import { ID3v1 } from '../../src/lib/id3v1/id3v1';
-import { compareID3v1Save, testOverWriteMock, compareID3v1Spec } from './id3v1.compare';
-import { ID3v1TestDirectories, ID3v1TestPath } from './id3v1.config';
-import { collectTestFilesSync } from '../common/common';
+import { describe, it } from '@jest/globals';
+
+import { ID3v1 } from '../../src/lib/id3v1/id3v1.js';
+import { compareID3v1Save, testOverWriteMock, compareID3v1Spec } from './id3v1.compare.js';
+import { ID3v1TestDirectories, ID3v1TestPath } from './id3v1.config.js';
+import { collectTestFilesSync } from '../common/common.js';
 
 const testSingleFile: string | undefined = undefined; // 'id3v1_260_genre_F.mp3';
 

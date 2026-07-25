@@ -1,4 +1,7 @@
-import { ID3V2TagBuilder } from './id3v2.builder.v2';
+import { ID3V2TagBuilder } from './id3v2.builder.v2.js';
+
+// eslint-disable-next-line unicorn/text-encoding-identifier-case
+const NON_V23_ENCODINGS = new Set(['utf8', 'utf-8', 'utf16-be', 'utf16be', 'utf-8-bom']);
 
 /**
  * Class for
@@ -20,8 +23,7 @@ export class ID3V23TagBuilder extends ID3V2TagBuilder {
 		let enc = encoding;
 		if (enc) {
 			const e = enc.toLowerCase();
-			// eslint-disable-next-line unicorn/text-encoding-identifier-case
-			if (e === 'utf8' || e === 'utf-8' || e === 'utf16-be' || e === 'utf16be' || e === 'utf-8-bom') {
+			if (NON_V23_ENCODINGS.has(e)) {
 				enc = 'ucs2';
 			}
 		}

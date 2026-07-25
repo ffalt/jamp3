@@ -1,6 +1,6 @@
 import { Command } from 'commander';
 import fse from 'fs-extra';
-import { collectFiles } from './utils';
+import { collectFiles } from './utils.js';
 
 export async function runTool(program: Command, onFile: (filename: string) => Promise<void>) {
 	let input = program.opts().input;

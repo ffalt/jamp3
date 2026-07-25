@@ -1,7 +1,8 @@
-import { compareID3v1Spec } from '../id3v1/id3v1.compare';
-import { compareID3v2Spec } from '../id3v2/id3v2.spec';
-import { MP3 } from '../../src/lib/mp3/mp3';
-import { hasSpec } from '../common/common';
+import { expect } from '@jest/globals';
+import { compareID3v1Spec } from '../id3v1/id3v1.compare.js';
+import { compareID3v2Spec } from '../id3v2/id3v2.spec.js';
+import { MP3 } from '../../src/lib/mp3/mp3.js';
+import { hasSpec } from '../common/common.js';
 
 export async function testSpec(filename: string): Promise<void> {
 	if (!(await hasSpec(filename))) {
