@@ -68,7 +68,7 @@ export const FrameRelativeVolumeAdjustment2: IFrameImpl = {
 			const type = reader.readByte();
 			const adjustment = reader.readSInt(2); // 16-bit signed
 			const channel: IID3V2.FrameValue.RVA2Channel = { type, adjustment };
-			while (reader.unread() >= 1) {
+			if (reader.unread() >= 1) {
 				const bitspeakvolume = reader.readByte();
 				const bytesInPeak = bitspeakvolume > 0 ? Math.ceil(bitspeakvolume / 8) : 0;
 				if (bytesInPeak > 0 && reader.unread() >= bytesInPeak) {
@@ -87,7 +87,7 @@ export const FrameRelativeVolumeAdjustment2: IFrameImpl = {
 			await stream.writeByte(channel.type);
 			await stream.writeSInt(channel.adjustment, 2);
 			const bytes = channel.peak === undefined ? 0 : neededStoreBytes(channel.peak, 2);
-			await stream.writeUInt(bytes * 8, 2);
+			await stream.writeUInt(bytes * 8, 1);
 			if (channel.peak !== undefined && bytes > 0) {
 				await stream.writeUInt(channel.peak, bytes);
 			}
