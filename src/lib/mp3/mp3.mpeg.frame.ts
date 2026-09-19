@@ -88,7 +88,8 @@ export function expandMPEGFrameFlags(front: number, back: number, offset: number
 		 According to the ISO standards, you have to calculate the frame size in slots (see 2. MPEG Audio Format),
 		 then truncate this number to an integer, and after that multiply it with the slot size.
 		 */
-		const size = Math.floor(((bps * bitrate) / samprate)) + ((padded) ? slot_size : 0);
+		const slots = Math.floor(((bps / slot_size) * bitrate) / samprate);
+		const size = (slots * slot_size) + ((padded) ? slot_size : 0);
 		return {
 			offset,
 			front,
