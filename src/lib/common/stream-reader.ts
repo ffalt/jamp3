@@ -9,6 +9,8 @@ export class ReaderStream {
 	waiting: (() => void) | null = null;
 
 	private streamEnd = false;
+	private streamError: Error | null = null;
+	private pendingReject: ((error: Error) => void) | null = null;
 	private streamOnData: ((chunk: Buffer) => void) | null = null;
 	end = false;
 	pos = 0;
@@ -26,6 +28,7 @@ export class ReaderStream {
 		if (this.waiting) {
 			const w = this.waiting;
 			this.waiting = null;
+			this.pendingReject = null;
 			w();
 		}
 	}
@@ -40,13 +43,20 @@ export class ReaderStream {
 			if (!this.readableStream) {
 				return Promise.reject('Invalid Stream');
 			}
-			this.readableStream.on('error', error => reject(error));
+			this.readableStream.on('error', error => {
+				this.streamError = error;
+				const pendingReject = this.pendingReject;
+				this.pendingReject = null;
+				this.waiting = null;
+				(pendingReject || reject)(error);
+			});
 			this.readableStream.on('end', () => {
 				this.end = true;
 				this.streamEnd = true;
 				if (this.waiting) {
 					const w = this.waiting;
 					this.waiting = null;
+					this.pendingReject = null;
 					w();
 				}
 			});
@@ -56,6 +66,7 @@ export class ReaderStream {
 				}
 			});
 			this.waiting = () => resolve();
+			this.pendingReject = reject;
 		});
 	}
 
@@ -100,14 +111,18 @@ export class ReaderStream {
 	}
 
 	private async resume(): Promise<void> {
+		if (this.streamError) {
+			throw this.streamError;
+		}
 		if (!this.readableStream) {
 			this.streamEnd = true;
 			return;
 		}
-		return new Promise<void>((resolve, _reject) => {
+		return new Promise<void>((resolve, reject) => {
 			this.waiting = () => {
 				resolve();
 			};
+			this.pendingReject = reject;
 			if (this.readableStream) {
 				this.readableStream.resume();
 			}
