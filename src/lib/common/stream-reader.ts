@@ -202,6 +202,7 @@ export class ReaderStream {
 		if (index >= 0) {
 			this.pos += index;
 			this.buffers = [result.subarray(index)];
+			this.buffersLength = this.getBufferLength();
 			return this.pos;
 		}
 		if (this.end) {
