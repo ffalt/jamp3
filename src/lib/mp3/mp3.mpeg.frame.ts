@@ -299,8 +299,8 @@ export class MPEGFrameReader {
 		const version = reader.readSInt(2);
 		const delay = reader.readSInt(2);
 		const quality = reader.readSInt(2);
-		const bytes = reader.readSInt(4);
-		const frames = reader.readSInt(4);
+		const bytes = reader.readUInt(4);
+		const frames = reader.readUInt(4);
 		const toc_entries = reader.readSInt(2);
 		const toc_scale = reader.readSInt(2);
 		const toc_entry_size = reader.readSInt(2);
@@ -363,10 +363,10 @@ export class MPEGFrameReader {
 			}
 		};
 		if (frame.xing.fields.frames) {
-			frame.xing.frames = reader.readSInt(4);
+			frame.xing.frames = reader.readUInt(4);
 		}
 		if (frame.xing.fields.bytes) {
-			frame.xing.bytes = reader.readSInt(4);
+			frame.xing.bytes = reader.readUInt(4);
 		}
 		if (frame.xing.fields.toc) {
 			frame.xing.toc = reader.readBuffer(100);
