@@ -58,26 +58,42 @@ export class ID3v2HeaderReader {
 	}
 
 	private async readID3ExtendedHeaderV4(reader: ReaderStream): Promise<{ rest?: Buffer; exthead: IID3V2.TagHeaderExtendedVer4 }> {
+		/**
+		 ID3v2.4
+		 Extended header size   4 * %0xxxxxxx
+		 Number of flag bytes       $01
+		 Extended Flags             $xx
+
+		 The 'Extended header size' is the size of the whole extended header,
+		 stored as a 32 bit synchsafe integer - i.e. it includes these 4 bytes
+		 themselves. An extended header can thus never have a size of fewer
+		 than six bytes.
+		 */
 		const headdata = await reader.read(4);
-		let size = headdata.readInt32BE(0);
-		size = unsynchsafe(size);
-		if (size > 10) {
-			size = 6;
-		}
-		const data = await reader.read(size);
+		const size = unsynchsafe(headdata.readInt32BE(0));
+		const data = await reader.read(Math.max(size - 4, 0));
 		const exthead: IID3V2.TagHeaderExtendedVer4 = {
 			size,
-			flags: flags(ID3v2_EXTHEADER[4].FLAGS, bitarray(data[0]))
+			// byte 0 is the "number of flag bytes" ($01); the flags themselves are byte 1
+			flags: flags(ID3v2_EXTHEADER[4].FLAGS, bitarray(data[1]))
 		};
-		let pos = 1;
+		let pos = 2;
+		if (exthead.flags.update) {
+			pos++; // Flag data length $00, no further data
+		}
 		if (exthead.flags.crc) {
+			// Flag data length $05, Total frame CRC 5 * %0xxxxxxx (35-bit synchsafe integer)
 			const crcSize = data[pos];
 			pos++;
-			exthead.crc32 = unsynchsafe(data.readInt32BE(pos));
+			let crc32 = 0;
+			for (let i = 0; i < crcSize; i++) {
+				crc32 = (crc32 * 128) + (data[pos + i] & 0x7F);
+			}
+			exthead.crc32 = crc32;
 			pos += crcSize;
 		}
 		if (exthead.flags.restrictions) {
-			pos++;
+			pos++; // Flag data length $01
 			const r = data[pos];
 			exthead.restrictions = {
 				tagSize: (r >> 6) & 0x03,
