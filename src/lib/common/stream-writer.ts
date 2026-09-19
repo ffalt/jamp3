@@ -6,29 +6,45 @@ import { ascii, IEncoding } from './encodings.js';
 
 export class WriterStream {
 	protected wstream: fs.WriteStream;
+	protected writeError: Error | undefined;
 
 	constructor() {
 		this.wstream = new MemoryStream();
+		this.attachErrorHandler();
+	}
+
+	protected attachErrorHandler(): void {
+		this.wstream.on('error', error => {
+			this.writeError = error;
+		});
 	}
 
 	private async _write(something: Buffer): Promise<void> {
+		if (this.writeError) {
+			return Promise.reject(this.writeError);
+		}
 		if (!this.wstream.write(something)) {
 			// handle backpressure
-			return new Promise<void>((resolve, _reject) => {
+			return new Promise<void>((resolve, reject) => {
 				this.wstream.once('drain', () => {
 					resolve();
 				});
+				this.wstream.once('error', reject);
 			});
 		}
 	}
 
 	private async _writeString(something: string, encoding: BufferEncoding): Promise<void> {
+		if (this.writeError) {
+			return Promise.reject(this.writeError);
+		}
 		if (!this.wstream.write(something, encoding)) {
 			// handle backpressure
-			return new Promise<void>((resolve, _reject) => {
+			return new Promise<void>((resolve, reject) => {
 				this.wstream.once('drain', () => {
 					resolve();
 				});
+				this.wstream.once('error', reject);
 			});
 		}
 	}

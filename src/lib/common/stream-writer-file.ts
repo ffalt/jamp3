@@ -8,18 +8,24 @@ export class FileWriterStream extends WriterStream {
 		} catch (error) {
 			return Promise.reject(error);
 		}
-		return new Promise<void>((resolve, _reject) => {
+		this.attachErrorHandler();
+		return new Promise<void>((resolve, reject) => {
 			this.wstream.once('open', () => {
 				resolve();
 			});
+			this.wstream.once('error', reject);
 		});
 	}
 
 	async close(): Promise<void> {
-		return new Promise<void>((resolve, _reject) => {
-			this.wstream.on('close', () => {
+		if (this.writeError) {
+			return Promise.reject(this.writeError);
+		}
+		return new Promise<void>((resolve, reject) => {
+			this.wstream.once('close', () => {
 				resolve();
 			});
+			this.wstream.once('error', reject);
 			this.wstream.end();
 		});
 	}
@@ -27,6 +33,7 @@ export class FileWriterStream extends WriterStream {
 	private async pipeStream(readstream: fs.ReadStream): Promise<void> {
 		return new Promise<void>((resolve, reject) => {
 			readstream.on('error', error => reject(error));
+			this.wstream.once('error', reject);
 			readstream.on('end', () => resolve());
 			readstream.pipe(this.wstream, { end: false });
 		});
