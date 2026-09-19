@@ -23,14 +23,21 @@ export async function updateFile(
 	};
 	const fileWriterStream = new FileWriterStream();
 	await fileWriterStream.open(tmpFile);
+	let renamedOriginalToBackup = false;
 	try {
 		await process(layout, fileWriterStream);
 		await fileWriterStream.close();
 		const bakExists = await fse.pathExists(bakFile);
 		if (keepBackup) {
-			await (bakExists ? fse.remove(filename) : fse.rename(filename, bakFile));
+			if (bakExists) {
+				await fse.remove(filename);
+			} else {
+				await fse.rename(filename, bakFile);
+				renamedOriginalToBackup = true;
+			}
 		} else if (!bakExists) {
 			await fse.rename(filename, bakFile);
+			renamedOriginalToBackup = true;
 		}
 		await fse.rename(tmpFile, filename);
 		if (!keepBackup && !bakExists) {
@@ -38,6 +45,9 @@ export async function updateFile(
 		}
 	} catch (error) {
 		await fileWriterStream.close();
+		if (renamedOriginalToBackup && !(await fse.pathExists(filename)) && await fse.pathExists(bakFile)) {
+			await fse.rename(bakFile, filename);
+		}
 		await cleanupTmp();
 		return Promise.reject(error);
 	}
