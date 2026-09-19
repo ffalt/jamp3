@@ -65,23 +65,19 @@ export const FrameRelativeVolumeAdjustment: IFrameImpl = {
 			value.peakLeft = reader.readUInt(byteLength);
 		}
 		if (reader.unread() >= byteLength * 2) {
-			value.peakRight = reader.readUInt(byteLength);
-			value.peakLeft = reader.readUInt(byteLength);
-		}
-		if (reader.unread() >= byteLength * 2) {
-			value.rightBack = (isBitSetAt(flags, 4) ? 1 : -1) * reader.readUInt(byteLength);
-			value.leftBack = (isBitSetAt(flags, 8) ? 1 : -1) * reader.readUInt(byteLength);
+			value.rightBack = (isBitSetAt(flags, 2) ? 1 : -1) * reader.readUInt(byteLength);
+			value.leftBack = (isBitSetAt(flags, 3) ? 1 : -1) * reader.readUInt(byteLength);
 		}
 		if (reader.unread() >= byteLength * 2) {
 			value.peakRightBack = reader.readUInt(byteLength);
 			value.peakLeftBack = reader.readUInt(byteLength);
 		}
 		if (reader.unread() >= byteLength * 2) {
-			value.center = (isBitSetAt(flags, 10) ? 1 : -1) * reader.readUInt(byteLength);
+			value.center = (isBitSetAt(flags, 4) ? 1 : -1) * reader.readUInt(byteLength);
 			value.peakCenter = reader.readUInt(byteLength);
 		}
 		if (reader.unread() >= byteLength * 2) {
-			value.bass = (isBitSetAt(flags, 20) ? 1 : -1) * reader.readUInt(byteLength);
+			value.bass = (isBitSetAt(flags, 5) ? 1 : -1) * reader.readUInt(byteLength);
 			value.peakBass = reader.readUInt(byteLength);
 		}
 		return { value };
@@ -128,20 +124,22 @@ export const FrameRelativeVolumeAdjustment: IFrameImpl = {
 		}
 		if (value.center !== undefined && value.peakCenter !== undefined) {
 			await stream.writeUInt(Math.abs(value.center), byteLength);
-			await stream.writeUInt(value.peakLeftBack, byteLength);
+			await stream.writeUInt(value.peakCenter, byteLength);
 		} else {
 			return;
 		}
-		if (value.bass !== undefined && value.peakBass !== undefined) {
-			await stream.writeUInt(Math.abs(value.center), byteLength);
-			await stream.writeUInt(value.peakCenter, byteLength);
+		if (value.bass === undefined || value.peakBass === undefined) {
+			return;
 		}
+		await stream.writeUInt(Math.abs(value.bass), byteLength);
+		await stream.writeUInt(value.peakBass, byteLength);
 	},
 	simplify: (value: IID3V2.FrameValue.RVA) => {
 		if (!value) {
 			return null;
 		}
 		const parts: Array<string> = [`right=${value.right}`, `left=${value.left}`];
+		// eslint-disable-next-line unicorn/no-immediate-mutation
 		if (value.peakRight !== undefined) {
 			parts.push(`peakRight=${value.peakRight}`);
 		}
