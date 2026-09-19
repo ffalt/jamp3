@@ -41,7 +41,7 @@ export class MP3Analyzer {
 			if (id3v1s.length > 0) {
 				if (id3v1s.length > 1) {
 					// filter out not yet supported APETAGEX
-					id3v1s = id3v1s.filter(t => t.value && t.value.title && t.value.title[0] !== 'E' && t.value.title[1] !== 'X' && t.end !== data.size);
+					id3v1s = id3v1s.filter(t => t.value && t.value.title && (t.value.title[0] !== 'E' || t.value.title[1] !== 'X') && t.end !== data.size);
 				}
 				if (id3v1s.length > 1) {
 					result.push({ msg: 'ID3v1: Multiple tags', expected: 1, actual: id3v1s.length });
