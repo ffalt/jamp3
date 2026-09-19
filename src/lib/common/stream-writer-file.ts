@@ -2,6 +2,8 @@ import fs from 'node:fs';
 import { WriterStream } from './stream-writer.js';
 
 export class FileWriterStream extends WriterStream {
+	private closePromise: Promise<void> | undefined;
+
 	async open(filename: string): Promise<void> {
 		try {
 			this.wstream = fs.createWriteStream(filename);
@@ -21,13 +23,16 @@ export class FileWriterStream extends WriterStream {
 		if (this.writeError) {
 			return Promise.reject(this.writeError);
 		}
-		return new Promise<void>((resolve, reject) => {
-			this.wstream.once('close', () => {
-				resolve();
+		if (!this.closePromise) {
+			this.closePromise = new Promise<void>((resolve, reject) => {
+				this.wstream.once('close', () => {
+					resolve();
+				});
+				this.wstream.once('error', reject);
+				this.wstream.end();
 			});
-			this.wstream.once('error', reject);
-			this.wstream.end();
-		});
+		}
+		return this.closePromise;
 	}
 
 	private async pipeStream(readstream: fs.ReadStream): Promise<void> {
