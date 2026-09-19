@@ -141,7 +141,7 @@ export class ID3v2HeaderReader {
 		if ((!Markers.isMarker(buffer, offset, Markers.MARKERS.id3)) || (buffer.length < 10)) {
 			return;
 		}
-		const flagBits = bitarray(buffer[5]);
+		const flagBits = bitarray(buffer[offset + 5]);
 		const head: IID3V2.TagHeader = {
 			ver: buffer[offset + 3],
 			rev: buffer[offset + 4],
