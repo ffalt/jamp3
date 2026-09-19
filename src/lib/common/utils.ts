@@ -84,7 +84,7 @@ export function removeZeroString(s: string): string {
 }
 
 export function neededStoreBytes(num: number, min: number) {
-	let result = Math.ceil((Math.floor(Math.log2(num) + 1) + 1) / 8);
+	let result = Math.ceil(Math.floor(Math.log2(num) + 1) / 8);
 	result = Math.max(result, min);
 	return result;
 }
