@@ -176,9 +176,11 @@ export class ReaderStream {
 	}
 
 	async read(amount: number): Promise<Buffer> {
-		const toRead = Math.max(1, amount);
-		if ((this.buffersLength >= toRead)) {
-			const result = this.get(toRead);
+		if (amount <= 0) {
+			return BufferUtils.zeroBuffer(0);
+		}
+		if (this.buffersLength >= amount) {
+			const result = this.get(amount);
 			this.end = this.streamEnd && this.buffersLength === 0;
 			return result;
 		}
@@ -194,7 +196,7 @@ export class ReaderStream {
 			return result;
 		}
 		await this.resume();
-		return await this.read(toRead);
+		return await this.read(amount);
 	}
 
 	public unshift(buffer: Buffer) {

@@ -52,3 +52,24 @@ describe('ReaderStream.scan', () => {
 		expect(index).toBe(-1);
 	});
 });
+
+describe('ReaderStream.read', () => {
+	it('read(0) returns an empty buffer without consuming any byte', async () => {
+		const stream = chunkedStream([Buffer.from('abc')]);
+		const reader = new ReaderStream();
+		await reader.openStream(stream);
+		const empty = await reader.read(0);
+		expect(empty.length).toBe(0);
+		expect(reader.pos).toBe(0);
+		const rest = await reader.read(3);
+		expect(rest.toString()).toBe('abc');
+	});
+
+	it('read(0) on an exhausted stream still returns an empty buffer instead of hanging', async () => {
+		const stream = chunkedStream([]);
+		const reader = new ReaderStream();
+		await reader.openStream(stream);
+		const empty = await reader.read(0);
+		expect(empty.length).toBe(0);
+	});
+});
