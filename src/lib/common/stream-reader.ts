@@ -209,9 +209,6 @@ export class ReaderStream {
 	}
 
 	async scan(buffer: Buffer): Promise<number> {
-		if (this.end) {
-			return -1;
-		}
 		const result = BufferUtils.concatBuffers(this.buffers);
 		const index = BufferUtils.indexOfBuffer(result, buffer);
 		if (index >= 0) {
@@ -223,9 +220,13 @@ export class ReaderStream {
 		if (this.end) {
 			return -1;
 		}
-		this.pos += result.length;
-		this.buffers = [];
-		this.buffersLength = 0;
+		// Keep the trailing bytes that could still be the start of a match once more data
+		// arrives, so a marker split across two underlying stream chunks is not lost.
+		const keepLength = Math.min(result.length, Math.max(buffer.length - 1, 0));
+		const discardLength = result.length - keepLength;
+		this.pos += discardLength;
+		this.buffers = keepLength > 0 ? [result.subarray(discardLength)] : [];
+		this.buffersLength = this.getBufferLength();
 		await this.resume();
 		return this.scan(buffer);
 	}
