@@ -37,10 +37,7 @@ export const FrameCTOC: IFrameImpl = {
 		const bits = reader.readBitsByte();
 		const ordered = isBitSetAt(bits, 0);
 		const topLevel = isBitSetAt(bits, 1);
-		let entrycount = reader.readBitsByte();
-		if (entrycount < 0) {
-			entrycount = (-entrycount) + 2;
-		}
+		const entrycount = reader.readBitsByte();
 		const children: Array<string> = [];
 		while (reader.hasData()) {
 			const childId = reader.readStringTerminated(ascii);
