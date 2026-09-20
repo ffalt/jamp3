@@ -202,5 +202,25 @@ describe('ID3v2Frames', () => {
 				});
 			});
 		});
+		describe.each(encodings)('Encoding: %s', enc => {
+			it('should write back & forth a url-based picture', async () => {
+				const testObject = {
+					value: {
+						description: 'my description',
+						mimeType: 'this/that',
+						pictureType: 3,
+						url: 'https://example.com/cover.jpg'
+					},
+					encoding: enc
+				};
+				const result = await writebackandforth(FramePic, testObject as any, tagHead);
+				expect(result.value.description).toBe(testObject.value.description);
+				expect(result.value.mimeType).toBe('-->');
+				expect(result.value.url).toBe(testObject.value.url);
+				expect(result.value.bin).toBeUndefined();
+				expect(result.value.pictureType).toBe(testObject.value.pictureType);
+				expect(result.head.encoding).toBe(testObject.encoding);
+			});
+		});
 	});
 });

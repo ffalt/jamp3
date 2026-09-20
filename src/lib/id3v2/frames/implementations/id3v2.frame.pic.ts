@@ -41,7 +41,7 @@ export const FramePic: IFrameImpl = {
 		if (head.ver <= 2) {
 			await (value.url ? stream.writeString('-->', ascii) : stream.writeAsciiString(value.mimeType || '', 3));
 		} else {
-			await stream.writeStringTerminated(value.url ?? (value.mimeType || ''), ascii);
+			await stream.writeStringTerminated(value.url ? '-->' : (value.mimeType || ''), ascii);
 		}
 		await stream.writeByte(value.pictureType);
 		await stream.writeStringTerminated(value.description, enc);
