@@ -38,7 +38,7 @@ export class BufferReader {
 	}
 
 	readBitsByte(): number {
-		const result = this.data.readInt8(this.position);
+		const result = this.data.readUInt8(this.position);
 		this.position += 1;
 		return result;
 	}
