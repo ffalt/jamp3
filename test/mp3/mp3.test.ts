@@ -33,17 +33,18 @@ describe('MP3', () => {
 			it('should load tags & save tags & compare tags', async () => {
 				await testLoadSaveCompare(filename);
 			});
-			if (path.extname(filename) !== '.id3') {
-				it('should read mpeg frames', async () => {
-					await testFrames(filename);
-				});
-				it('should read mpeg more quick info', async () => {
-					await testQuickMPEG(filename);
-				});
-				it('should remove tags', async () => {
-					await testRemoveTags(filename);
-				});
+			if (path.extname(filename) === '.id3') {
+				return;
 			}
+			it('should read mpeg frames', async () => {
+				await testFrames(filename);
+			});
+			it('should read mpeg more quick info', async () => {
+				await testQuickMPEG(filename);
+			});
+			it('should remove tags', async () => {
+				await testRemoveTags(filename);
+			});
 		});
 	});
 });

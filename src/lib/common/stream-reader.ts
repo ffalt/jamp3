@@ -94,12 +94,13 @@ export class ReaderStream {
 	close() {
 		const stream = this.readableStream;
 		this.readableStream = null;
-		if (stream) {
-			if (typeof (stream as any).close === 'function') {
-				(stream as any).close();
-			}
-			stream.destroy();
+		if (!stream) {
+			return;
 		}
+		if (typeof (stream as any).close === 'function') {
+			(stream as any).close();
+		}
+		stream.destroy();
 	}
 
 	private getBufferLength(): number {

@@ -52,6 +52,12 @@ const unicornRules = {
 	"unicorn/prefer-top-level-await": "off",
 	"unicorn/consistent-boolean-name": "off",
 	"unicorn/consistent-class-member-order": "off",
+	"unicorn/single-line-block-comment-style": "off",
+	"unicorn/prefer-ternary": "off",
+	"unicorn/prefer-continue": "off",
+	"unicorn/prefer-early-return": "off",
+	"unicorn/no-immediate-mutation": "off",
+	"unicorn/prefer-combined-guards": "off",
 	"unicorn/name-replacements": "off"
 };
 

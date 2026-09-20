@@ -64,10 +64,10 @@ export class MP3 {
 		await updateFile(filename, opts, !!options.keepBackup,
 			layout => {
 				for (const tag of layout.tags) {
-					if (options.id3v2 && tag.id === ITagID.ID3v2 && tag.end > 0) {
-						return true;
-					}
-					if (options.id3v1 && tag.id === ITagID.ID3v1 && tag.end === stat.size && tag.start < stat.size) {
+					if (
+						(options.id3v2 && tag.id === ITagID.ID3v2 && tag.end > 0) ||
+						(options.id3v1 && tag.id === ITagID.ID3v1 && tag.end === stat.size && tag.start < stat.size)
+					) {
 						return true;
 					}
 				}

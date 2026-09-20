@@ -139,7 +139,6 @@ export const FrameRelativeVolumeAdjustment: IFrameImpl = {
 			return null;
 		}
 		const parts: Array<string> = [`right=${value.right}`, `left=${value.left}`];
-		// eslint-disable-next-line unicorn/no-immediate-mutation
 		if (value.peakRight !== undefined) {
 			parts.push(`peakRight=${value.peakRight}`);
 		}

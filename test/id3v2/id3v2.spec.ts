@@ -38,11 +38,12 @@ function compareID3v2SpecFrame(filename: string, framespec: any, frame: IID3V2.F
 	if (framespec.groupId !== undefined) {
 		expect(frame.groupId).toBe(framespec.groupId); // 'Invalid groupId for frame ' + framespec.id);
 	}
-	if (framespec.subframes) {
-		expect(frame.subframes).toBeTruthy();
-		if (frame.subframes) {
-			compareID3v2SpecFrames(filename, framespec.subframes, frame.subframes);
-		}
+	if (!framespec.subframes) {
+		return;
+	}
+	expect(frame.subframes).toBeTruthy();
+	if (frame.subframes) {
+		compareID3v2SpecFrames(filename, framespec.subframes, frame.subframes);
 	}
 }
 
