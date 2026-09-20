@@ -69,4 +69,19 @@ describe('updateFile', () => {
 			return Promise.reject(error);
 		}
 	});
+	it('should still clean up the .tempmp3 file when close() also rejects due to a write error', async () => {
+		const file = tmp.fileSync();
+		const tmpFile = `${file.name}.tempmp3`;
+		try {
+			await expect(
+				updateFile(file.name, { id3v2: true, id3v1: true }, true, _layout => true, async (_layout, fileWriter) => {
+					(fileWriter as any).wstream.emit('error', new Error('boom'));
+					throw new Error('boom');
+				})
+			).rejects.toThrow('boom');
+			expect(await fse.pathExists(tmpFile)).toBe(false);
+		} finally {
+			file.removeCallback();
+		}
+	});
 });

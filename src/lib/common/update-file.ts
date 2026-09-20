@@ -44,7 +44,12 @@ export async function updateFile(
 			await fse.remove(bakFile);
 		}
 	} catch (error) {
-		await fileWriterStream.close();
+		try {
+			await fileWriterStream.close();
+		} catch {
+			// close() rejects with the same writeError when the write already failed;
+			// ignore it here so the cleanup below still runs instead of being aborted.
+		}
 		if (renamedOriginalToBackup && !(await fse.pathExists(filename)) && await fse.pathExists(bakFile)) {
 			await fse.rename(bakFile, filename);
 		}
