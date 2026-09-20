@@ -26,7 +26,7 @@ export function simplifyInvolvedPeopleList(id: string, frame: IID3V2.Frame): Arr
 	let i = 0;
 	while (i < value.list.length - 1) {
 		const slug = knownSections[value.list[i]];
-		const val = knownSections[value.list[i]];
+		const val = value.list[i + 1];
 		if (val) {
 			if (slug) {
 				list.push({ slug, text: val });
