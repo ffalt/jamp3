@@ -106,7 +106,7 @@ export class MP3Reader {
 			if (result.tag && result.tag.head.valid) {
 				this.layout.tags.push(result.tag);
 				result.tag.start = start;
-				result.tag.end = this.stream.pos - rest.length;
+				result.tag.end = this.stream.pos;
 				if (!this.options.detectDuplicateID3v2) {
 					this.scanid3v2 = false;
 				}
