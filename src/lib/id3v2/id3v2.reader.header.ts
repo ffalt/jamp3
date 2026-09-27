@@ -106,9 +106,9 @@ export class ID3v2HeaderReader {
 		return { exthead };
 	}
 
-	private readID3v22Header(head: IID3V2.TagHeader, flagBits: Array<number>): void {
+	private readID3v22Header(head: IID3V2.TagHeader, flagBits: Array<number>, rawSize: number): void {
 		head.v2 = {
-			sizeAsSyncSafe: unsynchsafe(head.size), // keep this if someone is writing v2 with syncsafeint
+			sizeAsSyncSafe: unsynchsafe(rawSize), // keep this if someone is writing v2 with syncsafeint
 			flags: {
 				unsynchronisation: flagBits[0] === 1,
 				compression: flagBits[1] === 1
@@ -149,15 +149,23 @@ export class ID3v2HeaderReader {
 			flagBits,
 			valid: false
 		};
+		const rawSize = head.size;
 		if (head.ver > 2) {
 			head.size = unsynchsafe(head.size);
+		} else if (head.ver === 2) {
+			// per spec the v2.2 tag size is a syncsafe integer, but some encoders write it
+			// as a plain uint32; a set high bit in any size byte proves the plain format
+			const sizeBytes = buffer.subarray(offset + 6, offset + 10);
+			if (sizeBytes.every(b => b < 0x80)) {
+				head.size = unsynchsafe(head.size);
+			}
 		}
 		if (head.ver === 4) {
 			this.readID3v24Header(head, flagBits);
 		} else if (head.ver === 3) {
 			this.readID3v23Header(head, flagBits);
 		} else if (head.ver <= 2) {
-			this.readID3v22Header(head, flagBits);
+			this.readID3v22Header(head, flagBits, rawSize);
 		}
 		head.valid = head.size >= 0 && head.ver <= 4;
 		return head;

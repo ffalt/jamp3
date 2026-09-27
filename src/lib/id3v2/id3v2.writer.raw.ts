@@ -321,7 +321,7 @@ export class Id3v2RawWriter {
 		await this.stream.writeBitsByte(versionHead.flagBits); // ID3v2 flags
 		const tagSize = this.calculateTagSize(frames, versionHead.extendedHeaderBuffer ? versionHead.extendedHeaderBuffer.length : 0);
 		this.writtenTagSize = tagSize;
-		await (this.head.ver > 2 ? this.stream.writeSyncSafeInt(tagSize) : this.stream.writeUInt4Byte(tagSize));
+		await this.stream.writeSyncSafeInt(tagSize);
 		if (versionHead.extendedHeaderBuffer) {
 			await this.stream.writeBuffer(versionHead.extendedHeaderBuffer);
 		}
