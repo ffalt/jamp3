@@ -41,7 +41,7 @@ function setResultEstimate(layout: IMP3.RawLayout, chain: Array<IMP3.FrameRawHea
 	let audioBytes = layout.size;
 	if (chain.length > 0) {
 		audioBytes -= rawHeaderOffSet(chain[0]);
-		if (layout.tags.some(t => t.id === ITagID.ID3v1)) {
+		if (layout.tags.some(t => t.id === ITagID.ID3v1 && t.end === layout.size && t.start < layout.size)) {
 			audioBytes -= 128;
 		}
 		mpeg.durationEstimate = (audioBytes * 8) / mpeg.bitRate;
