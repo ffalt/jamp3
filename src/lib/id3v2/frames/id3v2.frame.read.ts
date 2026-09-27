@@ -107,7 +107,7 @@ export async function readID3v2Frame(rawFrame: IID3V2.RawFrame, head: IID3V2.Tag
 		frame.invalid = (error as any).toString();
 		frame.value = { bin: rawFrame.data } as IID3V2.FrameValue.Bin;
 	}
-	if (groupId) {
+	if (groupId !== undefined) {
 		frame.groupId = groupId;
 	}
 	frame.title = f.title;
