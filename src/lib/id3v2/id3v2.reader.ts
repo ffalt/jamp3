@@ -15,11 +15,12 @@ const ID3v2_MARKER_BUFFER = BufferUtils.fromString(ID3v2_MARKER);
 export class ID3v2Reader {
 	headerReader = new ID3v2HeaderReader();
 
-	private async readRawTag(head: IID3V2.TagHeader, reader: ReaderStream): Promise<{ rest?: Buffer; tag?: IID3V2.RawTag }> {
+	private async readRawTag(head: IID3V2.TagHeader, reader: ReaderStream, consumed = 0): Promise<{ rest?: Buffer; tag?: IID3V2.RawTag }> {
 		const tag: IID3V2.RawTag = { id: ITagID.ID3v2, frames: [], start: 0, end: 0, head: head || { ver: 0, rev: 0, size: 0, valid: false } };
 		let rest: Buffer | undefined;
-		if (tag.head.size > 0) {
-			const data = await reader.read(tag.head.size);
+		const framesSize = Math.max(0, tag.head.size - consumed);
+		if (framesSize > 0) {
+			const data = await reader.read(framesSize);
 			rest = await this.readFrames(data, tag);
 		}
 		if (head.v4?.flags.footer) {
@@ -58,7 +59,7 @@ export class ID3v2Reader {
 		if (!head.header) {
 			return { rest: head.rest };
 		}
-		return await this.readRawTag(head.header, reader);
+		return await this.readRawTag(head.header, reader, head.consumed);
 	}
 
 	public async readStream(stream: Readable): Promise<IID3V2.RawTag | undefined> {

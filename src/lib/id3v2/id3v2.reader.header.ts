@@ -163,21 +163,23 @@ export class ID3v2HeaderReader {
 		return head;
 	}
 
-	public async readHeader(reader: ReaderStream): Promise<{ rest?: Buffer; header?: IID3V2.TagHeader }> {
+	public async readHeader(reader: ReaderStream): Promise<{ rest?: Buffer; header?: IID3V2.TagHeader; consumed?: number }> {
 		const data = await reader.read(ID3v2_HEADER.SIZE);
 		const header: IID3V2.TagHeader | undefined = this.readID3v2Header(data, 0);
 		if (!header || !header.valid) {
 			return { rest: data };
 		}
 		if (header.v3 && header.v3.flags.extendedheader) {
+			const pos = reader.pos;
 			const extended = await this.readID3ExtendedHeaderV3(reader);
 			header.v3.extended = extended.exthead;
-			return { header, rest: extended.rest };
+			return { header, rest: extended.rest, consumed: reader.pos - pos };
 		}
 		if (header.v4 && header.v4.flags.extendedheader) {
+			const pos = reader.pos;
 			const extended = await this.readID3ExtendedHeaderV4(reader);
 			header.v4.extended = extended.exthead;
-			return { header, rest: extended.rest };
+			return { header, rest: extended.rest, consumed: reader.pos - pos };
 		}
 		return { header };
 	}
