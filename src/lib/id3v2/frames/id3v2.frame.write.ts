@@ -36,6 +36,7 @@ async function writeRawFrame(frame: IID3V2.Frame, head: IID3V2.TagHeader, defaul
 	};
 	let id = frame.id;
 	let data: Buffer;
+	let formatFlags = frameHead.formatFlags || {};
 	if (frame.invalid) {
 		const val = frame.value as IID3V2.FrameValue.Bin;
 		if (!val.bin) {
@@ -58,17 +59,27 @@ async function writeRawFrame(frame: IID3V2.Frame, head: IID3V2.TagHeader, defaul
 			}
 		}
 		data = stream.toBuffer();
-		if ((frameHead.formatFlags) && (frameHead.formatFlags.compressed)) {
-			const sizebytes = ID3v2_FRAME_HEADER_LENGTHS.SIZE[head.ver];
-			const uncompressedStream = new MemoryWriterStream();
-			await (sizebytes === 4 ? uncompressedStream.writeUInt4Byte(data.length) : uncompressedStream.writeUInt3Byte(data.length));
-			data = BufferUtils.concatBuffer(uncompressedStream.toBuffer(), zlib.deflateSync(data));
-		} else if ((frameHead.formatFlags) && (frameHead.formatFlags.dataLengthIndicator)) {
+		formatFlags = frameHead.formatFlags || {};
+		if (formatFlags.compressed) {
+			const deflated = zlib.deflateSync(data);
+			const prefixStream = new MemoryWriterStream();
+			if (head.ver === 4) {
+				// ID3v2.4: the data length indicator (a synchsafe integer) holds the decompressed size;
+				// compression requires the indicator per spec, so make sure the flag is set
+				formatFlags = { ...formatFlags, dataLengthIndicator: true };
+				await prefixStream.writeSyncSafeInt(data.length);
+			} else {
+				// ID3v2.2/2.3: a plain decompressed size precedes the compressed data
+				const sizebytes = ID3v2_FRAME_HEADER_LENGTHS.SIZE[head.ver];
+				await (sizebytes === 4 ? prefixStream.writeUInt4Byte(data.length) : prefixStream.writeUInt3Byte(data.length));
+			}
+			data = BufferUtils.concatBuffer(prefixStream.toBuffer(), deflated);
+		} else if (formatFlags.dataLengthIndicator) {
 			const dataLengthStream = new MemoryWriterStream();
 			await dataLengthStream.writeSyncSafeInt(data.length);
 			data = BufferUtils.concatBuffer(dataLengthStream.toBuffer(), data);
 		}
-		if ((frameHead.formatFlags) && (frameHead.formatFlags.unsynchronised)) {
+		if (formatFlags.unsynchronised) {
 			data = applyUnsync(data);
 		}
 	}
@@ -82,7 +93,7 @@ async function writeRawFrame(frame: IID3V2.Frame, head: IID3V2.TagHeader, defaul
 		data = BufferUtils.concatBuffer(buf, data);
 	}
 
-	return { id: id, start: 0, end: 0, size: data.length, data: data, statusFlags: frameHead.statusFlags || {}, formatFlags: frameHead.formatFlags || {} };
+	return { id: id, start: 0, end: 0, size: data.length, data: data, statusFlags: frameHead.statusFlags || {}, formatFlags };
 }
 
 export function getWriteTextEncoding(frame: IID3V2.Frame, head: IID3V2.TagHeader, defaultEncoding?: string): IEncoding {

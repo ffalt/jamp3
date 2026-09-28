@@ -29,27 +29,30 @@ async function processRawFrame(frame: IID3V2.RawFrame, head: IID3V2.TagHeader): 
 	if ((frame.formatFlags) && (frame.formatFlags.encrypted)) {
 		return Promise.reject(new Error('Frame Encryption currently not supported'));
 	}
-	if ((frame.formatFlags) && (frame.formatFlags.unsynchronised)) {
-		frame.data = removeUnsync(frame.data);
-	}
-	if ((frame.formatFlags) && (frame.formatFlags.compressed)) {
-		let data = frame.data;
-		if (frame.formatFlags.compressed) {
-			const sizebytes = ID3v2_FRAME_HEADER_LENGTHS.SIZE[head.ver];
-			data = data.subarray(sizebytes);
-		}
-		frame.data = await decompressFrameData(data);
-		return;
-	}
+	let data = frame.data;
 	if ((frame.formatFlags) && (frame.formatFlags.dataLengthIndicator)) {
 		/*
 		 p - Data length indicator
 			 The data length indicator is the value one would write
 			 as the 'Frame length' if all of the frame format flags were
 			 zeroed, represented as a 32 bit synchsafe integer.
+			 For compressed frames it holds the decompressed size, so no
+			 separate decompressed size field follows (unlike v2.2/v2.3).
 		 */
-		frame.data = frame.data.subarray(4);
+		data = data.subarray(4);
 	}
+	if ((frame.formatFlags) && (frame.formatFlags.unsynchronised)) {
+		data = removeUnsync(data);
+	}
+	if ((frame.formatFlags) && (frame.formatFlags.compressed)) {
+		if ((head.ver !== 4) || !frame.formatFlags.dataLengthIndicator) {
+			// v2.2/v2.3 (and non-spec v2.4 without a data length indicator):
+			// a plain decompressed size precedes the compressed data
+			data = data.subarray(ID3v2_FRAME_HEADER_LENGTHS.SIZE[head.ver]);
+		}
+		data = await decompressFrameData(data);
+	}
+	frame.data = data;
 }
 
 export async function buildID3v2(tag: IID3V2.RawTag): Promise<IID3V2.Tag> {
