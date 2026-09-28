@@ -36,6 +36,52 @@ describe('ID3v2', () => {
 		expect(stat2.size).toBe(stat1.size + paddingSize);
 	});
 
+	describe('remove', () => {
+		it('should remove an existing id3v2 tag', async () => {
+			const file = tmp.fileSync();
+			try {
+				const id3 = new ID3v2();
+				const tag: IID3V2.ID3v2Tag = {
+					frames: [{
+						id: 'TIT2',
+						value: {
+							text: 'Test Title'
+						}
+					}]
+				};
+				await id3.write(file.name, tag, 3, 0, { paddingSize: 0 });
+				expect(await id3.read(file.name)).toBeTruthy();
+				const removed = await id3.remove(file.name, { keepBackup: false });
+				expect(removed).toBe(true);
+				expect(await id3.read(file.name)).toBeUndefined();
+				expect(await fse.pathExists(`${file.name}.bak`)).toBe(false);
+				expect(await fse.pathExists(`${file.name}.tempmp3`)).toBe(false);
+			} finally {
+				file.removeCallback();
+			}
+		});
+
+		it('should not touch the file when no id3v2 tag exists', async () => {
+			const file = tmp.fileSync();
+			try {
+				const id3 = new ID3v2();
+				const content = Buffer.from('a file without any id3v2 tag, just some bytes................');
+				await fse.writeFile(file.name, content);
+				const statBefore = await fse.stat(file.name);
+				const removed = await id3.remove(file.name, { keepBackup: false });
+				expect(removed).toBe(false);
+				// the file must be left completely untouched: same content, no rewrite artifacts
+				expect(await fse.readFile(file.name)).toEqual(content);
+				const statAfter = await fse.stat(file.name);
+				expect(statAfter.mtimeMs).toBe(statBefore.mtimeMs);
+				expect(await fse.pathExists(`${file.name}.bak`)).toBe(false);
+				expect(await fse.pathExists(`${file.name}.tempmp3`)).toBe(false);
+			} finally {
+				file.removeCallback();
+			}
+		});
+	});
+
 	const files: Array<[string, string]> = collectTestFilesSync(ID3v2TestDirectories, ID3v2TestPath, testSingleFile)
 		.map(filename => [filename.slice(ID3v2TestPath.length), filename]);
 	describe.each(files)('ID3v2: %s', (testName, filename) => {

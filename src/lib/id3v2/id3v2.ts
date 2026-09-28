@@ -92,9 +92,11 @@ export class ID3v2 {
 	 */
 	async remove(filename: string, options: IID3V2.RemoveOptions): Promise<boolean> {
 		let removed = false;
-		await updateFile(filename, { id3v2: true, mpegQuick: true }, !!options.keepBackup, () => true, async (layout, fileWriter): Promise<void> => {
-			removed = await this.copyAudio(filename, layout, fileWriter);
-		});
+		await updateFile(filename, { id3v2: true, mpegQuick: true }, !!options.keepBackup,
+			layout => layout.tags.some(t => t.id === ITagID.ID3v2 && t.end > 0),
+			async (layout, fileWriter): Promise<void> => {
+				removed = await this.copyAudio(filename, layout, fileWriter);
+			});
 		return removed;
 	}
 
