@@ -58,7 +58,7 @@ export class ID3v2HeaderReader {
 		return { exthead };
 	}
 
-	private async readID3ExtendedHeaderV4(reader: ReaderStream): Promise<{ rest?: Buffer; exthead: IID3V2.TagHeaderExtendedVer4 }> {
+	private async readID3ExtendedHeaderV4(reader: ReaderStream, tagSize: number): Promise<{ rest?: Buffer; exthead: IID3V2.TagHeaderExtendedVer4 }> {
 		/**
 		 ID3v2.4
 		 Extended header size   4 * %0xxxxxxx
@@ -71,38 +71,48 @@ export class ID3v2HeaderReader {
 		 than six bytes.
 		 */
 		const headdata = await reader.read(4);
-		const size = unsynchsafe(headdata.readInt32BE(0));
-		const data = await reader.read(Math.max(size - 4, 0));
+		// use an unsigned read so high-bit sizes stay positive
+		let size = unsynchsafe(headdata.readUInt32BE(0));
+		if (size < 6) {
+			size = 6;
+		}
+		// clamp to the remaining tag body (header.size excludes the 10-byte header itself and
+		// the optional footer) so a malformed size can not swallow audio data
+		const maxSize = Math.max(tagSize, 6);
+		size = Math.min(size, maxSize);
+		const data = await reader.read(size - 4);
 		const exthead: IID3V2.TagHeaderExtendedVer4 = {
 			size,
 			// byte 0 is the "number of flag bytes" ($01); the flags themselves are byte 1
-			flags: flags(ID3v2_EXTHEADER[4].FLAGS, bitarray(data[1]))
+			flags: data.length > 1 ? flags(ID3v2_EXTHEADER[4].FLAGS, bitarray(data[1])) : {}
 		};
 		let pos = 2;
-		if (exthead.flags.update) {
+		if (exthead.flags.update && pos < data.length) {
 			pos++; // Flag data length $00, no further data
 		}
-		if (exthead.flags.crc) {
+		if (exthead.flags.crc && pos < data.length) {
 			// Flag data length $05, Total frame CRC 5 * %0xxxxxxx (35-bit synchsafe integer)
 			const crcSize = data[pos];
 			pos++;
 			let crc32 = 0;
-			for (let i = 0; i < crcSize; i++) {
+			for (let i = 0; i < crcSize && (pos + i) < data.length; i++) {
 				crc32 = (crc32 * 128) + (data[pos + i] & 0x7F);
 			}
 			exthead.crc32 = crc32;
 			pos += crcSize;
 		}
-		if (exthead.flags.restrictions) {
+		if (exthead.flags.restrictions && pos < data.length) {
 			pos++; // Flag data length $01
 			const r = data[pos];
-			exthead.restrictions = {
-				tagSize: (r >> 6) & 0x03,
-				textEncoding: (r >> 5) & 0x01,
-				textSize: (r >> 3) & 0x03,
-				imageEncoding: (r >> 2) & 0x01,
-				imageSize: r & 0x03
-			};
+			if (r !== undefined) {
+				exthead.restrictions = {
+					tagSize: (r >> 6) & 0x03,
+					textEncoding: (r >> 5) & 0x01,
+					textSize: (r >> 3) & 0x03,
+					imageEncoding: (r >> 2) & 0x01,
+					imageSize: r & 0x03
+				};
+			}
 		}
 		return { exthead };
 	}
@@ -186,7 +196,7 @@ export class ID3v2HeaderReader {
 		}
 		if (header.v4 && header.v4.flags.extendedheader) {
 			const pos = reader.pos;
-			const extended = await this.readID3ExtendedHeaderV4(reader);
+			const extended = await this.readID3ExtendedHeaderV4(reader, header.size);
 			header.v4.extended = extended.exthead;
 			return { header, rest: extended.rest, consumed: reader.pos - pos };
 		}

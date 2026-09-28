@@ -2,6 +2,8 @@ import { Readable } from 'node:stream';
 import { describe, expect, it } from '@jest/globals';
 
 import { ID3v2 } from '../../src/lib/id3v2/id3v2.js';
+import { ID3v2Reader } from '../../src/lib/id3v2/id3v2.reader.js';
+import { ReaderStream } from '../../src/lib/common/stream-reader.js';
 
 class ChunkedStream extends Readable {
 	private i = 0;
@@ -43,6 +45,16 @@ function buildV23Tag(extHeader: Buffer, frames: Buffer, padding = 4): Buffer {
 	const head = Buffer.concat([
 		Buffer.from('ID3', 'ascii'),
 		Buffer.from([3, 0, 0x40]), // v2.3, extended header flag
+		synchsafe(size)
+	]);
+	return Buffer.concat([head, extHeader, frames, Buffer.alloc(padding)]);
+}
+
+function buildV24Tag(extHeader: Buffer, frames: Buffer, padding = 4): Buffer {
+	const size = extHeader.length + frames.length + padding;
+	const head = Buffer.concat([
+		Buffer.from('ID3', 'ascii'),
+		Buffer.from([4, 0, 0x40]), // v2.4, extended header flag
 		synchsafe(size)
 	]);
 	return Buffer.concat([head, extHeader, frames, Buffer.alloc(padding)]);
@@ -108,6 +120,65 @@ describe('ID3v2.3 extended header', () => {
 		]);
 		const id3 = new ID3v2();
 		const buffer = Buffer.concat([head, Buffer.from([0, 0, 0, 2]), Buffer.from([0, 0])]);
+		const tag = await id3.readStream(streamOf(buffer));
+		expect(tag).toBeDefined();
+		expect(tag?.frames.length).toBe(0);
+	});
+});
+
+describe('ID3v2.4 extended header', () => {
+	it('parses update, crc and restrictions flags', async () => {
+		const crcBytes = Buffer.from([1, 2, 3, 4, 5]);
+		const expectedCrc = (1 * 128 ** 4) + (2 * 128 ** 3) + (3 * 128 ** 2) + (4 * 128) + 5;
+		const ext = Buffer.concat([
+			synchsafe(4 + 1 + 1 + 1 + 6 + 2), // size includes itself: num flag bytes + flags + update data + crc data + restrictions data
+			Buffer.from([0x01]), // number of flag bytes
+			Buffer.from([0x70]), // flags: update (bit 6) + crc (bit 5) + restrictions (bit 4)
+			Buffer.from([0x00]), // update flag data length
+			Buffer.concat([Buffer.from([0x05]), crcBytes]), // crc flag data length + 35-bit crc
+			Buffer.from([0x01, 0xAD]) // restrictions flag data length + restrictions byte %10101101
+		]);
+		const id3 = new ID3v2();
+		const tag = await id3.readStream(streamOf(buildV24Tag(ext, tit2Frame)));
+		const extended = tag?.head?.v4?.extended;
+		expect(extended).toBeDefined();
+		expect(extended?.flags.update).toBe(true);
+		expect(extended?.flags.crc).toBe(true);
+		expect(extended?.flags.restrictions).toBe(true);
+		expect(extended?.crc32).toBe(expectedCrc);
+		expect(extended?.restrictions).toEqual({
+			tagSize: 2, textEncoding: 1, textSize: 1, imageEncoding: 1, imageSize: 1
+		});
+		const tit2 = tag?.frames.find(f => f.id === 'TIT2');
+		expect((tit2?.value as any).text).toBe('hello');
+	});
+
+	it('does not let a malformed huge size swallow data beyond the tag', async () => {
+		// ext header claims the maximum synchsafe size; it must be clamped to the tag body,
+		// so reading stops exactly at the end of the tag and leaves the trailing bytes alone
+		const ext = Buffer.concat([
+			Buffer.from([0x7F, 0x7F, 0x7F, 0x7F]), // garbage huge size
+			Buffer.from([0x01, 0x00, 0x00]) // num flag bytes, flags, padding
+		]);
+		const tagBytes = buildV24Tag(ext, tit2Frame);
+		const withAudio = Buffer.concat([tagBytes, Buffer.from('AUDIO')]);
+		const reader = new ReaderStream();
+		await reader.openStream(streamOf(withAudio));
+		const id3reader = new ID3v2Reader();
+		const result = await id3reader.readReaderStream(reader);
+		expect(result.tag).toBeDefined();
+		expect(reader.pos).toBe(tagBytes.length);
+	});
+
+	it('does not crash on a truncated extended header at end of stream', async () => {
+		const size = 4 + 2; // only the size field + 2 bytes follow
+		const head = Buffer.concat([
+			Buffer.from('ID3', 'ascii'),
+			Buffer.from([4, 0, 0x40]),
+			synchsafe(size)
+		]);
+		const id3 = new ID3v2();
+		const buffer = Buffer.concat([head, Buffer.from([0, 0, 0, 2]), Buffer.from([0x01, 0x00])]);
 		const tag = await id3.readStream(streamOf(buffer));
 		expect(tag).toBeDefined();
 		expect(tag?.frames.length).toBe(0);
