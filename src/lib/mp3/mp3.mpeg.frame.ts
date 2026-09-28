@@ -6,6 +6,22 @@ import {
 import { IMP3 } from './mp3.types.js';
 import { isBit } from '../common/utils.js';
 import { BufferReader } from '../common/buffer-reader.js';
+import { Markers } from '../common/marker.js';
+
+export function sideInfoSize(header: IMP3.FrameRawHeader): number {
+	// only Layer III has a side information block following the frame header
+	if (header.layerIdx !== 1) {
+		return 0;
+	}
+	// MPEG 1: 32 bytes for stereo/joint stereo/dual channel, 17 for mono
+	// MPEG 2/2.5: 17 bytes for stereo/joint stereo/dual channel, 9 for mono
+	const mpeg1 = header.versionIdx === 3;
+	const mono = header.modeIdx === 3;
+	if (mpeg1) {
+		return mono ? 17 : 32;
+	}
+	return mono ? 9 : 17;
+}
 
 export function collapseRawHeader(header: IMP3.FrameRawHeader): IMP3.FrameRawHeaderArray {
 	return [
@@ -377,25 +393,23 @@ export class MPEGFrameReader {
 		return reader.position;
 	}
 
-	public readFrame(chunk: Buffer, offset: number, header: IMP3.FrameRawHeader): { offset: number; frame: IMP3.RawFrame } {
+	public readFrame(chunk: Buffer, offset: number, header: IMP3.FrameRawHeader, scanVbrHeader: boolean): { offset: number; frame: IMP3.RawFrame } {
 		const frame: IMP3.RawFrame = { header: collapseRawHeader(header) };
 		let off = 0;
-		const length = offset + Math.min(40, chunk.length - 4 - offset);
-		for (let i = offset; i < length; i++) {
-			const c = chunk[i];
-			const c2 = chunk[i + 1];
-			const c3 = chunk[i + 2];
-			const c4 = chunk[i + 3];
-			if (
-				(c === 88 && c2 === 105 && c3 === 110 && c4 === 103) || // Xing
-				(c === 73 && c2 === 110 && c3 === 102 && c4 === 111) // Info
-			) {
-				off = this.readXing(chunk, frame, i);
-			} else if (c === 86 && c2 === 66 && c3 === 82 && c4 === 73) { // VBRI
-				off = this.readVbri(chunk, frame, i);
-			}
-			if (off > 0) {
-				break;
+		if (scanVbrHeader) {
+			// a Xing/Info/VBRI header only exists in the first frame of the stream, at a fixed
+			// position after the frame header (and the Layer III side information); audio data
+			// of other frames may coincidentally contain these marker strings, so scanning
+			// every frame produces false positive head frames
+			const xingOffset = offset + 4 + sideInfoSize(header);
+			if (Markers.isMarker(chunk, xingOffset, Markers.MARKERS.xing) || Markers.isMarker(chunk, xingOffset, Markers.MARKERS.info)) {
+				off = this.readXing(chunk, frame, xingOffset);
+			} else {
+				// the VBRI header sits exactly 32 bytes after the end of the first MPEG audio header
+				const vbriOffset = offset + 4 + 32;
+				if (Markers.isMarker(chunk, vbriOffset, Markers.MARKERS.vbri)) {
+					off = this.readVbri(chunk, frame, vbriOffset);
+				}
 			}
 		}
 		return { offset: off, frame };

@@ -31,7 +31,9 @@ export class MP3Reader {
 			return true;
 		}
 		header.offset = this.stream.pos - chunk.length + pos;
-		const a = this.mpegFramereader.readFrame(chunk, pos, header);
+		// only the first frame of the stream can carry the vbr header; using headframes (instead of
+		// frameheaders) as the gate keeps looking when junk headers precede the real first frame
+		const a = this.mpegFramereader.readFrame(chunk, pos, header, this.layout.headframes.length === 0);
 		if (a.frame) {
 			if (a.frame.vbri || a.frame.xing) {
 				this.layout.headframes.push(a.frame);
