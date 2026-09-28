@@ -83,9 +83,9 @@ Encodings['utf8'] = {
 	terminator: BufferUtils.fromArray([0]),
 	encode: s => iconv.encode(s, 'utf8'),
 	decode: buffer => {
-		if ((buffer[0] === 0xEF) && ((buffer[1] === 0xBB) || (buffer[1] === 0xBF))) {
-			return buffer.subarray(2).toString('utf8');
-		} // strip non-standard utf-8 bom
+		if ((buffer.length >= 3) && (buffer[0] === 0xEF) && (buffer[1] === 0xBB) && (buffer[2] === 0xBF)) {
+			return buffer.subarray(3).toString('utf8');
+		} // strip utf-8 bom
 		return buffer.toString('utf8');
 	}
 };
