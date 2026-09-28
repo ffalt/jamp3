@@ -7,10 +7,11 @@ import { ReaderStream } from '../common/stream-reader.js';
 export class ID3v2HeaderReader {
 	private async readID3ExtendedHeaderV3(reader: ReaderStream): Promise<{ rest?: Buffer; exthead: IID3V2.TagHeaderExtendedVer3 }> {
 		const headdata = await reader.read(4);
-		let size = headdata.readInt32BE(0);
-		if (size > 10) {
-			size = 6;
-		}
+		// the size excludes itself and is currently 6 or 10 bytes (10 when crc data is present);
+		// use an unsigned read and normalize anything else to the common 6-byte form,
+		// so malformed values can not turn negative or leave the reader misaligned
+		const rawSize = headdata.readUInt32BE(0);
+		const size = (rawSize === 6 || rawSize === 10) ? rawSize : 6;
 		const data = await reader.read(size);
 		/** ID3v2.3
 		 3.2.   ID3v2 extended header
@@ -47,11 +48,11 @@ export class ID3v2HeaderReader {
 		 */
 		const exthead: IID3V2.TagHeaderExtendedVer3 = {
 			size,
-			flags1: flags(ID3v2_EXTHEADER[3].FLAGS1, bitarray(data[0])),
-			flags2: flags(ID3v2_EXTHEADER[3].FLAGS2, bitarray(data[1])),
-			sizeOfPadding: data.readUInt32BE(2)
+			flags1: flags(ID3v2_EXTHEADER[3].FLAGS1, data.length > 0 ? bitarray(data[0]) : []),
+			flags2: flags(ID3v2_EXTHEADER[3].FLAGS2, data.length > 1 ? bitarray(data[1]) : []),
+			sizeOfPadding: data.length >= 6 ? data.readUInt32BE(2) : 0
 		};
-		if (exthead.flags1.crc && data.length > 6) {
+		if (exthead.flags1.crc && data.length >= 10) {
 			exthead.crcData = data.readUInt32BE(6);
 		}
 		return { exthead };
