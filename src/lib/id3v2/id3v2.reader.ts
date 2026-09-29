@@ -150,9 +150,18 @@ export class ID3v2Reader {
 			}
 			currentSkip = 0;
 			if (frame.size > 0) {
-				frame.data = (tag.head.v3 && tag.head.v3.flags.unsynchronisation) ?
-					reader.readUnsyncedBuffer(frame.size) :
-					reader.readBuffer(frame.size);
+				if (tag.head.v3 && tag.head.v3.flags.unsynchronisation) {
+					try {
+						frame.data = reader.readUnsyncedBuffer(frame.size);
+					} catch {
+						// truncated unsynchronised frame data: treat the frame as invalid and re-sync,
+						// instead of letting the cursor overshoot the end of the tag data
+						reader.position = pos - (markerLength - 1);
+						return currentSkip + 1;
+					}
+				} else {
+					frame.data = reader.readBuffer(frame.size);
+				}
 			}
 			tag.frames.push(frame);
 		} else {

@@ -121,15 +121,28 @@ export class BufferReader {
 	}
 
 	readUnsyncedBuffer(amount: number): Buffer {
-		let result = this.data.subarray(this.position, this.position + amount);
-		let unsynced = removeUnsync(result);
-		let stuffed = 0;
-		while (unsynced.length < amount && (this.position + amount + stuffed < this.data.length)) {
-			stuffed += amount - unsynced.length;
-			result = this.data.subarray(this.position, this.position + amount + stuffed);
-			unsynced = removeUnsync(result);
+		// grow the raw window until it yields `amount` de-stuffed bytes; each 00 following FF
+		// is removed, so the window grows by the current shortfall per iteration
+		let window = Math.min(amount, this.data.length - this.position);
+		let unsynced = removeUnsync(this.data.subarray(this.position, this.position + window));
+		while (unsynced.length < amount) {
+			const remaining = this.data.length - this.position - window;
+			if (remaining <= 0) {
+				// truncated data: clamp the cursor to the end instead of overshooting it,
+				// and let the caller treat the frame as invalid
+				this.position = this.data.length;
+				throw new RangeError(`Unsynchronised frame data truncated: needed ${amount} bytes, got ${unsynced.length}`);
+			}
+			window += Math.min(amount - unsynced.length, remaining);
+			unsynced = removeUnsync(this.data.subarray(this.position, this.position + window));
 		}
-		this.position = this.position + amount + stuffed;
+		if ((window > 0) && (this.data[this.position + window - 1] === 0xFF) && (this.data[this.position + window] === 0x00)) {
+			// a raw FF is always followed by its stuffing 00, so when the window ends exactly on an
+			// FF whose stuffing byte lies just outside, that byte belongs to this frame too
+			window++;
+			unsynced = removeUnsync(this.data.subarray(this.position, this.position + window));
+		}
+		this.position += window;
 		return unsynced;
 	}
 }

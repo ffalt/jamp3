@@ -12,6 +12,10 @@ import { writeRawFrames } from '../../src/lib/id3v2/frames/id3v2.frame.write.js'
 import { IID3V2 } from '../../src/lib/id3v2/id3v2.types.js';
 import { ID3v2 } from '../../src/lib/id3v2/id3v2.js';
 
+function synchsafe(n: number): Array<number> {
+	return [(n >> 21) & 0x7F, (n >> 14) & 0x7F, (n >> 7) & 0x7F, n & 0x7F];
+}
+
 const UNSYNC_TEST_PATH = path.join(__dirname, '..', 'data', 'testfiles', 'id3v2', 'agrundma');
 
 async function writeAndRead(frames: Array<IID3V2.RawFrame>, head: IID3V2.TagHeader): Promise<IID3V2.Tag | undefined> {
@@ -37,6 +41,50 @@ async function writeTagToBuffer(frames: Array<IID3V2.Frame>, head: IID3V2.TagHea
 }
 
 describe('ID3v2 Unsync', () => {
+	describe('truncated unsynchronised frame data', () => {
+		it('invalidates the truncated frame without losing following frames', async () => {
+			// v2.3 tag with tag-level unsynchronisation:
+			// - TIT2 declares 50 bytes; the data following it is 60 stuffed bytes (30 FF 00 pairs ->
+			//   only 30 unstuffed) plus the TPE1 frame (16 unstuffed), i.e. raw remaining (66) passes
+			//   the reader's pre-check, but the unstuffed yield (46) can never satisfy the declared
+			//   size: the frame data is truncated
+			// - the old code advanced the read cursor past the end of the tag here and the
+			//   following TPE1 frame was lost entirely
+			const stuffed = Buffer.from(Array.from({ length: 60 }, (_, i) => (i % 2 === 0 ? 0xFF : 0x00)));
+			const tit2 = Buffer.concat([
+				Buffer.from('TIT2', 'ascii'),
+				Buffer.from([0, 0, 0, 50]), // declared frame size
+				Buffer.from([0, 0]), // flags
+				stuffed
+			]);
+			const tpe1 = Buffer.concat([
+				Buffer.from('TPE1', 'ascii'),
+				Buffer.from([0, 0, 0, 6]),
+				Buffer.from([0, 0]),
+				Buffer.from([0]), // encoding
+				Buffer.from('hello', 'ascii')
+			]);
+			const body = Buffer.concat([tit2, tpe1]);
+			const head = Buffer.concat([
+				Buffer.from('ID3', 'ascii'),
+				Buffer.from([3, 0, 0x80]), // v2.3, unsynchronisation
+				Buffer.from(synchsafe(body.length))
+			]);
+			const file = tmp.fileSync();
+			try {
+				await fse.writeFile(file.name, Buffer.concat([head, body]));
+				const rawTag = await new ID3v2Reader().read(file.name);
+				expect(rawTag).toBeDefined();
+				const tag = rawTag ? await buildID3v2(rawTag) : undefined;
+				const tpe1Frame = tag?.frames.find(f => f.id === 'TPE1');
+				expect(tpe1Frame).toBeDefined();
+				expect((tpe1Frame?.value as IID3V2.FrameValue.Text).text).toBe('hello');
+			} finally {
+				file.removeCallback();
+			}
+		});
+	});
+
 	describe('needsUnsync', () => {
 		it('returns false for empty buffer', () => {
 			expect(needsUnsync(Buffer.alloc(0))).toBe(false);
@@ -168,8 +216,8 @@ describe('ID3v2 Unsync', () => {
 		it('preserves unsynchronised formatFlag in round-trip', async () => {
 			const rawFrames = await writeRawFrames([v24frame], v24head);
 			const tag = await writeAndRead(rawFrames, { ...v24head });
-			expect(tag?.frames[0].head?.formatFlags.unsynchronised).toBe(true);
-			expect(tag?.frames[0].head?.formatFlags.dataLengthIndicator).toBe(true);
+			expect(tag?.frames[0].head?.formatFlags?.unsynchronised).toBe(true);
+			expect(tag?.frames[0].head?.formatFlags?.dataLengthIndicator).toBe(true);
 		});
 
 		it('reads back multiple frames with mixed unsync flags correctly', async () => {
