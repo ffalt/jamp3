@@ -7,6 +7,7 @@ import { ITagID } from '../common/types.js';
 import { ReaderStream } from '../common/stream-reader.js';
 import { BufferReader } from '../common/buffer-reader.js';
 import { isValidFrameBinId } from './frames/id3v2.frame.match.js';
+import { removeUnsync } from './frames/id3v2.frame.unsync.js';
 import { ID3v2HeaderReader } from './id3v2.reader.header.js';
 import RawFrame = IID3V2.RawFrame;
 
@@ -145,7 +146,13 @@ export class ID3v2Reader {
 		if (valid) {
 			if (currentSkip > 0 && tag.frames.length > 0) {
 				const lastFrame = tag.frames.at(-1) as RawFrame;
-				lastFrame.data = BufferUtils.concatBuffer(lastFrame.data, reader.data.slice(pos - currentSkip - markerLength, pos - markerLength));
+				let skipped: Buffer = reader.data.slice(pos - currentSkip - markerLength, pos - markerLength);
+				if (tag.head.v3 && tag.head.v3.flags.unsynchronisation) {
+					// the previous frame's data was already de-synchronised; de-stuff the skipped raw
+					// bytes before merging, otherwise re-writing the frame would double-stuff them
+					skipped = removeUnsync(skipped);
+				}
+				lastFrame.data = BufferUtils.concatBuffer(lastFrame.data, skipped);
 				lastFrame.size = lastFrame.data.length;
 			}
 			currentSkip = 0;

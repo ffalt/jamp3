@@ -41,6 +41,52 @@ async function writeTagToBuffer(frames: Array<IID3V2.Frame>, head: IID3V2.TagHea
 }
 
 describe('ID3v2 Unsync', () => {
+	describe('re-sync after skipped bytes (tag-level unsynchronisation)', () => {
+		it('de-stuffs skipped raw bytes before merging them into the previous frame', async () => {
+			// v2.3 tag with tag-level unsynchronisation:
+			// - TIT2 is followed by 4 garbage bytes ('!' 0xFF 0x00 'A') that do not parse as a frame id,
+			//   so the reader re-synchronises on the following TPE1 frame and merges the skipped raw
+			//   bytes into the previous (already de-synchronised) TIT2 frame
+			// - the skipped bytes contain a stuffed FF 00 pair; merging them raw would corrupt the
+			//   value and cause double-stuffing on re-write
+			const tit2 = Buffer.concat([
+				Buffer.from('TIT2', 'ascii'),
+				Buffer.from([0, 0, 0, 6]),
+				Buffer.from([0, 0]),
+				Buffer.from([0]), // encoding
+				Buffer.from('hello', 'ascii')
+			]);
+			const garbage = Buffer.from([0x21, 0xFF, 0x00, 0x41]);
+			const tpe1 = Buffer.concat([
+				Buffer.from('TPE1', 'ascii'),
+				Buffer.from([0, 0, 0, 6]),
+				Buffer.from([0, 0]),
+				Buffer.from([0]), // encoding
+				Buffer.from('world', 'ascii')
+			]);
+			const body = Buffer.concat([tit2, garbage, tpe1]);
+			const head = Buffer.concat([
+				Buffer.from('ID3', 'ascii'),
+				Buffer.from([3, 0, 0x80]), // v2.3, unsynchronisation
+				Buffer.from(synchsafe(body.length))
+			]);
+			const file = tmp.fileSync();
+			try {
+				await fse.writeFile(file.name, Buffer.concat([head, body]));
+				const rawTag = await new ID3v2Reader().read(file.name);
+				const tag = rawTag ? await buildID3v2(rawTag) : undefined;
+				const tit2Frame = tag?.frames.find(f => f.id === 'TIT2');
+				const tpe1Frame = tag?.frames.find(f => f.id === 'TPE1');
+				expect(tpe1Frame).toBeDefined();
+				expect((tpe1Frame?.value as IID3V2.FrameValue.Text).text).toBe('world');
+				// the merged skipped bytes must be de-synchronised: FF 00 41 -> FF 41
+				expect((tit2Frame?.value as IID3V2.FrameValue.Text).text).toBe('hello!ÿA');
+			} finally {
+				file.removeCallback();
+			}
+		});
+	});
+
 	describe('truncated unsynchronised frame data', () => {
 		it('invalidates the truncated frame without losing following frames', async () => {
 			// v2.3 tag with tag-level unsynchronisation:
