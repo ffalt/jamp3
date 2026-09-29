@@ -33,6 +33,15 @@ function frameWithFalseMarkers(): Buffer {
 	return frame;
 }
 
+function frameWithBareXing(): Buffer {
+	// a Xing header that declares no optional fields (no frame/byte counts)
+	const frame = Buffer.alloc(FRAME_SIZE);
+	FRAME_HEADER.copy(frame, 0);
+	frame.write('Xing', XING_OFFSET, 'ascii');
+	frame.writeUInt32BE(0x00, XING_OFFSET + 4); // flags: nothing present
+	return frame;
+}
+
 describe('MPEG vbr header detection', () => {
 	it('computes the Layer III side information size', () => {
 		const mpeg1Stereo = expandMPEGFrameFlags(0xFF_FB, 0x90_00, 0); // MPEG1 L3 stereo (mode 00)
@@ -55,6 +64,23 @@ describe('MPEG vbr header detection', () => {
 			expect(result.frames?.headers[0].mode).toBe('Xing');
 			expect(result.mpeg?.frameCountDeclared).toBe(10);
 			expect(result.mpeg?.audioBytesDeclared).toBe(4170);
+		} finally {
+			file.removeCallback();
+		}
+	});
+
+	it('keeps the byte-based duration estimate when the xing header declares no frame count (mpegQuick)', async () => {
+		const file = tmp.fileSync({ postfix: '.mp3' });
+		try {
+			await fse.writeFile(file.name, Buffer.concat([frameWithBareXing(), frameWithFalseMarkers()]));
+			const mp3 = new MP3();
+			const result = await mp3.read(file.name, { mpegQuick: true });
+			expect(result.frames?.headers.length).toBe(1);
+			expect(result.mpeg?.frameCountDeclared).toBe(0);
+			// without a declared frame count the estimate must stay the byte-based one from the
+			// file size, not be overwritten with a declared-based duration of 0
+			const expected = (2 * FRAME_SIZE * 8) / 128_000;
+			expect(result.mpeg?.durationEstimate).toBeCloseTo(expected, 6);
 		} finally {
 			file.removeCallback();
 		}

@@ -55,7 +55,7 @@ function setResultCalculated(frameCount: number, audioBytes: number, duration: n
 	mpeg.durationEstimate = calculateDuration(mpeg.frameCount, mpeg.sampleCount, mpeg.sampleRate);
 }
 
-function setResultHeadFrame(headframe: IMP3.Frame, mpeg: IMP3.MPEG) {
+function setResultHeadFrame(headframe: IMP3.Frame, mpeg: IMP3.MPEG, isQuick?: boolean) {
 	if (headframe.xing) {
 		mpeg.audioBytesDeclared = headframe.xing.bytes || 0;
 		mpeg.frameCountDeclared = headframe.xing.frames || 0;
@@ -65,7 +65,9 @@ function setResultHeadFrame(headframe: IMP3.Frame, mpeg: IMP3.MPEG) {
 		mpeg.frameCountDeclared = headframe.vbri.frames;
 		mpeg.encoded = 'VBR';
 	}
-	mpeg.durationEstimate = calculateDuration(mpeg.frameCountDeclared, mpeg.sampleCount, mpeg.sampleRate);
+	if (!isQuick || (mpeg.frameCountDeclared > 0)) {
+		mpeg.durationEstimate = calculateDuration(mpeg.frameCountDeclared, mpeg.sampleCount, mpeg.sampleRate);
+	}
 }
 
 function defaultMPEGResult(): IMP3.MPEG {
@@ -93,7 +95,7 @@ async function prepareResultMPEG(options: IMP3.ReadOptions, layout: IMP3.RawLayo
 	}
 	const headframe = frames.headers[0];
 	if (headframe) {
-		setResultHeadFrame(headframe, mpeg);
+		setResultHeadFrame(headframe, mpeg, options.mpegQuick);
 	}
 	return { mpeg, frames };
 }
