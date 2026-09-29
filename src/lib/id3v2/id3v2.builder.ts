@@ -22,8 +22,14 @@ export class ID3V2RawBuilder extends ID3V2FramesCollect {
 		this.add(key, frame);
 	}
 
-	chapterTOC(key: string, id: string, ordered: boolean, topLevel: boolean, children: Array<string>) {
-		this.addFrame<IID3V2.FrameValue.ChapterToc>(key, { id, ordered, topLevel, children });
+	chapterTOC(key: string, id: string, ordered: boolean, topLevel: boolean, children: Array<string>, title?: string) {
+		const frame: IID3V2.Frames.ChapterTOCFrame = {
+			id: key,
+			value: { id, ordered, topLevel, children },
+			head: this.head(),
+			subframes: title ? [{ id: 'TIT2', value: { text: title } as IID3V2.FrameValue.Text, head: this.head() }] : undefined
+		};
+		this.add(key, frame);
 	}
 
 	eventTimingCodes(key: string, timestampFormat: number, events: Array<{ type: number; timestamp: number }>) {

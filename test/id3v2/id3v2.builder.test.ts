@@ -2,6 +2,7 @@ import fse from 'fs-extra';
 import tmp from 'tmp';
 
 import { ID3v2 } from '../../src/lib/id3v2/id3v2.js';
+import { IID3V2 } from '../../src/lib/id3v2/id3v2.types.js';
 import { ID3V24TagBuilder } from '../../src/lib/id3v2/id3v2.builder.v24.js';
 import { Id3v2RawWriter } from '../../src/lib/id3v2/id3v2.writer.raw.js';
 import { MemoryWriterStream } from '../../src/lib/common/stream-writer-memory.js';
@@ -254,6 +255,27 @@ describe('Builder', () => {
 		});
 		it('should write and read footer', async () => {
 			await test24BuilderWriteWithFooter();
+		});
+		it('should store the chapterTOC value as the element title subframe', async () => {
+			const builder = new ID3V24TagBuilder('utf8');
+			builder.chapterTOC('Part 1', 'toc1', true, true, ['ch1', 'ch2']);
+			const file = tmp.fileSync();
+			try {
+				await fse.remove(file.name);
+				const id3 = new ID3v2();
+				await id3.writeBuilder(file.name, builder, { keepBackup: false, paddingSize: 0 });
+				const data = await id3.read(file.name);
+				const ctoc = data?.frames.find(f => f.id === 'CTOC');
+				expect(ctoc).toBeDefined();
+				expect((ctoc?.value as IID3V2.FrameValue.ChapterToc).id).toBe('toc1');
+				expect((ctoc?.value as IID3V2.FrameValue.ChapterToc).children).toEqual(['ch1', 'ch2']);
+				// the value parameter must not be silently dropped: it becomes the embedded title
+				const tit2 = ctoc?.subframes?.find(f => f.id === 'TIT2');
+				expect(tit2).toBeDefined();
+				expect((tit2?.value as IID3V2.FrameValue.Text).text).toBe('Part 1');
+			} finally {
+				file.removeCallback();
+			}
 		});
 		it('should write correct footer bytes', async () => {
 			await test24FooterRawBytes();

@@ -52,7 +52,7 @@ export class ID3V24TagBuilder extends ID3V2TagBuilder {
 	}
 
 	chapterTOC(value: string, id: string, ordered: boolean, topLevel: boolean, children: Array<string>): ID3V24TagBuilder {
-		this.rawBuilder.chapterTOC('CTOC', id, ordered, topLevel, children);
+		this.rawBuilder.chapterTOC('CTOC', id, ordered, topLevel, children, value);
 		return this;
 	}
 
