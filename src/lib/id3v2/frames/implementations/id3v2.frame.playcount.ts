@@ -12,19 +12,14 @@ export const FramePlayCount: IFrameImpl = {
 	 Counter         $xx xx xx xx (xx ...)
 	 */
 	parse: async (reader, frame) => {
-		let num: number;
-		try {
-			num = reader.readUInt(frame.data.length);
-		} catch {
-			num = 0;
-		}
+		const num = reader.readUIntDynamic(frame.data.length);
 		const value: IID3V2.FrameValue.Number = { num };
 		return { value };
 	},
 	write: async (frame, stream) => {
 		const value = frame.value as IID3V2.FrameValue.Number;
 		const byteLength = neededStoreBytes(value.num, 4);
-		await stream.writeUInt(value.num, byteLength);
+		await stream.writeBigUInt(value.num, byteLength);
 	},
 	simplify: (value: IID3V2.FrameValue.Number) => {
 		if (value && value.num !== undefined) {

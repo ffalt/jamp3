@@ -31,11 +31,7 @@ export const FramePopularimeter: IFrameImpl = {
 		const rating = reader.readByte();
 		let count = 0;
 		if (reader.hasData()) {
-			try {
-				count = reader.readUInt(reader.unread());
-			} catch {
-				count = 0;
-			}
+			count = reader.readUIntDynamic(reader.unread());
 		}
 		const value: IID3V2.FrameValue.Popularimeter = { count, rating, email };
 		return { value, encoding: ascii };
@@ -46,7 +42,7 @@ export const FramePopularimeter: IFrameImpl = {
 		await stream.writeByte(value.rating);
 		if (value.count > 0) {
 			const byteLength = neededStoreBytes(value.count, 4);
-			await stream.writeUInt(value.count, byteLength);
+			await stream.writeBigUInt(value.count, byteLength);
 		}
 	},
 	simplify: (value: IID3V2.FrameValue.Popularimeter) => {

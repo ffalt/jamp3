@@ -55,6 +55,21 @@ export class BufferReader {
 		return result;
 	}
 
+	readUIntDynamic(byteLength: number): number {
+		const length = Math.min(byteLength, this.unread());
+		let result = 0;
+		for (let i = 0; i < length; i++) {
+			const byte = this.data[this.position + i];
+			if (result > ((Number.MAX_SAFE_INTEGER - byte) / 256)) {
+				this.position += length;
+				return Number.MAX_SAFE_INTEGER;
+			}
+			result = (result * 256) + byte;
+		}
+		this.position += length;
+		return result;
+	}
+
 	readUInt2Byte(): number {
 		const result = this.data.readUIntBE(this.position, 2);
 		this.position += 2;

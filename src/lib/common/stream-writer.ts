@@ -98,6 +98,19 @@ export class WriterStream {
 		return this._write(buf);
 	}
 
+	async writeBigUInt(int: number, byteLength: number): Promise<void> {
+		if ((byteLength <= 6) && (int <= Number.MAX_SAFE_INTEGER)) {
+			return this.writeUInt(int, byteLength);
+		}
+		const buf = BufferUtils.zeroBuffer(byteLength);
+		let current = Math.min(int, Number.MAX_SAFE_INTEGER);
+		for (let i = byteLength - 1; i >= 0; i--) {
+			buf[i] = current % 256;
+			current = Math.floor(current / 256);
+		}
+		return this._write(buf);
+	}
+
 	async writeSInt2Byte(int: number): Promise<void> {
 		return this.writeSInt(int, 2);
 	}
