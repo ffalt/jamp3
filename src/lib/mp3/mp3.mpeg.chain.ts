@@ -1,13 +1,17 @@
 import { IMP3 } from './mp3.types.js';
 import { rawHeaderLayerIdx, rawHeaderOffSet, rawHeaderSize, rawHeaderVersionIdx } from './mp3.mpeg.frame.js';
 
-function followChain(frame: IMP3.FrameRawHeaderArray, pos: number, frames: Array<IMP3.FrameRawHeaderArray>): Array<IMP3.FrameRawHeaderArray> {
+function followChain(frame: IMP3.FrameRawHeaderArray, frames: Array<IMP3.FrameRawHeaderArray>): Array<IMP3.FrameRawHeaderArray> {
 	const result: Array<IMP3.FrameRawHeaderArray> = [];
 	// console.log('include start frame:', 'current:', {size: frame.header.size, offset: frame.header.offset});
 	let useFrame = frame;
 	result.push(useFrame);
 	const useFrames = frames.filter(f => rawHeaderSize(f) > 0);
-	for (let i = pos + 1; i < useFrames.length; i++) {
+	let i = useFrames.indexOf(frame);
+	if (i < 0) {
+		return result;
+	}
+	for (i += 1; i < useFrames.length; i++) {
 		const nextpos = rawHeaderOffSet(useFrame) + rawHeaderSize(useFrame);
 		const direct = getNextMatch(nextpos, i - 1, useFrames);
 		if (direct >= 0) {
@@ -117,5 +121,5 @@ export function filterBestMPEGChain(frames: Array<IMP3.FrameRawHeaderArray>, fol
 	if (!chain) {
 		return frames;
 	}
-	return followChain(chain.frame, chain.pos, frames);
+	return followChain(chain.frame, frames);
 }
