@@ -73,3 +73,34 @@ describe('ReaderStream.read', () => {
 		expect(empty.length).toBe(0);
 	});
 });
+
+describe('ReaderStream.get', () => {
+	it('advances pos only by the bytes actually returned on a short read', async () => {
+		const stream = chunkedStream([Buffer.from('abcdef')]);
+		const reader = new ReaderStream();
+		await reader.openStream(stream);
+		await reader.read(3);
+		const result = reader.get(10); // only 3 bytes remain
+		expect(result.toString()).toBe('def');
+		expect(reader.pos).toBe(6); // not 3 + 10
+	});
+
+	it('advances pos by the full amount when enough data is buffered', async () => {
+		const stream = chunkedStream([Buffer.from('abcdef')]);
+		const reader = new ReaderStream();
+		await reader.openStream(stream);
+		const result = reader.get(4);
+		expect(result.toString()).toBe('abcd');
+		expect(reader.pos).toBe(4);
+	});
+
+	it('getAndPrepend advances pos only by the bytes actually consumed on a short read', async () => {
+		const stream = chunkedStream([Buffer.from('abcdef')]);
+		const reader = new ReaderStream();
+		await reader.openStream(stream);
+		await reader.read(3);
+		const result = reader.getAndPrepend(10, [Buffer.from('XY')]);
+		expect(result.toString()).toBe('XYdef');
+		expect(reader.pos).toBe(6); // not 3 + 10
+	});
+});

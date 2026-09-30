@@ -162,6 +162,7 @@ export class ReaderStream {
 			const need = amount - givenLength;
 			if (need < b.length) {
 				destBuffers.push(b.subarray(0, need));
+				givenLength += need;
 				this.buffers[i] = b.subarray(need);
 				break;
 			}
@@ -172,7 +173,7 @@ export class ReaderStream {
 		this.buffers = this.buffers.slice(i);
 		this.buffersLength = this.getBufferLength();
 		const result = BufferUtils.concatBuffers(destBuffers);
-		this.pos += amount;
+		this.pos += givenLength;
 		return result;
 	}
 
