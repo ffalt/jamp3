@@ -178,7 +178,7 @@ export class ID3v2HeaderReader {
 		} else if (head.ver <= 2) {
 			this.readID3v22Header(head, flagBits, rawSize);
 		}
-		head.valid = head.size >= 0 && head.ver <= 4;
+		head.valid = head.size >= 0 && head.ver >= 2 && head.ver <= 4;
 		return head;
 	}
 

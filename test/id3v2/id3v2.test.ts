@@ -17,6 +17,25 @@ describe('ID3v2', () => {
 		await expect(id3.read('notexistingfilename')).rejects.toThrow();
 	});
 
+	it('should ignore headers with undefined id3v2 versions 0, 1 and 5+', async () => {
+		const file = tmp.fileSync();
+		try {
+			for (const ver of [0, 1, 5]) {
+				const head = Buffer.concat([
+					Buffer.from('ID3', 'ascii'),
+					Buffer.from([ver, 0, 0]),
+					Buffer.from([0, 0, 0, 10]), // syncsafe tag size
+					Buffer.alloc(10)
+				]);
+				await fse.writeFile(file.name, head);
+				const tag = await new ID3v2().read(file.name);
+				expect(tag).toBeUndefined();
+			}
+		} finally {
+			file.removeCallback();
+		}
+	});
+
 	it('should apply padding when writing a new file', async () => {
 		const file = tmp.fileSync();
 		const id3 = new ID3v2();
