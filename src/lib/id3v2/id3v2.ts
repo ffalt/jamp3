@@ -80,7 +80,7 @@ export class ID3v2 {
 		const reader = new ID3v2Reader();
 		const tag = await reader.read(filename);
 		if (tag) {
-			return await fileRangeToBuffer(filename, tag.start, tag.end);
+			return await fileRangeToBuffer(filename, tag.start, Math.max(tag.start, tag.end - 1));
 		}
 	}
 

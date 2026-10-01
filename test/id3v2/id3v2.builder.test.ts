@@ -283,5 +283,30 @@ describe('Builder', () => {
 		it('should suppress padding when footer is set', async () => {
 			await test24FooterPaddingIgnored();
 		});
+		it('readRaw returns exactly the tag bytes without audio data', async () => {
+			const builder = new ID3V24TagBuilder('utf8');
+			builder.title('Test Title');
+			const file = tmp.fileSync();
+			try {
+				await fse.remove(file.name);
+				const id3 = new ID3v2();
+				await id3.writeBuilder(file.name, builder, { keepBackup: false, paddingSize: 0 });
+				// append known audio bytes after the tag
+				const audio = Buffer.alloc(500, 0x55);
+				await fse.appendFile(file.name, audio);
+				const tag = await id3.read(file.name);
+				expect(tag).toBeTruthy();
+				if (!tag) return;
+				const raw = await id3.readRaw(file.name);
+				expect(raw).toBeTruthy();
+				if (!raw) return;
+				// raw tag must cover exactly [tag.start, tag.end) and no audio byte
+				expect(raw.length).toBe(tag.end - tag.start);
+				expect(raw.at(-1)).not.toBe(0x55);
+				expect(raw.slice(0, 3).toString('ascii')).toBe('ID3');
+			} finally {
+				file.removeCallback();
+			}
+		});
 	});
 });
