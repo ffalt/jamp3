@@ -13,6 +13,7 @@ import { FrameLangDescText } from '../../src/lib/id3v2/frames/implementations/id
 import { FramePic } from '../../src/lib/id3v2/frames/implementations/id3v2.frame.pic.js';
 import { FrameAscii } from '../../src/lib/id3v2/frames/implementations/id3v2.frame.ascii.js';
 import { FrameIdText } from '../../src/lib/id3v2/frames/implementations/id3v2.frame.id-text.js';
+import { FrameLINK } from '../../src/lib/id3v2/frames/implementations/id3v2.frame.linked-info.js';
 import { FramePlayCount } from '../../src/lib/id3v2/frames/implementations/id3v2.frame.playcount.js';
 import { FrameMusicCDId } from '../../src/lib/id3v2/frames/implementations/id3v2.frame.musiccdid.js';
 import { FramePopularimeter } from '../../src/lib/id3v2/frames/implementations/id3v2.frame.popularimeter.js';
@@ -98,6 +99,40 @@ describe('ID3v2Frames', () => {
 			const result = await writebackandforth(FrameIdAscii, { value }, tagHead);
 			expect(result.value.text).toBe(value.text);
 			expect(result.value.id).toBe(value.id);
+		});
+	});
+
+	describe('LinkedInformation', () => {
+		it('should write back & forth', async () => {
+			const value: IID3V2.FrameValue.LinkedInfo = { id: 'TIT2', url: 'https://example.com/file.mp3', additional: ['eng', 'desc'] };
+			const result = await writebackandforth(FrameLINK, { value }, tagHead);
+			expect(result.value.id).toBe(value.id);
+			expect(result.value.url).toBe(value.url);
+			expect(result.value.additional).toEqual(value.additional);
+		});
+		it('should recover a short id without swallowing the first URL character', async () => {
+			// malformed real-world tag (v2.3) with a 3-byte id: "WCOhttps://..."
+			const reader = new BufferReader(Buffer.from('WCOhttps://example.com/\u{0}', 'latin1'));
+			const result = await FrameLINK.parse(reader, { id: 'LINK', start: 0, end: 0, size: 0, statusFlags: {}, formatFlags: {}, data: BufferUtils.zeroBuffer(0) }, tagHead);
+			const value = result.value as IID3V2.FrameValue.LinkedInfo;
+			expect(value.id).toBe('WCO');
+			expect(value.url).toBe('https://example.com/');
+			expect(value.additional).toEqual([]);
+		});
+		it('should write the frame identifier before the URL per spec', async () => {
+			const stream = new MemoryWriterStream();
+			const frame: IID3V2.Frame = {
+				id: 'LINK',
+				value: { id: 'TIT2', url: 'https://example.com/', additional: [] } as IID3V2.FrameValue.LinkedInfo,
+				head: { size: 0, statusFlags: {}, formatFlags: {} }
+			};
+			await FrameLINK.write(frame, stream, tagHead);
+			const buf = stream.toBuffer();
+			// per ID3v2.3/4 spec: Frame identifier $xx xx xx xx, then terminated URL
+			expect(buf.subarray(0, 4).toString('ascii')).toBe('TIT2');
+			expect(buf.subarray(4, 5).toString('ascii')).toBe('h');
+			expect(buf.at(-1)).toBe(0); // url terminator
+			expect(buf.length).toBe(4 + 'https://example.com/'.length + 1);
 		});
 	});
 
