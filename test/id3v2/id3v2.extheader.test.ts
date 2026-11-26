@@ -4,6 +4,10 @@ import { describe, expect, it } from '@jest/globals';
 import { ID3v2 } from '../../src/lib/id3v2/id3v2.js';
 import { ID3v2Reader } from '../../src/lib/id3v2/id3v2.reader.js';
 import { ReaderStream } from '../../src/lib/common/stream-reader.js';
+import { IID3V2 } from '../../src/lib/id3v2/id3v2.types.js';
+import { applyUnsync } from '../../src/lib/id3v2/frames/id3v2.frame.unsync.js';
+import fse from 'fs-extra';
+import path from 'node:path';
 
 class ChunkedStream extends Readable {
 	private i = 0;
@@ -188,5 +192,85 @@ describe('ID3v2.4 extended header', () => {
 		const tag = await id3.readStream(streamOf(buffer));
 		expect(tag).toBeDefined();
 		expect(tag?.frames.length).toBe(0);
+	});
+});
+
+function buildUnsyncedV23Tag(ext: Buffer, frames: Buffer, padding: number): Buffer {
+	const size = ext.length + frames.length + padding;
+	const head = Buffer.concat([
+		Buffer.from('ID3', 'ascii'),
+		Buffer.from([3, 0, 0xC0]), // v2.3, unsynchronisation + extended header
+		synchsafe(size)
+	]);
+	return Buffer.concat([head, ext, frames, Buffer.alloc(padding)]);
+}
+
+function unsyncedV23WriteTag(extended: IID3V2.TagHeaderExtendedVer3, unsynchronisation: boolean): IID3V2.ID3v2Tag {
+	return {
+		head: {
+			ver: 3,
+			rev: 0,
+			size: 0,
+			valid: true,
+			v3: { flags: { unsynchronisation, extendedheader: true }, extended }
+		},
+		frames: [{ id: 'TIT2', value: { text: 'hello' } }]
+	} as any;
+}
+
+describe('ID3v2.3 extended header with tag-level unsynchronisation', () => {
+	const dir = 'local/test-extheader-unsync';
+
+	// crc bytes FF 00 FF E0 each need a stuffing byte, so the header grows on disk
+	const logicalExt = Buffer.concat([
+		Buffer.from([0, 0, 0, 10]), // size (excludes itself), with crc
+		Buffer.from([0x80, 0]), // extended flags: crc present
+		Buffer.from([0, 0, 0, 4]), // size of padding
+		Buffer.from([0xFF, 0x00, 0xFF, 0xE0]) // crc-32
+	]);
+
+	beforeAll(async () => {
+		await fse.ensureDir(dir);
+	});
+
+	afterAll(async () => {
+		await fse.remove(dir);
+	});
+
+	it('de-unsynchronises the extended header and keeps the frame area aligned', async () => {
+		const onDiskExt = applyUnsync(logicalExt);
+		expect(onDiskExt.length).toBe(logicalExt.length + 2);
+		const id3 = new ID3v2();
+		const tag = await id3.readStream(streamOf(buildUnsyncedV23Tag(onDiskExt, tit2Frame, 4)));
+		expect(tag?.head?.v3?.extended?.size).toBe(10);
+		expect(tag?.head?.v3?.extended?.crcData).toBe(0xFF_00_FF_E0);
+		expect(tag?.head?.v3?.extended?.sizeOfPadding).toBe(4);
+		const tit2 = tag?.frames.find(f => f.id === 'TIT2');
+		expect((tit2?.value as any).text).toBe('hello');
+	});
+
+	it('writes the extended header unsynchronised and counts it in the tag size', async () => {
+		const file = path.join(dir, 'unsynced.mp3');
+		const extended: IID3V2.TagHeaderExtendedVer3 = { size: 10, flags1: { crc: true }, flags2: {}, sizeOfPadding: 0, crcData: 0xFF_00_FF_E0 };
+		await new ID3v2().write(file, unsyncedV23WriteTag(extended, true), 3, 0, { keepBackup: false, paddingSize: 4 });
+		const raw = await fse.readFile(file);
+		// the crc bytes are stuffed on disk, so the 14 logical bytes occupy 16
+		expect([...raw.subarray(10, 26)]).toEqual([0, 0, 0, 10, 0x80, 0, 0, 0, 0, 4, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0xE0]);
+		const declaredSize = (raw[6] << 21) | (raw[7] << 14) | (raw[8] << 7) | raw[9];
+		expect(declaredSize + 10).toBe(raw.length);
+		const tag = await new ID3v2().read(file);
+		expect(tag?.head?.v3?.extended?.crcData).toBe(0xFF_00_FF_E0);
+		expect((tag?.frames.find(f => f.id === 'TIT2')?.value as any).text).toBe('hello');
+	});
+
+	it('writes a size field matching the crc payload even when the parsed size said 6', async () => {
+		const file = path.join(dir, 'crcsize.mp3');
+		const extended: IID3V2.TagHeaderExtendedVer3 = { size: 6, flags1: { crc: true }, flags2: {}, sizeOfPadding: 0, crcData: 0x12_34_56_78 };
+		await new ID3v2().write(file, unsyncedV23WriteTag(extended, false), 3, 0, { keepBackup: false, paddingSize: 4 });
+		const raw = await fse.readFile(file);
+		expect(raw.readUInt32BE(10)).toBe(10);
+		const tag = await new ID3v2().read(file);
+		expect(tag?.head?.v3?.extended?.size).toBe(10);
+		expect(tag?.head?.v3?.extended?.crcData).toBe(0x12_34_56_78);
 	});
 });

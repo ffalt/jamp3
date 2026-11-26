@@ -184,7 +184,10 @@ export class Id3v2RawWriter {
 		this.head.v3.flags.extendedheader = !!this.head.v3.extended;
 		const flagBits = unflags(ID3v2_HEADER_FLAGS[this.head.ver], this.head.v3.flags as any);
 		if (this.head.v3.extended) {
-			const extendedHeaderBuffer = await this.writeExtHeaderV3(this.head.v3.extended);
+			const logical = await this.writeExtHeaderV3(this.head.v3.extended);
+			// the extended header is subject to tag-level unsynchronisation, and the tag size
+			// counts its bytes as they end up on disk
+			const extendedHeaderBuffer = this.tagLevelUnsync() ? applyUnsync(logical) : logical;
 			return { flagBits, extendedHeaderBuffer };
 		}
 		return { flagBits };
@@ -224,7 +227,8 @@ export class Id3v2RawWriter {
 
 		*/
 		const result = new MemoryWriterStream();
-		await result.writeUInt4Byte(extended.size);
+		// the size excludes itself and must match what is written below, not whatever was parsed
+		await result.writeUInt4Byte(extended.flags1.crc ? 10 : 6);
 		await result.writeBitsByte(unflags(ID3v2_EXTHEADER[3].FLAGS1, extended.flags1));
 		await result.writeBitsByte(unflags(ID3v2_EXTHEADER[3].FLAGS2, extended.flags2));
 		await result.writeUInt4Byte(this.paddingSize || 0);

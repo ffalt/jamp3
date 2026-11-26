@@ -3,16 +3,32 @@ import { Markers } from '../common/marker.js';
 import { ID3v2_EXTHEADER, ID3v2_HEADER } from './id3v2.header.consts.js';
 import { IID3V2 } from './id3v2.types.js';
 import { ReaderStream } from '../common/stream-reader.js';
+import { removeUnsyncCounted } from './frames/id3v2.frame.unsync.js';
 
 export class ID3v2HeaderReader {
-	private async readID3ExtendedHeaderV3(reader: ReaderStream): Promise<{ rest?: Buffer; exthead: IID3V2.TagHeaderExtendedVer3 }> {
-		const headdata = await reader.read(4);
+	/**
+	ID3v2.3: "The extended header is considered separate from the header proper, and as such is
+	subject to unsynchronisation." Its logical bytes can therefore occupy up to twice as much
+	space on disk, so read the worst case and push the unused tail back.
+	*/
+	private async readExtHeaderBytes(reader: ReaderStream, amount: number, unsynchronisation: boolean): Promise<Buffer> {
+		if (!unsynchronisation) {
+			return await reader.read(amount);
+		}
+		const raw = await reader.read(amount * 2);
+		const { data, rawLength } = removeUnsyncCounted(raw, amount);
+		reader.unshift(raw.subarray(rawLength));
+		return data;
+	}
+
+	private async readID3ExtendedHeaderV3(reader: ReaderStream, unsynchronisation: boolean): Promise<{ rest?: Buffer; exthead: IID3V2.TagHeaderExtendedVer3 }> {
+		const headdata = await this.readExtHeaderBytes(reader, 4, unsynchronisation);
 		// the size excludes itself and is currently 6 or 10 bytes (10 when crc data is present);
 		// use an unsigned read and normalize anything else to the common 6-byte form,
 		// so malformed values can not turn negative or leave the reader misaligned
 		const rawSize = headdata.readUInt32BE(0);
 		const size = (rawSize === 6 || rawSize === 10) ? rawSize : 6;
-		const data = await reader.read(size);
+		const data = await this.readExtHeaderBytes(reader, size, unsynchronisation);
 		/** ID3v2.3
 		3.2.   ID3v2 extended header
 
@@ -190,7 +206,7 @@ export class ID3v2HeaderReader {
 		}
 		if (header.v3 && header.v3.flags.extendedheader) {
 			const pos = reader.pos;
-			const extended = await this.readID3ExtendedHeaderV3(reader);
+			const extended = await this.readID3ExtendedHeaderV3(reader, !!header.v3.flags.unsynchronisation);
 			header.v3.extended = extended.exthead;
 			return { header, rest: extended.rest, consumed: reader.pos - pos };
 		}
