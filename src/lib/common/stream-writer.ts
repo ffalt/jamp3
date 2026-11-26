@@ -160,7 +160,7 @@ export class WriterStream {
 	}
 
 	async writeFixedAsciiString(val: string, size: number): Promise<void> {
-		const buf = ascii.encode(val.slice(0, size)).slice(0, size);
+		const buf = ascii.encode(val.slice(0, size)).subarray(0, size);
 		return this.writeFixedBuffer(buf, size);
 	}
 }

@@ -174,7 +174,7 @@ describe('ID3v2.3 extended header', () => {
 describe('ID3v2.4 extended header', () => {
 	it('parses update, crc and restrictions flags', async () => {
 		const crcBytes = Buffer.from([1, 2, 3, 4, 5]);
-		const expectedCrc = (1 * 128 ** 4) + (2 * 128 ** 3) + (3 * 128 ** 2) + (4 * 128) + 5;
+		const expectedCrc = (128 ** 4) + (2 * 128 ** 3) + (3 * 128 ** 2) + (4 * 128) + 5;
 		const ext = Buffer.concat([
 			synchsafe(4 + 1 + 1 + 1 + 6 + 2), // size includes itself: num flag bytes + flags + update data + crc data + restrictions data
 			Buffer.from([0x01]), // number of flag bytes

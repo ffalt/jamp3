@@ -143,19 +143,14 @@ export default ts.config(
 	},
 	{
 		files: ["test/**"],
-		languageOptions: {
-			globals: jest.environments.globals.globals
-		},
 		extends: [
 			js.configs.recommended,
 			...ts.configs.recommended,
 			...ts.configs.stylistic,
 			unicorn.configs.recommended,
-			stylistic.configs.recommended
+			stylistic.configs.recommended,
+			jest.configs["flat/recommended"]
 		],
-		plugins: {
-			jest
-		},
 		rules: {
 			...commonRules,
 			...unicornRules,
@@ -165,6 +160,7 @@ export default ts.config(
 			"complexity": "off",
 
 			"jest/prefer-each": "error",
+			"jest/no-conditional-expect": "off",
 			"jest/expect-expect": "off",
 			"jest/no-done-callback": "off"
 		}

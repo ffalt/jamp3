@@ -16,7 +16,7 @@ Class for
 
 Basic usage example:
 
-{@includeCode ../../../examples/snippet_id3v1-read.ts}}
+{@includeCode ../../../examples/snippet_id3v1-read.ts}
 */
 export class ID3v1 {
 	/**

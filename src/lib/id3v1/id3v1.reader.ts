@@ -67,14 +67,14 @@ export class ID3v1Reader {
 		}
 		if (data.length !== 128) {
 			// must be last in stream
-			reader.unshift(data.slice(1));
+			reader.unshift(data.subarray(1));
 			return await this.readReaderStream(reader);
 		}
 		const tag = this.readTag(data);
 		if (tag) {
 			return tag;
 		}
-		reader.unshift(data.slice(1));
+		reader.unshift(data.subarray(1));
 		return await this.readReaderStream(reader);
 	}
 

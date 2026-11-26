@@ -5,7 +5,7 @@ import { ITagID } from '../common/types.js';
 export abstract class ID3V2TagBuilder implements IID3V2.Builder {
 	public rawBuilder: ID3V2RawBuilder;
 
-	constructor(encoding?: string) {
+	protected constructor(encoding?: string) {
 		this.rawBuilder = new ID3V2RawBuilder(encoding);
 	}
 
@@ -371,7 +371,7 @@ export abstract class ID3V2TagBuilder implements IID3V2.Builder {
 		return this;
 	}
 
-	/** TOFN: The 'Original filename' frame contains the preferred filename for the file, since some media doesn't allow the desired length of the filename. The filename is case sensitive and includes its suffix. **/
+	/** TOFN: The 'Original filename' frame contains the preferred filename for the file, since some media doesn't allow the desired length of the filename. The filename is case-sensitive and includes its suffix. **/
 	originalFilename(value?: string) {
 		this.text('TOFN', value);
 		return this;

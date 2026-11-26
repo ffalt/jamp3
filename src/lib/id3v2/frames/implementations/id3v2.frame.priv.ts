@@ -14,8 +14,8 @@ export function bufToGuid(buf: Buffer): string {
 	const d1 = buf.readUInt32LE(0).toString(16).padStart(8, '0');
 	const d2 = buf.readUInt16LE(4).toString(16).padStart(4, '0');
 	const d3 = buf.readUInt16LE(6).toString(16).padStart(4, '0');
-	const d4a = buf.slice(8, 10).toString('hex');
-	const d4b = buf.slice(10, 16).toString('hex');
+	const d4a = buf.subarray(8, 10).toString('hex');
+	const d4b = buf.subarray(10, 16).toString('hex');
 	return `${d1}-${d2}-${d3}-${d4a}-${d4b}`.toUpperCase();
 }
 
@@ -63,7 +63,7 @@ export const FramePriv: IFrameImpl = {
 			while (end >= 2 && buf[end - 2] === 0 && buf[end - 1] === 0) {
 				end -= 2;
 			}
-			const text = iconv.decode(buf.slice(0, end), 'ucs2');
+			const text = iconv.decode(buf.subarray(0, end), 'ucs2');
 			const value: IID3V2.FrameValue.IdText = { id, text };
 			return { value, encoding: ascii };
 		}

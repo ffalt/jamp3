@@ -12,7 +12,7 @@ export function removeUnsync(data: Buffer): Buffer {
 			pos++;
 		}
 	}
-	return result.slice(0, pos);
+	return result.subarray(0, pos);
 }
 
 /**
@@ -31,7 +31,7 @@ export function removeUnsyncCounted(data: Buffer, amount: number): { data: Buffe
 			i++;
 		}
 	}
-	return { data: result.slice(0, pos), rawLength: i };
+	return { data: result.subarray(0, pos), rawLength: i };
 }
 
 export function needsUnsync(data: Buffer): boolean {

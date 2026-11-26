@@ -198,7 +198,7 @@ async function test24BuilderWriteWithFooter(): Promise<void> {
 		const raw = await id3.readRaw(file.name);
 		expect(raw).toBeTruthy();
 		if (!raw) return;
-		expect(raw.slice(-10).toString('ascii', 0, 3)).toBe('3DI');
+		expect(raw.subarray(-10).toString('ascii', 0, 3)).toBe('3DI');
 
 		// verify round-trip: reader must parse tag correctly with footer
 		const data = await id3.read(file.name);
@@ -225,14 +225,14 @@ async function test24FooterRawBytes(): Promise<void> {
 	// total = 10 header + 0 frames + 10 footer (no padding allowed with footer)
 	expect(buf.length).toBe(20);
 	// header starts with "ID3"
-	expect(buf.slice(0, 3).toString('ascii')).toBe('ID3');
+	expect(buf.subarray(0, 3).toString('ascii')).toBe('ID3');
 	// footer starts with "3DI"
-	expect(buf.slice(10, 13).toString('ascii')).toBe('3DI');
+	expect(buf.subarray(10, 13).toString('ascii')).toBe('3DI');
 	// footer must be a copy of header: version, flags, and size must match
 	expect(buf[3]).toBe(buf[13]); // ver
 	expect(buf[4]).toBe(buf[14]); // rev
 	expect(buf[5]).toBe(buf[15]); // flags
-	expect(buf.slice(6, 10).equals(buf.slice(16, 20))).toBe(true); // size
+	expect(buf.subarray(6, 10).equals(buf.subarray(16, 20))).toBe(true); // size
 }
 
 async function test24FooterPaddingIgnored(): Promise<void> {
@@ -246,7 +246,7 @@ async function test24FooterPaddingIgnored(): Promise<void> {
 
 	// Still 20 bytes: footer replaces padding
 	expect(buf.length).toBe(20);
-	expect(buf.slice(10, 13).toString('ascii')).toBe('3DI');
+	expect(buf.subarray(10, 13).toString('ascii')).toBe('3DI');
 }
 
 describe('Builder', () => {
@@ -309,7 +309,7 @@ describe('Builder', () => {
 				// raw tag must cover exactly [tag.start, tag.end) and no audio byte
 				expect(raw.length).toBe(tag.end - tag.start);
 				expect(raw.at(-1)).not.toBe(0x55);
-				expect(raw.slice(0, 3).toString('ascii')).toBe('ID3');
+				expect(raw.subarray(0, 3).toString('ascii')).toBe('ID3');
 			} finally {
 				file.removeCallback();
 			}
