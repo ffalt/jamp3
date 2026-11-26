@@ -44,8 +44,15 @@ export class FileWriterStream extends WriterStream {
 		});
 	}
 
+	/**
+	Copies the half-open byte range [start, finish) of a file into this stream.
+	`createReadStream` takes `end` inclusive, so the last byte to read is `finish - 1`.
+	*/
 	async copyRange(filename: string, start: number, finish: number): Promise<void> {
-		return this.pipeStream(fs.createReadStream(filename, { start, end: finish }));
+		if (finish <= start) {
+			return;
+		}
+		return this.pipeStream(fs.createReadStream(filename, { start, end: finish - 1 }));
 	}
 
 	async copyFrom(filename: string, position: number): Promise<void> {

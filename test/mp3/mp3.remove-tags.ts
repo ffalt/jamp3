@@ -6,16 +6,26 @@ import { ID3v2 } from '../../src/lib/id3v2/id3v2.js';
 import { ID3V24TagBuilder } from '../../src/lib/id3v2/id3v2.builder.v24.js';
 import { IMP3 } from '../../src/lib/mp3/mp3.types.js';
 import { MP3 } from '../../src/lib/mp3/mp3.js';
+import { rawHeaderOffSet } from '../../src/lib/mp3/mp3.mpeg.frame.js';
 
-async function compareRemovalAudio(before: IMP3.Result, after: IMP3.Result): Promise<void> {
+const MPEG_FRAME_HEADER_LENGTH = 4;
+
+// a 4-byte frame header that reaches into a removed trailing tag was partly built from tag bytes,
+// so it can not survive the removal and is not counted; a frame whose header fits but whose
+// declared body is cut short is a real truncated frame and is still detected afterwards
+function audioFramesBefore(before: IMP3.Result, audioLimit: number): number {
+	return (before.frames?.audio || []).filter(frame => rawHeaderOffSet(frame) + MPEG_FRAME_HEADER_LENGTH <= audioLimit).length;
+}
+
+async function compareRemovalAudio(before: IMP3.Result, after: IMP3.Result, audioLimit = Number.MAX_SAFE_INTEGER): Promise<void> {
 	if (!before.frames || !after.frames) {
 		return Promise.reject(new Error('no frames obj'));
 	}
 	expect(after.frames.headers.length).toBe(before.frames.headers.length); // 'header frames length not equal');
-	expect(after.frames.audio.length).toBe(before.frames.audio.length); // 'audio frames length not equal');
+	expect(after.frames.audio.length).toBe(audioFramesBefore(before, audioLimit)); // 'audio frames length not equal');
 }
 
-async function removeID3v1TagsTest(filename: string, before: IMP3.Result): Promise<void> {
+async function removeID3v1TagsTest(filename: string, before: IMP3.Result): Promise<number> {
 	const file = tmp.fileSync();
 	try {
 		await fse.remove(file.name);
@@ -23,16 +33,20 @@ async function removeID3v1TagsTest(filename: string, before: IMP3.Result): Promi
 		const mp3 = new MP3();
 		const result = await mp3.removeTags(file.name, { id3v1: true, id3v2: false });
 		const after = await mp3.read(file.name, { id3v1: true, id3v2: true, mpeg: true });
+		// the kept prefix is unchanged, so the new size is where the removed tag began
+		const afterStat = await fse.stat(file.name);
+		const audioLimit = afterStat.size;
 		file.removeCallback();
 		expect(result).toBeTruthy();
 		if (!result) {
-			return;
+			return audioLimit;
 		}
 		expect(result.id3v1).toBe(true); // 'result should report removed id3v1 tag (id3v1.remove)');
 		expect(result.id3v2).toBe(false); // 'result should not report removed id3v2 tag (id3v1.remove)');
 		expect(!!after.id3v2).toBe(!!before.id3v2); // 'id3v2 tag should be unchanged (id3v1.remove)');
 		expect(!!after.id3v1).toBe(false); // 'id3v1 tag should no longer exists (id3v1.remove)');
-		return compareRemovalAudio(before, after);
+		await compareRemovalAudio(before, after, audioLimit);
+		return audioLimit;
 	} catch (error) {
 		file.removeCallback();
 		return Promise.reject(error);
@@ -75,7 +89,7 @@ async function removeID3v2TagsTest(filename: string, before: IMP3.Result): Promi
 	file.removeCallback();
 }
 
-async function removeID3TagsTest(filename: string, before: IMP3.Result): Promise<void> {
+async function removeID3TagsTest(filename: string, before: IMP3.Result, audioLimit: number): Promise<void> {
 	const file = tmp.fileSync();
 	try {
 		await fse.remove(file.name);
@@ -94,7 +108,7 @@ async function removeID3TagsTest(filename: string, before: IMP3.Result): Promise
 		expect(!!after.id3v1).toBe(false); //  'id3v1 tag should no longer exists (id3v2&1.remove)');
 		expect(!!after.id3v2).toBe(false); //  'id3v2 tag should no longer exists (id3v2&1.remove)');
 		file.removeCallback();
-		return compareRemovalAudio(before, after);
+		return compareRemovalAudio(before, after, audioLimit);
 	} catch (error) {
 		file.removeCallback();
 		return Promise.reject(error);
@@ -104,13 +118,14 @@ async function removeID3TagsTest(filename: string, before: IMP3.Result): Promise
 export async function testRemoveTags(filename: string): Promise<void> {
 	const mp3 = new MP3();
 	const before = await mp3.read(filename, { id3v1: true, id3v2: true, mpeg: true });
+	let audioLimit = Number.MAX_SAFE_INTEGER;
 	if (before.id3v1) {
-		await removeID3v1TagsTest(filename, before);
+		audioLimit = await removeID3v1TagsTest(filename, before);
 	}
 	if (before.id3v2) {
 		await removeID3v2TagsTest(filename, before);
 	}
 	if (before.id3v1 && before.id3v2) {
-		await removeID3TagsTest(filename, before);
+		await removeID3TagsTest(filename, before, audioLimit);
 	}
 }
