@@ -1,6 +1,12 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+## [0.6.3](https://github.com/ffalt/jamp3/compare/v0.6.2...v0.6.3) (2026-11-26)
+
+### Bug Fixes
+
+* **release:** patch typedoc and bump package-lock.json ([0ef9c3c](https://github.com/ffalt/jamp3/commit/0ef9c3c13e61b6b9a851ed340d65176670248962))
+
 ## [0.6.2](https://github.com/ffalt/jamp3/compare/v0.6.1...v0.6.2) (2026-11-26)
 
 ### Features
