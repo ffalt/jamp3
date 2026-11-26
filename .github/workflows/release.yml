@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 0
 
@@ -19,9 +19,9 @@ jobs:
         run: git submodule update --init --recursive
 
       - name: Install Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7.1.0
         with:
-          node-version: 22.x
+          node-version: 26.x
 
       - name: Install Dependencies
         run: npm install
@@ -48,7 +48,7 @@ jobs:
           cp package.json ./deploy/
 
       - name: Deploy to Release Branch 🚀
-        uses: JamesIves/github-pages-deploy-action@releases/v4
+        uses: JamesIves/github-pages-deploy-action@v4.9.0
         with:
           branch: release # The branch the action should deploy to.
           folder: deploy # The folder the action should deploy.
@@ -60,7 +60,7 @@ jobs:
 
       - name: Create release
         id: create_release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3.0.4
         with:
           body_path: ./RELEASELOG.md
           name: ${{ github.ref_name }}

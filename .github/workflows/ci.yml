@@ -9,12 +9,12 @@ jobs:
     name: CI
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7.0.1
     - name: Install Node.js
-      uses: actions/setup-node@v6
+      uses: actions/setup-node@v7.1.0
       with:
-        node-version: 22.x
-        cache: "npm"
+        node-version: 26.x
+        package-manager-cache: false
     - name: Checkout submodules
       run: git submodule update --init --recursive
     - run: npm i
