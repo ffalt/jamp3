@@ -1755,6 +1755,14 @@ export const FrameDefs: Record<string, IFrameDef> = {
 		versions: [3, 4],
 		impl: FrameText
 	},
+	'MVCN': {
+		/*
+		 Movement Count
+		 */
+		title: 'Movement Total',
+		versions: [3, 4],
+		impl: FrameText
+	},
 	'PCST': {
 		/*
 		 Itunes - Indicates a podcast.
