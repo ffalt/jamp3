@@ -1,5 +1,5 @@
-import { IMP3 } from './mp3.types';
-import { expandRawHeader, expandRawHeaderArray } from './mp3.mpeg.frame';
+import { IMP3 } from './mp3.types.js';
+import { expandRawHeader, expandRawHeaderArray } from './mp3.mpeg.frame.js';
 
 export function analyzeBitrateMode(frames: Array<IMP3.FrameRawHeaderArray>): { encoded: string; bitRate: number; duration: number; count: number; audioBytes: number } {
 	const bitRates: Record<number, number> = {};

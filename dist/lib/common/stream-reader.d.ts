@@ -5,6 +5,8 @@ export declare class ReaderStream {
     buffersLength: number;
     waiting: (() => void) | null;
     private streamEnd;
+    private streamError;
+    private pendingReject;
     private streamOnData;
     end: boolean;
     pos: number;

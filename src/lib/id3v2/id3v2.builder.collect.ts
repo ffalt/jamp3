@@ -1,4 +1,4 @@
-import { IID3V2 } from './id3v2.types';
+import { IID3V2 } from './id3v2.types.js';
 import Frame = IID3V2.Frame;
 
 export class ID3V2FramesCollect {

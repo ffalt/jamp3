@@ -1,11 +1,6 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.simplifyInvolvedPeopleList = simplifyInvolvedPeopleList;
-exports.simplifyFrame = simplifyFrame;
-exports.simplifyTag = simplifyTag;
-const id3v2_simplify_maps_1 = require("./id3v2.simplify.maps");
-const id3v2_frame_version_1 = require("./frames/id3v2.frame.version");
-const id3v2_frame_match_1 = require("./frames/id3v2.frame.match");
+import { COMMMap, DateUpgradeMap, FramesMap, PRIVMap, SplitFrameMap, TXXXMap, UFIDMap } from './id3v2.simplify.maps.js';
+import { ensureID3v2FrameVersionDef, upgrade23DateFramesTov24Date } from './frames/id3v2.frame.version.js';
+import { matchFrame } from './frames/id3v2.frame.match.js';
 function slugIDValue(id, value, mapping) {
     if (value && value.id) {
         return mapping[value.id] || mapping[value.id.toUpperCase()] || (`${id}|${value.id}`);
@@ -14,7 +9,7 @@ function slugIDValue(id, value, mapping) {
         return id;
     }
 }
-function simplifyInvolvedPeopleList(id, frame) {
+export function simplifyInvolvedPeopleList(id, frame) {
     const value = frame.value;
     const knownSections = {
         'arranger': 'ARRANGER',
@@ -28,7 +23,7 @@ function simplifyInvolvedPeopleList(id, frame) {
     let i = 0;
     while (i < value.list.length - 1) {
         const slug = knownSections[value.list[i]];
-        const val = knownSections[value.list[i]];
+        const val = value.list[i + 1];
         if (val) {
             if (slug) {
                 list.push({ slug, text: val });
@@ -42,14 +37,14 @@ function simplifyInvolvedPeopleList(id, frame) {
     return list;
 }
 function simplifyValue(id, slug, frame) {
-    const frameDef = (0, id3v2_frame_match_1.matchFrame)(id);
+    const frameDef = matchFrame(id);
     const text = frameDef.impl.simplify(frame.value);
     if (!text) {
         return;
     }
-    if (id3v2_simplify_maps_1.SplitFrameMap[id]) {
-        const names = id3v2_simplify_maps_1.SplitFrameMap[id];
-        const split = text.split('/');
+    if (SplitFrameMap[id]) {
+        const names = SplitFrameMap[id];
+        const split = text.split('\n', 1)[0].split('/');
         const result = [];
         if (split[0]) {
             result.push({ slug: names[0], text: split[0] });
@@ -61,27 +56,27 @@ function simplifyValue(id, slug, frame) {
     }
     return [{ slug, text }];
 }
-function simplifyFrame(frame, dropIDsList) {
-    const id = (0, id3v2_frame_version_1.ensureID3v2FrameVersionDef)(frame.id, 4) || frame.id;
+export function simplifyFrame(frame, dropIDsList) {
+    const id = ensureID3v2FrameVersionDef(frame.id, 4) || frame.id;
     if (dropIDsList && dropIDsList.includes(frame.id)) {
         return;
     }
-    let slug = id3v2_simplify_maps_1.FramesMap[id];
+    let slug = FramesMap[id];
     switch (id) {
         case 'UFID': {
-            slug = slugIDValue(id, frame.value, id3v2_simplify_maps_1.UFIDMap);
+            slug = slugIDValue(id, frame.value, UFIDMap);
             break;
         }
         case 'TXXX': {
-            slug = slugIDValue(id, frame.value, id3v2_simplify_maps_1.TXXXMap);
+            slug = slugIDValue(id, frame.value, TXXXMap);
             break;
         }
         case 'COMM': {
-            slug = slugIDValue(id, frame.value, id3v2_simplify_maps_1.COMMMap);
+            slug = slugIDValue(id, frame.value, COMMMap);
             break;
         }
         case 'PRIV': {
-            slug = slugIDValue(id, frame.value, id3v2_simplify_maps_1.PRIVMap);
+            slug = slugIDValue(id, frame.value, PRIVMap);
             break;
         }
         case 'WXXX': {
@@ -101,12 +96,12 @@ function simplifyFrame(frame, dropIDsList) {
         return simplifyValue(id, slug, frame);
     }
 }
-function simplifyTag(tag, dropIDsList) {
+export function simplifyTag(tag, dropIDsList) {
     const result = {};
     const slugCounter = {};
-    const frames = tag.frames.filter(f => !id3v2_simplify_maps_1.DateUpgradeMap[f.id]);
-    const dateFrames = tag.frames.filter(f => !!id3v2_simplify_maps_1.DateUpgradeMap[f.id]);
-    const dateFrame = (0, id3v2_frame_version_1.upgrade23DateFramesTov24Date)(dateFrames);
+    const frames = tag.frames.filter(f => !DateUpgradeMap[f.id]);
+    const dateFrames = tag.frames.filter(f => !!DateUpgradeMap[f.id]);
+    const dateFrame = upgrade23DateFramesTov24Date(dateFrames);
     if (dateFrame) {
         frames.push(dateFrame);
     }

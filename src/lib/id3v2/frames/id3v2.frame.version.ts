@@ -1,5 +1,5 @@
-import { IID3V2 } from '../id3v2.types';
-import { FrameDefs } from './id3v2.frame.defs';
+import { IID3V2 } from '../id3v2.types.js';
+import { FrameDefs } from './id3v2.frame.defs.js';
 
 export function upgrade23DateFramesTov24Date(dateFrames: Array<IID3V2.Frame>): IID3V2.Frame | undefined {
 	const year = dateFrames.find(f => ['TYER', 'TYE'].includes(f.id));

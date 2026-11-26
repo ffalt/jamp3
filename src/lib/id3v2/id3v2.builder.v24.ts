@@ -1,14 +1,14 @@
-import { ID3V2TagBuilder } from './id3v2.builder.v2';
-import { IID3V2 } from './id3v2.types';
+import { ID3V2TagBuilder } from './id3v2.builder.v2.js';
+import { IID3V2 } from './id3v2.types.js';
 
 /**
- * Class for
- * - building an ID3v2.4.0 object
- *
- * Basic usage example:
- *
- * {@includeCode ../../../examples/snippet_id3v2-4-build.ts}
- */
+Class for
+- building an ID3v2.4.0 object
+
+Basic usage example:
+
+{@includeCode ../../../examples/snippet_id3v2-4-build.ts}
+*/
 export class ID3V24TagBuilder extends ID3V2TagBuilder {
 	public static encodings = {
 		iso88591: 'iso-8859-1',
@@ -52,7 +52,7 @@ export class ID3V24TagBuilder extends ID3V2TagBuilder {
 	}
 
 	chapterTOC(value: string, id: string, ordered: boolean, topLevel: boolean, children: Array<string>): ID3V24TagBuilder {
-		this.rawBuilder.chapterTOC('CTOC', id, ordered, topLevel, children);
+		this.rawBuilder.chapterTOC('CTOC', id, ordered, topLevel, children, value);
 		return this;
 	}
 
@@ -77,9 +77,9 @@ export class ID3V24TagBuilder extends ID3V2TagBuilder {
 	}
 
 	/** TIPL: The 'Involved people list' is intended as a mapping between the function and a person
-	 * @param group function, e.g. producer
-	 * @param value a name or comma seperated list of names
-	 * **/
+	@param group function, e.g. producer
+	@param value a name or comma seperated list of names
+	**/
 	involved(group: string, value?: string): ID3V24TagBuilder {
 		this.keyTextList('TIPL', group, value);
 		return this;
@@ -87,7 +87,7 @@ export class ID3V24TagBuilder extends ID3V2TagBuilder {
 
 	isPodcast(value?: boolean | number | string): ID3V24TagBuilder {
 		if (value !== undefined) {
-			this.number('PCST', value === 1 || value === 'true' || value === true ? 1 : 0);
+			this.number('PCST', [1, 'true', true].includes(value) ? 1 : 0);
 		}
 		return this;
 	}
@@ -108,18 +108,18 @@ export class ID3V24TagBuilder extends ID3V2TagBuilder {
 	}
 
 	/**
-	 * TMCL The 'Musician credits list' is intended as a mapping between instruments and the musician that played it.
-	 * @param group an instrument
-	 * @param value an artist or a comma delimited list of artists
-	 * **/
+	TMCL The 'Musician credits list' is intended as a mapping between instruments and the musician that played it.
+	@param group an instrument
+	@param value an artist or a comma delimited list of artists
+	**/
 	musicianCredit(group: string, value?: string): ID3V24TagBuilder {
 		this.keyTextList('TMCL', group, value);
 		return this;
 	}
 
 	/** TDOR: The 'Original release time' frame contains a timestamp describing when the original recording of the audio was released.
-	 * @param value timestamp in UTC yyyy, yyyy-MM, yyyy-MM-dd, yyyy-MM-ddTHH, yyyy-MM-ddTHH:mm, yyyy-MM-ddTHH:mm:ss
-	 **/
+	@param value timestamp in UTC yyyy, yyyy-MM, yyyy-MM-dd, yyyy-MM-ddTHH, yyyy-MM-ddTHH:mm, yyyy-MM-ddTHH:mm:ss
+	*/
 	originalDate(value?: string): ID3V24TagBuilder {
 		this.text('TDOR', value);
 		return this;

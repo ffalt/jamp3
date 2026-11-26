@@ -1,4 +1,4 @@
-import { IMP3Analyzer } from './mp3.analyzer.types';
+import { IMP3Analyzer } from './mp3.analyzer.types.js';
 export declare class MP3Analyzer {
     private analyzeID3v2;
     private analyzeID3v1;

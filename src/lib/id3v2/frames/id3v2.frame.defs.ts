@@ -1,34 +1,33 @@
 /* eslint-disable max-lines */
 
-import { FrameIdAscii } from './implementations/id3v2.frame.id-ascii';
-import { FrameText } from './implementations/id3v2.frame.text';
-import { FrameUnknown } from './implementations/id3v2.frame.unknown';
-import { FrameTextConcatList } from './implementations/id3v2.frame.text-concat-list';
-import { FrameIdText } from './implementations/id3v2.frame.id-text';
-import { FrameAscii } from './implementations/id3v2.frame.ascii';
-import { FrameTextList } from './implementations/id3v2.frame.text-list';
-import { FrameETCO } from './implementations/id3v2.frame.event-timing';
-import { FrameLangDescText } from './implementations/id3v2.frame.lang-desc-text';
-import { FrameSYLT } from './implementations/id3v2.frame.synclyrics';
-import { FrameRelativeVolumeAdjustment } from './implementations/id3v2.frame.rva';
-import { FramePic } from './implementations/id3v2.frame.pic';
-import { FrameGEOB } from './implementations/id3v2.frame.generic-object';
-import { FramePlayCount } from './implementations/id3v2.frame.playcount';
-import { FramePopularimeter } from './implementations/id3v2.frame.popularimeter';
-import { FrameAENC } from './implementations/id3v2.frame.aenc';
-import { FrameLINK } from './implementations/id3v2.frame.linked-info';
-import { FrameIdBin } from './implementations/id3v2.frame.id-bin';
-import { FramePriv } from './implementations/id3v2.frame.priv';
-import { FrameBooleanString } from './implementations/id3v2.frame.boolstring';
-import { FramePCST } from './implementations/id3v2.frame.pcst';
-import { FrameMusicCDId } from './implementations/id3v2.frame.musiccdid';
-import { FrameRelativeVolumeAdjustment2 } from './implementations/id3v2.frame.rva2';
-import { FrameLangText } from './implementations/id3v2.frame.lang-text';
-import { FrameRGAD } from './implementations/id3v2.frame.gain-adjustment';
-import { FrameCTOC } from './implementations/id3v2.frame.chapter-toc';
-import { FrameCHAP } from './implementations/id3v2.frame.chapter';
-import { IID3V2 } from '../id3v2.types';
-import { IFrameImpl } from './id3v2.frame';
+import { FrameIdAscii } from './implementations/id3v2.frame.id-ascii.js';
+import { FrameText } from './implementations/id3v2.frame.text.js';
+import { FrameUnknown } from './implementations/id3v2.frame.unknown.js';
+import { FrameIdText } from './implementations/id3v2.frame.id-text.js';
+import { FrameAscii } from './implementations/id3v2.frame.ascii.js';
+import { FrameTextList } from './implementations/id3v2.frame.text-list.js';
+import { FrameETCO } from './implementations/id3v2.frame.event-timing.js';
+import { FrameLangDescText } from './implementations/id3v2.frame.lang-desc-text.js';
+import { FrameSYLT } from './implementations/id3v2.frame.synclyrics.js';
+import { FrameRelativeVolumeAdjustment } from './implementations/id3v2.frame.rva.js';
+import { FramePic } from './implementations/id3v2.frame.pic.js';
+import { FrameGEOB } from './implementations/id3v2.frame.generic-object.js';
+import { FramePlayCount } from './implementations/id3v2.frame.playcount.js';
+import { FramePopularimeter } from './implementations/id3v2.frame.popularimeter.js';
+import { FrameAENC } from './implementations/id3v2.frame.aenc.js';
+import { FrameLINK } from './implementations/id3v2.frame.linked-info.js';
+import { FrameIdBin } from './implementations/id3v2.frame.id-bin.js';
+import { FramePriv } from './implementations/id3v2.frame.priv.js';
+import { FrameBooleanString } from './implementations/id3v2.frame.boolstring.js';
+import { FramePCST } from './implementations/id3v2.frame.pcst.js';
+import { FrameMusicCDId } from './implementations/id3v2.frame.musiccdid.js';
+import { FrameRelativeVolumeAdjustment2 } from './implementations/id3v2.frame.rva2.js';
+import { FrameLangText } from './implementations/id3v2.frame.lang-text.js';
+import { FrameRGAD } from './implementations/id3v2.frame.gain-adjustment.js';
+import { FrameCTOC } from './implementations/id3v2.frame.chapter-toc.js';
+import { FrameCHAP } from './implementations/id3v2.frame.chapter.js';
+import { IID3V2 } from '../id3v2.types.js';
+import { IFrameImpl } from './id3v2.frame.js';
 
 export interface IFrameDef {
 	title: string;
@@ -48,8 +47,8 @@ export const FrameDefs: Record<string, IFrameDef> = {
 	},
 	'TOT': {
 		/**
-		 Original album/Movie/Show title
-		 */
+		Original album/Movie/Show title
+		*/
 		title: 'Original album/Movie/Show title',
 		versions: [2],
 		impl: FrameText,
@@ -57,43 +56,43 @@ export const FrameDefs: Record<string, IFrameDef> = {
 	},
 	'CDM': {
 		/**
-		 ID3v2.2.1 Compressed Data Metaframe
-		 */
+		ID3v2.2.1 Compressed Data Metaframe
+		*/
 		title: 'Compressed Data Metaframe',
 		versions: [2],
 		impl: FrameUnknown
 	},
 	'CRM': {
 		/**
-		 4.20.   Encrypted meta frame
+		4.20.   Encrypted meta frame
 
-		 This frame contains one or more encrypted frames. This enables
-		 protection of copyrighted information such as pictures and text, that
-		 people might want to pay extra for. Since standardisation of such an
-		 encryption scheme is beyond this document, all "CRM" frames begin with
-		 a terminated string with a URL [URL] containing an email address, or a
-		 link to a location where an email adress can be found, that belongs to
-		 the organisation responsible for this specific encrypted meta frame.
+		This frame contains one or more encrypted frames. This enables
+		protection of copyrighted information such as pictures and text, that
+		people might want to pay extra for. Since standardisation of such an
+		encryption scheme is beyond this document, all "CRM" frames begin with
+		a terminated string with a URL [URL] containing an email address, or a
+		link to a location where an email adress can be found, that belongs to
+		the organisation responsible for this specific encrypted meta frame.
 
-		 Questions regarding the encrypted frame should be sent to the
-		 indicated email address. If a $00 is found directly after the 'Frame
-		 size', the whole frame should be ignored, and preferably be removed.
-		 The 'Owner identifier' is then followed by a short content description
-		 and explanation as to why it's encrypted. After the
-		 'content/explanation' description, the actual encrypted block follows.
+		Questions regarding the encrypted frame should be sent to the
+		indicated email address. If a $00 is found directly after the 'Frame
+		size', the whole frame should be ignored, and preferably be removed.
+		The 'Owner identifier' is then followed by a short content description
+		and explanation as to why it's encrypted. After the
+		'content/explanation' description, the actual encrypted block follows.
 
-		 When an ID3v2 decoder encounters a "CRM" frame, it should send the
-		 datablock to the 'plugin' with the corresponding 'owner identifier'
-		 and expect to receive either a datablock with one or several ID3v2
-		 frames after each other or an error. There may be more than one "CRM"
-		 frames in a tag, but only one with the same 'owner identifier'.
+		When an ID3v2 decoder encounters a "CRM" frame, it should send the
+		datablock to the 'plugin' with the corresponding 'owner identifier'
+		and expect to receive either a datablock with one or several ID3v2
+		frames after each other or an error. There may be more than one "CRM"
+		frames in a tag, but only one with the same 'owner identifier'.
 
-		 Encrypted meta frame  "CRM"
-		 Frame size            $xx xx xx
-		 Owner identifier      <textstring> $00 (00)
-		 Content/explanation   <textstring> $00 (00)
-		 Encrypted datablock   <binary data>
-		 */
+		Encrypted meta frame  "CRM"
+		Frame size            $xx xx xx
+		Owner identifier      <textstring> $00 (00)
+		Content/explanation   <textstring> $00 (00)
+		Encrypted datablock   <binary data>
+		*/
 		title: 'Encrypted meta',
 		versions: [2],
 		impl: FrameUnknown
@@ -119,7 +118,7 @@ export const FrameDefs: Record<string, IFrameDef> = {
 	'TP1': {
 		title: 'Artist',
 		versions: [2],
-		impl: FrameTextConcatList,
+		impl: FrameText,
 		upgrade: 'TPE1'
 	},
 	'TP2': {
@@ -648,7 +647,7 @@ export const FrameDefs: Record<string, IFrameDef> = {
 		 */
 		title: 'Artist',
 		versions: [3, 4],
-		impl: FrameTextConcatList
+		impl: FrameText
 	},
 	'TPE2': {
 		/*
@@ -771,7 +770,7 @@ export const FrameDefs: Record<string, IFrameDef> = {
 		 */
 		title: 'Genre',
 		versions: [3, 4],
-		impl: FrameTextConcatList
+		impl: FrameText
 	},
 	'TFLT': {
 		/*
@@ -1752,6 +1751,14 @@ export const FrameDefs: Record<string, IFrameDef> = {
 		 Movement Nr
 		 */
 		title: 'Movement Number/Total',
+		versions: [3, 4],
+		impl: FrameText
+	},
+	'MVCN': {
+		/*
+		 Movement Count
+		 */
+		title: 'Movement Total',
 		versions: [3, 4],
 		impl: FrameText
 	},

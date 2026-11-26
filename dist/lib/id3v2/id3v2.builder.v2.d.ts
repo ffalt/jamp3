@@ -1,8 +1,8 @@
-import { IID3V2 } from './id3v2.types';
-import { ID3V2RawBuilder } from './id3v2.builder';
+import { IID3V2 } from './id3v2.types.js';
+import { ID3V2RawBuilder } from './id3v2.builder.js';
 export declare abstract class ID3V2TagBuilder implements IID3V2.Builder {
     rawBuilder: ID3V2RawBuilder;
-    constructor(encoding?: string);
+    protected constructor(encoding?: string);
     abstract version(): number;
     abstract rev(): number;
     loadTag(tag: IID3V2.Tag): this;
@@ -29,7 +29,7 @@ export declare abstract class ID3V2TagBuilder implements IID3V2.Builder {
     disc(discNr?: string | number, discTotal?: string | number): this;
     encoder(value?: string): this;
     encoderSettings(value?: string): this;
-    eventTimingCodes(timeStampFormat: number, events: Array<{
+    eventTimingCodes(timestampFormat: number, events: Array<{
         type: number;
         timestamp: number;
     }>): this;

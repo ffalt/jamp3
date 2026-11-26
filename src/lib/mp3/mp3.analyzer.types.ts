@@ -1,9 +1,9 @@
-import { IID3V1 } from '../id3v1/id3v1.types';
-import { IID3V2 } from '../id3v2/id3v2.types';
+import { IID3V1 } from '../id3v1/id3v1.types.js';
+import { IID3V2 } from '../id3v2/id3v2.types.js';
 
 /**
- * Interfaces for class MP3Analyzer
- */
+Interfaces for class MP3Analyzer
+*/
 export namespace IMP3Analyzer {
 
 	export interface Warning {

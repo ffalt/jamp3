@@ -1,7 +1,4 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Markers = void 0;
-class Markers {
+export class Markers {
     static makeMarker(str) {
         const mark = [];
         for (let i = 0; i < str.length; i++) {
@@ -21,7 +18,6 @@ class Markers {
         return true;
     }
 }
-exports.Markers = Markers;
 Markers.MARKERS = {
     tag: Markers.makeMarker('TAG'),
     id3: Markers.makeMarker('ID3'),

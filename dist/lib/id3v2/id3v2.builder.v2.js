@@ -1,11 +1,8 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.ID3V2TagBuilder = void 0;
-const id3v2_builder_1 = require("./id3v2.builder");
-const types_1 = require("../common/types");
-class ID3V2TagBuilder {
+import { ID3V2RawBuilder } from './id3v2.builder.js';
+import { ITagID } from '../common/types.js';
+export class ID3V2TagBuilder {
     constructor(encoding) {
-        this.rawBuilder = new id3v2_builder_1.ID3V2RawBuilder(encoding);
+        this.rawBuilder = new ID3V2RawBuilder(encoding);
     }
     loadTag(tag) {
         this.rawBuilder.loadFrames(tag.frames);
@@ -14,8 +11,7 @@ class ID3V2TagBuilder {
     buildFrames() {
         const result = [];
         const frameValues = this.rawBuilder.build();
-        for (const id of Object.keys(frameValues)) {
-            const list = frameValues[id];
+        for (const list of Object.values(frameValues)) {
             for (const frame of list) {
                 result.push(frame);
             }
@@ -24,7 +20,7 @@ class ID3V2TagBuilder {
     }
     buildTag() {
         return {
-            id: types_1.ITagID.ID3v2,
+            id: ITagID.ID3v2,
             head: {
                 ver: this.version(),
                 rev: this.rev(),
@@ -120,8 +116,8 @@ class ID3V2TagBuilder {
         this.text('TSSE', value);
         return this;
     }
-    eventTimingCodes(timeStampFormat, events) {
-        this.rawBuilder.eventTimingCodes('ETCO', timeStampFormat, events);
+    eventTimingCodes(timestampFormat, events) {
+        this.rawBuilder.eventTimingCodes('ETCO', timestampFormat, events);
         return this;
     }
     fileOwner(value) {
@@ -154,7 +150,7 @@ class ID3V2TagBuilder {
     }
     isCompilation(value) {
         if (value !== undefined) {
-            this.bool('TCMP', value === 1 || value === 'true' || value === true);
+            this.bool('TCMP', [1, 'true', true].includes(value));
         }
         return this;
     }
@@ -514,5 +510,4 @@ class ID3V2TagBuilder {
         return this;
     }
 }
-exports.ID3V2TagBuilder = ID3V2TagBuilder;
 //# sourceMappingURL=id3v2.builder.v2.js.map

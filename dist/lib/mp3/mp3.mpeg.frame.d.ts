@@ -1,4 +1,5 @@
-import { IMP3 } from './mp3.types';
+import { IMP3 } from './mp3.types.js';
+export declare function sideInfoSize(header: IMP3.FrameRawHeader): number;
 export declare function collapseRawHeader(header: IMP3.FrameRawHeader): IMP3.FrameRawHeaderArray;
 export declare function rawHeaderOffSet(header: IMP3.FrameRawHeaderArray): number;
 export declare function rawHeaderSize(header: IMP3.FrameRawHeaderArray): number;
@@ -13,7 +14,7 @@ export declare class MPEGFrameReader {
     private readLame;
     private readVbri;
     private readXing;
-    readFrame(chunk: Buffer, offset: number, header: IMP3.FrameRawHeader): {
+    readFrame(chunk: Buffer, offset: number, header: IMP3.FrameRawHeader, scanVbrHeader: boolean): {
         offset: number;
         frame: IMP3.RawFrame;
     };

@@ -1,4 +1,4 @@
-import { ITag } from '../common/types';
+import { ITag } from '../common/types.js';
 export declare namespace IID3V2 {
     namespace FrameValue {
         interface Base {
@@ -15,6 +15,7 @@ export declare namespace IID3V2 {
             language: string;
             id: string;
             text: string;
+            list?: Array<string>;
         }
         interface LangText extends Base {
             language: string;
@@ -133,12 +134,14 @@ export declare namespace IID3V2 {
         interface IdText extends Base {
             id: string;
             text: string;
+            list?: Array<string>;
         }
         interface Ascii extends Base {
             text: string;
         }
         interface Text extends Base {
             text: string;
+            list?: Array<string>;
         }
         interface TextList extends Base {
             list: Array<string>;

@@ -1,51 +1,58 @@
 import * as zlib from 'node:zlib';
+import { promisify } from 'node:util';
 
-import { IID3V2 } from '../id3v2.types';
-import { ITagID } from '../../common/types';
-import { BufferReader } from '../../common/buffer-reader';
-import { ID3v2_FRAME_HEADER_LENGTHS } from '../id3v2.header.consts';
-import { ID3v2Reader } from '../id3v2.reader';
-import { matchFrame } from './id3v2.frame.match';
-import { removeUnsync } from './id3v2.frame.unsync';
-import { IFrameImplParseResult } from './id3v2.frame';
+import { IID3V2 } from '../id3v2.types.js';
+import { ITagID } from '../../common/types.js';
+import { BufferReader } from '../../common/buffer-reader.js';
+import { ID3v2_FRAME_HEADER_LENGTHS } from '../id3v2.header.consts.js';
+import { ID3v2Reader } from '../id3v2.reader.js';
+import { matchFrame } from './id3v2.frame.match.js';
+import { removeUnsync } from './id3v2.frame.unsync.js';
+import { IFrameImplParseResult } from './id3v2.frame.js';
+
+const inflate = promisify(zlib.inflate);
+const gunzip = promisify(zlib.gunzip);
+
+async function decompressFrameData(data: Buffer): Promise<Buffer> {
+	try {
+		return await inflate(data);
+	} catch {
+		try {
+			return await gunzip(data);
+		} catch {
+			throw new Error('Decompressing frame failed');
+		}
+	}
+}
 
 async function processRawFrame(frame: IID3V2.RawFrame, head: IID3V2.TagHeader): Promise<void> {
 	if ((frame.formatFlags) && (frame.formatFlags.encrypted)) {
 		return Promise.reject(new Error('Frame Encryption currently not supported'));
 	}
-	if ((frame.formatFlags) && (frame.formatFlags.unsynchronised)) {
-		frame.data = removeUnsync(frame.data);
-	}
-	if ((frame.formatFlags) && (frame.formatFlags.compressed)) {
-		let data = frame.data;
-		if (frame.formatFlags.compressed) {
-			const sizebytes = ID3v2_FRAME_HEADER_LENGTHS.SIZE[head.ver];
-			data = data.subarray(sizebytes);
-		}
-		return new Promise<void>((resolve, reject) => {
-			zlib.inflate(data, (err, result) => {
-				if (!err && result) {
-					frame.data = result;
-					resolve();
-				}
-				zlib.gunzip(data, (err2, result2) => {
-					if (!err2 && result2) {
-						frame.data = result2;
-						resolve();
-					}
-					reject('Decompressing frame failed');
-				});
-			});
-		});
-	} else if ((frame.formatFlags) && (frame.formatFlags.dataLengthIndicator)) {
+	let data = frame.data;
+	if ((frame.formatFlags) && (frame.formatFlags.dataLengthIndicator)) {
 		/*
 		 p - Data length indicator
 			 The data length indicator is the value one would write
 			 as the 'Frame length' if all of the frame format flags were
 			 zeroed, represented as a 32 bit synchsafe integer.
+			 For compressed frames it holds the decompressed size, so no
+			 separate decompressed size field follows (unlike v2.2/v2.3).
 		 */
-		frame.data = frame.data.subarray(4);
+		data = data.subarray(4);
 	}
+	if ((frame.formatFlags) && (frame.formatFlags.unsynchronised)) {
+		data = removeUnsync(data);
+	}
+	if ((frame.formatFlags) && (frame.formatFlags.compressed)) {
+		if ((head.ver !== 4) || !frame.formatFlags.dataLengthIndicator) {
+			// v2.2/v2.3 (and non-spec v2.4 without a data length indicator):
+			// a plain decompressed size precedes the compressed data
+			data = data.subarray(ID3v2_FRAME_HEADER_LENGTHS.SIZE[head.ver]);
+		}
+		data = await decompressFrameData(data);
+	}
+	frame.data = data;
 }
 
 export async function buildID3v2(tag: IID3V2.RawTag): Promise<IID3V2.Tag> {
@@ -88,11 +95,10 @@ export async function readID3v2Frame(rawFrame: IID3V2.RawFrame, head: IID3V2.Tag
 		},
 		value: {}
 	};
-	let result: IFrameImplParseResult | undefined;
 	try {
 		await processRawFrame(rawFrame, head);
 		const reader = new BufferReader(rawFrame.data);
-		result = await f.impl.parse(reader, rawFrame, head);
+		const result: IFrameImplParseResult = await f.impl.parse(reader, rawFrame, head);
 		if (frame.head) {
 			frame.head.encoding = result.encoding ? result.encoding.name : undefined;
 		}
@@ -104,7 +110,7 @@ export async function readID3v2Frame(rawFrame: IID3V2.RawFrame, head: IID3V2.Tag
 		frame.invalid = (error as any).toString();
 		frame.value = { bin: rawFrame.data } as IID3V2.FrameValue.Bin;
 	}
-	if (groupId) {
+	if (groupId !== undefined) {
 		frame.groupId = groupId;
 	}
 	frame.title = f.title;

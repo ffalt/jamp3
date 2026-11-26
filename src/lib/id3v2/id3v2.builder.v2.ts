@@ -1,11 +1,11 @@
-import { IID3V2 } from './id3v2.types';
-import { ID3V2RawBuilder } from './id3v2.builder';
-import { ITagID } from '../common/types';
+import { IID3V2 } from './id3v2.types.js';
+import { ID3V2RawBuilder } from './id3v2.builder.js';
+import { ITagID } from '../common/types.js';
 
 export abstract class ID3V2TagBuilder implements IID3V2.Builder {
 	public rawBuilder: ID3V2RawBuilder;
 
-	constructor(encoding?: string) {
+	protected constructor(encoding?: string) {
 		this.rawBuilder = new ID3V2RawBuilder(encoding);
 	}
 
@@ -15,10 +15,10 @@ export abstract class ID3V2TagBuilder implements IID3V2.Builder {
 	abstract rev(): number;
 
 	/**
-	 * Load existing frames from a tag into the builder.
-	 * After calling this, subsequent setter calls will update or add to the existing frames.
-	 * Single-value frames (e.g. title, artist) will be replaced; multi-value frames (e.g. picture, comment) will be appended.
-	 */
+	Load existing frames from a tag into the builder.
+	After calling this, subsequent setter calls will update or add to the existing frames.
+	Single-value frames (e.g. title, artist) will be replaced; multi-value frames (e.g. picture, comment) will be appended.
+	*/
 	loadTag(tag: IID3V2.Tag): this {
 		this.rawBuilder.loadFrames(tag.frames);
 		return this;
@@ -27,8 +27,7 @@ export abstract class ID3V2TagBuilder implements IID3V2.Builder {
 	buildFrames(): Array<IID3V2.Frame> {
 		const result: Array<IID3V2.Frame> = [];
 		const frameValues = this.rawBuilder.build();
-		for (const id of Object.keys(frameValues)) {
-			const list = frameValues[id];
+		for (const list of Object.values(frameValues)) {
 			for (const frame of list) {
 				result.push(frame);
 			}
@@ -156,8 +155,8 @@ export abstract class ID3V2TagBuilder implements IID3V2.Builder {
 		return this;
 	}
 
-	eventTimingCodes(timeStampFormat: number, events: Array<{ type: number; timestamp: number }>) {
-		this.rawBuilder.eventTimingCodes('ETCO', timeStampFormat, events);
+	eventTimingCodes(timestampFormat: number, events: Array<{ type: number; timestamp: number }>) {
+		this.rawBuilder.eventTimingCodes('ETCO', timestampFormat, events);
 		return this;
 	}
 
@@ -198,7 +197,7 @@ export abstract class ID3V2TagBuilder implements IID3V2.Builder {
 
 	isCompilation(value?: boolean | number | string) {
 		if (value !== undefined) {
-			this.bool('TCMP', value === 1 || value === 'true' || value === true);
+			this.bool('TCMP', [1, 'true', true].includes(value));
 		}
 		return this;
 	}
@@ -304,6 +303,7 @@ export abstract class ID3V2TagBuilder implements IID3V2.Builder {
 	}
 
 	mbTrackID(value?: string) {
+		// eslint-disable-next-line unicorn/prefer-https
 		return this.uniqueFileID('http://musicbrainz.org', value);
 	}
 
@@ -371,7 +371,7 @@ export abstract class ID3V2TagBuilder implements IID3V2.Builder {
 		return this;
 	}
 
-	/** TOFN: The 'Original filename' frame contains the preferred filename for the file, since some media doesn't allow the desired length of the filename. The filename is case sensitive and includes its suffix. **/
+	/** TOFN: The 'Original filename' frame contains the preferred filename for the file, since some media doesn't allow the desired length of the filename. The filename is case-sensitive and includes its suffix. **/
 	originalFilename(value?: string) {
 		this.text('TOFN', value);
 		return this;
@@ -389,12 +389,12 @@ export abstract class ID3V2TagBuilder implements IID3V2.Builder {
 	}
 
 	/**
-	 * APIC: Attached picture
-	 * @param pictureType Picture type [[ID3V2ValueTypes]]
-	 * @param description a short description of the picture
-	 * @param mimeType MIME media type e.g. "image/png"
-	 * @param binary binary data of a image
-	 */
+	APIC: Attached picture
+	@param pictureType Picture type [[ID3V2ValueTypes]]
+	@param description a short description of the picture
+	@param mimeType MIME media type e.g. "image/png"
+	@param binary binary data of a image
+	*/
 	picture(pictureType: number, description: string, mimeType: string, binary: Buffer) {
 		this.rawBuilder.picture('APIC', pictureType, description, mimeType, binary);
 		return this;
@@ -471,12 +471,7 @@ export abstract class ID3V2TagBuilder implements IID3V2.Builder {
 		bass?: number,
 		peakBass?: number
 	) {
-		this.rawBuilder.relativeVolumeAdjustment('RVAD', right, left,
-			peakRight, peakLeft,
-			rightBack, leftBack,
-			peakRightBack, peakLeftBack,
-			center, peakCenter,
-			bass, peakBass);
+		this.rawBuilder.relativeVolumeAdjustment('RVAD', right, left, peakRight, peakLeft, rightBack, leftBack, peakRightBack, peakLeftBack, center, peakCenter, bass, peakBass);
 		return this;
 	}
 
@@ -497,8 +492,11 @@ export abstract class ID3V2TagBuilder implements IID3V2.Builder {
 	}
 
 	synchronisedLyrics(
-		id: string, language: string, timestampFormat: number,
-		contentType: number, events: Array<{ timestamp: number; text: string }>
+		id: string,
+		language: string,
+		timestampFormat: number,
+		contentType: number,
+		events: Array<{ timestamp: number; text: string }>
 	) {
 		this.rawBuilder.synchronisedLyrics('SYLT', id, language, timestampFormat, contentType, events);
 		return this;

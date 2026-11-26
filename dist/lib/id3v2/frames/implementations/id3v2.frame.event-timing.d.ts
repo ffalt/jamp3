@@ -1,2 +1,2 @@
-import { IFrameImpl } from '../id3v2.frame';
+import { IFrameImpl } from '../id3v2.frame.js';
 export declare const FrameETCO: IFrameImpl;

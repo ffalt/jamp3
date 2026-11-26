@@ -1,5 +1,5 @@
-import { IID3V2 } from './id3v2.types';
-import { ID3V2FramesCollect } from './id3v2.builder.collect';
+import { IID3V2 } from './id3v2.types.js';
+import { ID3V2FramesCollect } from './id3v2.builder.collect.js';
 
 export class ID3V2RawBuilder extends ID3V2FramesCollect {
 	audioEncryption(key: string, id: string, previewStart: number, previewLength: number, bin: Buffer) {
@@ -22,12 +22,18 @@ export class ID3V2RawBuilder extends ID3V2FramesCollect {
 		this.add(key, frame);
 	}
 
-	chapterTOC(key: string, id: string, ordered: boolean, topLevel: boolean, children: Array<string>) {
-		this.addFrame<IID3V2.FrameValue.ChapterToc>(key, { id, ordered, topLevel, children });
+	chapterTOC(key: string, id: string, ordered: boolean, topLevel: boolean, children: Array<string>, title?: string) {
+		const frame: IID3V2.Frames.ChapterTOCFrame = {
+			id: key,
+			value: { id, ordered, topLevel, children },
+			head: this.head(),
+			subframes: title ? [{ id: 'TIT2', value: { text: title } as IID3V2.FrameValue.Text, head: this.head() }] : undefined
+		};
+		this.add(key, frame);
 	}
 
-	eventTimingCodes(key: string, timeStampFormat: number, events: Array<{ type: number; timestamp: number }>) {
-		this.addFrame<IID3V2.FrameValue.EventTimingCodes>(key, { format: timeStampFormat, events });
+	eventTimingCodes(key: string, timestampFormat: number, events: Array<{ type: number; timestamp: number }>) {
+		this.addFrame<IID3V2.FrameValue.EventTimingCodes>(key, { format: timestampFormat, events });
 	}
 
 	idBin(key: string, id: string, binary: Buffer) {
@@ -42,9 +48,9 @@ export class ID3V2RawBuilder extends ID3V2FramesCollect {
 		this.addFrame<IID3V2.FrameValue.IdGuid>(key, { id, guid });
 	}
 
-	idLangText(key: string, value: string | undefined, lang: string | undefined, id: string | undefined) {
+	idLangText(key: string, value: string | undefined, lang: string | undefined, id: string | undefined = '') {
 		if (value) {
-			this.addIDFrame<IID3V2.FrameValue.LangDescText>(key, { id: id || '', language: lang || '', text: value });
+			this.addIDFrame<IID3V2.FrameValue.LangDescText>(key, { id: id, language: lang || '', text: value });
 		}
 	}
 
@@ -55,12 +61,14 @@ export class ID3V2RawBuilder extends ID3V2FramesCollect {
 	}
 
 	keyTextList(key: string, group: string, value?: string) {
-		if (value) {
-			const frames = (this.frameValues[key] || []) as Array<IID3V2.Frames.TextListFrame>;
-			const frame: IID3V2.Frames.TextListFrame = (frames.length > 0) ? frames[0] : { id: key, value: { list: [] }, head: this.head() };
-			frame.value.list.push(group, value);
-			this.replace(key, frame);
+		if (!value) {
+			return;
 		}
+
+		const frames = (this.frameValues[key] || []) as Array<IID3V2.Frames.TextListFrame>;
+		const frame: IID3V2.Frames.TextListFrame = (frames.length > 0) ? frames[0] : { id: key, value: { list: [] }, head: this.head() };
+		frame.value.list.push(group, value);
+		this.replace(key, frame);
 	}
 
 	langText(key: string, language: string, text: string) {
@@ -72,10 +80,12 @@ export class ID3V2RawBuilder extends ID3V2FramesCollect {
 	}
 
 	nrAndTotal(key: string, value: number | string | undefined, total: number | string | undefined) {
-		if (value) {
-			const text = value.toString() + (total ? `/${total}` : '');
-			this.replaceFrame<IID3V2.FrameValue.Text>(key, { text });
+		if (!value) {
+			return;
 		}
+
+		const text = value.toString() + (total ? `/${total}` : '');
+		this.replaceFrame<IID3V2.FrameValue.Text>(key, { text });
 	}
 
 	number(key: string, num: number | undefined) {
@@ -97,12 +107,33 @@ export class ID3V2RawBuilder extends ID3V2FramesCollect {
 	}
 
 	relativeVolumeAdjustment(
-		key: string, right: number, left: number, peakRight?: number, peakLeft?: number, rightBack?: number, leftBack?: number, peakRightBack?: number, peakLeftBack?: number,
-		center?: number, peakCenter?: number, bass?: number, peakBass?: number) {
+		key: string,
+		right: number,
+		left: number,
+		peakRight?: number,
+		peakLeft?: number,
+		rightBack?: number,
+		leftBack?: number,
+		peakRightBack?: number,
+		peakLeftBack?: number,
+		center?: number,
+		peakCenter?: number,
+		bass?: number,
+		peakBass?: number
+	) {
 		this.addFrame<IID3V2.FrameValue.RVA>(key, {
-			right, left, peakRight, peakLeft,
-			rightBack, leftBack, peakRightBack, peakLeftBack,
-			center, peakCenter, bass, peakBass
+			right,
+			left,
+			peakRight,
+			peakLeft,
+			rightBack,
+			leftBack,
+			peakRightBack,
+			peakLeftBack,
+			center,
+			peakCenter,
+			bass,
+			peakBass
 		});
 	}
 

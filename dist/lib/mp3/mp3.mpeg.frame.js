@@ -1,18 +1,19 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.MPEGFrameReader = void 0;
-exports.collapseRawHeader = collapseRawHeader;
-exports.rawHeaderOffSet = rawHeaderOffSet;
-exports.rawHeaderSize = rawHeaderSize;
-exports.rawHeaderVersionIdx = rawHeaderVersionIdx;
-exports.rawHeaderLayerIdx = rawHeaderLayerIdx;
-exports.expandMPEGFrameFlags = expandMPEGFrameFlags;
-exports.expandRawHeaderArray = expandRawHeaderArray;
-exports.expandRawHeader = expandRawHeader;
-const mp3_mpeg_consts_1 = require("./mp3.mpeg.consts");
-const utils_1 = require("../common/utils");
-const buffer_reader_1 = require("../common/buffer-reader");
-function collapseRawHeader(header) {
+import { mpeg_bitrates, mpeg_channel_count, mpeg_channel_mode_jointstereoIdx, mpeg_channel_mode_types, mpeg_channel_modes, mpeg_emphasis, mpeg_frame_samples, mpeg_layer_joint_extension, mpeg_layer_names_long, mpeg_slot_size, mpeg_srates, mpeg_version_names_long } from './mp3.mpeg.consts.js';
+import { isBit } from '../common/utils.js';
+import { BufferReader } from '../common/buffer-reader.js';
+import { Markers } from '../common/marker.js';
+export function sideInfoSize(header) {
+    if (header.layerIdx !== 1) {
+        return 0;
+    }
+    const mpeg1 = header.versionIdx === 3;
+    const mono = header.modeIdx === 3;
+    if (mpeg1) {
+        return mono ? 17 : 32;
+    }
+    return mono ? 9 : 17;
+}
+export function collapseRawHeader(header) {
     return [
         header.offset,
         header.size,
@@ -20,19 +21,19 @@ function collapseRawHeader(header) {
         header.back
     ];
 }
-function rawHeaderOffSet(header) {
+export function rawHeaderOffSet(header) {
     return header[0];
 }
-function rawHeaderSize(header) {
+export function rawHeaderSize(header) {
     return header[1];
 }
-function rawHeaderVersionIdx(header) {
+export function rawHeaderVersionIdx(header) {
     return (header[2] >> 3) & 0x3;
 }
-function rawHeaderLayerIdx(header) {
+export function rawHeaderLayerIdx(header) {
     return (header[2] >> 1) & 0x3;
 }
-function expandMPEGFrameFlags(front, back, offset) {
+export function expandMPEGFrameFlags(front, back, offset) {
     const hasSync = (front & 65504) === 65504;
     const validVer = (front & 0x18) !== 0x8;
     const validLayer = (front & 0x6) !== 0x0;
@@ -53,20 +54,21 @@ function expandMPEGFrameFlags(front, back, offset) {
     const copyright = ((back >> 3) & 0x1) === 1;
     const original = ((back >> 2) & 0x1) === 1;
     const emphasisIdx = back & 0x3;
-    if (mp3_mpeg_consts_1.mpeg_bitrates[versionIdx] &&
-        mp3_mpeg_consts_1.mpeg_bitrates[versionIdx][layerIdx] &&
-        (mp3_mpeg_consts_1.mpeg_bitrates[versionIdx][layerIdx][bitrateIdx] > 0) &&
-        mp3_mpeg_consts_1.mpeg_srates[versionIdx] &&
-        (mp3_mpeg_consts_1.mpeg_srates[versionIdx][sampleIdx] > 0) &&
-        mp3_mpeg_consts_1.mpeg_frame_samples[versionIdx] &&
-        (mp3_mpeg_consts_1.mpeg_frame_samples[versionIdx][layerIdx] > 0) &&
-        (mp3_mpeg_consts_1.mpeg_slot_size[layerIdx] > 0)) {
-        const bitrate = mp3_mpeg_consts_1.mpeg_bitrates[versionIdx][layerIdx][bitrateIdx] * 1000;
-        const samprate = mp3_mpeg_consts_1.mpeg_srates[versionIdx][sampleIdx];
-        const samples = mp3_mpeg_consts_1.mpeg_frame_samples[versionIdx][layerIdx];
-        const slot_size = mp3_mpeg_consts_1.mpeg_slot_size[layerIdx];
+    if (mpeg_bitrates[versionIdx] &&
+        mpeg_bitrates[versionIdx][layerIdx] &&
+        (mpeg_bitrates[versionIdx][layerIdx][bitrateIdx] > 0) &&
+        mpeg_srates[versionIdx] &&
+        (mpeg_srates[versionIdx][sampleIdx] > 0) &&
+        mpeg_frame_samples[versionIdx] &&
+        (mpeg_frame_samples[versionIdx][layerIdx] > 0) &&
+        (mpeg_slot_size[layerIdx] > 0)) {
+        const bitrate = mpeg_bitrates[versionIdx][layerIdx][bitrateIdx] * 1000;
+        const samprate = mpeg_srates[versionIdx][sampleIdx];
+        const samples = mpeg_frame_samples[versionIdx][layerIdx];
+        const slot_size = mpeg_slot_size[layerIdx];
         const bps = samples / 8;
-        const size = Math.floor(((bps * bitrate) / samprate)) + ((padded) ? slot_size : 0);
+        const slots = Math.floor(((bps / slot_size) * bitrate) / samprate);
+        const size = (slots * slot_size) + ((padded) ? slot_size : 0);
         return {
             offset,
             front,
@@ -88,7 +90,7 @@ function expandMPEGFrameFlags(front, back, offset) {
     }
     return null;
 }
-function expandRawHeaderArray(header) {
+export function expandRawHeaderArray(header) {
     const result = expandMPEGFrameFlags(header[2], header[3], header[0]);
     if (!result) {
         return {
@@ -112,13 +114,26 @@ function expandRawHeaderArray(header) {
     }
     return result;
 }
-function expandRawHeader(header) {
-    const samplingRate = mp3_mpeg_consts_1.mpeg_srates[header.versionIdx][header.sampleIdx];
-    const samples = mp3_mpeg_consts_1.mpeg_frame_samples[header.versionIdx][header.layerIdx];
+export function expandRawHeader(header) {
+    const samplingRate = mpeg_srates[header.versionIdx][header.sampleIdx];
+    const samples = mpeg_frame_samples[header.versionIdx][header.layerIdx];
     const time = samplingRate > 0 ? (samples / samplingRate) * 1000 : 0;
-    return Object.assign(Object.assign({}, header), { time, version: mp3_mpeg_consts_1.mpeg_version_names_long[header.versionIdx], layer: mp3_mpeg_consts_1.mpeg_layer_names_long[header.layerIdx], channelMode: mp3_mpeg_consts_1.mpeg_channel_modes[header.modeIdx], channelType: mp3_mpeg_consts_1.mpeg_channel_mode_types[header.modeIdx], channelCount: mp3_mpeg_consts_1.mpeg_channel_count[header.modeIdx], extension: header.modeIdx === mp3_mpeg_consts_1.mpeg_channel_mode_jointstereoIdx ? mp3_mpeg_consts_1.mpeg_layer_joint_extension[header.layerIdx][header.modeExtIdx] : undefined, emphasis: mp3_mpeg_consts_1.mpeg_emphasis[header.emphasisIdx], samplingRate, bitRate: mp3_mpeg_consts_1.mpeg_bitrates[header.versionIdx][header.layerIdx][header.bitrateIdx] * 1000, samples });
+    return {
+        ...header,
+        time,
+        version: mpeg_version_names_long[header.versionIdx],
+        layer: mpeg_layer_names_long[header.layerIdx],
+        channelMode: mpeg_channel_modes[header.modeIdx],
+        channelType: mpeg_channel_mode_types[header.modeIdx],
+        channelCount: mpeg_channel_count[header.modeIdx],
+        extension: header.modeIdx === mpeg_channel_mode_jointstereoIdx ? mpeg_layer_joint_extension[header.layerIdx][header.modeExtIdx] : undefined,
+        emphasis: mpeg_emphasis[header.emphasisIdx],
+        samplingRate,
+        bitRate: mpeg_bitrates[header.versionIdx][header.layerIdx][header.bitrateIdx] * 1000,
+        samples
+    };
 }
-class MPEGFrameReader {
+export class MPEGFrameReader {
     readMPEGFrameHeader(buffer, offset) {
         if (buffer.length - offset < 4) {
             return null;
@@ -132,14 +147,14 @@ class MPEGFrameReader {
     readLame() {
     }
     readVbri(data, frame, offset) {
-        const reader = new buffer_reader_1.BufferReader(data);
+        const reader = new BufferReader(data);
         reader.position = offset;
         frame.mode = reader.readFixedAsciiString(4);
         const version = reader.readSInt(2);
         const delay = reader.readSInt(2);
         const quality = reader.readSInt(2);
-        const bytes = reader.readSInt(4);
-        const frames = reader.readSInt(4);
+        const bytes = reader.readUInt(4);
+        const frames = reader.readUInt(4);
         const toc_entries = reader.readSInt(2);
         const toc_scale = reader.readSInt(2);
         const toc_entry_size = reader.readSInt(2);
@@ -147,29 +162,37 @@ class MPEGFrameReader {
         const toc_size = toc_entries * toc_entry_size;
         const toc = reader.readBuffer(toc_size);
         frame.vbri = {
-            version, delay, quality, bytes, frames,
-            toc_entries, toc_scale, toc_entry_size, toc_frames, toc
+            version,
+            delay,
+            quality,
+            bytes,
+            frames,
+            toc_entries,
+            toc_scale,
+            toc_entry_size,
+            toc_frames,
+            toc
         };
         return reader.position;
     }
     readXing(data, frame, offset) {
-        const reader = new buffer_reader_1.BufferReader(data);
+        const reader = new BufferReader(data);
         reader.position = offset;
         frame.mode = reader.readFixedAsciiString(4);
         const field = reader.readSInt(4);
         frame.xing = {
             fields: {
-                frames: (0, utils_1.isBit)(field, 1),
-                bytes: (0, utils_1.isBit)(field, 2),
-                toc: (0, utils_1.isBit)(field, 4),
-                quality: (0, utils_1.isBit)(field, 8)
+                frames: isBit(field, 1),
+                bytes: isBit(field, 2),
+                toc: isBit(field, 4),
+                quality: isBit(field, 8)
             }
         };
         if (frame.xing.fields.frames) {
-            frame.xing.frames = reader.readSInt(4);
+            frame.xing.frames = reader.readUInt(4);
         }
         if (frame.xing.fields.bytes) {
-            frame.xing.bytes = reader.readSInt(4);
+            frame.xing.bytes = reader.readUInt(4);
         }
         if (frame.xing.fields.toc) {
             frame.xing.toc = reader.readBuffer(100);
@@ -179,28 +202,22 @@ class MPEGFrameReader {
         }
         return reader.position;
     }
-    readFrame(chunk, offset, header) {
+    readFrame(chunk, offset, header, scanVbrHeader) {
         const frame = { header: collapseRawHeader(header) };
         let off = 0;
-        const length = offset + Math.min(40, chunk.length - 4 - offset);
-        for (let i = offset; i < length; i++) {
-            const c = chunk[i];
-            const c2 = chunk[i + 1];
-            const c3 = chunk[i + 2];
-            const c4 = chunk[i + 3];
-            if ((c === 88 && c2 === 105 && c3 === 110 && c4 === 103) ||
-                (c === 73 && c2 === 110 && c3 === 102 && c4 === 111)) {
-                off = this.readXing(chunk, frame, i);
+        if (scanVbrHeader) {
+            const xingOffset = offset + 4 + sideInfoSize(header);
+            if (Markers.isMarker(chunk, xingOffset, Markers.MARKERS.xing) || Markers.isMarker(chunk, xingOffset, Markers.MARKERS.info)) {
+                off = this.readXing(chunk, frame, xingOffset);
             }
-            else if (c === 86 && c2 === 66 && c3 === 82 && c4 === 73) {
-                off = this.readVbri(chunk, frame, i);
-            }
-            if (off > 0) {
-                break;
+            else {
+                const vbriOffset = offset + 4 + 32;
+                if (Markers.isMarker(chunk, vbriOffset, Markers.MARKERS.vbri)) {
+                    off = this.readVbri(chunk, frame, vbriOffset);
+                }
             }
         }
         return { offset: off, frame };
     }
 }
-exports.MPEGFrameReader = MPEGFrameReader;
 //# sourceMappingURL=mp3.mpeg.frame.js.map

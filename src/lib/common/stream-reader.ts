@@ -1,6 +1,6 @@
 import { Readable } from 'node:stream';
 import fs from 'node:fs';
-import { BufferUtils } from './buffer';
+import { BufferUtils } from './buffer.js';
 
 export class ReaderStream {
 	readableStream: Readable | null = null;
@@ -9,6 +9,8 @@ export class ReaderStream {
 	waiting: (() => void) | null = null;
 
 	private streamEnd = false;
+	private streamError: Error | null = null;
+	private pendingReject: ((error: Error) => void) | null = null;
 	private streamOnData: ((chunk: Buffer) => void) | null = null;
 	end = false;
 	pos = 0;
@@ -26,6 +28,7 @@ export class ReaderStream {
 		if (this.waiting) {
 			const w = this.waiting;
 			this.waiting = null;
+			this.pendingReject = null;
 			w();
 		}
 	}
@@ -40,13 +43,20 @@ export class ReaderStream {
 			if (!this.readableStream) {
 				return Promise.reject('Invalid Stream');
 			}
-			this.readableStream.on('error', error => reject(error));
+			this.readableStream.on('error', error => {
+				this.streamError = error;
+				const pendingReject = this.pendingReject;
+				this.pendingReject = null;
+				this.waiting = null;
+				(pendingReject || reject)(error);
+			});
 			this.readableStream.on('end', () => {
 				this.end = true;
 				this.streamEnd = true;
 				if (this.waiting) {
 					const w = this.waiting;
 					this.waiting = null;
+					this.pendingReject = null;
 					w();
 				}
 			});
@@ -56,6 +66,7 @@ export class ReaderStream {
 				}
 			});
 			this.waiting = () => resolve();
+			this.pendingReject = reject;
 		});
 	}
 
@@ -83,12 +94,13 @@ export class ReaderStream {
 	close() {
 		const stream = this.readableStream;
 		this.readableStream = null;
-		if (stream) {
-			if (typeof (stream as any).close === 'function') {
-				(stream as any).close();
-			}
-			stream.destroy();
+		if (!stream) {
+			return;
 		}
+		if (typeof (stream as any).close === 'function') {
+			(stream as any).close();
+		}
+		stream.destroy();
 	}
 
 	private getBufferLength(): number {
@@ -100,14 +112,18 @@ export class ReaderStream {
 	}
 
 	private async resume(): Promise<void> {
+		if (this.streamError) {
+			throw this.streamError;
+		}
 		if (!this.readableStream) {
 			this.streamEnd = true;
 			return;
 		}
-		return new Promise<void>((resolve, _reject) => {
+		return new Promise<void>((resolve, reject) => {
 			this.waiting = () => {
 				resolve();
 			};
+			this.pendingReject = reject;
 			if (this.readableStream) {
 				this.readableStream.resume();
 			}
@@ -128,10 +144,9 @@ export class ReaderStream {
 				givenLength += need;
 				this.buffers[i] = b.subarray(need);
 				break;
-			} else {
-				givenLength += b.length;
-				i++;
 			}
+			givenLength += b.length;
+			i++;
 		}
 		this.pos += givenLength;
 		this.buffers = this.buffers.slice(i);
@@ -147,25 +162,27 @@ export class ReaderStream {
 			const need = amount - givenLength;
 			if (need < b.length) {
 				destBuffers.push(b.subarray(0, need));
+				givenLength += need;
 				this.buffers[i] = b.subarray(need);
 				break;
-			} else {
-				destBuffers.push(b);
-				givenLength += b.length;
-				i++;
 			}
+			destBuffers.push(b);
+			givenLength += b.length;
+			i++;
 		}
 		this.buffers = this.buffers.slice(i);
 		this.buffersLength = this.getBufferLength();
 		const result = BufferUtils.concatBuffers(destBuffers);
-		this.pos += amount;
+		this.pos += givenLength;
 		return result;
 	}
 
 	async read(amount: number): Promise<Buffer> {
-		const toRead = Math.max(1, amount);
-		if ((this.buffersLength >= toRead)) {
-			const result = this.get(toRead);
+		if (amount <= 0) {
+			return BufferUtils.zeroBuffer(0);
+		}
+		if (this.buffersLength >= amount) {
+			const result = this.get(amount);
 			this.end = this.streamEnd && this.buffersLength === 0;
 			return result;
 		}
@@ -179,40 +196,42 @@ export class ReaderStream {
 			this.pos += result.length;
 			this.end = this.streamEnd;
 			return result;
-		} else {
-			await this.resume();
-			return await this.read(toRead);
 		}
+		await this.resume();
+		return await this.read(amount);
 	}
 
 	public unshift(buffer: Buffer) {
-		if (buffer.length > 0) {
-			this.buffers.unshift(buffer);
-			this.buffersLength = this.getBufferLength();
-			this.pos -= buffer.length;
-			this.end = this.streamEnd && this.buffersLength === 0;
+		if (buffer.length === 0) {
+			return;
 		}
+
+		this.buffers.unshift(buffer);
+		this.buffersLength = this.getBufferLength();
+		this.pos -= buffer.length;
+		this.end = this.streamEnd && this.buffersLength === 0;
 	}
 
 	async scan(buffer: Buffer): Promise<number> {
-		if (this.end) {
-			return -1;
-		}
 		const result = BufferUtils.concatBuffers(this.buffers);
 		const index = BufferUtils.indexOfBuffer(result, buffer);
 		if (index >= 0) {
 			this.pos += index;
 			this.buffers = [result.subarray(index)];
+			this.buffersLength = this.getBufferLength();
 			return this.pos;
-		} else {
-			if (this.end) {
-				return -1;
-			}
-			this.pos += result.length;
-			this.buffers = [];
-			this.buffersLength = 0;
-			await this.resume();
-			return this.scan(buffer);
 		}
+		if (this.end) {
+			return -1;
+		}
+		// Keep the trailing bytes that could still be the start of a match once more data
+		// arrives, so a marker split across two underlying stream chunks is not lost.
+		const keepLength = Math.min(result.length, Math.max(buffer.length - 1, 0));
+		const discardLength = result.length - keepLength;
+		this.pos += discardLength;
+		this.buffers = keepLength > 0 ? [result.subarray(discardLength)] : [];
+		this.buffersLength = this.getBufferLength();
+		await this.resume();
+		return this.scan(buffer);
 	}
 }

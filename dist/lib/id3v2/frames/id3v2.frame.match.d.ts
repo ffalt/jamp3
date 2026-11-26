@@ -1,4 +1,4 @@
-import { IFrameDef } from './id3v2.frame.defs';
+import { IFrameDef } from './id3v2.frame.defs.js';
 interface IFrameMatch {
     match: (id: string) => boolean;
     matchBin: (id: Buffer) => boolean;

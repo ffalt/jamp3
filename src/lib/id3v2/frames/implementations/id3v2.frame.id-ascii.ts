@@ -1,12 +1,12 @@
-import { IFrameImpl } from '../id3v2.frame';
-import { IID3V2 } from '../../id3v2.types';
-import { ascii } from '../../../common/encodings';
+import { IFrameImpl } from '../id3v2.frame.js';
+import { IID3V2 } from '../../id3v2.types.js';
+import { ascii } from '../../../common/encodings.js';
 
 export const FrameIdAscii: IFrameImpl = {
 	/**
-	 Owner identifier    <text string> $00
-	 Identifier    <up to 64 bytes binary data>
-	 */
+	Owner identifier    <text string> $00
+	Identifier    <up to 64 bytes binary data>
+	*/
 	parse: async reader => {
 		const id = reader.readStringTerminated(ascii);
 		const text = reader.readStringTerminated(ascii);

@@ -1,4 +1,4 @@
-import { IID3V2 } from './id3v2.types';
+import { IID3V2 } from './id3v2.types.js';
 export declare class ID3V2FramesCollect {
     protected encoding?: string | undefined;
     protected frameValues: IID3V2.Frames.Map;

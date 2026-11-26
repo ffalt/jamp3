@@ -1,4 +1,4 @@
-import { IID3V2 } from './id3v2.types';
+import { IID3V2 } from './id3v2.types.js';
 export declare function simplifyInvolvedPeopleList(id: string, frame: IID3V2.Frame): Array<{
     slug: string;
     text: string;

@@ -1,18 +1,18 @@
-import { IID3V2 } from './id3v2.types';
-import { ID3V2FramesCollect } from './id3v2.builder.collect';
+import { IID3V2 } from './id3v2.types.js';
+import { ID3V2FramesCollect } from './id3v2.builder.collect.js';
 export declare class ID3V2RawBuilder extends ID3V2FramesCollect {
     audioEncryption(key: string, id: string, previewStart: number, previewLength: number, bin: Buffer): void;
     bool(key: string, bool: boolean): void;
     chapter(key: string, chapterID: string, start: number, end: number, offset: number, offsetEnd: number, subframes?: Array<IID3V2.Frame>): void;
-    chapterTOC(key: string, id: string, ordered: boolean, topLevel: boolean, children: Array<string>): void;
-    eventTimingCodes(key: string, timeStampFormat: number, events: Array<{
+    chapterTOC(key: string, id: string, ordered: boolean, topLevel: boolean, children: Array<string>, title?: string): void;
+    eventTimingCodes(key: string, timestampFormat: number, events: Array<{
         type: number;
         timestamp: number;
     }>): void;
     idBin(key: string, id: string, binary: Buffer): void;
     idNum(key: string, id: string, num: number): void;
     idGuid(key: string, id: string, guid: string): void;
-    idLangText(key: string, value: string | undefined, lang: string | undefined, id: string | undefined): void;
+    idLangText(key: string, value: string | undefined, lang: string | undefined, id?: string | undefined): void;
     idText(key: string, id: string, value: string | undefined): void;
     keyTextList(key: string, group: string, value?: string): void;
     langText(key: string, language: string, text: string): void;

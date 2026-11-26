@@ -1,5 +1,5 @@
 import { Readable } from 'node:stream';
-import { IID3V2 } from './id3v2.types';
+import { IID3V2 } from './id3v2.types.js';
 export declare class ID3v2 {
     static check(tag: IID3V2.Tag): Array<IID3V2.Warning>;
     static simplify(tag: IID3V2.Tag, dropIDsList?: Array<string>): IID3V2.TagSimplified;

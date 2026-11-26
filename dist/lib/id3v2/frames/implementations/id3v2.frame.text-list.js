@@ -1,18 +1,6 @@
-"use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.FrameTextList = void 0;
-const id3v2_frame_write_1 = require("../id3v2.frame.write");
-exports.FrameTextList = {
-    parse: (reader) => __awaiter(void 0, void 0, void 0, function* () {
+import { getWriteTextEncoding } from '../id3v2.frame.write.js';
+export const FrameTextList = {
+    parse: async (reader) => {
         const enc = reader.readEncoding();
         const list = [];
         while (reader.hasData()) {
@@ -23,18 +11,18 @@ exports.FrameTextList = {
         }
         const value = { list };
         return { value, encoding: enc };
-    }),
-    write: (frame, stream, head, defaultEncoding) => __awaiter(void 0, void 0, void 0, function* () {
+    },
+    write: async (frame, stream, head, defaultEncoding) => {
         const value = frame.value;
-        const enc = (0, id3v2_frame_write_1.getWriteTextEncoding)(frame, head, defaultEncoding);
-        yield stream.writeEncoding(enc);
+        const enc = getWriteTextEncoding(frame, head, defaultEncoding);
+        await stream.writeEncoding(enc);
         for (let index = 0; index < value.list.length; index++) {
-            yield stream.writeString(value.list[index], enc);
+            await stream.writeString(value.list[index], enc);
             if (index !== value.list.length - 1) {
-                yield stream.writeTerminator(enc);
+                await stream.writeTerminator(enc);
             }
         }
-    }),
+    },
     simplify: (value) => {
         if (value && value.list && value.list.length > 0) {
             return value.list.join(' / ');

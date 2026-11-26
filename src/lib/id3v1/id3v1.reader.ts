@@ -1,11 +1,11 @@
 import { Readable } from 'node:stream';
 
-import { Markers } from '../common/marker';
-import { IID3V1 } from './id3v1.types';
-import { BufferUtils } from '../common/buffer';
-import { ITagID } from '../common/types';
-import { ReaderStream } from '../common/stream-reader';
-import { BufferReader } from '../common/buffer-reader';
+import { Markers } from '../common/marker.js';
+import { IID3V1 } from './id3v1.types.js';
+import { BufferUtils } from '../common/buffer.js';
+import { ITagID } from '../common/types.js';
+import { ReaderStream } from '../common/stream-reader.js';
+import { BufferReader } from '../common/buffer-reader.js';
 
 export const ID3v1_MARKER = 'TAG';
 
@@ -36,7 +36,6 @@ export class ID3v1Reader {
 		const reader = new BufferReader(data);
 		reader.position = 3;
 		const value: IID3V1.ID3v1Tag = {};
-		// eslint-disable-next-line unicorn/no-immediate-mutation
 		value.title = reader.readFixedAutodectectString(30);
 		value.artist = reader.readFixedAutodectectString(30);
 		value.album = reader.readFixedAutodectectString(30);
@@ -68,16 +67,15 @@ export class ID3v1Reader {
 		}
 		if (data.length !== 128) {
 			// must be last in stream
-			reader.unshift(data.slice(1));
+			reader.unshift(data.subarray(1));
 			return await this.readReaderStream(reader);
 		}
 		const tag = this.readTag(data);
 		if (tag) {
 			return tag;
-		} else {
-			reader.unshift(data.slice(1));
-			return await this.readReaderStream(reader);
 		}
+		reader.unshift(data.subarray(1));
+		return await this.readReaderStream(reader);
 	}
 
 	async readStream(stream: Readable): Promise<IID3V1.Tag | undefined> {

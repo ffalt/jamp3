@@ -1,4 +1,4 @@
-import { IMP3 } from './mp3.types';
+import { IMP3 } from './mp3.types.js';
 
 // Joint extension - use [layerIdx][extensionIdx]
 export const mpeg_layer_joint_extension: Array<Array<IMP3.FrameHeaderJointExtension | undefined>> = [

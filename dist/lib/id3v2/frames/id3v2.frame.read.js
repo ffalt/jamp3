@@ -1,157 +1,103 @@
-"use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
+import * as zlib from 'node:zlib';
+import { promisify } from 'node:util';
+import { ITagID } from '../../common/types.js';
+import { BufferReader } from '../../common/buffer-reader.js';
+import { ID3v2_FRAME_HEADER_LENGTHS } from '../id3v2.header.consts.js';
+import { ID3v2Reader } from '../id3v2.reader.js';
+import { matchFrame } from './id3v2.frame.match.js';
+import { removeUnsync } from './id3v2.frame.unsync.js';
+const inflate = promisify(zlib.inflate);
+const gunzip = promisify(zlib.gunzip);
+async function decompressFrameData(data) {
+    try {
+        return await inflate(data);
     }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || (function () {
-    var ownKeys = function(o) {
-        ownKeys = Object.getOwnPropertyNames || function (o) {
-            var ar = [];
-            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
-            return ar;
-        };
-        return ownKeys(o);
-    };
-    return function (mod) {
-        if (mod && mod.__esModule) return mod;
-        var result = {};
-        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
-        __setModuleDefault(result, mod);
-        return result;
-    };
-})();
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.buildID3v2 = buildID3v2;
-exports.readSubFrames = readSubFrames;
-exports.readID3v2Frame = readID3v2Frame;
-const zlib = __importStar(require("node:zlib"));
-const types_1 = require("../../common/types");
-const buffer_reader_1 = require("../../common/buffer-reader");
-const id3v2_header_consts_1 = require("../id3v2.header.consts");
-const id3v2_reader_1 = require("../id3v2.reader");
-const id3v2_frame_match_1 = require("./id3v2.frame.match");
-const id3v2_frame_unsync_1 = require("./id3v2.frame.unsync");
-function processRawFrame(frame, head) {
-    return __awaiter(this, void 0, void 0, function* () {
-        if ((frame.formatFlags) && (frame.formatFlags.encrypted)) {
-            return Promise.reject(new Error('Frame Encryption currently not supported'));
-        }
-        if ((frame.formatFlags) && (frame.formatFlags.unsynchronised)) {
-            frame.data = (0, id3v2_frame_unsync_1.removeUnsync)(frame.data);
-        }
-        if ((frame.formatFlags) && (frame.formatFlags.compressed)) {
-            let data = frame.data;
-            if (frame.formatFlags.compressed) {
-                const sizebytes = id3v2_header_consts_1.ID3v2_FRAME_HEADER_LENGTHS.SIZE[head.ver];
-                data = data.subarray(sizebytes);
-            }
-            return new Promise((resolve, reject) => {
-                zlib.inflate(data, (err, result) => {
-                    if (!err && result) {
-                        frame.data = result;
-                        resolve();
-                    }
-                    zlib.gunzip(data, (err2, result2) => {
-                        if (!err2 && result2) {
-                            frame.data = result2;
-                            resolve();
-                        }
-                        reject('Decompressing frame failed');
-                    });
-                });
-            });
-        }
-        else if ((frame.formatFlags) && (frame.formatFlags.dataLengthIndicator)) {
-            frame.data = frame.data.subarray(4);
-        }
-    });
-}
-function buildID3v2(tag) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const frames = [];
-        for (const frame of tag.frames) {
-            const f = yield readID3v2Frame(frame, tag.head);
-            frames.push(f);
-        }
-        return {
-            id: tag.id,
-            start: tag.start,
-            end: tag.end,
-            head: tag.head,
-            frames: frames
-        };
-    });
-}
-function readSubFrames(bin, head) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const subtag = { id: types_1.ITagID.ID3v2, head, frames: [], start: 0, end: 0 };
-        const reader = new id3v2_reader_1.ID3v2Reader();
-        yield reader.readFrames(bin, subtag);
-        const t = yield buildID3v2(subtag);
-        return t.frames;
-    });
-}
-function readID3v2Frame(rawFrame, head) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const f = (0, id3v2_frame_match_1.matchFrame)(rawFrame.id);
-        let groupId;
-        if (rawFrame.formatFlags && rawFrame.formatFlags.grouping) {
-            groupId = rawFrame.data[0];
-            rawFrame.data = rawFrame.data.subarray(1);
-        }
-        const frame = {
-            id: rawFrame.id,
-            head: {
-                encoding: undefined,
-                statusFlags: rawFrame.statusFlags,
-                formatFlags: rawFrame.formatFlags,
-                size: rawFrame.size
-            },
-            value: {}
-        };
-        let result;
+    catch {
         try {
-            yield processRawFrame(rawFrame, head);
-            const reader = new buffer_reader_1.BufferReader(rawFrame.data);
-            result = yield f.impl.parse(reader, rawFrame, head);
-            if (frame.head) {
-                frame.head.encoding = result.encoding ? result.encoding.name : undefined;
-            }
-            frame.value = result.value || { bin: rawFrame.data };
-            if (result.subframes) {
-                frame.subframes = result.subframes;
-            }
+            return await gunzip(data);
         }
-        catch (error) {
-            frame.invalid = error.toString();
-            frame.value = { bin: rawFrame.data };
+        catch {
+            throw new Error('Decompressing frame failed');
         }
-        if (groupId) {
-            frame.groupId = groupId;
+    }
+}
+async function processRawFrame(frame, head) {
+    if ((frame.formatFlags) && (frame.formatFlags.encrypted)) {
+        return Promise.reject(new Error('Frame Encryption currently not supported'));
+    }
+    let data = frame.data;
+    if ((frame.formatFlags) && (frame.formatFlags.dataLengthIndicator)) {
+        data = data.subarray(4);
+    }
+    if ((frame.formatFlags) && (frame.formatFlags.unsynchronised)) {
+        data = removeUnsync(data);
+    }
+    if ((frame.formatFlags) && (frame.formatFlags.compressed)) {
+        if ((head.ver !== 4) || !frame.formatFlags.dataLengthIndicator) {
+            data = data.subarray(ID3v2_FRAME_HEADER_LENGTHS.SIZE[head.ver]);
         }
-        frame.title = f.title;
-        return frame;
-    });
+        data = await decompressFrameData(data);
+    }
+    frame.data = data;
+}
+export async function buildID3v2(tag) {
+    const frames = [];
+    for (const frame of tag.frames) {
+        const f = await readID3v2Frame(frame, tag.head);
+        frames.push(f);
+    }
+    return {
+        id: tag.id,
+        start: tag.start,
+        end: tag.end,
+        head: tag.head,
+        frames: frames
+    };
+}
+export async function readSubFrames(bin, head) {
+    const subtag = { id: ITagID.ID3v2, head, frames: [], start: 0, end: 0 };
+    const reader = new ID3v2Reader();
+    await reader.readFrames(bin, subtag);
+    const t = await buildID3v2(subtag);
+    return t.frames;
+}
+export async function readID3v2Frame(rawFrame, head) {
+    const f = matchFrame(rawFrame.id);
+    let groupId;
+    if (rawFrame.formatFlags && rawFrame.formatFlags.grouping) {
+        groupId = rawFrame.data[0];
+        rawFrame.data = rawFrame.data.subarray(1);
+    }
+    const frame = {
+        id: rawFrame.id,
+        head: {
+            encoding: undefined,
+            statusFlags: rawFrame.statusFlags,
+            formatFlags: rawFrame.formatFlags,
+            size: rawFrame.size
+        },
+        value: {}
+    };
+    try {
+        await processRawFrame(rawFrame, head);
+        const reader = new BufferReader(rawFrame.data);
+        const result = await f.impl.parse(reader, rawFrame, head);
+        if (frame.head) {
+            frame.head.encoding = result.encoding ? result.encoding.name : undefined;
+        }
+        frame.value = result.value || { bin: rawFrame.data };
+        if (result.subframes) {
+            frame.subframes = result.subframes;
+        }
+    }
+    catch (error) {
+        frame.invalid = error.toString();
+        frame.value = { bin: rawFrame.data };
+    }
+    if (groupId !== undefined) {
+        frame.groupId = groupId;
+    }
+    frame.title = f.title;
+    return frame;
 }
 //# sourceMappingURL=id3v2.frame.read.js.map

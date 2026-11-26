@@ -1,11 +1,11 @@
-import { IMP3 } from './mp3.types';
-import { ITagID } from '../common/types';
-import { filterBestMPEGChain } from './mp3.mpeg.chain';
-import { expandRawHeader, expandRawHeaderArray, rawHeaderOffSet } from './mp3.mpeg.frame';
-import { analyzeBitrateMode } from './mp3.bitrate';
-import { buildID3v2 } from '../id3v2/frames/id3v2.frame.read';
-import { IID3V1 } from '../id3v1/id3v1.types';
-import { IID3V2 } from '../id3v2/id3v2.types';
+import { IMP3 } from './mp3.types.js';
+import { ITagID } from '../common/types.js';
+import { filterBestMPEGChain } from './mp3.mpeg.chain.js';
+import { expandRawHeader, expandRawHeaderArray, rawHeaderOffSet } from './mp3.mpeg.frame.js';
+import { analyzeBitrateMode } from './mp3.bitrate.js';
+import { buildID3v2 } from '../id3v2/frames/id3v2.frame.read.js';
+import { IID3V1 } from '../id3v1/id3v1.types.js';
+import { IID3V2 } from '../id3v2/id3v2.types.js';
 
 function calculateDuration(frameCount: number, sampleCount: number, sampleRate: number): number {
 	if (frameCount > 0 && sampleCount > 0 && sampleRate > 0) {
@@ -41,7 +41,7 @@ function setResultEstimate(layout: IMP3.RawLayout, chain: Array<IMP3.FrameRawHea
 	let audioBytes = layout.size;
 	if (chain.length > 0) {
 		audioBytes -= rawHeaderOffSet(chain[0]);
-		if (layout.tags.some(t => t.id === ITagID.ID3v1)) {
+		if (layout.tags.some(t => t.id === ITagID.ID3v1 && t.end === layout.size && t.start < layout.size)) {
 			audioBytes -= 128;
 		}
 		mpeg.durationEstimate = (audioBytes * 8) / mpeg.bitRate;
@@ -55,7 +55,7 @@ function setResultCalculated(frameCount: number, audioBytes: number, duration: n
 	mpeg.durationEstimate = calculateDuration(mpeg.frameCount, mpeg.sampleCount, mpeg.sampleRate);
 }
 
-function setResultHeadFrame(headframe: IMP3.Frame, mpeg: IMP3.MPEG) {
+function setResultHeadFrame(headframe: IMP3.Frame, mpeg: IMP3.MPEG, isQuick?: boolean) {
 	if (headframe.xing) {
 		mpeg.audioBytesDeclared = headframe.xing.bytes || 0;
 		mpeg.frameCountDeclared = headframe.xing.frames || 0;
@@ -65,14 +65,27 @@ function setResultHeadFrame(headframe: IMP3.Frame, mpeg: IMP3.MPEG) {
 		mpeg.frameCountDeclared = headframe.vbri.frames;
 		mpeg.encoded = 'VBR';
 	}
-	mpeg.durationEstimate = calculateDuration(mpeg.frameCountDeclared, mpeg.sampleCount, mpeg.sampleRate);
+	if (!isQuick || (mpeg.frameCountDeclared > 0)) {
+		mpeg.durationEstimate = calculateDuration(mpeg.frameCountDeclared, mpeg.sampleCount, mpeg.sampleRate);
+	}
 }
 
 function defaultMPEGResult(): IMP3.MPEG {
 	return {
-		durationEstimate: 0, durationRead: 0, channels: 0, frameCount: 0, frameCountDeclared: 0, bitRate: 0,
-		sampleRate: 0, sampleCount: 0, audioBytes: 0, audioBytesDeclared: 0,
-		version: '', layer: '', encoded: '', mode: ''
+		durationEstimate: 0,
+		durationRead: 0,
+		channels: 0,
+		frameCount: 0,
+		frameCountDeclared: 0,
+		bitRate: 0,
+		sampleRate: 0,
+		sampleCount: 0,
+		audioBytes: 0,
+		audioBytesDeclared: 0,
+		version: '',
+		layer: '',
+		encoded: '',
+		mode: ''
 	};
 }
 
@@ -93,7 +106,7 @@ async function prepareResultMPEG(options: IMP3.ReadOptions, layout: IMP3.RawLayo
 	}
 	const headframe = frames.headers[0];
 	if (headframe) {
-		setResultHeadFrame(headframe, mpeg);
+		setResultHeadFrame(headframe, mpeg, options.mpegQuick);
 	}
 	return { mpeg, frames };
 }

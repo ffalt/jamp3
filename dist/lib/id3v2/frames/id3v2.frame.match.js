@@ -1,15 +1,9 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Matcher = void 0;
-exports.findId3v2FrameDef = findId3v2FrameDef;
-exports.matchFrame = matchFrame;
-exports.isValidFrameBinId = isValidFrameBinId;
-const id3v2_frame_defs_1 = require("./id3v2.frame.defs");
-const id3v2_frame_text_1 = require("./implementations/id3v2.frame.text");
-const id3v2_frame_ascii_1 = require("./implementations/id3v2.frame.ascii");
-const utils_1 = require("../../common/utils");
-const id3v2_frame_unknown_1 = require("./implementations/id3v2.frame.unknown");
-exports.Matcher = [
+import { FrameDefs } from './id3v2.frame.defs.js';
+import { FrameText } from './implementations/id3v2.frame.text.js';
+import { FrameAscii } from './implementations/id3v2.frame.ascii.js';
+import { validCharKeyCode } from '../../common/utils.js';
+import { FrameUnknown } from './implementations/id3v2.frame.unknown.js';
+export const Matcher = [
     {
         match: (id) => id[0] === 'T' && id !== 'TXX' && id !== 'TXXX',
         matchBin: (id) => {
@@ -18,17 +12,17 @@ exports.Matcher = [
             }
             let allX = true;
             for (let i = 1; i < id.length; i++) {
-                if (!(0, utils_1.validCharKeyCode)(id[i])) {
+                if (!validCharKeyCode(id[i])) {
                     return false;
                 }
-                allX = allX && (id[i] === 88);
+                allX && (allX = id[i] === 88);
             }
             return !allX;
         },
         value: {
             title: 'Unknown Text Field',
             versions: [3, 4],
-            impl: id3v2_frame_text_1.FrameText
+            impl: FrameText
         }
     },
     {
@@ -39,51 +33,51 @@ exports.Matcher = [
             }
             let allX = true;
             for (let i = 1; i < id.length; i++) {
-                if (!(0, utils_1.validCharKeyCode)(id[i])) {
+                if (!validCharKeyCode(id[i])) {
                     return false;
                 }
-                allX = allX && (id[i] === 88);
+                allX && (allX = id[i] === 88);
             }
             return !allX;
         },
         value: {
             title: 'Unknown URL Field',
             versions: [3, 4],
-            impl: id3v2_frame_ascii_1.FrameAscii
+            impl: FrameAscii
         }
     }
 ];
-function findId3v2FrameDef(id) {
-    const f = id3v2_frame_defs_1.FrameDefs[id];
+export function findId3v2FrameDef(id) {
+    const f = FrameDefs[id];
     if (f) {
         return f;
     }
-    for (const element of exports.Matcher) {
+    for (const element of Matcher) {
         if (element.match(id)) {
             return element.value;
         }
     }
     return null;
 }
-function matchFrame(id) {
-    return findId3v2FrameDef(id) || { title: 'Unknown Frame', impl: id3v2_frame_unknown_1.FrameUnknown, versions: [2, 3, 4] };
+export function matchFrame(id) {
+    return findId3v2FrameDef(id) || { title: 'Unknown Frame', impl: FrameUnknown, versions: [2, 3, 4] };
 }
 let tree;
 function fillTree() {
     tree = {};
-    for (const key of Object.keys(id3v2_frame_defs_1.FrameDefs)) {
+    for (const [key, frameDef] of Object.entries(FrameDefs)) {
         let node = tree;
         for (let i = 0; i < key.length - 1; i++) {
             const c = key.codePointAt(i);
             if (c !== undefined) {
-                node[c] = node[c] || {};
+                node[c] || (node[c] = {});
                 node = node[c];
             }
         }
         const last = key.codePointAt(key.length - 1);
         if (last !== undefined) {
-            node[last] = node[last] || {};
-            node[last].frameDef = id3v2_frame_defs_1.FrameDefs[key];
+            node[last] || (node[last] = {});
+            node[last].frameDef = frameDef;
         }
     }
 }
@@ -107,13 +101,13 @@ function findId3v2FrameDefBuffer(id) {
     if (node.frameDef) {
         return node.frameDef;
     }
-    for (const element of exports.Matcher) {
+    for (const element of Matcher) {
         if (element.matchBin(currentID)) {
             return element.value;
         }
     }
 }
-function isValidFrameBinId(id) {
+export function isValidFrameBinId(id) {
     return !!findId3v2FrameDefBuffer(id);
 }
 //# sourceMappingURL=id3v2.frame.match.js.map

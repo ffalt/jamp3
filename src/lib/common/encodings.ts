@@ -1,5 +1,5 @@
 import iconv from 'iconv-lite';
-import { BufferUtils } from './buffer';
+import { BufferUtils } from './buffer.js';
 
 export interface IEncoding {
 	name: string;
@@ -21,12 +21,14 @@ Encodings['iso-8859-1'] = {
 };
 Encodings['ascii'] = Encodings['iso-8859-1'];
 
+// marks frame content that is raw bytes rather than text; latin1 maps every byte to the code
+// point of the same value, so a string carries the bytes through unchanged in both directions
 Encodings['binary'] = {
 	name: 'binary',
 	byte: 0, // $00
 	terminator: BufferUtils.fromArray([0]),
-	encode: s => iconv.encode(s, 'hex'),
-	decode: buffer => iconv.decode(buffer, 'hex')
+	encode: s => Buffer.from(s, 'latin1'),
+	decode: buffer => buffer.toString('latin1')
 };
 
 Encodings['ucs2'] = {
@@ -83,9 +85,9 @@ Encodings['utf8'] = {
 	terminator: BufferUtils.fromArray([0]),
 	encode: s => iconv.encode(s, 'utf8'),
 	decode: buffer => {
-		if ((buffer[0] === 0xEF) && ((buffer[1] === 0xBB) || (buffer[1] === 0xBF))) {
-			return buffer.subarray(2).toString('utf8');
-		} // strip non-standard utf-8 bom
+		if ((buffer.length >= 3) && (buffer[0] === 0xEF) && (buffer[1] === 0xBB) && (buffer[2] === 0xBF)) {
+			return buffer.subarray(3).toString('utf8');
+		} // strip utf-8 bom
 		return buffer.toString('utf8');
 	}
 };

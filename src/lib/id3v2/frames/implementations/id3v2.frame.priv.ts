@@ -1,21 +1,21 @@
 import iconv from 'iconv-lite';
-import { IFrameImpl } from '../id3v2.frame';
-import { ascii } from '../../../common/encodings';
-import { IID3V2 } from '../../id3v2.types';
-import { PRIVGuidOwners, PRIVNumericOwners, PRIVWideStringOwners } from '../../id3v2.simplify.maps';
+import { IFrameImpl } from '../id3v2.frame.js';
+import { ascii } from '../../../common/encodings.js';
+import { IID3V2 } from '../../id3v2.types.js';
+import { PRIVGuidOwners, PRIVNumericOwners, PRIVWideStringOwners } from '../../id3v2.simplify.maps.js';
 
 type PrivValue = IID3V2.FrameValue.IdBin | IID3V2.FrameValue.IdNum | IID3V2.FrameValue.IdGuid | IID3V2.FrameValue.IdText;
 
 /**
- * Parse a 16-byte Windows GUID buffer (mixed-endian) into a GUID string.
- * Layout: Data1 (4 LE) | Data2 (2 LE) | Data3 (2 LE) | Data4 (8 BE)
- */
+Parse a 16-byte Windows GUID buffer (mixed-endian) into a GUID string.
+Layout: Data1 (4 LE) | Data2 (2 LE) | Data3 (2 LE) | Data4 (8 BE)
+*/
 export function bufToGuid(buf: Buffer): string {
 	const d1 = buf.readUInt32LE(0).toString(16).padStart(8, '0');
 	const d2 = buf.readUInt16LE(4).toString(16).padStart(4, '0');
 	const d3 = buf.readUInt16LE(6).toString(16).padStart(4, '0');
-	const d4a = buf.slice(8, 10).toString('hex');
-	const d4b = buf.slice(10, 16).toString('hex');
+	const d4a = buf.subarray(8, 10).toString('hex');
+	const d4b = buf.subarray(10, 16).toString('hex');
 	return `${d1}-${d2}-${d3}-${d4a}-${d4b}`.toUpperCase();
 }
 
@@ -32,16 +32,16 @@ export function guidToBuf(guid: string): Buffer {
 
 export const FramePriv: IFrameImpl = {
 	/**
-	 Owner identifier        <text string> $00
-	 The private data        <binary data>
+	Owner identifier        <text string> $00
+	The private data        <binary data>
 
-	 Known numeric (4-byte LE uint32) owners: AverageLevel, PeakValue
-	 Known GUID (16-byte mixed-endian) owners: WM/MediaClassPrimaryID,
-	   WM/MediaClassSecondaryID, WM/WMContentID, WM/WMCollectionID,
-	   WM/WMCollectionGroupID
-	 Known wide-string (UTF-16 LE, null-terminated) owners: WM/Provider,
-	   WM/UniqueFileIdentifier
-	 */
+	Known numeric (4-byte LE uint32) owners: AverageLevel, PeakValue
+	Known GUID (16-byte mixed-endian) owners: WM/MediaClassPrimaryID,
+	  WM/MediaClassSecondaryID, WM/WMContentID, WM/WMCollectionID,
+	  WM/WMCollectionGroupID
+	Known wide-string (UTF-16 LE, null-terminated) owners: WM/Provider,
+	  WM/UniqueFileIdentifier
+	*/
 	parse: async reader => {
 		const id = reader.readStringTerminated(ascii);
 		if (PRIVNumericOwners.has(id)) {
@@ -63,7 +63,7 @@ export const FramePriv: IFrameImpl = {
 			while (end >= 2 && buf[end - 2] === 0 && buf[end - 1] === 0) {
 				end -= 2;
 			}
-			const text = iconv.decode(buf.slice(0, end), 'ucs2');
+			const text = iconv.decode(buf.subarray(0, end), 'ucs2');
 			const value: IID3V2.FrameValue.IdText = { id, text };
 			return { value, encoding: ascii };
 		}

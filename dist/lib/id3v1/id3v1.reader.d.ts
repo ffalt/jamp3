@@ -1,6 +1,6 @@
 import { Readable } from 'node:stream';
-import { IID3V1 } from './id3v1.types';
-import { ReaderStream } from '../common/stream-reader';
+import { IID3V1 } from './id3v1.types.js';
+import { ReaderStream } from '../common/stream-reader.js';
 export declare const ID3v1_MARKER = "TAG";
 export declare class ID3v1Reader {
     readTag(data: Buffer): IID3V1.Tag | null;

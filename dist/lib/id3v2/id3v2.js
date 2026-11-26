@@ -1,155 +1,119 @@
-"use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.ID3v2 = void 0;
-const fs_extra_1 = __importDefault(require("fs-extra"));
-const id3v2_reader_1 = require("./id3v2.reader");
-const id3v2_writer_1 = require("./id3v2.writer");
-const utils_1 = require("../common/utils");
-const update_file_1 = require("../common/update-file");
-const types_1 = require("../common/types");
-const mp3_mpeg_frame_1 = require("../mp3/mp3.mpeg.frame");
-const id3v2_check_1 = require("./id3v2.check");
-const id3v2_simplify_1 = require("./id3v2.simplify");
-const stream_writer_file_1 = require("../common/stream-writer-file");
-const id3v2_frame_write_1 = require("./frames/id3v2.frame.write");
-const id3v2_frame_read_1 = require("./frames/id3v2.frame.read");
-class ID3v2 {
+import fse from 'fs-extra';
+import { ID3v2Reader } from './id3v2.reader.js';
+import { ID3v2Writer } from './id3v2.writer.js';
+import { fileRangeToBuffer } from '../common/utils.js';
+import { updateFile } from '../common/update-file.js';
+import { ITagID } from '../common/types.js';
+import { rawHeaderOffSet } from '../mp3/mp3.mpeg.frame.js';
+import { checkID3v2 } from './id3v2.check.js';
+import { simplifyTag } from './id3v2.simplify.js';
+import { FileWriterStream } from '../common/stream-writer-file.js';
+import { writeRawFrames } from './frames/id3v2.frame.write.js';
+import { buildID3v2 } from './frames/id3v2.frame.read.js';
+export class ID3v2 {
     static check(tag) {
-        return (0, id3v2_check_1.checkID3v2)(tag);
+        return checkID3v2(tag);
     }
     static simplify(tag, dropIDsList) {
-        return (0, id3v2_simplify_1.simplifyTag)(tag, dropIDsList);
+        return simplifyTag(tag, dropIDsList);
     }
-    read(filename) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const reader = new id3v2_reader_1.ID3v2Reader();
-            const tag = yield reader.read(filename);
-            if (tag) {
-                return (0, id3v2_frame_read_1.buildID3v2)(tag);
-            }
+    async read(filename) {
+        const reader = new ID3v2Reader();
+        const tag = await reader.read(filename);
+        if (tag) {
+            return buildID3v2(tag);
+        }
+    }
+    async readStream(stream) {
+        const reader = new ID3v2Reader();
+        const tag = await reader.readStream(stream);
+        if (tag) {
+            return buildID3v2(tag);
+        }
+    }
+    async readRaw(filename) {
+        const reader = new ID3v2Reader();
+        const tag = await reader.read(filename);
+        if (tag) {
+            return await fileRangeToBuffer(filename, tag.start, Math.max(tag.start, tag.end - 1));
+        }
+    }
+    async remove(filename, options) {
+        let removed = false;
+        await updateFile(filename, { id3v2: true, mpegQuick: true }, !!options.keepBackup, layout => layout.tags.some(t => t.id === ITagID.ID3v2 && t.end > 0), async (layout, fileWriter) => {
+            removed = await this.copyAudio(filename, layout, fileWriter);
         });
+        return removed;
     }
-    readStream(stream) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const reader = new id3v2_reader_1.ID3v2Reader();
-            const tag = yield reader.readStream(stream);
-            if (tag) {
-                return (0, id3v2_frame_read_1.buildID3v2)(tag);
+    async writeBuilder(filename, builder, options) {
+        await this.write(filename, { frames: builder.buildFrames() }, builder.version(), builder.rev(), options);
+    }
+    async write(filename, tag, version, rev, options) {
+        const opts = { keepBackup: false, paddingSize: 100, ...options };
+        const head = await this.buildHead(tag, version, rev);
+        const raw_frames = await writeRawFrames(tag.frames, head, options.defaultEncoding);
+        const exists = await fse.pathExists(filename);
+        await (exists ? this.replaceTag(filename, raw_frames, head, opts) : this.writeTag(filename, raw_frames, head, opts));
+    }
+    async buildHead(tag, version, rev) {
+        const head = { ver: version, rev: rev, size: 0, valid: true, flagBits: tag.head ? tag.head.flagBits : undefined };
+        if (tag.head) {
+            if (version === 4 && tag.head.v4) {
+                head.v4 = tag.head.v4;
             }
-        });
-    }
-    readRaw(filename) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const reader = new id3v2_reader_1.ID3v2Reader();
-            const tag = yield reader.read(filename);
-            if (tag) {
-                return yield (0, utils_1.fileRangeToBuffer)(filename, tag.start, tag.end);
+            if (version === 3 && tag.head.v3) {
+                head.v3 = tag.head.v3;
             }
-        });
-    }
-    remove(filename, options) {
-        return __awaiter(this, void 0, void 0, function* () {
-            let removed = false;
-            yield (0, update_file_1.updateFile)(filename, { id3v2: true, mpegQuick: true }, !!options.keepBackup, () => true, (layout, fileWriter) => __awaiter(this, void 0, void 0, function* () {
-                removed = yield this.copyAudio(filename, layout, fileWriter);
-            }));
-            return removed;
-        });
-    }
-    writeBuilder(filename, builder, options) {
-        return __awaiter(this, void 0, void 0, function* () {
-            yield this.write(filename, { frames: builder.buildFrames() }, builder.version(), builder.rev(), options);
-        });
-    }
-    write(filename, tag, version, rev, options) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const opts = Object.assign({ keepBackup: false, paddingSize: 100 }, options);
-            const head = yield this.buildHead(tag, version, rev);
-            const raw_frames = yield (0, id3v2_frame_write_1.writeRawFrames)(tag.frames, head, options.defaultEncoding);
-            const exists = yield fs_extra_1.default.pathExists(filename);
-            yield (exists ? this.replaceTag(filename, raw_frames, head, opts) : this.writeTag(filename, raw_frames, head, opts));
-        });
-    }
-    buildHead(tag, version, rev) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const head = { ver: version, rev: rev, size: 0, valid: true, flagBits: tag.head ? tag.head.flagBits : undefined };
-            if (tag.head) {
-                if (version === 4 && tag.head.v4) {
-                    head.v4 = tag.head.v4;
-                }
-                if (version === 3 && tag.head.v3) {
-                    head.v3 = tag.head.v3;
-                }
-                if (version <= 2 && tag.head.v2) {
-                    head.v2 = tag.head.v2;
-                }
+            if (version <= 2 && tag.head.v2) {
+                head.v2 = tag.head.v2;
             }
-            return head;
-        });
+        }
+        return head;
     }
-    writeTag(filename, frames, head, options) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const stream = new stream_writer_file_1.FileWriterStream();
-            yield stream.open(filename);
-            const writer = new id3v2_writer_1.ID3v2Writer();
-            try {
-                yield writer.write(stream, frames, head, options);
-            }
-            catch (error) {
-                yield stream.close();
-                return Promise.reject(error);
-            }
-            yield stream.close();
-        });
+    async writeTag(filename, frames, head, options) {
+        const stream = new FileWriterStream();
+        await stream.open(filename);
+        const writer = new ID3v2Writer();
+        try {
+            await writer.write(stream, frames, head, options);
+        }
+        catch (error) {
+            await stream.close();
+            return Promise.reject(error);
+        }
+        await stream.close();
     }
-    copyAudio(filename, layout, fileWriter) {
-        return __awaiter(this, void 0, void 0, function* () {
-            var _a;
-            let start = 0;
-            let specEnd = 0;
-            let skipped = false;
-            for (const tag of layout.tags) {
-                if ((tag.id === types_1.ITagID.ID3v2) && (start < tag.end)) {
-                    const rawTag = tag;
-                    const footerSize = ((_a = rawTag.head.v4) === null || _a === void 0 ? void 0 : _a.flags.footer) ? 10 : 0;
-                    specEnd = rawTag.head.size + tag.start + 10 + footerSize;
-                    start = tag.end;
-                    skipped = true;
-                }
+    async copyAudio(filename, layout, fileWriter) {
+        let start = 0;
+        let specEnd = 0;
+        let skipped = false;
+        for (const tag of layout.tags) {
+            if (!((tag.id === ITagID.ID3v2) && (start < tag.end))) {
+                continue;
             }
-            const tagAreaEnd = Math.max(start, specEnd);
-            if (layout.frameheaders.length > 0) {
-                const mediastart = (0, mp3_mpeg_frame_1.rawHeaderOffSet)(layout.frameheaders[0]);
-                start = Math.min(tagAreaEnd, mediastart);
-            }
-            else {
-                start = tagAreaEnd;
-            }
-            yield fileWriter.copyFrom(filename, start);
-            return skipped;
-        });
+            const rawTag = tag;
+            const footerSize = rawTag.head.v4?.flags.footer ? 10 : 0;
+            specEnd = rawTag.head.size + tag.start + 10 + footerSize;
+            start = tag.end;
+            skipped = true;
+        }
+        const tagAreaEnd = Math.max(start, specEnd);
+        if (layout.frameheaders.length > 0) {
+            const mediastart = rawHeaderOffSet(layout.frameheaders[0]);
+            start = Math.min(tagAreaEnd, mediastart);
+        }
+        else {
+            start = tagAreaEnd;
+        }
+        await fileWriter.copyFrom(filename, start);
+        return skipped;
     }
-    replaceTag(filename, frames, head, options) {
-        return __awaiter(this, void 0, void 0, function* () {
-            yield (0, update_file_1.updateFile)(filename, { id3v2: true, mpegQuick: true }, !!options.keepBackup, () => true, (layout, fileWriter) => __awaiter(this, void 0, void 0, function* () {
-                const writer = new id3v2_writer_1.ID3v2Writer();
-                yield writer.write(fileWriter, frames, head, options);
-                yield this.copyAudio(filename, layout, fileWriter);
-            }));
+    async replaceTag(filename, frames, head, options) {
+        await updateFile(filename, { id3v2: true, mpegQuick: true }, !!options.keepBackup, () => true, async (layout, fileWriter) => {
+            const writer = new ID3v2Writer();
+            await writer.write(fileWriter, frames, head, options);
+            await this.copyAudio(filename, layout, fileWriter);
         });
     }
 }
-exports.ID3v2 = ID3v2;
 //# sourceMappingURL=id3v2.js.map

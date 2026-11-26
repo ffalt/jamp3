@@ -1,15 +1,15 @@
 import * as zlib from 'node:zlib';
 
-import { IID3V2 } from '../id3v2.types';
-import { WriterStream } from '../../common/stream-writer';
-import { MemoryWriterStream } from '../../common/stream-writer-memory';
-import { matchFrame } from './id3v2.frame.match';
-import { ID3v2_FRAME_HEADER_LENGTHS } from '../id3v2.header.consts';
-import { BufferUtils } from '../../common/buffer';
-import { ascii, Encodings, IEncoding } from '../../common/encodings';
-import { ensureID3v2FrameVersionDef } from './id3v2.frame.version';
-import { Id3v2RawWriter } from '../id3v2.writer.raw';
-import { applyUnsync } from './id3v2.frame.unsync';
+import { IID3V2 } from '../id3v2.types.js';
+import { WriterStream } from '../../common/stream-writer.js';
+import { MemoryWriterStream } from '../../common/stream-writer-memory.js';
+import { matchFrame } from './id3v2.frame.match.js';
+import { ID3v2_FRAME_HEADER_LENGTHS } from '../id3v2.header.consts.js';
+import { BufferUtils } from '../../common/buffer.js';
+import { ascii, Encodings, IEncoding } from '../../common/encodings.js';
+import { ensureID3v2FrameVersionDef } from './id3v2.frame.version.js';
+import { Id3v2RawWriter } from '../id3v2.writer.raw.js';
+import { applyUnsync } from './id3v2.frame.unsync.js';
 
 export async function writeRawSubFrames(frames: Array<IID3V2.Frame>, stream: WriterStream, head: IID3V2.TagHeader, defaultEncoding?: string): Promise<void> {
 	const writer = new Id3v2RawWriter(stream, head, { paddingSize: 0 });
@@ -36,6 +36,7 @@ async function writeRawFrame(frame: IID3V2.Frame, head: IID3V2.TagHeader, defaul
 	};
 	let id = frame.id;
 	let data: Buffer;
+	let formatFlags = frameHead.formatFlags || {};
 	if (frame.invalid) {
 		const val = frame.value as IID3V2.FrameValue.Bin;
 		if (!val.bin) {
@@ -58,17 +59,27 @@ async function writeRawFrame(frame: IID3V2.Frame, head: IID3V2.TagHeader, defaul
 			}
 		}
 		data = stream.toBuffer();
-		if ((frameHead.formatFlags) && (frameHead.formatFlags.compressed)) {
-			const sizebytes = ID3v2_FRAME_HEADER_LENGTHS.SIZE[head.ver];
-			const uncompressedStream = new MemoryWriterStream();
-			await (sizebytes === 4 ? uncompressedStream.writeUInt4Byte(data.length) : uncompressedStream.writeUInt3Byte(data.length));
-			data = BufferUtils.concatBuffer(uncompressedStream.toBuffer(), zlib.deflateSync(data));
-		} else if ((frameHead.formatFlags) && (frameHead.formatFlags.dataLengthIndicator)) {
+		formatFlags = frameHead.formatFlags || {};
+		if (formatFlags.compressed) {
+			const deflated = zlib.deflateSync(data);
+			const prefixStream = new MemoryWriterStream();
+			if (head.ver === 4) {
+				// ID3v2.4: the data length indicator (a synchsafe integer) holds the decompressed size;
+				// compression requires the indicator per spec, so make sure the flag is set
+				formatFlags = { ...formatFlags, dataLengthIndicator: true };
+				await prefixStream.writeSyncSafeInt(data.length);
+			} else {
+				// ID3v2.2/2.3: a plain decompressed size precedes the compressed data
+				const sizebytes = ID3v2_FRAME_HEADER_LENGTHS.SIZE[head.ver];
+				await (sizebytes === 4 ? prefixStream.writeUInt4Byte(data.length) : prefixStream.writeUInt3Byte(data.length));
+			}
+			data = BufferUtils.concatBuffer(prefixStream.toBuffer(), deflated);
+		} else if (formatFlags.dataLengthIndicator) {
 			const dataLengthStream = new MemoryWriterStream();
 			await dataLengthStream.writeSyncSafeInt(data.length);
 			data = BufferUtils.concatBuffer(dataLengthStream.toBuffer(), data);
 		}
-		if ((frameHead.formatFlags) && (frameHead.formatFlags.unsynchronised)) {
+		if (formatFlags.unsynchronised) {
 			data = applyUnsync(data);
 		}
 	}
@@ -82,7 +93,7 @@ async function writeRawFrame(frame: IID3V2.Frame, head: IID3V2.TagHeader, defaul
 		data = BufferUtils.concatBuffer(buf, data);
 	}
 
-	return { id: id, start: 0, end: 0, size: data.length, data: data, statusFlags: frameHead.statusFlags || {}, formatFlags: frameHead.formatFlags || {} };
+	return { id: id, start: 0, end: 0, size: data.length, data: data, statusFlags: frameHead.statusFlags || {}, formatFlags };
 }
 
 export function getWriteTextEncoding(frame: IID3V2.Frame, head: IID3V2.TagHeader, defaultEncoding?: string): IEncoding {

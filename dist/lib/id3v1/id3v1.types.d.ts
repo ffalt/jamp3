@@ -1,4 +1,4 @@
-import { ITag } from '../common/types';
+import { ITag } from '../common/types.js';
 export declare namespace IID3V1 {
     interface RemoveOptions {
         keepBackup?: boolean;

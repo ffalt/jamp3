@@ -1,5 +1,5 @@
-import { IID3V1 } from './id3v1.types';
-import { WriterStream } from '../common/stream-writer';
+import { IID3V1 } from './id3v1.types.js';
+import { WriterStream } from '../common/stream-writer.js';
 
 class Id3v1RawWriter {
 	version: number;

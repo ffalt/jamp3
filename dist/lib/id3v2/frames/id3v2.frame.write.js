@@ -1,143 +1,99 @@
-"use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
+import * as zlib from 'node:zlib';
+import { MemoryWriterStream } from '../../common/stream-writer-memory.js';
+import { matchFrame } from './id3v2.frame.match.js';
+import { ID3v2_FRAME_HEADER_LENGTHS } from '../id3v2.header.consts.js';
+import { BufferUtils } from '../../common/buffer.js';
+import { ascii, Encodings } from '../../common/encodings.js';
+import { ensureID3v2FrameVersionDef } from './id3v2.frame.version.js';
+import { Id3v2RawWriter } from '../id3v2.writer.raw.js';
+import { applyUnsync } from './id3v2.frame.unsync.js';
+export async function writeRawSubFrames(frames, stream, head, defaultEncoding) {
+    const writer = new Id3v2RawWriter(stream, head, { paddingSize: 0 });
+    const rawframes = await writeRawFrames(frames, head, defaultEncoding);
+    for (const frame of rawframes) {
+        await writer.writeFrame(frame);
     }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || (function () {
-    var ownKeys = function(o) {
-        ownKeys = Object.getOwnPropertyNames || function (o) {
-            var ar = [];
-            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
-            return ar;
-        };
-        return ownKeys(o);
-    };
-    return function (mod) {
-        if (mod && mod.__esModule) return mod;
-        var result = {};
-        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
-        __setModuleDefault(result, mod);
-        return result;
-    };
-})();
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.writeRawSubFrames = writeRawSubFrames;
-exports.writeRawFrames = writeRawFrames;
-exports.getWriteTextEncoding = getWriteTextEncoding;
-const zlib = __importStar(require("node:zlib"));
-const stream_writer_memory_1 = require("../../common/stream-writer-memory");
-const id3v2_frame_match_1 = require("./id3v2.frame.match");
-const id3v2_header_consts_1 = require("../id3v2.header.consts");
-const buffer_1 = require("../../common/buffer");
-const encodings_1 = require("../../common/encodings");
-const id3v2_frame_version_1 = require("./id3v2.frame.version");
-const id3v2_writer_raw_1 = require("../id3v2.writer.raw");
-const id3v2_frame_unsync_1 = require("./id3v2.frame.unsync");
-function writeRawSubFrames(frames, stream, head, defaultEncoding) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const writer = new id3v2_writer_raw_1.Id3v2RawWriter(stream, head, { paddingSize: 0 });
-        const rawframes = yield writeRawFrames(frames, head, defaultEncoding);
-        for (const frame of rawframes) {
-            yield writer.writeFrame(frame);
-        }
-    });
 }
-function writeRawFrames(frames, head, defaultEncoding) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const result = [];
-        for (const frame of frames) {
-            const raw = yield writeRawFrame(frame, head, defaultEncoding);
-            result.push(raw);
-        }
-        return result;
-    });
+export async function writeRawFrames(frames, head, defaultEncoding) {
+    const result = [];
+    for (const frame of frames) {
+        const raw = await writeRawFrame(frame, head, defaultEncoding);
+        result.push(raw);
+    }
+    return result;
 }
-function writeRawFrame(frame, head, defaultEncoding) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const frameHead = frame.head || {
-            size: 0,
-            statusFlags: {},
-            formatFlags: {}
-        };
-        let id = frame.id;
-        let data;
-        if (frame.invalid) {
-            const val = frame.value;
-            if (!val.bin) {
-                return Promise.reject(new Error('Invalid frame definition (trying to write a frame with parser error)'));
-            }
-            data = val.bin;
+async function writeRawFrame(frame, head, defaultEncoding) {
+    const frameHead = frame.head || {
+        size: 0,
+        statusFlags: {},
+        formatFlags: {}
+    };
+    let id = frame.id;
+    let data;
+    let formatFlags = frameHead.formatFlags || {};
+    if (frame.invalid) {
+        const val = frame.value;
+        if (!val.bin) {
+            return Promise.reject(new Error('Invalid frame definition (trying to write a frame with parser error)'));
+        }
+        data = val.bin;
+    }
+    else {
+        const stream = new MemoryWriterStream();
+        const orgDef = matchFrame(frame.id);
+        if (orgDef.versions.includes(head.ver)) {
+            await orgDef.impl.write(frame, stream, head, defaultEncoding);
         }
         else {
-            const stream = new stream_writer_memory_1.MemoryWriterStream();
-            const orgDef = (0, id3v2_frame_match_1.matchFrame)(frame.id);
-            if (orgDef.versions.includes(head.ver)) {
-                yield orgDef.impl.write(frame, stream, head, defaultEncoding);
+            const toWriteFrameID = ensureID3v2FrameVersionDef(frame.id, head.ver);
+            if (toWriteFrameID) {
+                id = toWriteFrameID;
+                const toWriteFrameDef = matchFrame(toWriteFrameID);
+                await toWriteFrameDef.impl.write(frame, stream, head, defaultEncoding);
             }
             else {
-                const toWriteFrameID = (0, id3v2_frame_version_1.ensureID3v2FrameVersionDef)(frame.id, head.ver);
-                if (toWriteFrameID) {
-                    id = toWriteFrameID;
-                    const toWriteFrameDef = (0, id3v2_frame_match_1.matchFrame)(toWriteFrameID);
-                    yield toWriteFrameDef.impl.write(frame, stream, head, defaultEncoding);
-                }
-                else {
-                    yield orgDef.impl.write(frame, stream, head, defaultEncoding);
-                }
-            }
-            data = stream.toBuffer();
-            if ((frameHead.formatFlags) && (frameHead.formatFlags.compressed)) {
-                const sizebytes = id3v2_header_consts_1.ID3v2_FRAME_HEADER_LENGTHS.SIZE[head.ver];
-                const uncompressedStream = new stream_writer_memory_1.MemoryWriterStream();
-                yield (sizebytes === 4 ? uncompressedStream.writeUInt4Byte(data.length) : uncompressedStream.writeUInt3Byte(data.length));
-                data = buffer_1.BufferUtils.concatBuffer(uncompressedStream.toBuffer(), zlib.deflateSync(data));
-            }
-            else if ((frameHead.formatFlags) && (frameHead.formatFlags.dataLengthIndicator)) {
-                const dataLengthStream = new stream_writer_memory_1.MemoryWriterStream();
-                yield dataLengthStream.writeSyncSafeInt(data.length);
-                data = buffer_1.BufferUtils.concatBuffer(dataLengthStream.toBuffer(), data);
-            }
-            if ((frameHead.formatFlags) && (frameHead.formatFlags.unsynchronised)) {
-                data = (0, id3v2_frame_unsync_1.applyUnsync)(data);
+                await orgDef.impl.write(frame, stream, head, defaultEncoding);
             }
         }
-        if (frameHead.formatFlags && frameHead.formatFlags.grouping) {
-            if (frame.groupId === undefined) {
-                return Promise.reject(new Error('Missing frame groupId but flag is set'));
+        data = stream.toBuffer();
+        formatFlags = frameHead.formatFlags || {};
+        if (formatFlags.compressed) {
+            const deflated = zlib.deflateSync(data);
+            const prefixStream = new MemoryWriterStream();
+            if (head.ver === 4) {
+                formatFlags = { ...formatFlags, dataLengthIndicator: true };
+                await prefixStream.writeSyncSafeInt(data.length);
             }
-            const buf = buffer_1.BufferUtils.zeroBuffer(1);
-            buf[0] = frame.groupId;
-            data = buffer_1.BufferUtils.concatBuffer(buf, data);
+            else {
+                const sizebytes = ID3v2_FRAME_HEADER_LENGTHS.SIZE[head.ver];
+                await (sizebytes === 4 ? prefixStream.writeUInt4Byte(data.length) : prefixStream.writeUInt3Byte(data.length));
+            }
+            data = BufferUtils.concatBuffer(prefixStream.toBuffer(), deflated);
         }
-        return { id: id, start: 0, end: 0, size: data.length, data: data, statusFlags: frameHead.statusFlags || {}, formatFlags: frameHead.formatFlags || {} };
-    });
+        else if (formatFlags.dataLengthIndicator) {
+            const dataLengthStream = new MemoryWriterStream();
+            await dataLengthStream.writeSyncSafeInt(data.length);
+            data = BufferUtils.concatBuffer(dataLengthStream.toBuffer(), data);
+        }
+        if (formatFlags.unsynchronised) {
+            data = applyUnsync(data);
+        }
+    }
+    if (frameHead.formatFlags && frameHead.formatFlags.grouping) {
+        if (frame.groupId === undefined) {
+            return Promise.reject(new Error('Missing frame groupId but flag is set'));
+        }
+        const buf = BufferUtils.zeroBuffer(1);
+        buf[0] = frame.groupId;
+        data = BufferUtils.concatBuffer(buf, data);
+    }
+    return { id: id, start: 0, end: 0, size: data.length, data: data, statusFlags: frameHead.statusFlags || {}, formatFlags };
 }
-function getWriteTextEncoding(frame, head, defaultEncoding) {
+export function getWriteTextEncoding(frame, head, defaultEncoding) {
     let encoding = (frame.head ? frame.head.encoding : undefined) || defaultEncoding;
-    if (!encoding || !encodings_1.Encodings[encoding]) {
+    if (!encoding || !Encodings[encoding]) {
         encoding = (head.ver === 4) ? 'utf8' : 'ucs2';
     }
-    return encodings_1.Encodings[encoding] || encodings_1.ascii;
+    return Encodings[encoding] || ascii;
 }
 //# sourceMappingURL=id3v2.frame.write.js.map

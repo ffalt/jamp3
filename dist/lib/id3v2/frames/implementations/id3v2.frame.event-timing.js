@@ -1,17 +1,5 @@
-"use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.FrameETCO = void 0;
-exports.FrameETCO = {
-    parse: (reader) => __awaiter(void 0, void 0, void 0, function* () {
+export const FrameETCO = {
+    parse: async (reader) => {
         const format = reader.readBitsByte();
         const events = [];
         while (reader.unread() >= 5) {
@@ -21,15 +9,16 @@ exports.FrameETCO = {
         }
         const value = { format, events };
         return { value };
-    }),
-    write: (frame, stream) => __awaiter(void 0, void 0, void 0, function* () {
+    },
+    write: async (frame, stream) => {
         const value = frame.value;
-        yield stream.writeByte(value.format);
-        for (const event of (value.events || [])) {
-            yield stream.writeByte(event.type);
-            yield stream.writeUInt4Byte(event.timestamp);
+        await stream.writeByte(value.format);
+        const events = value.events || [];
+        for (const event of events) {
+            await stream.writeByte(event.type);
+            await stream.writeUInt4Byte(event.timestamp);
         }
-    }),
+    },
     simplify: (value) => {
         if (!value) {
             return null;

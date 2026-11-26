@@ -1,8 +1,10 @@
 import fs from 'node:fs';
-import { IEncoding } from './encodings';
+import { IEncoding } from './encodings.js';
 export declare class WriterStream {
     protected wstream: fs.WriteStream;
+    protected writeError: Error | undefined;
     constructor();
+    protected attachErrorHandler(): void;
     private _write;
     private _writeString;
     writeByte(byte: number): Promise<void>;
@@ -15,6 +17,7 @@ export declare class WriterStream {
     writeUInt3Byte(int: number): Promise<void>;
     writeUInt4Byte(int: number): Promise<void>;
     writeSInt(int: number, byteLength: number): Promise<void>;
+    writeBigUInt(int: number, byteLength: number): Promise<void>;
     writeSInt2Byte(int: number): Promise<void>;
     writeEncoding(enc: IEncoding): Promise<void>;
     writeString(val: string, enc: IEncoding): Promise<void>;

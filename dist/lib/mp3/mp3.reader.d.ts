@@ -1,5 +1,5 @@
 import { Readable } from 'node:stream';
-import { IMP3 } from './mp3.types';
+import { IMP3 } from './mp3.types.js';
 export interface MP3ReaderOptions extends IMP3.ReadOptions {
     streamSize?: number;
 }

@@ -1,18 +1,22 @@
-import { IFrameImpl } from '../id3v2.frame';
-import { IID3V2 } from '../../id3v2.types';
-import { getWriteTextEncoding } from '../id3v2.frame.write';
+import { IFrameImpl } from '../id3v2.frame.js';
+import { IID3V2 } from '../../id3v2.types.js';
+import { getWriteTextEncoding } from '../id3v2.frame.write.js';
+import { readMultiTextValues, writeMultiTextValues } from '../id3v2.frame.multitext.js';
 
 export const FrameIdText: IFrameImpl = {
 	/**
-	 Text encoding    $xx
-	 Description    <text string according to encoding> $00 (00)
-	 Value    <text string according to encoding>
-	 */
+	Text encoding    $xx
+	Description    <text string according to encoding> $00 (00)
+	Value    <text string according to encoding>
+	*/
 	parse: async reader => {
 		const enc = reader.readEncoding();
 		const id = reader.readStringTerminated(enc);
-		const text = reader.readStringTerminated(enc);
-		const value: IID3V2.FrameValue.IdText = { id, text };
+		const list = readMultiTextValues(reader, enc);
+		const value: IID3V2.FrameValue.IdText = { id, text: list.join('\n') };
+		if (list.length > 1) {
+			value.list = list;
+		}
 		return { value, encoding: enc };
 	},
 	write: async (frame, stream, head, defaultEncoding) => {
@@ -20,7 +24,7 @@ export const FrameIdText: IFrameImpl = {
 		const enc = getWriteTextEncoding(frame, head, defaultEncoding);
 		await stream.writeEncoding(enc);
 		await stream.writeStringTerminated(value.id, enc);
-		await stream.writeString(value.text, enc);
+		await writeMultiTextValues(stream, value.list && value.list.length > 0 ? value.list : [value.text], enc);
 	},
 	simplify: (value: IID3V2.FrameValue.IdText) => {
 		if (value && value.text && value.text.length > 0) {

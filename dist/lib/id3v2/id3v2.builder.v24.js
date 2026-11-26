@@ -1,8 +1,5 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.ID3V24TagBuilder = void 0;
-const id3v2_builder_v2_1 = require("./id3v2.builder.v2");
-class ID3V24TagBuilder extends id3v2_builder_v2_1.ID3V2TagBuilder {
+import { ID3V2TagBuilder } from './id3v2.builder.v2.js';
+export class ID3V24TagBuilder extends ID3V2TagBuilder {
     constructor(encoding) {
         super(encoding);
     }
@@ -29,7 +26,7 @@ class ID3V24TagBuilder extends id3v2_builder_v2_1.ID3V2TagBuilder {
         return this;
     }
     chapterTOC(value, id, ordered, topLevel, children) {
-        this.rawBuilder.chapterTOC('CTOC', id, ordered, topLevel, children);
+        this.rawBuilder.chapterTOC('CTOC', id, ordered, topLevel, children, value);
         return this;
     }
     composerSort(value) {
@@ -54,7 +51,7 @@ class ID3V24TagBuilder extends id3v2_builder_v2_1.ID3V2TagBuilder {
     }
     isPodcast(value) {
         if (value !== undefined) {
-            this.number('PCST', value === 1 || value === 'true' || value === true ? 1 : 0);
+            this.number('PCST', [1, 'true', true].includes(value) ? 1 : 0);
         }
         return this;
     }
@@ -139,7 +136,6 @@ class ID3V24TagBuilder extends id3v2_builder_v2_1.ID3V2TagBuilder {
         return this;
     }
 }
-exports.ID3V24TagBuilder = ID3V24TagBuilder;
 ID3V24TagBuilder.encodings = {
     iso88591: 'iso-8859-1',
     ucs2: 'ucs2',

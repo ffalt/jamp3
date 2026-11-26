@@ -1,33 +1,26 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.prettyJSONify = prettyJSONify;
-exports.toPrettyJsonWithBin = toPrettyJsonWithBin;
 function quoteJSONProperty(value) {
     const str = typeof value === 'string' ? value : value.toString();
     return /^".*"$/.test(str) ? str : `"${str.replaceAll('"', String.raw `\"`)}"`;
 }
 function objToString(obj, level, options) {
     const lines = [];
-    for (const prop of Object.keys(obj)) {
-        const val = obj[prop];
-        if (val !== undefined) {
-            const str = `${quoteJSONProperty(prop)}: ${prettyJSONify(val, level + 1, options.flatNodes.includes(prop), options)}`;
-            lines.push(options.space.repeat(level + 1) + str);
+    for (const [prop, val] of Object.entries(obj)) {
+        if (val === undefined) {
+            continue;
         }
+        const str = `${quoteJSONProperty(prop)}: ${prettyJSONify(val, level + 1, options.flatNodes.includes(prop), options)}`;
+        lines.push(options.space.repeat(level + 1) + str);
     }
     return (lines.length === 0) ? '{}' : `{\n${lines.join(',\n')}\n${options.space.repeat(level)}}`;
 }
 function arrayToString(obj, level, options) {
-    const lines = [];
-    for (const c of obj) {
-        lines.push(options.space.repeat(level + 1) + prettyJSONify(c, level + 1, false, options));
-    }
+    const lines = Array.from(obj, c => options.space.repeat(level + 1) + prettyJSONify(c, level + 1, false, options));
     if (lines.length === 0) {
         return '[]';
     }
     return `[\n${lines.join(',\n')}\n${options.space.repeat(level)}]`;
 }
-function prettyJSONify(obj, level, flat, options) {
+export function prettyJSONify(obj, level, flat, options) {
     if (flat || obj instanceof Buffer) {
         return JSON.stringify(obj);
     }
@@ -39,7 +32,7 @@ function prettyJSONify(obj, level, flat, options) {
     }
     return objToString(obj, level, options);
 }
-function toPrettyJsonWithBin(o) {
+export function toPrettyJsonWithBin(o) {
     return prettyJSONify(o, 0, false, { flatNodes: ['head'], space: ' ' });
 }
 //# sourceMappingURL=pretty-json.js.map

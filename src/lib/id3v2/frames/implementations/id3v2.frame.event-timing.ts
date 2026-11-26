@@ -1,5 +1,5 @@
-import { IFrameImpl } from '../id3v2.frame';
-import { IID3V2 } from '../../id3v2.types';
+import { IFrameImpl } from '../id3v2.frame.js';
+import { IID3V2 } from '../../id3v2.types.js';
 
 export const FrameETCO: IFrameImpl = {
 	/*
@@ -70,7 +70,8 @@ export const FrameETCO: IFrameImpl = {
 	write: async (frame, stream) => {
 		const value = frame.value as IID3V2.FrameValue.EventTimingCodes;
 		await stream.writeByte(value.format);
-		for (const event of (value.events || [])) {
+		const events = value.events || [];
+		for (const event of events) {
 			await stream.writeByte(event.type);
 			await stream.writeUInt4Byte(event.timestamp);
 		}

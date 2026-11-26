@@ -1,7 +1,4 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.ID3V2FramesCollect = void 0;
-class ID3V2FramesCollect {
+export class ID3V2FramesCollect {
     constructor(encoding) {
         this.encoding = encoding;
         this.frameValues = {};
@@ -44,5 +41,4 @@ class ID3V2FramesCollect {
         return this.frameValues;
     }
 }
-exports.ID3V2FramesCollect = ID3V2FramesCollect;
 //# sourceMappingURL=id3v2.builder.collect.js.map

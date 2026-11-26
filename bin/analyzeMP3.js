@@ -1,2 +1,2 @@
 #!/usr/bin/env node
-require("../dist/bin/analyzeMP3.js");
+import "../dist/bin/analyzeMP3.js";

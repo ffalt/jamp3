@@ -1,7 +1,4 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.DateUpgradeMap = exports.SplitFrameMap = exports.FramesMap = exports.TXXXMap = exports.UFIDMap = exports.COMMMap = exports.WMMediaClassPrimaryIDs = exports.PRIVWideStringOwners = exports.PRIVGuidOwners = exports.PRIVNumericOwners = exports.PRIVMap = void 0;
-exports.PRIVMap = {
+export const PRIVMap = {
     'AverageLevel': 'AVERAGELEVEL',
     'PeakValue': 'PEAKVALUE',
     'WM/MediaClassPrimaryID': 'WM_MEDIACLASSPRIMARYID',
@@ -13,29 +10,29 @@ exports.PRIVMap = {
     'WM/UniqueFileIdentifier': 'WM_UNIQUEFILEIDENTIFIER',
     'WM/Mood': 'WM_MOOD'
 };
-exports.PRIVNumericOwners = new Set(['AverageLevel', 'PeakValue']);
-exports.PRIVGuidOwners = new Set([
+export const PRIVNumericOwners = new Set(['AverageLevel', 'PeakValue']);
+export const PRIVGuidOwners = new Set([
     'WM/MediaClassPrimaryID',
     'WM/MediaClassSecondaryID',
     'WM/WMContentID',
     'WM/WMCollectionID',
     'WM/WMCollectionGroupID'
 ]);
-exports.PRIVWideStringOwners = new Set(['WM/Provider', 'WM/UniqueFileIdentifier', 'WM/Mood']);
-exports.WMMediaClassPrimaryIDs = {
+export const PRIVWideStringOwners = new Set(['WM/Provider', 'WM/UniqueFileIdentifier', 'WM/Mood']);
+export const WMMediaClassPrimaryIDs = {
     music: 'D1607DBC-E323-4BE2-86A1-48A42A28441E',
     video: 'DB9830BD-3AB3-4FAB-8A37-1A995F7FF74B',
     nonMusicAudio: '01CD0F29-DA4E-4157-897B-6275D50C4F11',
     other: 'FCF24A76-9A57-4036-990D-E35DD8B244E1'
 };
-exports.COMMMap = {
+export const COMMMap = {
     'description': 'COMMENT',
     'comment': 'COMMENT'
 };
-exports.UFIDMap = {
+export const UFIDMap = {
     'http://musicbrainz.org': 'MUSICBRAINZ_TRACKID'
 };
-exports.TXXXMap = {
+export const TXXXMap = {
     'ORIGINALYEAR': 'ORIGINALYEAR',
     'REPLAYGAIN_TRACK_GAIN': 'REPLAYGAIN_TRACK_GAIN',
     'REPLAYGAIN_ALBUM_GAIN': 'REPLAYGAIN_ALBUM_GAIN',
@@ -86,7 +83,7 @@ exports.TXXXMap = {
     'TOTALDISCS': 'TOTALDISCS',
     'PERFORMER': 'PERFORMER'
 };
-exports.FramesMap = {
+export const FramesMap = {
     'TALB': 'ALBUM',
     'TSOA': 'ALBUMSORT',
     'TIT2': 'TITLE',
@@ -108,6 +105,7 @@ exports.FramesMap = {
     'TPE4': 'REMIXER',
     'TPUB': 'LABEL',
     'MVNM': 'MOVEMENTNAME',
+    'MVCN': 'MOVEMENTTOTAL',
     'GRP1': 'WORK',
     'TIT3': 'SUBTITLE',
     'TSST': 'DISCSUBTITLE',
@@ -185,12 +183,12 @@ exports.FramesMap = {
     'MVIN': 'MOVEMENT',
     'TPOS': 'DISCNUMBER'
 };
-exports.SplitFrameMap = {
+export const SplitFrameMap = {
     'TRCK': ['TRACKNUMBER', 'TRACKTOTAL'],
     'MVIN': ['MOVEMENT', 'MOVEMENTTOTAL'],
     'TPOS': ['DISCNUMBER', 'DISCTOTAL']
 };
-exports.DateUpgradeMap = {
+export const DateUpgradeMap = {
     'TYER': 'Year',
     'TDAT': 'Date',
     'TIME': 'Time'

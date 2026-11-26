@@ -1,7 +1,7 @@
-import { IID3V2 } from './id3v2.types';
-import { COMMMap, DateUpgradeMap, FramesMap, PRIVMap, SplitFrameMap, TXXXMap, UFIDMap } from './id3v2.simplify.maps';
-import { ensureID3v2FrameVersionDef, upgrade23DateFramesTov24Date } from './frames/id3v2.frame.version';
-import { matchFrame } from './frames/id3v2.frame.match';
+import { IID3V2 } from './id3v2.types.js';
+import { COMMMap, DateUpgradeMap, FramesMap, PRIVMap, SplitFrameMap, TXXXMap, UFIDMap } from './id3v2.simplify.maps.js';
+import { ensureID3v2FrameVersionDef, upgrade23DateFramesTov24Date } from './frames/id3v2.frame.version.js';
+import { matchFrame } from './frames/id3v2.frame.match.js';
 
 function slugIDValue(id: string, value: { id: string }, mapping: Record<string, string>): string | undefined {
 	if (value && value.id) {
@@ -26,7 +26,7 @@ export function simplifyInvolvedPeopleList(id: string, frame: IID3V2.Frame): Arr
 	let i = 0;
 	while (i < value.list.length - 1) {
 		const slug = knownSections[value.list[i]];
-		const val = knownSections[value.list[i]];
+		const val = value.list[i + 1];
 		if (val) {
 			if (slug) {
 				list.push({ slug, text: val });
@@ -47,7 +47,7 @@ function simplifyValue(id: string, slug: string, frame: IID3V2.Frame): Array<{ s
 	}
 	if (SplitFrameMap[id]) {
 		const names = SplitFrameMap[id];
-		const split = text.split('/');
+		const split = text.split('\n', 1)[0].split('/');
 		const result = [];
 		if (split[0]) {
 			result.push({ slug: names[0], text: split[0] });

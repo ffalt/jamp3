@@ -1,11 +1,11 @@
-import { IFrameImpl } from '../id3v2.frame';
-import { ascii } from '../../../common/encodings';
-import { IID3V2 } from '../../id3v2.types';
+import { IFrameImpl } from '../id3v2.frame.js';
+import { ascii } from '../../../common/encodings.js';
+import { IID3V2 } from '../../id3v2.types.js';
 
 export const FrameAscii: IFrameImpl = {
 	/**
-	 Information    <text string>
-	 */
+	Information    <text string>
+	*/
 	parse: async reader => {
 		const text = reader.readStringTerminated(ascii);
 		const value: IID3V2.FrameValue.Ascii = { text };

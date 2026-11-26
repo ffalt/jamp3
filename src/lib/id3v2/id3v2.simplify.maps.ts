@@ -38,6 +38,7 @@ export const COMMMap: Record<string, string> = {
 };
 
 export const UFIDMap: Record<string, string> = {
+	// eslint-disable-next-line unicorn/prefer-https
 	'http://musicbrainz.org': 'MUSICBRAINZ_TRACKID'
 };
 
@@ -115,6 +116,7 @@ export const FramesMap: Record<string, string> = {
 	'TPE4': 'REMIXER',
 	'TPUB': 'LABEL',
 	'MVNM': 'MOVEMENTNAME',
+	'MVCN': 'MOVEMENTTOTAL',
 	'GRP1': 'WORK',
 	'TIT3': 'SUBTITLE',
 	'TSST': 'DISCSUBTITLE',

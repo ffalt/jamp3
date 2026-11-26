@@ -1,5 +1,5 @@
-import { WriterStream } from '../common/stream-writer';
-import { IID3V2 } from './id3v2.types';
+import { WriterStream } from '../common/stream-writer.js';
+import { IID3V2 } from './id3v2.types.js';
 export interface Id3v2RawWriterOptions {
     paddingSize?: number;
 }

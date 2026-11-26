@@ -1,5 +1,5 @@
 import { Readable } from 'node:stream';
-import { IID3V1 } from './id3v1.types';
+import { IID3V1 } from './id3v1.types.js';
 export declare class ID3v1 {
     read(filename: string): Promise<IID3V1.Tag | undefined>;
     readStream(stream: Readable): Promise<IID3V1.Tag | undefined>;

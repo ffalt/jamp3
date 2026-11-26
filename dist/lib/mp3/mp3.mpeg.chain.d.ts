@@ -1,4 +1,4 @@
-import { IMP3 } from './mp3.types';
+import { IMP3 } from './mp3.types.js';
 export interface IMPEGFrameChain {
     frame: Array<number>;
     pos: number;

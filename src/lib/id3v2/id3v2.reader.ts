@@ -1,14 +1,14 @@
-import { bitarray, flags, removeZeroString, unsynchsafe } from '../common/utils';
-
 import { Readable } from 'node:stream';
-import { BufferUtils } from '../common/buffer';
-import { ID3v2_FRAME_FLAGS1, ID3v2_FRAME_FLAGS2, ID3v2_FRAME_HEADER, ID3v2_FRAME_HEADER_LENGTHS, ID3v2_HEADER, ID3v2_MARKER } from './id3v2.header.consts';
-import { IID3V2 } from './id3v2.types';
-import { ITagID } from '../common/types';
-import { ReaderStream } from '../common/stream-reader';
-import { BufferReader } from '../common/buffer-reader';
-import { isValidFrameBinId } from './frames/id3v2.frame.match';
-import { ID3v2HeaderReader } from './id3v2.reader.header';
+import { bitarray, flags, removeZeroString, unsynchsafe } from '../common/utils.js';
+import { BufferUtils } from '../common/buffer.js';
+import { ID3v2_FRAME_FLAGS1, ID3v2_FRAME_FLAGS2, ID3v2_FRAME_HEADER, ID3v2_FRAME_HEADER_LENGTHS, ID3v2_HEADER, ID3v2_MARKER } from './id3v2.header.consts.js';
+import { IID3V2 } from './id3v2.types.js';
+import { ITagID } from '../common/types.js';
+import { ReaderStream } from '../common/stream-reader.js';
+import { BufferReader } from '../common/buffer-reader.js';
+import { isValidFrameBinId } from './frames/id3v2.frame.match.js';
+import { removeUnsync } from './frames/id3v2.frame.unsync.js';
+import { ID3v2HeaderReader } from './id3v2.reader.header.js';
 import RawFrame = IID3V2.RawFrame;
 
 const ID3v2_MARKER_BUFFER = BufferUtils.fromString(ID3v2_MARKER);
@@ -16,11 +16,12 @@ const ID3v2_MARKER_BUFFER = BufferUtils.fromString(ID3v2_MARKER);
 export class ID3v2Reader {
 	headerReader = new ID3v2HeaderReader();
 
-	private async readRawTag(head: IID3V2.TagHeader, reader: ReaderStream): Promise<{ rest?: Buffer; tag?: IID3V2.RawTag }> {
+	private async readRawTag(head: IID3V2.TagHeader, reader: ReaderStream, consumed = 0): Promise<{ rest?: Buffer; tag?: IID3V2.RawTag }> {
 		const tag: IID3V2.RawTag = { id: ITagID.ID3v2, frames: [], start: 0, end: 0, head: head || { ver: 0, rev: 0, size: 0, valid: false } };
 		let rest: Buffer | undefined;
-		if (tag.head.size > 0) {
-			const data = await reader.read(tag.head.size);
+		const framesSize = Math.max(0, tag.head.size - consumed);
+		if (framesSize > 0) {
+			const data = await reader.read(framesSize);
 			rest = await this.readFrames(data, tag);
 		}
 		if (head.v4?.flags.footer) {
@@ -59,7 +60,7 @@ export class ID3v2Reader {
 		if (!head.header) {
 			return { rest: head.rest };
 		}
-		return await this.readRawTag(head.header, reader);
+		return await this.readRawTag(head.header, reader, head.consumed);
 	}
 
 	public async readStream(stream: Readable): Promise<IID3V2.RawTag | undefined> {
@@ -102,7 +103,7 @@ export class ID3v2Reader {
 				idbin = reader.readBuffer(markerLength);
 			}
 			if (reader.hasData() && isValidFrameBinId(idbin)) {
-				if (reader.unread() < ID3v2_FRAME_HEADER_LENGTHS.SIZE[tag.head.ver]) {
+				if (reader.unread() < ID3v2_FRAME_HEADER_LENGTHS.SIZE[tag.head.ver] + ID3v2_FRAME_HEADER_LENGTHS.FLAGS[tag.head.ver]) {
 					return reader.rest();
 				}
 				skip = this.readFrame(reader, idbin, tag, skip);
@@ -119,9 +120,12 @@ export class ID3v2Reader {
 	private defaultRawFrame(idbin: Buffer, tag: IID3V2.RawTag): IID3V2.RawFrame {
 		return {
 			id: removeZeroString(idbin.toString('ascii').trim()),
-			size: 0, start: tag.start, end: tag.end,
+			size: 0,
+			start: tag.start,
+			end: tag.end,
 			data: BufferUtils.zeroBuffer(0),
-			statusFlags: {}, formatFlags: {}
+			statusFlags: {},
+			formatFlags: {}
 		};
 	}
 
@@ -145,14 +149,29 @@ export class ID3v2Reader {
 		if (valid) {
 			if (currentSkip > 0 && tag.frames.length > 0) {
 				const lastFrame = tag.frames.at(-1) as RawFrame;
-				lastFrame.data = BufferUtils.concatBuffer(lastFrame.data, reader.data.slice(pos - currentSkip - markerLength, pos - markerLength));
+				let skipped: Buffer = reader.data.subarray(pos - currentSkip - markerLength, pos - markerLength);
+				if (tag.head.v3 && tag.head.v3.flags.unsynchronisation) {
+					// the previous frame's data was already de-synchronised; de-stuff the skipped raw
+					// bytes before merging, otherwise re-writing the frame would double-stuff them
+					skipped = removeUnsync(skipped);
+				}
+				lastFrame.data = BufferUtils.concatBuffer(lastFrame.data, skipped);
 				lastFrame.size = lastFrame.data.length;
 			}
 			currentSkip = 0;
 			if (frame.size > 0) {
-				frame.data = (tag.head.v3 && tag.head.v3.flags.unsynchronisation) ?
-					reader.readUnsyncedBuffer(frame.size) :
-					reader.readBuffer(frame.size);
+				if (tag.head.v3 && tag.head.v3.flags.unsynchronisation) {
+					try {
+						frame.data = reader.readUnsyncedBuffer(frame.size);
+					} catch {
+						// truncated unsynchronised frame data: treat the frame as invalid and re-sync,
+						// instead of letting the cursor overshoot the end of the tag data
+						reader.position = pos - (markerLength - 1);
+						return currentSkip + 1;
+					}
+				} else {
+					frame.data = reader.readBuffer(frame.size);
+				}
 			}
 			tag.frames.push(frame);
 		} else {

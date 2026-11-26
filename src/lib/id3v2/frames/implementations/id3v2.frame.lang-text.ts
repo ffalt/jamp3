@@ -1,15 +1,15 @@
-import { IFrameImpl } from '../id3v2.frame';
-import { removeZeroString } from '../../../common/utils';
-import { ascii } from '../../../common/encodings';
-import { IID3V2 } from '../../id3v2.types';
-import { getWriteTextEncoding } from '../id3v2.frame.write';
+import { IFrameImpl } from '../id3v2.frame.js';
+import { removeZeroString } from '../../../common/utils.js';
+import { ascii } from '../../../common/encodings.js';
+import { IID3V2 } from '../../id3v2.types.js';
+import { getWriteTextEncoding } from '../id3v2.frame.write.js';
 
 export const FrameLangText: IFrameImpl = {
 	/**
-	 Text encoding          $xx
-	 Language               $xx xx xx
-	 The actual text        <full text string according to encoding>
-	 */
+	Text encoding          $xx
+	Language               $xx xx xx
+	The actual text        <full text string according to encoding>
+	*/
 	parse: async reader => {
 		const enc = reader.readEncoding();
 		const language = removeZeroString(reader.readString(3, ascii)).trim();

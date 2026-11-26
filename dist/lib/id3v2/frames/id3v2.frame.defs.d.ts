@@ -1,5 +1,5 @@
-import { IID3V2 } from '../id3v2.types';
-import { IFrameImpl } from './id3v2.frame';
+import { IID3V2 } from '../id3v2.types.js';
+import { IFrameImpl } from './id3v2.frame.js';
 export interface IFrameDef {
     title: string;
     impl: IFrameImpl;

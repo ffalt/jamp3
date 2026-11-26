@@ -1,25 +1,25 @@
-import { IID3V1 } from '../id3v1/id3v1.types';
-import { MP3 } from './mp3';
-import { IMP3 } from './mp3.types';
-import { rawHeaderOffSet, rawHeaderSize } from './mp3.mpeg.frame';
-import { ITagID } from '../common/types';
-import { checkID3v2 } from '../id3v2/id3v2.check';
-import { IMP3Analyzer } from './mp3.analyzer.types';
+import { IID3V1 } from '../id3v1/id3v1.types.js';
+import { MP3 } from './mp3.js';
+import { IMP3 } from './mp3.types.js';
+import { rawHeaderOffSet, rawHeaderSize } from './mp3.mpeg.frame.js';
+import { ITagID } from '../common/types.js';
+import { checkID3v2 } from '../id3v2/id3v2.check.js';
+import { IMP3Analyzer } from './mp3.analyzer.types.js';
 
 /**
- * Class for
- * - analyzing ID3v1/2 and MP3 information
- *
- * Basic usage example:
- *
- * {@includeCode ../../../examples/snippet_mp3-analyze.ts}
- * */
+Class for
+- analyzing ID3v1/2 and MP3 information
+
+Basic usage example:
+
+{@includeCode ../../../examples/snippet_mp3-analyze.ts}
+*/
 export class MP3Analyzer {
 	/**
-	 * Analyzes a IMP3.Result for ID3v2 errors
-	 * @param data the data to analyzes
-	 * @return a list returning warnings
-	 */
+	Analyzes a IMP3.Result for ID3v2 errors
+	@param data the data to analyzes
+	@return a list returning warnings
+	*/
 	private analyzeID3v2(data: IMP3.Result): Array<IMP3Analyzer.Warning> {
 		if (!data.id3v2) {
 			return [];
@@ -28,20 +28,20 @@ export class MP3Analyzer {
 	}
 
 	/**
-	 * Analyzes a IMP3.Result for ID3v1 errors
-	 * @param data the data to analyzes
-	 * @return a list returning warnings
-	 */
+	Analyzes a IMP3.Result for ID3v1 errors
+	@param data the data to analyzes
+	@return a list returning warnings
+	*/
 	private analyzeID3v1(data: IMP3.Result): Array<IMP3Analyzer.Warning> {
 		const result: Array<IMP3Analyzer.Warning> = [];
 		const lastFrame: IMP3.FrameRawHeaderArray | undefined = data.frames && data.frames.audio.length > 0 ? data.frames.audio.at(-1) : undefined;
-		if (data.raw && lastFrame) {
+		if (lastFrame && data.raw) {
 			const audioEnd = rawHeaderOffSet(lastFrame) + rawHeaderSize(lastFrame);
 			let id3v1s: Array<IID3V1.Tag> = data.raw.tags.filter(t => t.id === ITagID.ID3v1 && t.start >= audioEnd) as Array<IID3V1.Tag>;
 			if (id3v1s.length > 0) {
 				if (id3v1s.length > 1) {
 					// filter out not yet supported APETAGEX
-					id3v1s = id3v1s.filter(t => t.value && t.value.title && t.value.title[0] !== 'E' && t.value.title[1] !== 'X' && t.end !== data.size);
+					id3v1s = id3v1s.filter(t => t.value && t.value.title && (t.value.title[0] !== 'E' || t.value.title[1] !== 'X'));
 				}
 				if (id3v1s.length > 1) {
 					result.push({ msg: 'ID3v1: Multiple tags', expected: 1, actual: id3v1s.length });
@@ -58,10 +58,10 @@ export class MP3Analyzer {
 	}
 
 	/**
-	 * Analyzes a IMP3.Result for MPEG errors
-	 * @param data the data to analyzes
-	 * @return a list returning warnings
-	 */
+	Analyzes a IMP3.Result for MPEG errors
+	@param data the data to analyzes
+	@return a list returning warnings
+	*/
 	private analyzeMPEG(data: IMP3.Result): Array<IMP3Analyzer.Warning> {
 		const result: Array<IMP3Analyzer.Warning> = [];
 		if (!data.frames || data.frames.audio.length === 0) {
@@ -88,11 +88,11 @@ export class MP3Analyzer {
 	}
 
 	/**
-	 * Analyzes a IMP3.Result for XING errors
-	 * @param data the data to analyzes
-	 * @param ignoreXingOffOne ignore common xing "off by one" error
-	 * @return a list returning warnings
-	 */
+	Analyzes a IMP3.Result for XING errors
+	@param data the data to analyzes
+	@param ignoreXingOffOne ignore common xing "off by one" error
+	@return a list returning warnings
+	*/
 	private analyzeXING(data: IMP3.Result, ignoreXingOffOne: boolean): Array<IMP3Analyzer.Warning> {
 		if (!data.mpeg || !data.frames) {
 			return [];
@@ -126,7 +126,7 @@ export class MP3Analyzer {
 			}
 			if (
 				data.mpeg.audioBytes !== data.mpeg.audioBytesDeclared &&
-				(!ignoreXingOffOne || data.mpeg.audioBytes + head.header.size - data.mpeg.audioBytesDeclared === 0)
+				(!ignoreXingOffOne || data.mpeg.audioBytes + head.header.size === data.mpeg.audioBytesDeclared)
 			) {
 				result.push({ msg: `XING: Wrong number of data bytes declared in ${head.mode} Header`, expected: data.mpeg.audioBytes, actual: data.mpeg.audioBytesDeclared });
 			}
@@ -135,11 +135,11 @@ export class MP3Analyzer {
 	}
 
 	/**
-	 * Analyzes a file in given path with given options
-	 * @param filename the file to read
-	 * @param options define which information should be analyzed
-	 * @return a object returning analyzed information
-	 */
+	Analyzes a file in given path with given options
+	@param filename the file to read
+	@param options define which information should be analyzed
+	@return a object returning analyzed information
+	*/
 	async read(filename: string, options: IMP3Analyzer.Options): Promise<IMP3Analyzer.Report> {
 		const mp3 = new MP3();
 		const data = await mp3.read(filename, { id3v1: true, id3v2: true, mpeg: true, raw: true });

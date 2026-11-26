@@ -1,7 +1,7 @@
 import { Readable } from 'node:stream';
-import { IID3V2 } from './id3v2.types';
-import { ReaderStream } from '../common/stream-reader';
-import { ID3v2HeaderReader } from './id3v2.reader.header';
+import { IID3V2 } from './id3v2.types.js';
+import { ReaderStream } from '../common/stream-reader.js';
+import { ID3v2HeaderReader } from './id3v2.reader.header.js';
 export declare class ID3v2Reader {
     headerReader: ID3v2HeaderReader;
     private readRawTag;

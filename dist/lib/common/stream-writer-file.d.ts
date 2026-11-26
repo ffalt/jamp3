@@ -1,5 +1,6 @@
-import { WriterStream } from './stream-writer';
+import { WriterStream } from './stream-writer.js';
 export declare class FileWriterStream extends WriterStream {
+    private closePromise;
     open(filename: string): Promise<void>;
     close(): Promise<void>;
     private pipeStream;

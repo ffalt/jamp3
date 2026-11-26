@@ -1,34 +1,50 @@
 import fs from 'node:fs';
-import { BufferUtils } from './buffer';
-import { synchsafe, unbitarray } from './utils';
-import { ascii, IEncoding } from './encodings';
 import MemoryStream from 'memory-stream';
+import { BufferUtils } from './buffer.js';
+import { synchsafe, unbitarray } from './utils.js';
+import { ascii, IEncoding } from './encodings.js';
 
 export class WriterStream {
 	protected wstream: fs.WriteStream;
+	protected writeError: Error | undefined;
 
 	constructor() {
 		this.wstream = new MemoryStream();
+		this.attachErrorHandler();
+	}
+
+	protected attachErrorHandler(): void {
+		this.wstream.on('error', error => {
+			this.writeError = error;
+		});
 	}
 
 	private async _write(something: Buffer): Promise<void> {
+		if (this.writeError) {
+			return Promise.reject(this.writeError);
+		}
 		if (!this.wstream.write(something)) {
 			// handle backpressure
-			return new Promise<void>((resolve, _reject) => {
+			return new Promise<void>((resolve, reject) => {
 				this.wstream.once('drain', () => {
 					resolve();
 				});
+				this.wstream.once('error', reject);
 			});
 		}
 	}
 
 	private async _writeString(something: string, encoding: BufferEncoding): Promise<void> {
+		if (this.writeError) {
+			return Promise.reject(this.writeError);
+		}
 		if (!this.wstream.write(something, encoding)) {
 			// handle backpressure
-			return new Promise<void>((resolve, _reject) => {
+			return new Promise<void>((resolve, reject) => {
 				this.wstream.once('drain', () => {
 					resolve();
 				});
+				this.wstream.once('error', reject);
 			});
 		}
 	}
@@ -82,6 +98,19 @@ export class WriterStream {
 		return this._write(buf);
 	}
 
+	async writeBigUInt(int: number, byteLength: number): Promise<void> {
+		if ((byteLength <= 6) && (int <= Number.MAX_SAFE_INTEGER)) {
+			return this.writeUInt(int, byteLength);
+		}
+		const buf = BufferUtils.zeroBuffer(byteLength);
+		let current = Math.min(int, Number.MAX_SAFE_INTEGER);
+		for (let i = byteLength - 1; i >= 0; i--) {
+			buf[i] = current % 256;
+			current = Math.floor(current / 256);
+		}
+		return this._write(buf);
+	}
+
 	async writeSInt2Byte(int: number): Promise<void> {
 		return this.writeSInt(int, 2);
 	}
@@ -131,7 +160,7 @@ export class WriterStream {
 	}
 
 	async writeFixedAsciiString(val: string, size: number): Promise<void> {
-		const buf = ascii.encode(val.slice(0, size)).slice(0, size);
+		const buf = ascii.encode(val.slice(0, size)).subarray(0, size);
 		return this.writeFixedBuffer(buf, size);
 	}
 }

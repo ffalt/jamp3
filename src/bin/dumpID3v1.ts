@@ -1,10 +1,10 @@
 import { program } from 'commander';
 import fse from 'fs-extra';
 
-import { ID3v1 } from '../lib/id3v1/id3v1';
-import { runTool } from '../lib/common/tool';
+import { ID3v1 } from '../lib/id3v1/id3v1.js';
+import { runTool } from '../lib/common/tool.js';
 
-import pack from '../../package.json';
+import pack from '../../package.json' with { type: "json" };
 
 program
 	.version(pack.version, '-v, --version')

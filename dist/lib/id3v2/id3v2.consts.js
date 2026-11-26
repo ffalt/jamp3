@@ -1,6 +1,3 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.ID3V2ValueTypes = void 0;
 const ID3v2_ValuePicTypes = {
     '0': 'Other',
     '1': '32x32 pixels \'file icon\' (PNG only)',
@@ -35,7 +32,7 @@ const ID3v2_ValueRelativeVolumeAdjustment2ChannelTypes = {
     '7': 'Back centre',
     '8': 'Subwoofer'
 };
-exports.ID3V2ValueTypes = {
+export const ID3V2ValueTypes = {
     pictureType: ID3v2_ValuePicTypes,
     relativeVolumeAdjustment2ChannelTypes: ID3v2_ValueRelativeVolumeAdjustment2ChannelTypes
 };

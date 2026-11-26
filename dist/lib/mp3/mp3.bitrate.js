@@ -1,21 +1,18 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.analyzeBitrateMode = analyzeBitrateMode;
-const mp3_mpeg_frame_1 = require("./mp3.mpeg.frame");
-function analyzeBitrateMode(frames) {
+import { expandRawHeader, expandRawHeaderArray } from './mp3.mpeg.frame.js';
+export function analyzeBitrateMode(frames) {
     const bitRates = {};
     let duration = 0;
     let audioBytes = 0;
     let count = 0;
     for (const frame of frames) {
-        const header = (0, mp3_mpeg_frame_1.expandRawHeader)((0, mp3_mpeg_frame_1.expandRawHeaderArray)(frame));
+        const header = expandRawHeader(expandRawHeaderArray(frame));
         bitRates[header.bitRate] = (bitRates[header.bitRate] || 0) + 1;
         duration += header.time;
         audioBytes += header.size;
         count++;
     }
     let encoded = 'CBR';
-    const first = frames.length > 0 ? (0, mp3_mpeg_frame_1.expandRawHeader)((0, mp3_mpeg_frame_1.expandRawHeaderArray)(frames[0])) : undefined;
+    const first = frames.length > 0 ? expandRawHeader(expandRawHeaderArray(frames[0])) : undefined;
     let bitRate = first ? first.bitRate : 0;
     const rates = Object.keys(bitRates).map(s => Number.parseInt(s, 10));
     if (rates.length > 1) {

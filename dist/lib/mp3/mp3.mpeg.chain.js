@@ -1,15 +1,15 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.getBestMPEGChain = getBestMPEGChain;
-exports.filterBestMPEGChain = filterBestMPEGChain;
-const mp3_mpeg_frame_1 = require("./mp3.mpeg.frame");
-function followChain(frame, pos, frames) {
+import { rawHeaderLayerIdx, rawHeaderOffSet, rawHeaderSize, rawHeaderVersionIdx } from './mp3.mpeg.frame.js';
+function followChain(frame, frames) {
     const result = [];
     let useFrame = frame;
     result.push(useFrame);
-    const useFrames = frames.filter(f => (0, mp3_mpeg_frame_1.rawHeaderSize)(f) > 0);
-    for (let i = pos + 1; i < useFrames.length; i++) {
-        const nextpos = (0, mp3_mpeg_frame_1.rawHeaderOffSet)(useFrame) + (0, mp3_mpeg_frame_1.rawHeaderSize)(useFrame);
+    const useFrames = frames.filter(f => rawHeaderSize(f) > 0);
+    let i = useFrames.indexOf(frame);
+    if (i < 0) {
+        return result;
+    }
+    for (i += 1; i < useFrames.length; i++) {
+        const nextpos = rawHeaderOffSet(useFrame) + rawHeaderSize(useFrame);
         const direct = getNextMatch(nextpos, i - 1, useFrames);
         if (direct >= 0) {
             const nextframe = useFrames[direct];
@@ -19,16 +19,16 @@ function followChain(frame, pos, frames) {
         }
         else {
             const nextframe = useFrames[i];
-            const diff = (0, mp3_mpeg_frame_1.rawHeaderOffSet)(nextframe) - nextpos;
+            const diff = rawHeaderOffSet(nextframe) - nextpos;
             if (diff === 0) {
                 result.push(nextframe);
                 useFrame = nextframe;
             }
             else if (diff > 0) {
-                if ((0, mp3_mpeg_frame_1.rawHeaderVersionIdx)(nextframe) === (0, mp3_mpeg_frame_1.rawHeaderVersionIdx)(useFrame) && (0, mp3_mpeg_frame_1.rawHeaderLayerIdx)(nextframe) === (0, mp3_mpeg_frame_1.rawHeaderLayerIdx)(useFrame)) {
+                if (rawHeaderVersionIdx(nextframe) === rawHeaderVersionIdx(useFrame) && rawHeaderLayerIdx(nextframe) === rawHeaderLayerIdx(useFrame)) {
                     result.push(nextframe);
                     useFrame = nextframe;
-                    const resync = getNextMatch((0, mp3_mpeg_frame_1.rawHeaderOffSet)(nextframe) + (0, mp3_mpeg_frame_1.rawHeaderSize)(nextframe), i, useFrames);
+                    const resync = getNextMatch(rawHeaderOffSet(nextframe) + rawHeaderSize(nextframe), i, useFrames);
                     if (resync >= 0) {
                         i = resync - 1;
                     }
@@ -44,10 +44,10 @@ function followChain(frame, pos, frames) {
 }
 function getNextMatch(offset, pos, frames) {
     for (let j = pos + 1; j < frames.length; j++) {
-        if ((0, mp3_mpeg_frame_1.rawHeaderOffSet)(frames[j]) === offset) {
+        if (rawHeaderOffSet(frames[j]) === offset) {
             return j;
         }
-        else if ((0, mp3_mpeg_frame_1.rawHeaderOffSet)(frames[j]) > offset) {
+        if (rawHeaderOffSet(frames[j]) > offset) {
             return -1;
         }
     }
@@ -63,12 +63,12 @@ function buildMPEGChains(frames, maxCheckFrames, followMaxChain) {
             const chain = { frame, count: 0, pos: i };
             chains.push(chain);
             done.push(frame);
-            let next = getNextMatch((0, mp3_mpeg_frame_1.rawHeaderOffSet)(frame) + (0, mp3_mpeg_frame_1.rawHeaderSize)(frame), i, frames);
+            let next = getNextMatch(rawHeaderOffSet(frame) + rawHeaderSize(frame), i, frames);
             while (next >= 0 && chain.count < followMaxChain) {
                 chain.count++;
                 const nextframe = frames[next];
                 done.push(nextframe);
-                next = getNextMatch((0, mp3_mpeg_frame_1.rawHeaderOffSet)(nextframe) + (0, mp3_mpeg_frame_1.rawHeaderSize)(nextframe), next, frames);
+                next = getNextMatch(rawHeaderOffSet(nextframe) + rawHeaderSize(nextframe), next, frames);
             }
         }
     }
@@ -81,7 +81,7 @@ function findBestMPEGChain(frames, maxCheckFrames, followMaxChain) {
         .sort((a, b) => b.count - a.count);
     return bestChains[0];
 }
-function getBestMPEGChain(frames, followMaxChain) {
+export function getBestMPEGChain(frames, followMaxChain) {
     if (frames.length === 0) {
         return;
     }
@@ -96,11 +96,11 @@ function getBestMPEGChain(frames, followMaxChain) {
     }
     return select;
 }
-function filterBestMPEGChain(frames, followMaxChain) {
+export function filterBestMPEGChain(frames, followMaxChain) {
     const chain = getBestMPEGChain(frames, followMaxChain);
     if (!chain) {
         return frames;
     }
-    return followChain(chain.frame, chain.pos, frames);
+    return followChain(chain.frame, frames);
 }
 //# sourceMappingURL=mp3.mpeg.chain.js.map

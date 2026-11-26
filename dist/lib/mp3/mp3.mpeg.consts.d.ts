@@ -1,4 +1,4 @@
-import { IMP3 } from './mp3.types';
+import { IMP3 } from './mp3.types.js';
 export declare const mpeg_layer_joint_extension: Array<Array<IMP3.FrameHeaderJointExtension | undefined>>;
 export declare const mpeg_frame_samples: Array<Array<number>>;
 export declare const mpeg_slot_size: Array<number>;

@@ -1,35 +1,23 @@
-"use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.MP3Analyzer = void 0;
-const mp3_1 = require("./mp3");
-const mp3_mpeg_frame_1 = require("./mp3.mpeg.frame");
-const types_1 = require("../common/types");
-const id3v2_check_1 = require("../id3v2/id3v2.check");
-class MP3Analyzer {
+import { MP3 } from './mp3.js';
+import { rawHeaderOffSet, rawHeaderSize } from './mp3.mpeg.frame.js';
+import { ITagID } from '../common/types.js';
+import { checkID3v2 } from '../id3v2/id3v2.check.js';
+export class MP3Analyzer {
     analyzeID3v2(data) {
         if (!data.id3v2) {
             return [];
         }
-        return (0, id3v2_check_1.checkID3v2)(data.id3v2);
+        return checkID3v2(data.id3v2);
     }
     analyzeID3v1(data) {
         const result = [];
         const lastFrame = data.frames && data.frames.audio.length > 0 ? data.frames.audio.at(-1) : undefined;
-        if (data.raw && lastFrame) {
-            const audioEnd = (0, mp3_mpeg_frame_1.rawHeaderOffSet)(lastFrame) + (0, mp3_mpeg_frame_1.rawHeaderSize)(lastFrame);
-            let id3v1s = data.raw.tags.filter(t => t.id === types_1.ITagID.ID3v1 && t.start >= audioEnd);
+        if (lastFrame && data.raw) {
+            const audioEnd = rawHeaderOffSet(lastFrame) + rawHeaderSize(lastFrame);
+            let id3v1s = data.raw.tags.filter(t => t.id === ITagID.ID3v1 && t.start >= audioEnd);
             if (id3v1s.length > 0) {
                 if (id3v1s.length > 1) {
-                    id3v1s = id3v1s.filter(t => t.value && t.value.title && t.value.title[0] !== 'E' && t.value.title[1] !== 'X' && t.end !== data.size);
+                    id3v1s = id3v1s.filter(t => t.value && t.value.title && (t.value.title[0] !== 'E' || t.value.title[1] !== 'X'));
                 }
                 if (id3v1s.length > 1) {
                     result.push({ msg: 'ID3v1: Multiple tags', expected: 1, actual: id3v1s.length });
@@ -50,14 +38,14 @@ class MP3Analyzer {
             result.push({ msg: 'MPEG: No frames found', expected: '>0', actual: 0 });
             return result;
         }
-        let nextdata = (0, mp3_mpeg_frame_1.rawHeaderOffSet)(data.frames.audio[0]) + (0, mp3_mpeg_frame_1.rawHeaderSize)(data.frames.audio[0]);
+        let nextdata = rawHeaderOffSet(data.frames.audio[0]) + rawHeaderSize(data.frames.audio[0]);
         for (const [index, f] of data.frames.audio.slice(1).entries()) {
-            if (nextdata !== (0, mp3_mpeg_frame_1.rawHeaderOffSet)(f)) {
-                result.push({ msg: `MPEG: stream error at position ${nextdata}, gap after frame ${index + 1}`, expected: 0, actual: (0, mp3_mpeg_frame_1.rawHeaderOffSet)(f) - nextdata });
+            if (nextdata !== rawHeaderOffSet(f)) {
+                result.push({ msg: `MPEG: stream error at position ${nextdata}, gap after frame ${index + 1}`, expected: 0, actual: rawHeaderOffSet(f) - nextdata });
             }
-            nextdata = (0, mp3_mpeg_frame_1.rawHeaderOffSet)(f) + (0, mp3_mpeg_frame_1.rawHeaderSize)(f);
+            nextdata = rawHeaderOffSet(f) + rawHeaderSize(f);
         }
-        const audiostart = (0, mp3_mpeg_frame_1.rawHeaderOffSet)(data.frames.audio[0]);
+        const audiostart = rawHeaderOffSet(data.frames.audio[0]);
         if (data.id3v2 && data.id3v2.head) {
             const shouldaudiostart = data.id3v2.start + data.id3v2.head.size + 10;
             if (audiostart !== shouldaudiostart) {
@@ -98,50 +86,47 @@ class MP3Analyzer {
                 result.push({ msg: `XING: Wrong number of frames declared in ${head.mode} Header`, expected: data.mpeg.frameCount, actual: data.mpeg.frameCountDeclared });
             }
             if (data.mpeg.audioBytes !== data.mpeg.audioBytesDeclared &&
-                (!ignoreXingOffOne || data.mpeg.audioBytes + head.header.size - data.mpeg.audioBytesDeclared === 0)) {
+                (!ignoreXingOffOne || data.mpeg.audioBytes + head.header.size === data.mpeg.audioBytesDeclared)) {
                 result.push({ msg: `XING: Wrong number of data bytes declared in ${head.mode} Header`, expected: data.mpeg.audioBytes, actual: data.mpeg.audioBytesDeclared });
             }
         }
         return result;
     }
-    read(filename, options) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const mp3 = new mp3_1.MP3();
-            const data = yield mp3.read(filename, { id3v1: true, id3v2: true, mpeg: true, raw: true });
-            if (!data || !data.mpeg || !data.frames) {
-                return Promise.reject(new Error(`No mpeg data in file:${filename}`));
-            }
-            const head = data.frames.headers[0];
-            const info = {
-                filename,
-                mode: data.mpeg.encoded,
-                bitRate: data.mpeg.bitRate,
-                channelMode: data.mpeg.mode && data.mpeg.mode.length > 0 ? data.mpeg.mode : undefined,
-                channels: data.mpeg.channels,
-                durationMS: data.mpeg.durationRead * 1000,
-                format: data.mpeg.version && data.mpeg.version.length > 0 ? (`MPEG ${data.mpeg.version} ${data.mpeg.layer}`).trim() : 'unknown',
-                header: head ? head.mode : undefined,
-                frames: data.mpeg.frameCount,
-                id3v1: !!data.id3v1,
-                id3v2: !!data.id3v2,
-                warnings: [],
-                tags: { id3v1: data.id3v1, id3v2: data.id3v2 }
-            };
-            if (options.mpeg) {
-                info.warnings = [...info.warnings, ...this.analyzeMPEG(data)];
-            }
-            if (options.xing) {
-                info.warnings = [...info.warnings, ...this.analyzeXING(data, !!options.ignoreXingOffOne)];
-            }
-            if (options.id3v1) {
-                info.warnings = [...info.warnings, ...this.analyzeID3v1(data)];
-            }
-            if (options.id3v2 && data.id3v2) {
-                info.warnings = [...info.warnings, ...this.analyzeID3v2(data)];
-            }
-            return info;
-        });
+    async read(filename, options) {
+        const mp3 = new MP3();
+        const data = await mp3.read(filename, { id3v1: true, id3v2: true, mpeg: true, raw: true });
+        if (!data || !data.mpeg || !data.frames) {
+            return Promise.reject(new Error(`No mpeg data in file:${filename}`));
+        }
+        const head = data.frames.headers[0];
+        const info = {
+            filename,
+            mode: data.mpeg.encoded,
+            bitRate: data.mpeg.bitRate,
+            channelMode: data.mpeg.mode && data.mpeg.mode.length > 0 ? data.mpeg.mode : undefined,
+            channels: data.mpeg.channels,
+            durationMS: data.mpeg.durationRead * 1000,
+            format: data.mpeg.version && data.mpeg.version.length > 0 ? (`MPEG ${data.mpeg.version} ${data.mpeg.layer}`).trim() : 'unknown',
+            header: head ? head.mode : undefined,
+            frames: data.mpeg.frameCount,
+            id3v1: !!data.id3v1,
+            id3v2: !!data.id3v2,
+            warnings: [],
+            tags: { id3v1: data.id3v1, id3v2: data.id3v2 }
+        };
+        if (options.mpeg) {
+            info.warnings = [...info.warnings, ...this.analyzeMPEG(data)];
+        }
+        if (options.xing) {
+            info.warnings = [...info.warnings, ...this.analyzeXING(data, !!options.ignoreXingOffOne)];
+        }
+        if (options.id3v1) {
+            info.warnings = [...info.warnings, ...this.analyzeID3v1(data)];
+        }
+        if (options.id3v2 && data.id3v2) {
+            info.warnings = [...info.warnings, ...this.analyzeID3v2(data)];
+        }
+        return info;
     }
 }
-exports.MP3Analyzer = MP3Analyzer;
 //# sourceMappingURL=mp3.analyzer.js.map

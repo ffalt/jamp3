@@ -1,13 +1,11 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.ID3V23TagBuilder = void 0;
-const id3v2_builder_v2_1 = require("./id3v2.builder.v2");
-class ID3V23TagBuilder extends id3v2_builder_v2_1.ID3V2TagBuilder {
+import { ID3V2TagBuilder } from './id3v2.builder.v2.js';
+const NON_V23_ENCODINGS = new Set(['utf8', 'utf-8', 'utf16-be', 'utf16be', 'utf-8-bom']);
+export class ID3V23TagBuilder extends ID3V2TagBuilder {
     constructor(encoding) {
         let enc = encoding;
         if (enc) {
             const e = enc.toLowerCase();
-            if (e === 'utf8' || e === 'utf-8' || e === 'utf16-be' || e === 'utf16be' || e === 'utf-8-bom') {
+            if (NON_V23_ENCODINGS.has(e)) {
                 enc = 'ucs2';
             }
         }
@@ -52,7 +50,6 @@ class ID3V23TagBuilder extends id3v2_builder_v2_1.ID3V2TagBuilder {
         return this;
     }
 }
-exports.ID3V23TagBuilder = ID3V23TagBuilder;
 ID3V23TagBuilder.encodings = {
     iso88591: 'iso-8859-1',
     ucs2: 'ucs2'

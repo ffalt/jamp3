@@ -1,4 +1,4 @@
-import { ID3V2TagBuilder } from './id3v2.builder.v2';
+import { ID3V2TagBuilder } from './id3v2.builder.v2.js';
 export declare class ID3V23TagBuilder extends ID3V2TagBuilder {
     static encodings: {
         iso88591: string;

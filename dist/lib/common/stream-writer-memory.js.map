@@ -1,1 +1,1 @@
-{"version":3,"file":"stream-writer-memory.js","sourceRoot":"","sources":["../../../src/lib/common/stream-writer-memory.ts"],"names":[],"mappings":";;;AAAA,mDAA+C;AAG/C,MAAa,kBAAmB,SAAQ,4BAAY;IACnD,QAAQ;QACP,OAAQ,IAAI,CAAC,OAAwB,CAAC,QAAQ,EAAE,CAAC;IAClD,CAAC;CACD;AAJD,gDAIC"}
+{"version":3,"file":"stream-writer-memory.js","sourceRoot":"","sources":["../../../src/lib/common/stream-writer-memory.ts"],"names":[],"mappings":"AACA,OAAO,EAAE,YAAY,EAAE,MAAM,oBAAoB,CAAC;AAElD,MAAM,OAAO,kBAAmB,SAAQ,YAAY;IACnD,QAAQ;QACP,OAAQ,IAAI,CAAC,OAAwB,CAAC,QAAQ,EAAE,CAAC;IAClD,CAAC;CACD"}

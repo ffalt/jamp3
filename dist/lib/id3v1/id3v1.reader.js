@@ -1,28 +1,16 @@
-"use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.ID3v1Reader = exports.ID3v1_MARKER = void 0;
-const marker_1 = require("../common/marker");
-const buffer_1 = require("../common/buffer");
-const types_1 = require("../common/types");
-const stream_reader_1 = require("../common/stream-reader");
-const buffer_reader_1 = require("../common/buffer-reader");
-exports.ID3v1_MARKER = 'TAG';
-class ID3v1Reader {
+import { Markers } from '../common/marker.js';
+import { BufferUtils } from '../common/buffer.js';
+import { ITagID } from '../common/types.js';
+import { ReaderStream } from '../common/stream-reader.js';
+import { BufferReader } from '../common/buffer-reader.js';
+export const ID3v1_MARKER = 'TAG';
+export class ID3v1Reader {
     readTag(data) {
-        if (data.length < 128 || !marker_1.Markers.isMarker(data, 0, marker_1.Markers.MARKERS.tag)) {
+        if (data.length < 128 || !Markers.isMarker(data, 0, Markers.MARKERS.tag)) {
             return null;
         }
-        const tag = { id: types_1.ITagID.ID3v1, start: 0, end: 0, version: 0, value: {} };
-        const reader = new buffer_reader_1.BufferReader(data);
+        const tag = { id: ITagID.ID3v1, start: 0, end: 0, version: 0, value: {} };
+        const reader = new BufferReader(data);
         reader.position = 3;
         const value = {};
         value.title = reader.readFixedAutodectectString(30);
@@ -42,60 +30,51 @@ class ID3v1Reader {
         tag.value = value;
         return tag;
     }
-    readReaderStream(reader) {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (reader.end) {
-                return;
-            }
-            const index = yield reader.scan(buffer_1.BufferUtils.fromString(exports.ID3v1_MARKER));
-            if (index < 0) {
-                return;
-            }
-            const data = yield reader.read(400);
-            if (!data || (data.length < 128)) {
-                return;
-            }
-            if (data.length !== 128) {
-                reader.unshift(data.slice(1));
-                return yield this.readReaderStream(reader);
-            }
-            const tag = this.readTag(data);
-            if (tag) {
-                return tag;
-            }
-            else {
-                reader.unshift(data.slice(1));
-                return yield this.readReaderStream(reader);
-            }
-        });
+    async readReaderStream(reader) {
+        if (reader.end) {
+            return;
+        }
+        const index = await reader.scan(BufferUtils.fromString(ID3v1_MARKER));
+        if (index < 0) {
+            return;
+        }
+        const data = await reader.read(400);
+        if (!data || (data.length < 128)) {
+            return;
+        }
+        if (data.length !== 128) {
+            reader.unshift(data.subarray(1));
+            return await this.readReaderStream(reader);
+        }
+        const tag = this.readTag(data);
+        if (tag) {
+            return tag;
+        }
+        reader.unshift(data.subarray(1));
+        return await this.readReaderStream(reader);
     }
-    readStream(stream) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const reader = new stream_reader_1.ReaderStream();
-            try {
-                yield reader.openStream(stream);
-                return yield this.readReaderStream(reader);
-            }
-            catch (error) {
-                return Promise.reject(error);
-            }
-        });
+    async readStream(stream) {
+        const reader = new ReaderStream();
+        try {
+            await reader.openStream(stream);
+            return await this.readReaderStream(reader);
+        }
+        catch (error) {
+            return Promise.reject(error);
+        }
     }
-    read(filename) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const reader = new stream_reader_1.ReaderStream();
-            try {
-                yield reader.open(filename);
-                const tag = yield this.readReaderStream(reader);
-                reader.close();
-                return tag;
-            }
-            catch (error) {
-                reader.close();
-                return Promise.reject(error);
-            }
-        });
+    async read(filename) {
+        const reader = new ReaderStream();
+        try {
+            await reader.open(filename);
+            const tag = await this.readReaderStream(reader);
+            reader.close();
+            return tag;
+        }
+        catch (error) {
+            reader.close();
+            return Promise.reject(error);
+        }
     }
 }
-exports.ID3v1Reader = ID3v1Reader;
 //# sourceMappingURL=id3v1.reader.js.map

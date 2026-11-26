@@ -1,22 +1,10 @@
-"use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.FramePic = void 0;
-const encodings_1 = require("../../../common/encodings");
-const id3v2_consts_1 = require("../../id3v2.consts");
-const id3v2_frame_write_1 = require("../id3v2.frame.write");
-exports.FramePic = {
-    parse: (reader, frame, head) => __awaiter(void 0, void 0, void 0, function* () {
+import { ascii } from '../../../common/encodings.js';
+import { ID3V2ValueTypes } from '../../id3v2.consts.js';
+import { getWriteTextEncoding } from '../id3v2.frame.write.js';
+export const FramePic = {
+    parse: async (reader, frame, head) => {
         const enc = reader.readEncoding();
-        const mimeType = head.ver <= 2 ? reader.readString(3, encodings_1.ascii) : reader.readStringTerminated(encodings_1.ascii);
+        const mimeType = head.ver <= 2 ? reader.readString(3, ascii) : reader.readStringTerminated(ascii);
         const pictureType = reader.readByte();
         const description = reader.readStringTerminated(enc);
         const value = { mimeType, pictureType: pictureType, description };
@@ -27,30 +15,29 @@ exports.FramePic = {
             value.bin = reader.rest();
         }
         return { value, encoding: enc };
-    }),
-    write: (frame, stream, head, defaultEncoding) => __awaiter(void 0, void 0, void 0, function* () {
-        var _a;
+    },
+    write: async (frame, stream, head, defaultEncoding) => {
         const value = frame.value;
-        const enc = (0, id3v2_frame_write_1.getWriteTextEncoding)(frame, head, defaultEncoding);
-        yield stream.writeEncoding(enc);
+        const enc = getWriteTextEncoding(frame, head, defaultEncoding);
+        await stream.writeEncoding(enc);
         if (head.ver <= 2) {
-            yield (value.url ? stream.writeString('-->', encodings_1.ascii) : stream.writeAsciiString(value.mimeType || '', 3));
+            await (value.url ? stream.writeString('-->', ascii) : stream.writeAsciiString(value.mimeType || '', 3));
         }
         else {
-            yield stream.writeStringTerminated((_a = value.url) !== null && _a !== void 0 ? _a : (value.mimeType || ''), encodings_1.ascii);
+            await stream.writeStringTerminated(value.url ? '-->' : (value.mimeType || ''), ascii);
         }
-        yield stream.writeByte(value.pictureType);
-        yield stream.writeStringTerminated(value.description, enc);
+        await stream.writeByte(value.pictureType);
+        await stream.writeStringTerminated(value.description, enc);
         if (value.url) {
-            yield stream.writeString(value.url, enc);
+            await stream.writeString(value.url, enc);
         }
         else if (value.bin) {
-            yield stream.writeBuffer(value.bin);
+            await stream.writeBuffer(value.bin);
         }
-    }),
+    },
     simplify: (value) => {
         if (value) {
-            return `<pic ${id3v2_consts_1.ID3V2ValueTypes.pictureType[value.pictureType] || 'unknown'};${value.mimeType};${value.bin ? `${value.bin.length}bytes` : value.url}>`;
+            return `<pic ${ID3V2ValueTypes.pictureType[value.pictureType] || 'unknown'};${value.mimeType};${value.bin ? `${value.bin.length}bytes` : value.url}>`;
         }
         return null;
     }

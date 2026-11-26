@@ -1,4 +1,4 @@
-import { IEncoding } from './encodings';
+import { IEncoding } from './encodings.js';
 export declare class BufferReader {
     data: Buffer;
     position: number;
@@ -10,6 +10,7 @@ export declare class BufferReader {
     readBitsByte(): number;
     readUInt(byteLength: number): number;
     readSInt(byteLength: number): number;
+    readUIntDynamic(byteLength: number): number;
     readUInt2Byte(): number;
     readSInt2Byte(): number;
     readUInt4Byte(): number;

@@ -1,4 +1,4 @@
-import { BufferUtils } from '../../common/buffer';
+import { BufferUtils } from '../../common/buffer.js';
 
 export function removeUnsync(data: Buffer): Buffer {
 	const result = BufferUtils.zeroBuffer(data.length);
@@ -12,7 +12,26 @@ export function removeUnsync(data: Buffer): Buffer {
 			pos++;
 		}
 	}
-	return result.slice(0, pos);
+	return result.subarray(0, pos);
+}
+
+/**
+De-stuff at most `amount` logical bytes and report how many raw bytes they occupied,
+so a caller reading from a stream knows where the field really ended.
+*/
+export function removeUnsyncCounted(data: Buffer, amount: number): { data: Buffer; rawLength: number } {
+	const result = BufferUtils.zeroBuffer(Math.min(amount, data.length));
+	let pos = 0;
+	let i = 0;
+	while (i < data.length && pos < amount) {
+		result[pos] = data[i];
+		pos++;
+		i++;
+		if (data[i - 1] === 0xFF && data[i] === 0x00) {
+			i++;
+		}
+	}
+	return { data: result.subarray(0, pos), rawLength: i };
 }
 
 export function needsUnsync(data: Buffer): boolean {

@@ -1,55 +1,37 @@
-"use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const fs_extra_1 = __importDefault(require("fs-extra"));
-const commander_1 = require("commander");
-const tool_1 = require("../lib/common/tool");
-const id3v2_1 = require("../lib/id3v2/id3v2");
-const pretty_json_1 = require("../lib/common/pretty-json");
-const package_json_1 = __importDefault(require("../../package.json"));
-commander_1.program
-    .version(package_json_1.default.version, '-v, --version')
+import fse from 'fs-extra';
+import { program } from 'commander';
+import { runTool } from '../lib/common/tool.js';
+import { ID3v2 } from '../lib/id3v2/id3v2.js';
+import { toPrettyJsonWithBin } from '../lib/common/pretty-json.js';
+import pack from '../../package.json' with { type: "json" };
+program
+    .version(pack.version, '-v, --version')
     .usage('[options]')
     .option('-i, --input <fileOrDir>', 'mp3 file or folder')
     .option('-r, --recursive', 'dump the folder recursive')
     .option('-f, --full', 'full tag output (simple otherwise)')
     .option('-d, --dest <file>', 'destination analyze result file')
     .parse(process.argv);
-const id3v2 = new id3v2_1.ID3v2();
+const id3v2 = new ID3v2();
 const result = [];
-function onFile(filename) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const tag = yield id3v2.read(filename);
-        const dump = tag ? { filename, tag: commander_1.program.opts().full ? tag : id3v2_1.ID3v2.simplify(tag) } : { error: 'No tag found', filename };
-        if (commander_1.program.opts().dest) {
-            result.push(dump);
-        }
-        else if (commander_1.program.opts().full) {
-            console.log((0, pretty_json_1.toPrettyJsonWithBin)(dump));
-        }
-        else {
-            console.log(JSON.stringify(dump, null, '\t'));
-        }
-    });
+async function onFile(filename) {
+    const tag = await id3v2.read(filename);
+    const dump = tag ? { filename, tag: program.opts().full ? tag : ID3v2.simplify(tag) } : { error: 'No tag found', filename };
+    if (program.opts().dest) {
+        result.push(dump);
+    }
+    else if (program.opts().full) {
+        console.log(toPrettyJsonWithBin(dump));
+    }
+    else {
+        console.log(JSON.stringify(dump, null, '\t'));
+    }
 }
-function run() {
-    return __awaiter(this, void 0, void 0, function* () {
-        yield (0, tool_1.runTool)(commander_1.program, onFile);
-        if (commander_1.program.opts().dest) {
-            yield fs_extra_1.default.writeFile(commander_1.program.opts().dest, (0, pretty_json_1.toPrettyJsonWithBin)(result));
-        }
-    });
+async function run() {
+    await runTool(program, onFile);
+    if (program.opts().dest) {
+        await fse.writeFile(program.opts().dest, toPrettyJsonWithBin(result));
+    }
 }
 run().catch(error => {
     console.error(error);

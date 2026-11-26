@@ -1,43 +1,41 @@
-"use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.FrameLINK = void 0;
-const encodings_1 = require("../../../common/encodings");
-exports.FrameLINK = {
-    parse: (reader) => __awaiter(void 0, void 0, void 0, function* () {
-        const url = reader.readStringTerminated(encodings_1.ascii);
-        const id = reader.readStringTerminated(encodings_1.ascii);
+import { ascii } from '../../../common/encodings.js';
+import { validCharKeyCode } from '../../../common/utils.js';
+export const FrameLINK = {
+    parse: async (reader, frame, head) => {
+        const maxIdLength = head.ver <= 2 ? 3 : 4;
+        let idLength = 0;
+        while (idLength < maxIdLength &&
+            (reader.position + idLength) < reader.data.length &&
+            validCharKeyCode(reader.data[reader.position + idLength])) {
+            idLength++;
+        }
+        const id = reader.readFixedAsciiString(idLength);
+        const url = reader.readStringTerminated(ascii);
         const value = { url, id, additional: [] };
         while (reader.hasData()) {
-            const additional = reader.readStringTerminated(encodings_1.ascii);
+            const additional = reader.readStringTerminated(ascii);
             if (additional.length > 0) {
                 value.additional.push(additional);
             }
         }
-        return { value, encoding: encodings_1.ascii };
-    }),
-    write: (frame, stream) => __awaiter(void 0, void 0, void 0, function* () {
+        return { value, encoding: ascii };
+    },
+    write: async (frame, stream, head) => {
         const value = frame.value;
-        yield stream.writeStringTerminated(value.url, encodings_1.ascii);
-        yield stream.writeStringTerminated(value.id, encodings_1.ascii);
+        const maxIdLength = head.ver <= 2 ? 3 : 4;
+        await stream.writeAscii(value.id.slice(0, maxIdLength));
+        await stream.writeStringTerminated(value.url, ascii);
         for (const additional of value.additional) {
-            yield stream.writeStringTerminated(additional, encodings_1.ascii);
+            await stream.writeStringTerminated(additional, ascii);
         }
-    }),
+    },
     simplify: (value) => {
         if (!value || !value.url) {
             return null;
         }
-        const parts = [value.url, value.id];
-        for (const a of value.additional || []) {
+        const parts = [value.id, value.url];
+        const additional = value.additional || [];
+        for (const a of additional) {
             parts.push(a);
         }
         return parts.join(';');

@@ -1,13 +1,10 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.ID3v2_EXTHEADER = exports.ID3v2_FRAME_FLAGS1 = exports.ID3v2_FRAME_FLAGS2 = exports.ID3v2_FRAME_HEADER_LENGTHS = exports.ID3v2_FRAME_HEADER = exports.ID3v2_UnifiedENCODINGS = exports.ID3v2_ENCODINGS = exports.ID3v2_HEADER_FLAGS = exports.ID3v2_HEADER = exports.ID3v2_FOOTER_MARKER = exports.ID3v2_MARKER = void 0;
-exports.ID3v2_MARKER = 'ID3';
-exports.ID3v2_FOOTER_MARKER = '3DI';
-exports.ID3v2_HEADER = {
+export const ID3v2_MARKER = 'ID3';
+export const ID3v2_FOOTER_MARKER = '3DI';
+export const ID3v2_HEADER = {
     SYNCSAVEINT: [3, 4],
     SIZE: 10
 };
-exports.ID3v2_HEADER_FLAGS = {
+export const ID3v2_HEADER_FLAGS = {
     2: [
         'unsynchronisation',
         'compression'
@@ -24,7 +21,7 @@ exports.ID3v2_HEADER_FLAGS = {
         'footer'
     ]
 };
-exports.ID3v2_ENCODINGS = {
+export const ID3v2_ENCODINGS = {
     2: {
         '0': 'iso-8859-1',
         '1': 'ucs2'
@@ -41,17 +38,17 @@ exports.ID3v2_ENCODINGS = {
         '3': 'utf8'
     }
 };
-exports.ID3v2_UnifiedENCODINGS = {
+export const ID3v2_UnifiedENCODINGS = {
     '0': 'iso-8859-1',
     '1': 'ucs2',
     '2': 'utf16-be',
     '3': 'utf8',
     '254': 'ucs2'
 };
-exports.ID3v2_FRAME_HEADER = {
+export const ID3v2_FRAME_HEADER = {
     SYNCSAVEINT: [4]
 };
-exports.ID3v2_FRAME_HEADER_LENGTHS = {
+export const ID3v2_FRAME_HEADER_LENGTHS = {
     SIZE: {
         2: 3,
         3: 4,
@@ -68,7 +65,7 @@ exports.ID3v2_FRAME_HEADER_LENGTHS = {
         4: 2
     }
 };
-exports.ID3v2_FRAME_FLAGS2 = {
+export const ID3v2_FRAME_FLAGS2 = {
     3: [
         'compressed',
         'encrypted',
@@ -85,7 +82,7 @@ exports.ID3v2_FRAME_FLAGS2 = {
         'dataLengthIndicator'
     ]
 };
-exports.ID3v2_FRAME_FLAGS1 = {
+export const ID3v2_FRAME_FLAGS1 = {
     3: [
         'tagAlterPreservation',
         'fileAlterPreservation',
@@ -98,7 +95,7 @@ exports.ID3v2_FRAME_FLAGS1 = {
         'readOnly'
     ]
 };
-exports.ID3v2_EXTHEADER = {
+export const ID3v2_EXTHEADER = {
     3: {
         FLAGS1: ['crc'],
         FLAGS2: [],

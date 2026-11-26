@@ -1,30 +1,16 @@
-"use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const commander_1 = require("commander");
-const fs_extra_1 = __importDefault(require("fs-extra"));
-const mp3_analyzer_1 = require("../lib/mp3/mp3.analyzer");
-const tool_1 = require("../lib/common/tool");
-const package_json_1 = __importDefault(require("../../package.json"));
-commander_1.program
-    .version(package_json_1.default.version, '-v, --version')
+import { program, Option } from 'commander';
+import fse from 'fs-extra';
+import { MP3Analyzer } from '../lib/mp3/mp3.analyzer.js';
+import { runTool } from '../lib/common/tool.js';
+import pack from '../../package.json' with { type: "json" };
+program
+    .version(pack.version, '-v, --version')
     .usage('[options] <fileOrDir>')
     .option('-i, --input <fileOrDir>', 'mp3 file or folder')
     .option('-r, --recursive', 'scan the folder recursive')
     .option('-w, --warnings', 'show results only for files with warnings')
     .option('-x, --ignoreXingOffOne', 'ignore most common error in off-by-one XING header declaration')
-    .addOption(new commander_1.Option('-f, --format <format>', 'format of analyze result (plain|json)').choices(['plain', 'json']).default('plain'))
+    .addOption(new Option('-f, --format <format>', 'format of analyze result (plain|json)').choices(['plain', 'json']).default('plain'))
     .option('-d, --dest <file>', 'destination analyze result file')
     .parse(process.argv);
 const result = [];
@@ -65,35 +51,31 @@ function toPlain(report) {
     }
     return sl.join('\n');
 }
-function onFile(filename) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const probe = new mp3_analyzer_1.MP3Analyzer();
-        const info = yield probe.read(filename, options);
-        if (!commander_1.program.opts().warnings || info.warnings.length > 0) {
-            if (commander_1.program.opts().dest) {
-                result.push(info);
-            }
-            else if (commander_1.program.opts().format === 'plain') {
-                console.log(`${toPlain(info)}\n`);
-            }
-            else {
-                console.log(JSON.stringify(info, null, '\t'));
-            }
+async function onFile(filename) {
+    const probe = new MP3Analyzer();
+    const info = await probe.read(filename, options);
+    if (!program.opts().warnings || info.warnings.length > 0) {
+        if (program.opts().dest) {
+            result.push(info);
         }
-    });
+        else if (program.opts().format === 'plain') {
+            console.log(`${toPlain(info)}\n`);
+        }
+        else {
+            console.log(JSON.stringify(info, null, '\t'));
+        }
+    }
 }
-function run() {
-    return __awaiter(this, void 0, void 0, function* () {
-        if (commander_1.program.opts().ignoreXingOffOne) {
-            options.ignoreXingOffOne = commander_1.program.opts().ignoreXingOffOne;
-        }
-        yield (0, tool_1.runTool)(commander_1.program, onFile);
-        if (commander_1.program.opts().dest) {
-            yield fs_extra_1.default.writeFile(commander_1.program.opts().dest, commander_1.program.opts().format === 'plain' ?
-                result.map(r => toPlain(r)).join('\n') :
-                JSON.stringify(result, null, '\t'));
-        }
-    });
+async function run() {
+    if (program.opts().ignoreXingOffOne) {
+        options.ignoreXingOffOne = program.opts().ignoreXingOffOne;
+    }
+    await runTool(program, onFile);
+    if (program.opts().dest) {
+        await fse.writeFile(program.opts().dest, program.opts().format === 'plain' ?
+            result.map(r => toPlain(r)).join('\n') :
+            JSON.stringify(result, null, '\t'));
+    }
 }
 run().catch(error => {
     console.error(error);

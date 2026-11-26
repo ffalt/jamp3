@@ -1,65 +1,52 @@
-"use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.FileWriterStream = void 0;
-const stream_writer_1 = require("./stream-writer");
-const node_fs_1 = __importDefault(require("node:fs"));
-class FileWriterStream extends stream_writer_1.WriterStream {
-    open(filename) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                this.wstream = node_fs_1.default.createWriteStream(filename);
-            }
-            catch (error) {
-                return Promise.reject(error);
-            }
-            return new Promise((resolve, _reject) => {
-                this.wstream.once('open', () => {
-                    resolve();
-                });
+import fs from 'node:fs';
+import { WriterStream } from './stream-writer.js';
+export class FileWriterStream extends WriterStream {
+    async open(filename) {
+        try {
+            this.wstream = fs.createWriteStream(filename);
+        }
+        catch (error) {
+            return Promise.reject(error);
+        }
+        this.attachErrorHandler();
+        return new Promise((resolve, reject) => {
+            this.wstream.once('open', () => {
+                resolve();
             });
+            this.wstream.once('error', reject);
         });
     }
-    close() {
-        return __awaiter(this, void 0, void 0, function* () {
-            return new Promise((resolve, _reject) => {
-                this.wstream.on('close', () => {
+    async close() {
+        if (this.writeError) {
+            return Promise.reject(this.writeError);
+        }
+        if (!this.closePromise) {
+            this.closePromise = new Promise((resolve, reject) => {
+                this.wstream.once('close', () => {
                     resolve();
                 });
+                this.wstream.once('error', reject);
                 this.wstream.end();
             });
+        }
+        return this.closePromise;
+    }
+    async pipeStream(readstream) {
+        return new Promise((resolve, reject) => {
+            readstream.on('error', error => reject(error));
+            this.wstream.once('error', reject);
+            readstream.on('end', () => resolve());
+            readstream.pipe(this.wstream, { end: false });
         });
     }
-    pipeStream(readstream) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return new Promise((resolve, reject) => {
-                readstream.on('error', error => reject(error));
-                readstream.on('end', () => resolve());
-                readstream.pipe(this.wstream, { end: false });
-            });
-        });
+    async copyRange(filename, start, finish) {
+        if (finish <= start) {
+            return;
+        }
+        return this.pipeStream(fs.createReadStream(filename, { start, end: finish - 1 }));
     }
-    copyRange(filename, start, finish) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return this.pipeStream(node_fs_1.default.createReadStream(filename, { start, end: finish }));
-        });
-    }
-    copyFrom(filename, position) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return this.pipeStream(node_fs_1.default.createReadStream(filename, { start: position }));
-        });
+    async copyFrom(filename, position) {
+        return this.pipeStream(fs.createReadStream(filename, { start: position }));
     }
 }
-exports.FileWriterStream = FileWriterStream;
 //# sourceMappingURL=stream-writer-file.js.map

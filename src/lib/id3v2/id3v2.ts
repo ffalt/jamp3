@@ -1,55 +1,55 @@
 import fse from 'fs-extra';
 import { Readable } from 'node:stream';
 
-import { ID3v2Reader } from './id3v2.reader';
-import { ID3v2Writer } from './id3v2.writer';
-import { IID3V2 } from './id3v2.types';
-import { fileRangeToBuffer } from '../common/utils';
-import { updateFile } from '../common/update-file';
-import { ITagID } from '../common/types';
-import { rawHeaderOffSet } from '../mp3/mp3.mpeg.frame';
-import { checkID3v2 } from './id3v2.check';
-import { simplifyTag } from './id3v2.simplify';
-import { FileWriterStream } from '../common/stream-writer-file';
-import { writeRawFrames } from './frames/id3v2.frame.write';
-import { buildID3v2 } from './frames/id3v2.frame.read';
-import { IMP3 } from '../mp3/mp3.types';
+import { ID3v2Reader } from './id3v2.reader.js';
+import { ID3v2Writer } from './id3v2.writer.js';
+import { IID3V2 } from './id3v2.types.js';
+import { fileRangeToBuffer } from '../common/utils.js';
+import { updateFile } from '../common/update-file.js';
+import { ITagID } from '../common/types.js';
+import { rawHeaderOffSet } from '../mp3/mp3.mpeg.frame.js';
+import { checkID3v2 } from './id3v2.check.js';
+import { simplifyTag } from './id3v2.simplify.js';
+import { FileWriterStream } from '../common/stream-writer-file.js';
+import { writeRawFrames } from './frames/id3v2.frame.write.js';
+import { buildID3v2 } from './frames/id3v2.frame.read.js';
+import { IMP3 } from '../mp3/mp3.types.js';
 
 /**
- * Class for
- * - reading ID3v2
- * - writing ID3v2
- * - removing ID3v2
- *
- * Basic usage example:
- *
- * {@includeCode ../../../examples/snippet_id3v2-read.ts}
- */
+Class for
+- reading ID3v2
+- writing ID3v2
+- removing ID3v2
+
+Basic usage example:
+
+{@includeCode ../../../examples/snippet_id3v2-read.ts}
+*/
 export class ID3v2 {
 	/**
-	 * Checks an ID3v2 Tag for warnings
-	 * @param tag the ID3v2 object to check
-	 * @return a list returning warning messages
-	 */
+	Checks an ID3v2 Tag for warnings
+	@param tag the ID3v2 object to check
+	@return a list returning warning messages
+	*/
 	static check(tag: IID3V2.Tag): Array<IID3V2.Warning> {
 		return checkID3v2(tag);
 	}
 
 	/**
-	 * Checks an ID3v2 Tag for warnings
-	 * @param tag the ID3v2 object to simplify
-	 * @param dropIDsList a list of frame IDs to ignore, eg. 'APIC'
-	 * @return a simplified ID3v2 object
-	 */
+	Checks an ID3v2 Tag for warnings
+	@param tag the ID3v2 object to simplify
+	@param dropIDsList a list of frame IDs to ignore, eg. 'APIC'
+	@return a simplified ID3v2 object
+	*/
 	static simplify(tag: IID3V2.Tag, dropIDsList?: Array<string>): IID3V2.TagSimplified {
 		return simplifyTag(tag, dropIDsList);
 	}
 
 	/**
-	 * Reads a filename & returns ID3v2 tag as Object
-	 * @param filename the file to read
-	 * @return a object returning i3v2 tag if found
-	 */
+	Reads a filename & returns ID3v2 tag as Object
+	@param filename the file to read
+	@return a object returning i3v2 tag if found
+	*/
 	async read(filename: string): Promise<IID3V2.Tag | undefined> {
 		const reader = new ID3v2Reader();
 		const tag = await reader.read(filename);
@@ -59,10 +59,10 @@ export class ID3v2 {
 	}
 
 	/**
-	 * Reads a stream & returns ID3v2 tag as Object
-	 * @param stream the stream to read (NodeJS.stream.Readable)
-	 * @return a object returning i3v2 tag if found
-	 */
+	Reads a stream & returns ID3v2 tag as Object
+	@param stream the stream to read (NodeJS.stream.Readable)
+	@return a object returning i3v2 tag if found
+	*/
 	async readStream(stream: Readable): Promise<IID3V2.Tag | undefined> {
 		const reader = new ID3v2Reader();
 		const tag = await reader.readStream(stream);
@@ -72,50 +72,50 @@ export class ID3v2 {
 	}
 
 	/**
-	 * Reads a filename & returns ID3v2 tag as Buffer
-	 * @param filename the file to read
-	 * @return a object returning i3v2 tag if any found
-	 */
+	Reads a filename & returns ID3v2 tag as Buffer
+	@param filename the file to read
+	@return a object returning i3v2 tag if any found
+	*/
 	async readRaw(filename: string): Promise<Buffer | undefined> {
 		const reader = new ID3v2Reader();
 		const tag = await reader.read(filename);
 		if (tag) {
-			return await fileRangeToBuffer(filename, tag.start, tag.end);
+			return await fileRangeToBuffer(filename, tag.start, Math.max(tag.start, tag.end - 1));
 		}
 	}
 
 	/**
-	 * Removes ID3v2 Tag from a file with given options
-	 * @param filename the file to read
-	 * @param options remove options
-	 * @return true if tag has been found and removed
-	 */
+	Removes ID3v2 Tag from a file with given options
+	@param filename the file to read
+	@param options remove options
+	@return true if tag has been found and removed
+	*/
 	async remove(filename: string, options: IID3V2.RemoveOptions): Promise<boolean> {
 		let removed = false;
-		await updateFile(filename, { id3v2: true, mpegQuick: true }, !!options.keepBackup, () => true, async (layout, fileWriter): Promise<void> => {
+		await updateFile(filename, { id3v2: true, mpegQuick: true }, !!options.keepBackup, layout => layout.tags.some(t => t.id === ITagID.ID3v2 && t.end > 0), async (layout, fileWriter): Promise<void> => {
 			removed = await this.copyAudio(filename, layout, fileWriter);
 		});
 		return removed;
 	}
 
 	/**
-	 * Writes ID3v2 Tag from a Builder object with given options
-	 * @param filename the file to write
-	 * @param builder the builder to write
-	 * @param options write options
-	 */
+	Writes ID3v2 Tag from a Builder object with given options
+	@param filename the file to write
+	@param builder the builder to write
+	@param options write options
+	*/
 	async writeBuilder(filename: string, builder: IID3V2.Builder, options: IID3V2.WriteOptions): Promise<void> {
 		await this.write(filename, { frames: builder.buildFrames() }, builder.version(), builder.rev(), options);
 	}
 
 	/**
-	 * Writes ID3v2 Tag from an ID3v2 object with given options
-	 * @param filename the file to write
-	 * @param tag the ID3v2 object to write
-	 * @param version the ID3v2.v version to write
-	 * @param rev the ID3v2.v.r rev version to write
-	 * @param options write options
-	 */
+	Writes ID3v2 Tag from an ID3v2 object with given options
+	@param filename the file to write
+	@param tag the ID3v2 object to write
+	@param version the ID3v2.v version to write
+	@param rev the ID3v2.v.r rev version to write
+	@param options write options
+	*/
 	async write(filename: string, tag: IID3V2.ID3v2Tag, version: number, rev: number, options: IID3V2.WriteOptions): Promise<void> {
 		const opts = { keepBackup: false, paddingSize: 100, ...options };
 		const head = await this.buildHead(tag, version, rev);
@@ -158,13 +158,15 @@ export class ID3v2 {
 		let specEnd = 0;
 		let skipped = false;
 		for (const tag of layout.tags) {
-			if ((tag.id === ITagID.ID3v2) && (start < tag.end)) {
-				const rawTag = tag as IID3V2.RawTag;
-				const footerSize = rawTag.head.v4?.flags.footer ? 10 : 0;
-				specEnd = rawTag.head.size + tag.start + 10 + footerSize; // 10: header itself, optional 10: footer
-				start = tag.end;
-				skipped = true;
+			if (!((tag.id === ITagID.ID3v2) && (start < tag.end))) {
+				continue;
 			}
+
+			const rawTag = tag as IID3V2.RawTag;
+			const footerSize = rawTag.head.v4?.flags.footer ? 10 : 0;
+			specEnd = rawTag.head.size + tag.start + 10 + footerSize; // 10: header itself, optional 10: footer
+			start = tag.end;
+			skipped = true;
 		}
 		const tagAreaEnd = Math.max(start, specEnd);
 		if (layout.frameheaders.length > 0) {
