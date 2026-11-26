@@ -22,6 +22,10 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
+      - name: Patch typedoc
+        run: |
+          node .github/scripts/patch-typedoc.mjs
+
       - name: Generate Docs
         run: |
           npm run build:docs
