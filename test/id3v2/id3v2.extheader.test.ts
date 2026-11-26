@@ -130,6 +130,21 @@ describe('ID3v2.3 extended header', () => {
 		expect(tag).toBeDefined();
 		expect(tag?.frames.length).toBe(0);
 	});
+
+	it('does not reject when the stream ends inside the extended header size field', async () => {
+		for (const trailing of [0, 1, 2, 3]) {
+			const head = Buffer.concat([
+				Buffer.from('ID3', 'ascii'),
+				Buffer.from([3, 0, 0x40]),
+				synchsafe(14)
+			]);
+			const buffer = Buffer.concat([head, Buffer.alloc(trailing)]);
+			const tag = await new ID3v2().readStream(streamOf(buffer));
+			expect(tag).toBeDefined();
+			expect(tag?.frames.length).toBe(0);
+			expect(tag?.head?.v3?.extended?.size).toBe(0);
+		}
+	});
 });
 
 describe('ID3v2.4 extended header', () => {
@@ -192,6 +207,21 @@ describe('ID3v2.4 extended header', () => {
 		const tag = await id3.readStream(streamOf(buffer));
 		expect(tag).toBeDefined();
 		expect(tag?.frames.length).toBe(0);
+	});
+
+	it('does not reject when the stream ends inside the extended header size field', async () => {
+		for (const trailing of [0, 1, 2, 3]) {
+			const head = Buffer.concat([
+				Buffer.from('ID3', 'ascii'),
+				Buffer.from([4, 0, 0x40]),
+				synchsafe(14)
+			]);
+			const buffer = Buffer.concat([head, Buffer.alloc(trailing)]);
+			const tag = await new ID3v2().readStream(streamOf(buffer));
+			expect(tag).toBeDefined();
+			expect(tag?.frames.length).toBe(0);
+			expect(tag?.head?.v4?.extended?.size).toBe(0);
+		}
 	});
 });
 
@@ -261,6 +291,15 @@ describe('ID3v2.3 extended header with tag-level unsynchronisation', () => {
 		const tag = await new ID3v2().read(file);
 		expect(tag?.head?.v3?.extended?.crcData).toBe(0xFF_00_FF_E0);
 		expect((tag?.frames.find(f => f.id === 'TIT2')?.value as any).text).toBe('hello');
+	});
+
+	it('does not reject when an unsynchronised stream ends inside the extended header size field', async () => {
+		for (const trailing of [0, 1, 2, 3]) {
+			const buffer = buildUnsyncedV23Tag(Buffer.alloc(trailing), Buffer.alloc(0), 0);
+			const tag = await new ID3v2().readStream(streamOf(buffer));
+			expect(tag).toBeDefined();
+			expect(tag?.frames.length).toBe(0);
+		}
 	});
 
 	it('writes a size field matching the crc payload even when the parsed size said 6', async () => {

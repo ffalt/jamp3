@@ -5,6 +5,8 @@ import { IID3V2 } from './id3v2.types.js';
 import { ReaderStream } from '../common/stream-reader.js';
 import { removeUnsyncCounted } from './frames/id3v2.frame.unsync.js';
 
+const ID3v2_EXTHEADER_SIZE_LENGTH = 4;
+
 export class ID3v2HeaderReader {
 	/**
 	ID3v2.3: "The extended header is considered separate from the header proper, and as such is
@@ -22,7 +24,11 @@ export class ID3v2HeaderReader {
 	}
 
 	private async readID3ExtendedHeaderV3(reader: ReaderStream, unsynchronisation: boolean): Promise<{ rest?: Buffer; exthead: IID3V2.TagHeaderExtendedVer3 }> {
-		const headdata = await this.readExtHeaderBytes(reader, 4, unsynchronisation);
+		const headdata = await this.readExtHeaderBytes(reader, ID3v2_EXTHEADER_SIZE_LENGTH, unsynchronisation);
+		if (headdata.length < ID3v2_EXTHEADER_SIZE_LENGTH) {
+			// the stream ended inside the size field, so there is no extended header to report
+			return { exthead: { size: 0, flags1: {}, flags2: {}, sizeOfPadding: 0 } };
+		}
 		// the size excludes itself and is currently 6 or 10 bytes (10 when crc data is present);
 		// use an unsigned read and normalize anything else to the common 6-byte form,
 		// so malformed values can not turn negative or leave the reader misaligned
@@ -86,7 +92,11 @@ export class ID3v2HeaderReader {
 		themselves. An extended header can thus never have a size of fewer
 		than six bytes.
 		*/
-		const headdata = await reader.read(4);
+		const headdata = await reader.read(ID3v2_EXTHEADER_SIZE_LENGTH);
+		if (headdata.length < ID3v2_EXTHEADER_SIZE_LENGTH) {
+			// the stream ended inside the size field, so there is no extended header to report
+			return { exthead: { size: 0, flags: {} } };
+		}
 		// use an unsigned read so high-bit sizes stay positive
 		let size = unsynchsafe(headdata.readUInt32BE(0));
 		if (size < 6) {
