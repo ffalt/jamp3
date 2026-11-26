@@ -25,6 +25,11 @@ export namespace IID3V2 {
 			id: string;
 			/** the text */
 			text: string;
+			/**
+			All values of a multi-value text frame (ID3v2.4 allows multiple strings
+			separated by the encoding terminator), in file order.
+			*/
+			list?: Array<string>;
 		}
 
 		export interface LangText extends Base {
@@ -167,6 +172,13 @@ export namespace IID3V2 {
 		export interface IdText extends Base {
 			id: string;
 			text: string;
+			/**
+			All values of a multi-value text frame (ID3v2.4 allows multiple strings
+			separated by the encoding terminator), in file order. `text` holds the
+			same values joined by a linefeed; `list` is the source used when writing.
+			Only set when the frame actually contains more than one value.
+			*/
+			list?: Array<string>;
 		}
 
 		export interface Ascii extends Base {
@@ -175,6 +187,13 @@ export namespace IID3V2 {
 
 		export interface Text extends Base {
 			text: string;
+			/**
+			All values of a multi-value text frame (ID3v2.4 allows multiple strings
+			separated by the encoding terminator), in file order. `text` holds the
+			same values joined by a linefeed; `list` is the source used when writing.
+			Only set when the frame actually contains more than one value.
+			*/
+			list?: Array<string>;
 		}
 
 		export interface TextList extends Base {

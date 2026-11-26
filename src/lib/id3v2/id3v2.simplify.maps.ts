@@ -116,6 +116,7 @@ export const FramesMap: Record<string, string> = {
 	'TPE4': 'REMIXER',
 	'TPUB': 'LABEL',
 	'MVNM': 'MOVEMENTNAME',
+	'MVCN': 'MOVEMENTTOTAL',
 	'GRP1': 'WORK',
 	'TIT3': 'SUBTITLE',
 	'TSST': 'DISCSUBTITLE',

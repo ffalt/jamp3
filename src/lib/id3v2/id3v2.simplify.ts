@@ -47,7 +47,7 @@ function simplifyValue(id: string, slug: string, frame: IID3V2.Frame): Array<{ s
 	}
 	if (SplitFrameMap[id]) {
 		const names = SplitFrameMap[id];
-		const split = text.split('/');
+		const split = text.split('\n', 1)[0].split('/');
 		const result = [];
 		if (split[0]) {
 			result.push({ slug: names[0], text: split[0] });

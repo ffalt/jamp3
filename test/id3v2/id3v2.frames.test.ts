@@ -153,6 +153,43 @@ describe('ID3v2Frames', () => {
 		});
 	});
 
+	describe('MultiValues', () => {
+		const multiValues = ['first', 'äöüé', '012345abcdefghijklmnopqrstuvwxyz67890'];
+
+		describe.each(encodings)('Encoding: %s', enc => {
+			it('should keep all values of a Text frame', async () => {
+				const value: IID3V2.FrameValue.Text = { text: multiValues[0], list: multiValues };
+				const result = await writebackandforth(FrameText, { encoding: enc, value }, tagHead);
+				expect(result.value.list).toEqual(multiValues);
+				expect(result.value.text).toBe(multiValues.join('\n'));
+			});
+
+			it('should keep all values of an IdText frame', async () => {
+				const value: IID3V2.FrameValue.IdText = { id: 'description', text: multiValues[0], list: multiValues };
+				const result = await writebackandforth(FrameIdText, { encoding: enc, value }, tagHead);
+				expect(result.value.id).toBe(value.id);
+				expect(result.value.list).toEqual(multiValues);
+				expect(result.value.text).toBe(multiValues.join('\n'));
+			});
+
+			it('should keep all values of a LangDescText frame', async () => {
+				const value: IID3V2.FrameValue.LangDescText = { id: 'description', language: 'eng', text: multiValues[0], list: multiValues };
+				const result = await writebackandforth(FrameLangDescText, { encoding: enc, value }, tagHead);
+				expect(result.value.id).toBe(value.id);
+				expect(result.value.language).toBe(value.language);
+				expect(result.value.list).toEqual(multiValues);
+				expect(result.value.text).toBe(multiValues.join('\n'));
+			});
+
+			it('should not add a list for a single value', async () => {
+				const value: IID3V2.FrameValue.IdText = { id: 'description', text: multiValues[0] };
+				const result = await writebackandforth(FrameIdText, { encoding: enc, value }, tagHead);
+				expect(result.value.list).toBeUndefined();
+				expect(result.value.text).toBe(multiValues[0]);
+			});
+		});
+	});
+
 	describe('MusicCDId', () => {
 		it.each(testValues)('should write back & forth: %o', async testValue => {
 			const value: IID3V2.FrameValue.Bin = { bin: BufferUtils.fromString(testValue) };
