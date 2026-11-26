@@ -3,7 +3,6 @@
 import { FrameIdAscii } from './implementations/id3v2.frame.id-ascii.js';
 import { FrameText } from './implementations/id3v2.frame.text.js';
 import { FrameUnknown } from './implementations/id3v2.frame.unknown.js';
-import { FrameTextConcatList } from './implementations/id3v2.frame.text-concat-list.js';
 import { FrameIdText } from './implementations/id3v2.frame.id-text.js';
 import { FrameAscii } from './implementations/id3v2.frame.ascii.js';
 import { FrameTextList } from './implementations/id3v2.frame.text-list.js';
@@ -119,7 +118,7 @@ export const FrameDefs: Record<string, IFrameDef> = {
 	'TP1': {
 		title: 'Artist',
 		versions: [2],
-		impl: FrameTextConcatList,
+		impl: FrameText,
 		upgrade: 'TPE1'
 	},
 	'TP2': {
@@ -648,7 +647,7 @@ export const FrameDefs: Record<string, IFrameDef> = {
 		 */
 		title: 'Artist',
 		versions: [3, 4],
-		impl: FrameTextConcatList
+		impl: FrameText
 	},
 	'TPE2': {
 		/*
@@ -771,7 +770,7 @@ export const FrameDefs: Record<string, IFrameDef> = {
 		 */
 		title: 'Genre',
 		versions: [3, 4],
-		impl: FrameTextConcatList
+		impl: FrameText
 	},
 	'TFLT': {
 		/*
