@@ -65,7 +65,7 @@
     "@stylistic/eslint-plugin": "6.0.1",
     "@types/fs-extra": "11.0.4",
     "@types/jest": "30.0.0",
-    "@types/node": "^26.6.10",
+    "@types/node": "26.6.11",
     "@types/tmp": "0.2.6",
     "conventional-changelog": "8.1.3",
     "conventional-changelog-angular": "9.4.0",
