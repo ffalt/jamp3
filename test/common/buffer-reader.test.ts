@@ -43,3 +43,26 @@ describe('BufferReader.readUnsyncedBuffer', () => {
 		expect(reader.position).toBe(0);
 	});
 });
+
+describe('BufferReader.readByte', () => {
+	it('reads the bytes in order', () => {
+		const reader = new BufferReader(Buffer.from([0x01, 0xAB, 0xFF]));
+		expect([reader.readByte(), reader.readByte(), reader.readByte()]).toEqual([0x01, 0xAB, 0xFF]);
+	});
+
+	it('throws past the end instead of returning undefined', () => {
+		const reader = new BufferReader(Buffer.from([0x01]));
+		expect(reader.readByte()).toBe(0x01);
+		expect(() => reader.readByte()).toThrow(RangeError);
+	});
+
+	it('throws on an empty buffer', () => {
+		expect(() => new BufferReader(Buffer.alloc(0)).readByte()).toThrow(RangeError);
+	});
+
+	it('readBitsByte behaves the same', () => {
+		const reader = new BufferReader(Buffer.from([0x7F]));
+		expect(reader.readBitsByte()).toBe(0x7F);
+		expect(() => reader.readBitsByte()).toThrow(RangeError);
+	});
+});

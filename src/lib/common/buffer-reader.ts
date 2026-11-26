@@ -32,15 +32,16 @@ export class BufferReader {
 	}
 
 	readByte(): number {
+		if (this.position >= this.data.length) {
+			throw new RangeError(`Buffer read out of bounds: offset ${this.position}, length ${this.data.length}`);
+		}
 		const result = this.data[this.position];
 		this.position += 1;
 		return result;
 	}
 
 	readBitsByte(): number {
-		const result = this.data.readUInt8(this.position);
-		this.position += 1;
-		return result;
+		return this.readByte();
 	}
 
 	readUInt(byteLength: number): number {

@@ -103,7 +103,7 @@ export class ID3v2Reader {
 				idbin = reader.readBuffer(markerLength);
 			}
 			if (reader.hasData() && isValidFrameBinId(idbin)) {
-				if (reader.unread() < ID3v2_FRAME_HEADER_LENGTHS.SIZE[tag.head.ver]) {
+				if (reader.unread() < ID3v2_FRAME_HEADER_LENGTHS.SIZE[tag.head.ver] + ID3v2_FRAME_HEADER_LENGTHS.FLAGS[tag.head.ver]) {
 					return reader.rest();
 				}
 				skip = this.readFrame(reader, idbin, tag, skip);

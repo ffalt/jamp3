@@ -19,6 +19,7 @@ import { FrameMusicCDId } from '../../src/lib/id3v2/frames/implementations/id3v2
 import { FramePopularimeter } from '../../src/lib/id3v2/frames/implementations/id3v2.frame.popularimeter.js';
 import { FrameBooleanString } from '../../src/lib/id3v2/frames/implementations/id3v2.frame.boolstring.js';
 import { FrameUnknown } from '../../src/lib/id3v2/frames/implementations/id3v2.frame.unknown.js';
+import { readID3v2Frame } from '../../src/lib/id3v2/frames/id3v2.frame.read.js';
 import { describe, expect, it } from '@jest/globals';
 
 describe('SyncSaveInt', () => {
@@ -294,5 +295,35 @@ describe('ID3v2Frames', () => {
 				expect(result.head.encoding).toBe(testObject.encoding);
 			});
 		});
+	});
+});
+
+describe('TruncatedFrames', () => {
+	const tagHead: IID3V2.TagHeader = { ver: 4, rev: 0, size: 0, valid: true };
+
+	function rawFrame(id: string, data: Buffer): IID3V2.RawFrame {
+		return { id, start: 0, end: 0, size: data.length, data, statusFlags: {}, formatFlags: {} };
+	}
+
+	it('flags a POPM missing its rating byte and keeps the original bytes', async () => {
+		const data = Buffer.concat([Buffer.from('a@b.c', 'ascii'), Buffer.from([0])]);
+		const frame = await readID3v2Frame(rawFrame('POPM', data), tagHead);
+		expect(frame.invalid).toBeTruthy();
+		expect((frame.value as IID3V2.FrameValue.Bin).bin).toEqual(data);
+	});
+
+	it('still parses a complete POPM', async () => {
+		const data = Buffer.concat([Buffer.from('a@b.c', 'ascii'), Buffer.from([0, 200, 0, 0, 0, 7])]);
+		const frame = await readID3v2Frame(rawFrame('POPM', data), tagHead);
+		expect(frame.invalid).toBeFalsy();
+		const value = frame.value as IID3V2.FrameValue.Popularimeter;
+		expect(value.rating).toBe(200);
+		expect(value.count).toBe(7);
+	});
+
+	it('flags an APIC missing its picture type byte', async () => {
+		const data = Buffer.concat([Buffer.from([0]), Buffer.from('image/png', 'ascii'), Buffer.from([0])]);
+		const frame = await readID3v2Frame(rawFrame('APIC', data), tagHead);
+		expect(frame.invalid).toBeTruthy();
 	});
 });
