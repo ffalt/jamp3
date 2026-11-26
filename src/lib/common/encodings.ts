@@ -21,12 +21,14 @@ Encodings['iso-8859-1'] = {
 };
 Encodings['ascii'] = Encodings['iso-8859-1'];
 
+// marks frame content that is raw bytes rather than text; latin1 maps every byte to the code
+// point of the same value, so a string carries the bytes through unchanged in both directions
 Encodings['binary'] = {
 	name: 'binary',
 	byte: 0, // $00
 	terminator: BufferUtils.fromArray([0]),
-	encode: s => iconv.encode(s, 'hex'),
-	decode: buffer => iconv.decode(buffer, 'hex')
+	encode: s => Buffer.from(s, 'latin1'),
+	decode: buffer => buffer.toString('latin1')
 };
 
 Encodings['ucs2'] = {

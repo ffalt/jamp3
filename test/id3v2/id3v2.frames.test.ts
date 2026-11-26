@@ -63,6 +63,16 @@ describe('ID3v2Frames', () => {
 		valid: true
 	};
 
+	describe('BinaryEncodingMarker', () => {
+		// unknown and MCDI frames report encoding 'binary'; if such a frame is later written
+		// through a text implementation the marker must not mangle the text
+		it.each(testValues)('writes a text frame marked with the binary encoding readably: %s', async testValue => {
+			const value: IID3V2.FrameValue.Text = { text: testValue };
+			const result = await writebackandforth(FrameText, { encoding: 'binary', value }, tagHead);
+			expect(result.value.text).toBe(testValue);
+		});
+	});
+
 	describe('AsciiValue', () => {
 		it.each(testValues)('should write back & forth: %s', async testValue => {
 			const value: IID3V2.FrameValue.Ascii = { text: testValue };
