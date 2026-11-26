@@ -29,22 +29,12 @@ export async function updateFile(
 	try {
 		await process(layout, fileWriterStream);
 		await fileWriterStream.close();
-		const bakExists = await fse.pathExists(bakFile);
-		if (keepBackup) {
-			if (bakExists) {
-				await fse.remove(filename);
-			} else {
-				await fse.rename(filename, bakFile);
-				renamedOriginalToBackup = true;
-			}
-		} else if (!bakExists) {
+		if (keepBackup && !(await fse.pathExists(bakFile))) {
+			// an existing backup is never overwritten, so it is only created when absent
 			await fse.rename(filename, bakFile);
 			renamedOriginalToBackup = true;
 		}
 		await fse.rename(tmpFile, filename);
-		if (!keepBackup && !bakExists) {
-			await fse.remove(bakFile);
-		}
 	} catch (error) {
 		try {
 			await fileWriterStream.close();
