@@ -33,7 +33,8 @@ jobs:
         run: npm run test
 
       - name: Generate Releaselog
-        run: npm run build:releaselog
+        run: |
+          node .github/scripts/extract-release.mjs
 
       - name: Build Release Branch Folder
         run: |
