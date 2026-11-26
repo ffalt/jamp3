@@ -4,9 +4,9 @@ import { getWriteTextEncoding } from '../id3v2.frame.write.js';
 
 export const FrameTextList: IFrameImpl = {
 	/**
-	 Text encoding    $xx
-	 Information    <text string according to encoding>
-	 */
+	Text encoding    $xx
+	Information    <text string according to encoding>
+	*/
 	parse: async reader => {
 		const enc = reader.readEncoding();
 		const list: Array<string> = [];

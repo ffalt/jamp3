@@ -7,9 +7,9 @@ import { PRIVGuidOwners, PRIVNumericOwners, PRIVWideStringOwners } from '../../i
 type PrivValue = IID3V2.FrameValue.IdBin | IID3V2.FrameValue.IdNum | IID3V2.FrameValue.IdGuid | IID3V2.FrameValue.IdText;
 
 /**
- * Parse a 16-byte Windows GUID buffer (mixed-endian) into a GUID string.
- * Layout: Data1 (4 LE) | Data2 (2 LE) | Data3 (2 LE) | Data4 (8 BE)
- */
+Parse a 16-byte Windows GUID buffer (mixed-endian) into a GUID string.
+Layout: Data1 (4 LE) | Data2 (2 LE) | Data3 (2 LE) | Data4 (8 BE)
+*/
 export function bufToGuid(buf: Buffer): string {
 	const d1 = buf.readUInt32LE(0).toString(16).padStart(8, '0');
 	const d2 = buf.readUInt16LE(4).toString(16).padStart(4, '0');
@@ -32,16 +32,16 @@ export function guidToBuf(guid: string): Buffer {
 
 export const FramePriv: IFrameImpl = {
 	/**
-	 Owner identifier        <text string> $00
-	 The private data        <binary data>
+	Owner identifier        <text string> $00
+	The private data        <binary data>
 
-	 Known numeric (4-byte LE uint32) owners: AverageLevel, PeakValue
-	 Known GUID (16-byte mixed-endian) owners: WM/MediaClassPrimaryID,
-	   WM/MediaClassSecondaryID, WM/WMContentID, WM/WMCollectionID,
-	   WM/WMCollectionGroupID
-	 Known wide-string (UTF-16 LE, null-terminated) owners: WM/Provider,
-	   WM/UniqueFileIdentifier
-	 */
+	Known numeric (4-byte LE uint32) owners: AverageLevel, PeakValue
+	Known GUID (16-byte mixed-endian) owners: WM/MediaClassPrimaryID,
+	  WM/MediaClassSecondaryID, WM/WMContentID, WM/WMCollectionID,
+	  WM/WMCollectionGroupID
+	Known wide-string (UTF-16 LE, null-terminated) owners: WM/Provider,
+	  WM/UniqueFileIdentifier
+	*/
 	parse: async reader => {
 		const id = reader.readStringTerminated(ascii);
 		if (PRIVNumericOwners.has(id)) {

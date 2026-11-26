@@ -48,9 +48,9 @@ export class ID3V2RawBuilder extends ID3V2FramesCollect {
 		this.addFrame<IID3V2.FrameValue.IdGuid>(key, { id, guid });
 	}
 
-	idLangText(key: string, value: string | undefined, lang: string | undefined, id: string | undefined) {
+	idLangText(key: string, value: string | undefined, lang: string | undefined, id: string | undefined = '') {
 		if (value) {
-			this.addIDFrame<IID3V2.FrameValue.LangDescText>(key, { id: id || '', language: lang || '', text: value });
+			this.addIDFrame<IID3V2.FrameValue.LangDescText>(key, { id: id, language: lang || '', text: value });
 		}
 	}
 
@@ -107,12 +107,33 @@ export class ID3V2RawBuilder extends ID3V2FramesCollect {
 	}
 
 	relativeVolumeAdjustment(
-		key: string, right: number, left: number, peakRight?: number, peakLeft?: number, rightBack?: number, leftBack?: number, peakRightBack?: number, peakLeftBack?: number,
-		center?: number, peakCenter?: number, bass?: number, peakBass?: number) {
+		key: string,
+		right: number,
+		left: number,
+		peakRight?: number,
+		peakLeft?: number,
+		rightBack?: number,
+		leftBack?: number,
+		peakRightBack?: number,
+		peakLeftBack?: number,
+		center?: number,
+		peakCenter?: number,
+		bass?: number,
+		peakBass?: number
+	) {
 		this.addFrame<IID3V2.FrameValue.RVA>(key, {
-			right, left, peakRight, peakLeft,
-			rightBack, leftBack, peakRightBack, peakLeftBack,
-			center, peakCenter, bass, peakBass
+			right,
+			left,
+			peakRight,
+			peakLeft,
+			rightBack,
+			leftBack,
+			peakRightBack,
+			peakLeftBack,
+			center,
+			peakCenter,
+			bass,
+			peakBass
 		});
 	}
 

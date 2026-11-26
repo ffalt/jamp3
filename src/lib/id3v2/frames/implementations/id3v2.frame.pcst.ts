@@ -3,11 +3,11 @@ import { IID3V2 } from '../../id3v2.types.js';
 
 export const FramePCST: IFrameImpl = {
 	/**
-	 // PCST
-	 Itunes - Indicates a podcast.
+	// PCST
+	Itunes - Indicates a podcast.
 
-	 This is written to a v2.2 tag as PCS.
-	 */
+	This is written to a v2.2 tag as PCS.
+	*/
 	parse: async reader => {
 		const num = reader.readUInt4Byte();
 		const value: IID3V2.FrameValue.Number = { num };

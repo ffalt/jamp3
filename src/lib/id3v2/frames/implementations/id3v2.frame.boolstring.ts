@@ -4,15 +4,15 @@ import { getWriteTextEncoding } from '../id3v2.frame.write.js';
 
 export const FrameBooleanString: IFrameImpl = {
 	/**
-	 TCMP
-	 This is a simple text frame that iTunes uses to indicate if the file is part of a compilation.
+	TCMP
+	This is a simple text frame that iTunes uses to indicate if the file is part of a compilation.
 
-	 Information
-	 1 if part of a compilation
-	 0 or not present if not part of a compilation
+	Information
+	1 if part of a compilation
+	0 or not present if not part of a compilation
 
-	 This is written to a v2.2 tag as TCP.
-	 */
+	This is written to a v2.2 tag as TCP.
+	*/
 	parse: async reader => {
 		const enc = reader.readEncoding();
 		const intAsString = reader.readStringTerminated(enc);

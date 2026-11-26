@@ -6,10 +6,10 @@ import { getWriteTextEncoding } from '../id3v2.frame.write.js';
 
 export const FrameLangText: IFrameImpl = {
 	/**
-	 Text encoding          $xx
-	 Language               $xx xx xx
-	 The actual text        <full text string according to encoding>
-	 */
+	Text encoding          $xx
+	Language               $xx xx xx
+	The actual text        <full text string according to encoding>
+	*/
 	parse: async reader => {
 		const enc = reader.readEncoding();
 		const language = removeZeroString(reader.readString(3, ascii)).trim();

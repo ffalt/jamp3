@@ -15,10 +15,10 @@ export abstract class ID3V2TagBuilder implements IID3V2.Builder {
 	abstract rev(): number;
 
 	/**
-	 * Load existing frames from a tag into the builder.
-	 * After calling this, subsequent setter calls will update or add to the existing frames.
-	 * Single-value frames (e.g. title, artist) will be replaced; multi-value frames (e.g. picture, comment) will be appended.
-	 */
+	Load existing frames from a tag into the builder.
+	After calling this, subsequent setter calls will update or add to the existing frames.
+	Single-value frames (e.g. title, artist) will be replaced; multi-value frames (e.g. picture, comment) will be appended.
+	*/
 	loadTag(tag: IID3V2.Tag): this {
 		this.rawBuilder.loadFrames(tag.frames);
 		return this;
@@ -389,12 +389,12 @@ export abstract class ID3V2TagBuilder implements IID3V2.Builder {
 	}
 
 	/**
-	 * APIC: Attached picture
-	 * @param pictureType Picture type [[ID3V2ValueTypes]]
-	 * @param description a short description of the picture
-	 * @param mimeType MIME media type e.g. "image/png"
-	 * @param binary binary data of a image
-	 */
+	APIC: Attached picture
+	@param pictureType Picture type [[ID3V2ValueTypes]]
+	@param description a short description of the picture
+	@param mimeType MIME media type e.g. "image/png"
+	@param binary binary data of a image
+	*/
 	picture(pictureType: number, description: string, mimeType: string, binary: Buffer) {
 		this.rawBuilder.picture('APIC', pictureType, description, mimeType, binary);
 		return this;
@@ -471,12 +471,7 @@ export abstract class ID3V2TagBuilder implements IID3V2.Builder {
 		bass?: number,
 		peakBass?: number
 	) {
-		this.rawBuilder.relativeVolumeAdjustment('RVAD', right, left,
-			peakRight, peakLeft,
-			rightBack, leftBack,
-			peakRightBack, peakLeftBack,
-			center, peakCenter,
-			bass, peakBass);
+		this.rawBuilder.relativeVolumeAdjustment('RVAD', right, left, peakRight, peakLeft, rightBack, leftBack, peakRightBack, peakLeftBack, center, peakCenter, bass, peakBass);
 		return this;
 	}
 
@@ -497,8 +492,11 @@ export abstract class ID3V2TagBuilder implements IID3V2.Builder {
 	}
 
 	synchronisedLyrics(
-		id: string, language: string, timestampFormat: number,
-		contentType: number, events: Array<{ timestamp: number; text: string }>
+		id: string,
+		language: string,
+		timestampFormat: number,
+		contentType: number,
+		events: Array<{ timestamp: number; text: string }>
 	) {
 		this.rawBuilder.synchronisedLyrics('SYLT', id, language, timestampFormat, contentType, events);
 		return this;

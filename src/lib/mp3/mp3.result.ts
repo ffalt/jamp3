@@ -72,9 +72,20 @@ function setResultHeadFrame(headframe: IMP3.Frame, mpeg: IMP3.MPEG, isQuick?: bo
 
 function defaultMPEGResult(): IMP3.MPEG {
 	return {
-		durationEstimate: 0, durationRead: 0, channels: 0, frameCount: 0, frameCountDeclared: 0, bitRate: 0,
-		sampleRate: 0, sampleCount: 0, audioBytes: 0, audioBytesDeclared: 0,
-		version: '', layer: '', encoded: '', mode: ''
+		durationEstimate: 0,
+		durationRead: 0,
+		channels: 0,
+		frameCount: 0,
+		frameCountDeclared: 0,
+		bitRate: 0,
+		sampleRate: 0,
+		sampleCount: 0,
+		audioBytes: 0,
+		audioBytesDeclared: 0,
+		version: '',
+		layer: '',
+		encoded: '',
+		mode: ''
 	};
 }
 

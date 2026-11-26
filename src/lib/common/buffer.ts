@@ -29,8 +29,8 @@ export class BufferUtils {
 		return slen > 0;
 	}
 
-	public static scanBufferTextPos(buffer: Buffer, search: Array<number> | Buffer, start?: number): number {
-		const i = this.indexOfBufferStep(buffer, search, start || 0, search.length);
+	public static scanBufferTextPos(buffer: Buffer, search: Array<number> | Buffer, start: number = 0): number {
+		const i = this.indexOfBufferStep(buffer, search, start, search.length);
 		return i < 0 ? buffer.length : i;
 	}
 
@@ -42,8 +42,8 @@ export class BufferUtils {
 		return Buffer.concat(buffers);
 	}
 
-	public static indexOfBuffer(buffer: Buffer, search: Array<number> | Buffer, start?: number): number {
-		return this.indexOfBufferStep(buffer, search, start || 0, 1);
+	public static indexOfBuffer(buffer: Buffer, search: Array<number> | Buffer, start: number = 0): number {
+		return this.indexOfBufferStep(buffer, search, start, 1);
 	}
 
 	private static indexOfBufferStep(buffer: Buffer, search: Array<number> | Buffer, start: number, stepWidth: number): number {

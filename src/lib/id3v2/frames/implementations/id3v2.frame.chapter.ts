@@ -6,14 +6,14 @@ import { readSubFrames } from '../id3v2.frame.read.js';
 
 export const FrameCHAP: IFrameImpl = {
 	/**
-	 <ID3v2.3 or ID3v2.4 frame header, ID: "CHAP">           (10 bytes)
-	 Element ID      <text string> $00
-	 Start time      $xx xx xx xx
-	 End time        $xx xx xx xx
-	 Start offset    $xx xx xx xx
-	 End offset      $xx xx xx xx
-	 <Optional embedded sub-frames>
-	 */
+	<ID3v2.3 or ID3v2.4 frame header, ID: "CHAP">           (10 bytes)
+	Element ID      <text string> $00
+	Start time      $xx xx xx xx
+	End time        $xx xx xx xx
+	Start offset    $xx xx xx xx
+	End offset      $xx xx xx xx
+	<Optional embedded sub-frames>
+	*/
 	parse: async (reader, frame, head) => {
 		const id = reader.readStringTerminated(ascii);
 		const start = reader.readUInt4Byte();

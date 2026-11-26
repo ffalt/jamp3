@@ -3,8 +3,8 @@ import { IID3V1 } from '../id3v1/id3v1.types.js';
 import { ITag } from '../common/types.js';
 
 /**
- * Interfaces for class MP3
- */
+Interfaces for class MP3
+*/
 export namespace IMP3 {
 
 	/** Options of MP3 reading */

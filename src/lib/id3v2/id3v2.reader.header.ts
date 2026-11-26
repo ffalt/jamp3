@@ -14,38 +14,38 @@ export class ID3v2HeaderReader {
 		const size = (rawSize === 6 || rawSize === 10) ? rawSize : 6;
 		const data = await reader.read(size);
 		/** ID3v2.3
-		 3.2.   ID3v2 extended header
+		3.2.   ID3v2 extended header
 
-		 The extended header contains information that is not vital to the
-		 correct parsing of the tag information, hence the extended header is
-		 optional.
+		The extended header contains information that is not vital to the
+		correct parsing of the tag information, hence the extended header is
+		optional.
 
-		 Extended header size   $xx xx xx xx
-		 Extended Flags         $xx xx
-		 Size of padding        $xx xx xx xx
+		Extended header size   $xx xx xx xx
+		Extended Flags         $xx xx
+		Size of padding        $xx xx xx xx
 
-		 Where the 'Extended header size', currently 6 or 10 bytes, excludes
-		 itself. The 'Size of padding' is simply the total tag size excluding
-		 the frames and the headers, in other words the padding. The extended
-		 header is considered separate from the header proper, and as such is
-		 subject to unsynchronisation.
+		Where the 'Extended header size', currently 6 or 10 bytes, excludes
+		itself. The 'Size of padding' is simply the total tag size excluding
+		the frames and the headers, in other words the padding. The extended
+		header is considered separate from the header proper, and as such is
+		subject to unsynchronisation.
 
-		 The extended flags are a secondary flag set which describes further
-		 attributes of the tag. These attributes are currently defined as
-		 follows
+		The extended flags are a secondary flag set which describes further
+		attributes of the tag. These attributes are currently defined as
+		follows
 
-		 %x0000000 00000000
+		%x0000000 00000000
 
-		 x - CRC data present
+		x - CRC data present
 
-		 If this flag is set four bytes of CRC-32 data is appended to the
-		 extended header. The CRC should be calculated before
-		 unsynchronisation on the data between the extended header and the
-		 padding, i.e. the frames and only the frames.
+		If this flag is set four bytes of CRC-32 data is appended to the
+		extended header. The CRC should be calculated before
+		unsynchronisation on the data between the extended header and the
+		padding, i.e. the frames and only the frames.
 
-		 Total frame CRC        $xx xx xx xx
+		Total frame CRC        $xx xx xx xx
 
-		 */
+		*/
 		const exthead: IID3V2.TagHeaderExtendedVer3 = {
 			size,
 			flags1: flags(ID3v2_EXTHEADER[3].FLAGS1, data.length > 0 ? bitarray(data[0]) : []),
@@ -60,16 +60,16 @@ export class ID3v2HeaderReader {
 
 	private async readID3ExtendedHeaderV4(reader: ReaderStream, tagSize: number): Promise<{ rest?: Buffer; exthead: IID3V2.TagHeaderExtendedVer4 }> {
 		/**
-		 ID3v2.4
-		 Extended header size   4 * %0xxxxxxx
-		 Number of flag bytes       $01
-		 Extended Flags             $xx
+		ID3v2.4
+		Extended header size   4 * %0xxxxxxx
+		Number of flag bytes       $01
+		Extended Flags             $xx
 
-		 The 'Extended header size' is the size of the whole extended header,
-		 stored as a 32 bit synchsafe integer - i.e. it includes these 4 bytes
-		 themselves. An extended header can thus never have a size of fewer
-		 than six bytes.
-		 */
+		The 'Extended header size' is the size of the whole extended header,
+		stored as a 32 bit synchsafe integer - i.e. it includes these 4 bytes
+		themselves. An extended header can thus never have a size of fewer
+		than six bytes.
+		*/
 		const headdata = await reader.read(4);
 		// use an unsigned read so high-bit sizes stay positive
 		let size = unsynchsafe(headdata.readUInt32BE(0));

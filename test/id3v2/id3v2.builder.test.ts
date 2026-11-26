@@ -115,12 +115,18 @@ async function fill24Builder(builder: ID3V24TagBuilder): Promise<void> {
 		.wmMood(testString)
 		.productionNotice(testString)
 		.relativeVolumeAdjustment(
-			testNumber, testNumber,
-			testNumber, testNumber,
-			testNumber, testNumber,
-			testNumber, testNumber,
-			testNumber, testNumber,
-			testNumber, testNumber
+			testNumber,
+			testNumber,
+			testNumber,
+			testNumber,
+			testNumber,
+			testNumber,
+			testNumber,
+			testNumber,
+			testNumber,
+			testNumber,
+			testNumber,
+			testNumber
 		)
 		.relativeVolumeAdjustment2(testString, [{ type: testNumber, adjustment: testNumber, peak: testNumber }])
 		.releaseDate(testString)

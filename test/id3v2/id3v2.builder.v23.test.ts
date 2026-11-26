@@ -91,12 +91,18 @@ async function fill23Builder(builder: ID3V23TagBuilder): Promise<void> {
 		.popularimeter(testString, testNumber, testNumber)
 		.priv(testString, testBuffer)
 		.relativeVolumeAdjustment(
-			testNumber, testNumber,
-			testNumber, testNumber,
-			testNumber, testNumber,
-			testNumber, testNumber,
-			testNumber, testNumber,
-			testNumber, testNumber
+			testNumber,
+			testNumber,
+			testNumber,
+			testNumber,
+			testNumber,
+			testNumber,
+			testNumber,
+			testNumber,
+			testNumber,
+			testNumber,
+			testNumber,
+			testNumber
 		)
 		.remixer(testString)
 		.script(testString)

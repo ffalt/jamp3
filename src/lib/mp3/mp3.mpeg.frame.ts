@@ -1,7 +1,16 @@
 import {
-	mpeg_bitrates, mpeg_channel_count, mpeg_channel_mode_jointstereoIdx, mpeg_channel_mode_types,
-	mpeg_channel_modes, mpeg_emphasis, mpeg_frame_samples, mpeg_layer_joint_extension,
-	mpeg_layer_names_long, mpeg_slot_size, mpeg_srates, mpeg_version_names_long
+	mpeg_bitrates,
+	mpeg_channel_count,
+	mpeg_channel_mode_jointstereoIdx,
+	mpeg_channel_mode_types,
+	mpeg_channel_modes,
+	mpeg_emphasis,
+	mpeg_frame_samples,
+	mpeg_layer_joint_extension,
+	mpeg_layer_names_long,
+	mpeg_slot_size,
+	mpeg_srates,
+	mpeg_version_names_long
 } from './mp3.mpeg.consts.js';
 import { IMP3 } from './mp3.types.js';
 import { isBit } from '../common/utils.js';
@@ -99,11 +108,11 @@ export function expandMPEGFrameFlags(front: number, back: number, offset: number
 		const slot_size = mpeg_slot_size[layerIdx];
 		const bps = samples / 8;
 		/**
-		 Frame Size = ((Samples Per Frame / 8 * Bitrate) / Sampling Rate) + Padding Size
-		 Because of rounding errors, the official formula to calculate the frame size is a little bit different.
-		 According to the ISO standards, you have to calculate the frame size in slots (see 2. MPEG Audio Format),
-		 then truncate this number to an integer, and after that multiply it with the slot size.
-		 */
+		Frame Size = ((Samples Per Frame / 8 * Bitrate) / Sampling Rate) + Padding Size
+		Because of rounding errors, the official formula to calculate the frame size is a little bit different.
+		According to the ISO standards, you have to calculate the frame size in slots (see 2. MPEG Audio Format),
+		then truncate this number to an integer, and after that multiply it with the slot size.
+		*/
 		const slots = Math.floor(((bps / slot_size) * bitrate) / samprate);
 		const size = (slots * slot_size) + ((padded) ? slot_size : 0);
 		return {
@@ -157,12 +166,12 @@ export function expandRawHeader(header: IMP3.FrameRawHeader): IMP3.FrameHeader {
 	const samplingRate = mpeg_srates[header.versionIdx][header.sampleIdx];
 	const samples = mpeg_frame_samples[header.versionIdx][header.layerIdx];
 	/**
-	 Frame Size = ( (Samples Per Frame / 8 * Bitrate) / Sampling Rate) + Padding Size
+	Frame Size = ( (Samples Per Frame / 8 * Bitrate) / Sampling Rate) + Padding Size
 
-	 Because of rounding errors, the official formula to calculate the frame size is a little bit different.
-	 According to the ISO standards, you have to calculate the frame size in slots (see 2. MPEG Audio Format),
-	 then truncate this number to an integer, and after that multiply it with the slot size.
-	 */
+	Because of rounding errors, the official formula to calculate the frame size is a little bit different.
+	According to the ISO standards, you have to calculate the frame size in slots (see 2. MPEG Audio Format),
+	then truncate this number to an integer, and after that multiply it with the slot size.
+	*/
 	const time = samplingRate > 0 ? (samples / samplingRate) * 1000 : 0;
 
 	return {
@@ -196,35 +205,35 @@ export class MPEGFrameReader {
 
 	private verfiyCRC() {
 		/**
-		 https://www.codeproject.com/Articles/8295/MPEG-Audio-Frame-Header#CRC
-		 var verifyCRC = function(){
-		 2.2. Verifying CRC
+		https://www.codeproject.com/Articles/8295/MPEG-Audio-Frame-Header#CRC
+		var verifyCRC = function(){
+		2.2. Verifying CRC
 
-		 If the protection bit in the header is not set, the frame contains a 16 bit CRC (Cyclic Redundancy Checksum). This checksum directly follows the frame header and is a big-endian WORD.
-		 To verify this checksum you have to calculate it for the frame and compare the calculated CRC with the stored CRC. If they aren't equal probably a transfer error has appeared.
-		 It is also helpful to check the CRC to verify that you really found the beginning of a frame, because the sync bits do in same cases also occur within the data section of a frame.
+		If the protection bit in the header is not set, the frame contains a 16 bit CRC (Cyclic Redundancy Checksum). This checksum directly follows the frame header and is a big-endian WORD.
+		To verify this checksum you have to calculate it for the frame and compare the calculated CRC with the stored CRC. If they aren't equal probably a transfer error has appeared.
+		It is also helpful to check the CRC to verify that you really found the beginning of a frame, because the sync bits do in same cases also occur within the data section of a frame.
 
-		 The CRC is calculated by applying the CRC-16 algorithm (with the generator polynom 0x8005) to a part of the frame. The following data is considered for the CRC: the last two bytes of
-		 the header and a number of bits from the audio data which follows the checksum after the header. The checksum itself must be skipped for CRC calculation. Unfortunately there is no
-		 easy way to compute the number of frames which are necessary for the checksum calculation in Layer II. Therefore I left it out in the code. You would need other information apart
-		 from the header to calculate the necessary bits. However it is possible to compute the number of protected bits in Layer I and Layer III only with the information from the header.
+		The CRC is calculated by applying the CRC-16 algorithm (with the generator polynom 0x8005) to a part of the frame. The following data is considered for the CRC: the last two bytes of
+		the header and a number of bits from the audio data which follows the checksum after the header. The checksum itself must be skipped for CRC calculation. Unfortunately there is no
+		easy way to compute the number of frames which are necessary for the checksum calculation in Layer II. Therefore I left it out in the code. You would need other information apart
+		from the header to calculate the necessary bits. However it is possible to compute the number of protected bits in Layer I and Layer III only with the information from the header.
 
-		 For Layer III, you consider the complete side information for the CRC calculation. The side information follows the header or the CRC in Layer III files. It contains information
-		 about the general decoding of the frame, but doesn't contain the actual encoded audio samples. The following table shows the size of the side information for all Layer III files.
-		 2.2.1 Layer III side information size (in bytes)  MPEG 1   MPEG 2/2.5 (LSF)
-		 Stereo, Joint Stereo, Dual Channel                32       17
-		 Mono                                              17       9
+		For Layer III, you consider the complete side information for the CRC calculation. The side information follows the header or the CRC in Layer III files. It contains information
+		about the general decoding of the frame, but doesn't contain the actual encoded audio samples. The following table shows the size of the side information for all Layer III files.
+		2.2.1 Layer III side information size (in bytes)  MPEG 1   MPEG 2/2.5 (LSF)
+		Stereo, Joint Stereo, Dual Channel                32       17
+		Mono                                              17       9
 
-		 For Layer I files, you must consider the mode extension (see table 2.1.6) from the header. Then you can calculate the number of bits which are necessary for CRC calculation
-		 by applying the following formula:
+		For Layer I files, you must consider the mode extension (see table 2.1.6) from the header. Then you can calculate the number of bits which are necessary for CRC calculation
+		by applying the following formula:
 
-		 4 * (number of channels * bound of intensity stereo +
-		 (32 - bound of intensity stereo));
+		4 * (number of channels * bound of intensity stereo +
+		(32 - bound of intensity stereo));
 
-		 This can be read as two times the number of stereo subbands plus the number of mono subbands and the result multiplied with 4. For simple mono frames, this equals 128,
-		 because the number of channels is one and the bound of intensity stereo is 32, meaning that there is no intensity stereo. For stereo frames this is 256.
-		 For more information have a look at the CRC code in the class CMPAFrame.
-		 */
+		This can be read as two times the number of stereo subbands plus the number of mono subbands and the result multiplied with 4. For simple mono frames, this equals 128,
+		because the number of channels is one and the bound of intensity stereo is 32, meaning that there is no intensity stereo. For stereo frames this is 256.
+		For more information have a look at the CRC code in the class CMPAFrame.
+		*/
 	}
 
 	private readLame() {
@@ -292,23 +301,23 @@ export class MPEGFrameReader {
 
 	private readVbri(data: Buffer, frame: IMP3.RawFrame, offset: number): number {
 		/** https://www.codeproject.com/Articles/8295/MPEG-Audio-Frame-Header#VBRIHeader
-		 2.3.2 VBRI Header
-		 This header is only used by MPEG audio files encoded with the Fraunhofer Encoder as far as I know. It is different from the XING header.
-		 You find it exactly 32 bytes after the end of the first MPEG audio header in the file.
-		 (Note that the position is zero-based; position, length and example are each in byte-format.)
-		 Position    Length    Meaning    Example
-		 0            4        VBR header ID in 4 ASCII chars, always 'VBRI', not NULL-terminated    'VBRI'
-		 4            2        Version ID as Big-Endian WORD    1
-		 6            2        Delay as Big-Endian float    7344
-		 8            2        Quality indicator    75
-		 10        4        Number of Bytes as Big-Endian DWORD    45000
-		 14        4        Number of Frames as Big-Endian DWORD    7344
-		 18        2        Number of entries within TOC table as Big-Endian WORD    100
-		 20        2        Scale factor of TOC table entries as Big-Endian DWORD    1
-		 22        2        Size per table entry in bytes (max 4) as Big-Endian WORD    2
-		 24        2        Frames per table entry as Big-Endian WORD    845
-		 26        TOC entries for seeking as Big-Endian integral. From size per table entry and number of entries, you can calculate the length of this field.
-		 */
+		2.3.2 VBRI Header
+		This header is only used by MPEG audio files encoded with the Fraunhofer Encoder as far as I know. It is different from the XING header.
+		You find it exactly 32 bytes after the end of the first MPEG audio header in the file.
+		(Note that the position is zero-based; position, length and example are each in byte-format.)
+		Position    Length    Meaning    Example
+		0            4        VBR header ID in 4 ASCII chars, always 'VBRI', not NULL-terminated    'VBRI'
+		4            2        Version ID as Big-Endian WORD    1
+		6            2        Delay as Big-Endian float    7344
+		8            2        Quality indicator    75
+		10        4        Number of Bytes as Big-Endian DWORD    45000
+		14        4        Number of Frames as Big-Endian DWORD    7344
+		18        2        Number of entries within TOC table as Big-Endian WORD    100
+		20        2        Scale factor of TOC table entries as Big-Endian DWORD    1
+		22        2        Size per table entry in bytes (max 4) as Big-Endian WORD    2
+		24        2        Frames per table entry as Big-Endian WORD    845
+		26        TOC entries for seeking as Big-Endian integral. From size per table entry and number of entries, you can calculate the length of this field.
+		*/
 		const reader = new BufferReader(data);
 		reader.position = offset;
 		frame.mode = reader.readFixedAsciiString(4);
@@ -324,48 +333,56 @@ export class MPEGFrameReader {
 		const toc_size = toc_entries * toc_entry_size;
 		const toc = reader.readBuffer(toc_size);
 		frame.vbri = {
-			version, delay, quality, bytes, frames,
-			toc_entries, toc_scale, toc_entry_size, toc_frames, toc
+			version,
+			delay,
+			quality,
+			bytes,
+			frames,
+			toc_entries,
+			toc_scale,
+			toc_entry_size,
+			toc_frames,
+			toc
 		};
 		return reader.position;
 	}
 
 	private readXing(data: Buffer, frame: IMP3.RawFrame, offset: number): number {
 		/**
-		 https://www.codeproject.com/Articles/8295/MPEG-Audio-Frame-Header#XINGHeader
-		 This header is often (but unfortunately not always) added to files which are encoded with variable bitrate mode.
-		 This header stands after the first MPEG audio header at a specific position.
-		 The whole first frame which contains the XING header is a valid but empty audio frame, so even decoders which don't consider this header can decode the file.
-		 The XING header stands after the side information in Layer III files. So you can calculate the beginning of a XING header relative to the
-		 beginning of the frame by adding 4 bytes (for the MPEG audio header) to the values from the table 2.2.1. The offset calculation doesn't consider
-		 the 16 bit CRC following the header and is equal for all Layers, although only Layer III has a side information.
-		 For reading out this header, you have to find the first MPEG audio header and then go to this specific position within the frame.
-		 The XING header itself has the following format. (Note that the position is zero-based; position, length and example are each in byte-format.)
+		https://www.codeproject.com/Articles/8295/MPEG-Audio-Frame-Header#XINGHeader
+		This header is often (but unfortunately not always) added to files which are encoded with variable bitrate mode.
+		This header stands after the first MPEG audio header at a specific position.
+		The whole first frame which contains the XING header is a valid but empty audio frame, so even decoders which don't consider this header can decode the file.
+		The XING header stands after the side information in Layer III files. So you can calculate the beginning of a XING header relative to the
+		beginning of the frame by adding 4 bytes (for the MPEG audio header) to the values from the table 2.2.1. The offset calculation doesn't consider
+		the 16 bit CRC following the header and is equal for all Layers, although only Layer III has a side information.
+		For reading out this header, you have to find the first MPEG audio header and then go to this specific position within the frame.
+		The XING header itself has the following format. (Note that the position is zero-based; position, length and example are each in byte-format.)
 
-		 Position     Length     Meaning    Example
-		 0             4         VBR header ID in 4 ASCII chars, either 'Xing' or 'Info', not NULL-terminated    'Xing'
-		 4             4         Flags which indicate what fields are present, flags are combined with a logical OR. Field is mandatory.
-		 0x0001 - Frames field is present
-		 0x0002 - Bytes field is present
-		 0x0004 - TOC field is present
-		 0x0008 - Quality indicator field is present
-		 example: 0x0007 (means Frames, Bytes & TOC valid)
+		Position     Length     Meaning    Example
+		0             4         VBR header ID in 4 ASCII chars, either 'Xing' or 'Info', not NULL-terminated    'Xing'
+		4             4         Flags which indicate what fields are present, flags are combined with a logical OR. Field is mandatory.
+		0x0001 - Frames field is present
+		0x0002 - Bytes field is present
+		0x0004 - TOC field is present
+		0x0008 - Quality indicator field is present
+		example: 0x0007 (means Frames, Bytes & TOC valid)
 
-		 8             4         Number of Frames as Big-Endian DWORD (optional)    7344
+		8             4         Number of Frames as Big-Endian DWORD (optional)    7344
 
-		 8 or 12     4         Number of Bytes in file as Big-Endian DWORD (optional)    45000
+		8 or 12     4         Number of Bytes in file as Big-Endian DWORD (optional)    45000
 
-		 8,12 or 16  100     100 TOC entries for seeking as integral BYTE (optional)
-		 Every TOC entry contains the size of the n-th frame. Calculating the position
-		 of the 3rd frame should look as following: header_size + toc[0] + toc[1] + toc[2]
+		8,12 or 16  100     100 TOC entries for seeking as integral BYTE (optional)
+		Every TOC entry contains the size of the n-th frame. Calculating the position
+		of the 3rd frame should look as following: header_size + toc[0] + toc[1] + toc[2]
 
-		 8, 12, 16, 108, 112 or 116    4    Quality indicator as Big-Endian DWORD from 0 - best quality to 100 - worst quality (optional)    0
+		8, 12, 16, 108, 112 or 116    4    Quality indicator as Big-Endian DWORD from 0 - best quality to 100 - worst quality (optional)    0
 
-		 According to this format, a XING header must only contain the ID and the flags. All other fields are optional and depend on the flags which are set.
-		 Sometimes this header is also added to CBR files. It then often has the ID 'Info' instead of 'Xing'.
+		According to this format, a XING header must only contain the ID and the flags. All other fields are optional and depend on the flags which are set.
+		Sometimes this header is also added to CBR files. It then often has the ID 'Info' instead of 'Xing'.
 
-		 There exists the LAME extension to this header, which is used by the common LAME Encoder, https://gabriel.mp3-tech.org/mp3infotag.html#versionstring
-		 */
+		There exists the LAME extension to this header, which is used by the common LAME Encoder, https://gabriel.mp3-tech.org/mp3infotag.html#versionstring
+		*/
 		const reader = new BufferReader(data);
 		reader.position = offset;
 		frame.mode = reader.readFixedAsciiString(4);

@@ -120,9 +120,12 @@ export class ID3v2Reader {
 	private defaultRawFrame(idbin: Buffer, tag: IID3V2.RawTag): IID3V2.RawFrame {
 		return {
 			id: removeZeroString(idbin.toString('ascii').trim()),
-			size: 0, start: tag.start, end: tag.end,
+			size: 0,
+			start: tag.start,
+			end: tag.end,
 			data: BufferUtils.zeroBuffer(0),
-			statusFlags: {}, formatFlags: {}
+			statusFlags: {},
+			formatFlags: {}
 		};
 	}
 

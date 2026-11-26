@@ -40,6 +40,7 @@ function synchsafe(n: number): Buffer {
 	return buf;
 }
 
+// eslint-disable-next-line unicorn/no-unnecessary-parameters
 function buildV23Tag(extHeader: Buffer, frames: Buffer, padding = 4): Buffer {
 	const size = extHeader.length + frames.length + padding;
 	const head = Buffer.concat([
@@ -50,6 +51,7 @@ function buildV23Tag(extHeader: Buffer, frames: Buffer, padding = 4): Buffer {
 	return Buffer.concat([head, extHeader, frames, Buffer.alloc(padding)]);
 }
 
+// eslint-disable-next-line unicorn/no-unnecessary-parameters
 function buildV24Tag(extHeader: Buffer, frames: Buffer, padding = 4): Buffer {
 	const size = extHeader.length + frames.length + padding;
 	const head = Buffer.concat([
@@ -147,7 +149,11 @@ describe('ID3v2.4 extended header', () => {
 		expect(extended?.flags.restrictions).toBe(true);
 		expect(extended?.crc32).toBe(expectedCrc);
 		expect(extended?.restrictions).toEqual({
-			tagSize: 2, textEncoding: 1, textSize: 1, imageEncoding: 1, imageSize: 1
+			tagSize: 2,
+			textEncoding: 1,
+			textSize: 1,
+			imageEncoding: 1,
+			imageSize: 1
 		});
 		const tit2 = tag?.frames.find(f => f.id === 'TIT2');
 		expect((tit2?.value as any).text).toBe('hello');

@@ -4,9 +4,9 @@ import { IID3V2 } from '../../id3v2.types.js';
 
 export const FrameIdBin: IFrameImpl = {
 	/**
-	 Owner identifier        <text string> $00
-	 The private data        <binary data>
-	 */
+	Owner identifier        <text string> $00
+	The private data        <binary data>
+	*/
 	parse: async reader => {
 		const id = reader.readStringTerminated(ascii);
 		const bin = reader.rest();

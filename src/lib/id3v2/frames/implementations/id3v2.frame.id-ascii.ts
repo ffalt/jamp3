@@ -4,9 +4,9 @@ import { ascii } from '../../../common/encodings.js';
 
 export const FrameIdAscii: IFrameImpl = {
 	/**
-	 Owner identifier    <text string> $00
-	 Identifier    <up to 64 bytes binary data>
-	 */
+	Owner identifier    <text string> $00
+	Identifier    <up to 64 bytes binary data>
+	*/
 	parse: async reader => {
 		const id = reader.readStringTerminated(ascii);
 		const text = reader.readStringTerminated(ascii);

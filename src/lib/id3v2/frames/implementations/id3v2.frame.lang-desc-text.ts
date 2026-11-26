@@ -7,11 +7,11 @@ import { readMultiTextValues, writeMultiTextValues } from '../id3v2.frame.multit
 
 export const FrameLangDescText: IFrameImpl = {
 	/**
-	 Text encoding          $xx
-	 Language               $xx xx xx
-	 Short content descrip. <text string according to encoding> $00 (00)
-	 The actual text        <full text string according to encoding>
-	 */
+	Text encoding          $xx
+	Language               $xx xx xx
+	Short content descrip. <text string according to encoding> $00 (00)
+	The actual text        <full text string according to encoding>
+	*/
 	parse: async reader => {
 		const enc = reader.readEncoding();
 		const language = removeZeroString(reader.readString(3, ascii)).trim();

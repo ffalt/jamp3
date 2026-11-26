@@ -4,13 +4,13 @@ import { ID3V2TagBuilder } from './id3v2.builder.v2.js';
 const NON_V23_ENCODINGS = new Set(['utf8', 'utf-8', 'utf16-be', 'utf16be', 'utf-8-bom']);
 
 /**
- * Class for
- * - building an ID3v2.3.0 object
- *
- * Basic usage example:
- *
- * {@includeCode ../../../examples/snippet_id3v2-3-build.ts}
- */
+Class for
+- building an ID3v2.3.0 object
+
+Basic usage example:
+
+{@includeCode ../../../examples/snippet_id3v2-3-build.ts}
+*/
 export class ID3V23TagBuilder extends ID3V2TagBuilder {
 	public static encodings = {
 		iso88591: 'iso-8859-1',
@@ -66,17 +66,17 @@ export class ID3V23TagBuilder extends ID3V2TagBuilder {
 	}
 
 	/** IPLS: The 'Involved people list' in v2.3 (TIPL in v2.4)
-	 * @param group function, e.g. producer
-	 * @param value a name or comma seperated list of names
-	 * **/
+	@param group function, e.g. producer
+	@param value a name or comma seperated list of names
+	**/
 	involved(group: string, value?: string): ID3V23TagBuilder {
 		this.keyTextList('IPLS', group, value);
 		return this;
 	}
 
 	/** TORY: The 'Original release year' frame is intended for the year when the original recording was released.
-	 * @param value year (4 characters)
-	 **/
+	@param value year (4 characters)
+	*/
 	originalDate(value?: string): ID3V23TagBuilder {
 		this.text('TORY', value);
 		return this;

@@ -5,10 +5,10 @@ import { readMultiTextValues, writeMultiTextValues } from '../id3v2.frame.multit
 
 export const FrameIdText: IFrameImpl = {
 	/**
-	 Text encoding    $xx
-	 Description    <text string according to encoding> $00 (00)
-	 Value    <text string according to encoding>
-	 */
+	Text encoding    $xx
+	Description    <text string according to encoding> $00 (00)
+	Value    <text string according to encoding>
+	*/
 	parse: async reader => {
 		const enc = reader.readEncoding();
 		const id = reader.readStringTerminated(enc);

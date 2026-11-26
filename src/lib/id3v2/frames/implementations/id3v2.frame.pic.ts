@@ -6,21 +6,21 @@ import { getWriteTextEncoding } from '../id3v2.frame.write.js';
 
 export const FramePic: IFrameImpl = {
 	/**
-	 v2.3/4
-	 Text encoding   $xx
-	 MIME type       <text string> $00
-	 Picture type    $xx
-	 Description     <text string according to encoding> $00 (00)
-	 Picture data    <binary data>
+	v2.3/4
+	Text encoding   $xx
+	MIME type       <text string> $00
+	Picture type    $xx
+	Description     <text string according to encoding> $00 (00)
+	Picture data    <binary data>
 
-	 v2.2
-	 Text encoding      $xx
-	 Image format       $xx xx xx
-	 Picture type       $xx
-	 Description        <textstring> $00 (00)
-	 Picture data       <binary data>
+	v2.2
+	Text encoding      $xx
+	Image format       $xx xx xx
+	Picture type       $xx
+	Description        <textstring> $00 (00)
+	Picture data       <binary data>
 
-	 */
+	*/
 	parse: async (reader, frame, head) => {
 		const enc = reader.readEncoding();
 		const mimeType = head.ver <= 2 ? reader.readString(3, ascii) : reader.readStringTerminated(ascii);

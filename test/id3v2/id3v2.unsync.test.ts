@@ -33,8 +33,8 @@ async function writeAndRead(frames: Array<IID3V2.RawFrame>, head: IID3V2.TagHead
 	}
 }
 
-async function writeTagToBuffer(frames: Array<IID3V2.Frame>, head: IID3V2.TagHeader, defaultEncoding?: string): Promise<Buffer> {
-	const rawFrames = await writeRawFrames(frames, head, defaultEncoding);
+async function writeTagToBuffer(frames: Array<IID3V2.Frame>, head: IID3V2.TagHeader): Promise<Buffer> {
+	const rawFrames = await writeRawFrames(frames, head);
 	const stream = new MemoryWriterStream();
 	await new Id3v2RawWriter(stream, head, { paddingSize: 0 }, rawFrames).write();
 	return stream.toBuffer();
@@ -297,7 +297,10 @@ describe('ID3v2 Unsync', () => {
 		//   [10..19]: TALB frame header ("TALB" 0x00000005 status=0x00 format=0x00)
 		//   [20..25]: frame data (0x01 0xFF 0x00 0xFE 0x41 0x00)
 		const v23head: IID3V2.TagHeader = {
-			ver: 3, rev: 0, size: 0, valid: true,
+			ver: 3,
+			rev: 0,
+			size: 0,
+			valid: true,
 			v3: { flags: { unsynchronisation: true } }
 		};
 		const v23frame: IID3V2.Frame = {

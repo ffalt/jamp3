@@ -9,42 +9,42 @@ import { updateFile } from '../common/update-file.js';
 import { FileWriterStream } from '../common/stream-writer-file.js';
 
 /**
- * Class for
- * - reading ID3v1
- * - writing ID3v1
- * - removing ID3v1
- *
- * Basic usage example:
- *
- * {@includeCode ../../../examples/snippet_id3v1-read.ts}}
- */
+Class for
+- reading ID3v1
+- writing ID3v1
+- removing ID3v1
+
+Basic usage example:
+
+{@includeCode ../../../examples/snippet_id3v1-read.ts}}
+*/
 export class ID3v1 {
 	/**
-	 * Reads a filename & returns ID3v1 tag as Object
-	 * @param filename the file to read
-	 * @return a object returning i3v1 tag if found
-	 */
+	Reads a filename & returns ID3v1 tag as Object
+	@param filename the file to read
+	@return a object returning i3v1 tag if found
+	*/
 	async read(filename: string): Promise<IID3V1.Tag | undefined> {
 		const reader = new ID3v1Reader();
 		return await reader.read(filename);
 	}
 
 	/**
-	 * Reads a stream & returns ID3v1 tag as Object
-	 * @param stream the stream to read (NodeJS.stream.Readable)
-	 * @return a object returning i3v1 tag if found
-	 */
+	Reads a stream & returns ID3v1 tag as Object
+	@param stream the stream to read (NodeJS.stream.Readable)
+	@return a object returning i3v1 tag if found
+	*/
 	async readStream(stream: Readable): Promise<IID3V1.Tag | undefined> {
 		const reader = new ID3v1Reader();
 		return await reader.readStream(stream);
 	}
 
 	/**
-	 * Removes ID3v1 Tag from a file with given options
-	 * @param filename the file to read
-	 * @param options remove options
-	 * @return true if tag has been found and removed
-	 */
+	Removes ID3v1 Tag from a file with given options
+	@param filename the file to read
+	@param options remove options
+	@return true if tag has been found and removed
+	*/
 	async remove(filename: string, options: IID3V1.RemoveOptions): Promise<boolean> {
 		const stat = await fse.stat(filename);
 		let removed = false;
@@ -66,12 +66,12 @@ export class ID3v1 {
 	}
 
 	/**
-	 * Writes ID3v1 Tag from an ID3v1 object with given options
-	 * @param filename the file to write
-	 * @param tag the ID3v1 object to write
-	 * @param version the ID3v1.v version to write
-	 * @param options write options
-	 */
+	Writes ID3v1 Tag from an ID3v1 object with given options
+	@param filename the file to write
+	@param tag the ID3v1 object to write
+	@param version the ID3v1.v version to write
+	@param options write options
+	*/
 	async write(filename: string, tag: IID3V1.ID3v1Tag, version: number, options: IID3V1.WriteOptions): Promise<void> {
 		const exists = await fse.pathExists(filename);
 		await (exists ? this.replaceTag(filename, tag, version, !!options.keepBackup) : this.writeTag(filename, tag, version));

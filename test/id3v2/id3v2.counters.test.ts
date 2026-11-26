@@ -13,7 +13,8 @@ function synchsafe(n: number): Array<number> {
 	return [(n >> 21) & 0x7F, (n >> 14) & 0x7F, (n >> 7) & 0x7F, n & 0x7F];
 }
 
-function buildV23Tag(frame: Buffer, padding = 4): Buffer {
+function buildV23Tag(frame: Buffer): Buffer {
+	const padding = 4;
 	const body = Buffer.concat([frame, Buffer.alloc(padding)]);
 	return Buffer.concat([
 		Buffer.from('ID3', 'ascii'),

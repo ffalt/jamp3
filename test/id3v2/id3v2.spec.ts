@@ -48,9 +48,9 @@ function compareID3v2SpecFrame(filename: string, framespec: any, frame: IID3V2.F
 }
 
 /**
- * Position of framespec amongst the spec frames matching the given predicate,
- * so multiple frames with the same id are compared in order of appearance.
- */
+Position of framespec amongst the spec frames matching the given predicate,
+so multiple frames with the same id are compared in order of appearance.
+*/
 function specFrameNr(specframes: Array<any>, framespec: any, matches: (sf: any) => boolean): number {
 	let nr = -1;
 	for (const sf of specframes) {

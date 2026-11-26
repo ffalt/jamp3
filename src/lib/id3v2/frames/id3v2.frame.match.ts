@@ -39,7 +39,7 @@ export const Matcher: Array<IFrameMatch> = [
 			title: 'Unknown Text Field',
 			versions: [3, 4],
 			impl:
-			FrameText
+				FrameText
 		}
 	},
 	{

@@ -5,9 +5,9 @@ import { getWriteTextEncoding } from '../id3v2.frame.write.js';
 
 export const FrameTextConcatList: IFrameImpl = {
 	/**
-	 Text encoding    $xx
-	 Information    <text string according to encoding>
-	 */
+	Text encoding    $xx
+	Information    <text string according to encoding>
+	*/
 	parse: async (reader, frame) => {
 		if (frame.data.length === 0) {
 			return { value: { text: '' }, encoding: utf8 };
