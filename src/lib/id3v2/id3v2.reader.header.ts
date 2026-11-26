@@ -1,9 +1,10 @@
 import { bitarray, flags, unsynchsafe } from '../common/utils.js';
 import { Markers } from '../common/marker.js';
-import { ID3v2_EXTHEADER, ID3v2_HEADER } from './id3v2.header.consts.js';
+import { ID3v2_EXTHEADER, ID3v2_FRAME_HEADER, ID3v2_FRAME_HEADER_LENGTHS, ID3v2_HEADER } from './id3v2.header.consts.js';
 import { IID3V2 } from './id3v2.types.js';
 import { ReaderStream } from '../common/stream-reader.js';
 import { removeUnsyncCounted } from './frames/id3v2.frame.unsync.js';
+import { isValidFrameBinId } from './frames/id3v2.frame.match.js';
 
 const ID3v2_EXTHEADER_SIZE_LENGTH = 4;
 
@@ -187,15 +188,11 @@ export class ID3v2HeaderReader {
 			valid: false
 		};
 		const rawSize = head.size;
-		if (head.ver > 2) {
+		// per spec the tag size is a syncsafe integer, but some encoders write it as a plain
+		// uint32; a set high bit in any size byte proves the plain format, for every version
+		const sizeBytes = buffer.subarray(offset + 6, offset + 10);
+		if (sizeBytes.every(b => b < 0x80)) {
 			head.size = unsynchsafe(head.size);
-		} else if (head.ver === 2) {
-			// per spec the v2.2 tag size is a syncsafe integer, but some encoders write it
-			// as a plain uint32; a set high bit in any size byte proves the plain format
-			const sizeBytes = buffer.subarray(offset + 6, offset + 10);
-			if (sizeBytes.every(b => b < 0x80)) {
-				head.size = unsynchsafe(head.size);
-			}
 		}
 		if (head.ver === 4) {
 			this.readID3v24Header(head, flagBits);
@@ -208,12 +205,39 @@ export class ID3v2HeaderReader {
 		return head;
 	}
 
+	/**
+	A size whose bytes are all below $80 is a valid syncsafe integer and a valid plain uint32 at
+	the same time, so the header alone can not tell which one an encoder wrote. The first frame
+	decides it: a frame that does not fit the syncsafe size but does fit the plain one proves the
+	plain format, and a tag written to spec never reaches that case.
+	*/
+	private async correctPlainTagSize(reader: ReaderStream, header: IID3V2.TagHeader, rawSize: number): Promise<void> {
+		if (header.size === rawSize || header.v3?.flags.extendedheader || header.v4?.flags.extendedheader) {
+			return;
+		}
+		const markerLength = ID3v2_FRAME_HEADER_LENGTHS.MARKER[header.ver];
+		const sizeLength = ID3v2_FRAME_HEADER_LENGTHS.SIZE[header.ver];
+		const peek = await reader.read(markerLength + sizeLength);
+		reader.unshift(peek);
+		if (peek.length < markerLength + sizeLength || !isValidFrameBinId(peek.subarray(0, markerLength))) {
+			return;
+		}
+		const frameSize = ID3v2_FRAME_HEADER.SYNCSAVEINT.includes(header.ver) ?
+			unsynchsafe(peek.readUIntBE(markerLength, sizeLength)) :
+			peek.readUIntBE(markerLength, sizeLength);
+		const firstFrameEnd = markerLength + sizeLength + ID3v2_FRAME_HEADER_LENGTHS.FLAGS[header.ver] + frameSize;
+		if (firstFrameEnd > header.size && firstFrameEnd <= rawSize) {
+			header.size = rawSize;
+		}
+	}
+
 	public async readHeader(reader: ReaderStream): Promise<{ rest?: Buffer; header?: IID3V2.TagHeader; consumed?: number }> {
 		const data = await reader.read(ID3v2_HEADER.SIZE);
 		const header: IID3V2.TagHeader | undefined = this.readID3v2Header(data, 0);
 		if (!header || !header.valid) {
 			return { rest: data };
 		}
+		await this.correctPlainTagSize(reader, header, data.readUInt32BE(6));
 		if (header.v3 && header.v3.flags.extendedheader) {
 			const pos = reader.pos;
 			const extended = await this.readID3ExtendedHeaderV3(reader, !!header.v3.flags.unsynchronisation);

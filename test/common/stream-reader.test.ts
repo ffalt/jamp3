@@ -1,28 +1,7 @@
-import { Readable } from 'node:stream';
 import { describe, expect, it } from '@jest/globals';
 
 import { ReaderStream } from '../../src/lib/common/stream-reader.js';
-
-class ChunkedStream extends Readable {
-	private i = 0;
-
-	constructor(private chunks: Array<Buffer>) {
-		super();
-	}
-
-	override _read(): void {
-		if (this.i < this.chunks.length) {
-			this.push(this.chunks[this.i]);
-			this.i++;
-		} else {
-			this.push(null);
-		}
-	}
-}
-
-function chunkedStream(chunks: Array<Buffer>): Readable {
-	return new ChunkedStream(chunks);
-}
+import { chunkedStream } from './chunked-stream.js';
 
 describe('ReaderStream.scan', () => {
 	it('finds a marker that starts in one chunk but only completes in the next', async () => {

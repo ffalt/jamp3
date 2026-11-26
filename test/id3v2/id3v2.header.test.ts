@@ -1,4 +1,3 @@
-import { Readable } from 'node:stream';
 import { describe, expect, it } from '@jest/globals';
 
 import { ID3v2 } from '../../src/lib/id3v2/id3v2.js';
@@ -8,32 +7,7 @@ import { IID3V2 } from '../../src/lib/id3v2/id3v2.types.js';
 import { applyUnsync } from '../../src/lib/id3v2/frames/id3v2.frame.unsync.js';
 import fse from 'fs-extra';
 import path from 'node:path';
-
-class ChunkedStream extends Readable {
-	private i = 0;
-
-	constructor(private chunks: Array<Buffer>) {
-		super();
-	}
-
-	override _read(): void {
-		if (this.i < this.chunks.length) {
-			this.push(this.chunks[this.i]);
-			this.i++;
-		} else {
-			this.push(null);
-		}
-	}
-}
-
-// deliver the tag in small chunks; a single-chunk stream would set the reader's end flag before scanning
-function streamOf(buffer: Buffer): Readable {
-	const chunks: Array<Buffer> = [];
-	for (let pos = 0; pos < buffer.length; pos += 7) {
-		chunks.push(buffer.subarray(pos, pos + 7));
-	}
-	return new ChunkedStream(chunks);
-}
+import { streamOf } from '../common/chunked-stream.js';
 
 function synchsafe(n: number): Buffer {
 	const buf = Buffer.alloc(4);
@@ -43,6 +17,28 @@ function synchsafe(n: number): Buffer {
 	buf[3] = n & 0x7F;
 	return buf;
 }
+
+function plain(n: number): Buffer {
+	const buf = Buffer.alloc(4);
+	buf.writeUInt32BE(n);
+	return buf;
+}
+
+function v22TitleFrame(text: string): Buffer {
+	const payload = Buffer.concat([Buffer.from([0]), Buffer.from(text, 'ascii')]);
+	const size = Buffer.alloc(3);
+	size.writeUIntBE(payload.length, 0, 3);
+	return Buffer.concat([Buffer.from('TT2', 'ascii'), size, payload]);
+}
+
+function v23TitleFrame(text: string): Buffer {
+	const payload = Buffer.concat([Buffer.from([0]), Buffer.from(text, 'ascii')]);
+	const size = Buffer.alloc(4);
+	size.writeUInt32BE(payload.length);
+	return Buffer.concat([Buffer.from('TIT2', 'ascii'), size, Buffer.from([0, 0]), payload]);
+}
+
+const tit2Frame = v23TitleFrame('hello');
 
 // eslint-disable-next-line unicorn/no-unnecessary-parameters
 function buildV23Tag(extHeader: Buffer, frames: Buffer, padding = 4): Buffer {
@@ -66,13 +62,41 @@ function buildV24Tag(extHeader: Buffer, frames: Buffer, padding = 4): Buffer {
 	return Buffer.concat([head, extHeader, frames, Buffer.alloc(padding)]);
 }
 
-const tit2Frame = Buffer.concat([
-	Buffer.from('TIT2', 'ascii'),
-	Buffer.from([0, 0, 0, 6]), // frame size: encoding byte + "hello"
-	Buffer.from([0, 0]), // flags
-	Buffer.from([0]), // encoding: iso-8859-1
-	Buffer.from('hello', 'ascii')
-]);
+function tagOf(ver: number, body: Buffer, sizeField: Buffer): Buffer {
+	return Buffer.concat([Buffer.from('ID3', 'ascii'), Buffer.from([ver, 0, 0]), sizeField, body, Buffer.from('AUDIOAUDIO')]);
+}
+
+function padTo(frame: Buffer, total: number): Buffer {
+	return Buffer.concat([frame, Buffer.alloc(total - frame.length)]);
+}
+
+async function readTag(ver: number, body: Buffer, sizeField: Buffer): Promise<IID3V2.ID3v2Tag | undefined> {
+	const buffer = tagOf(ver, body, sizeField);
+	return await new ID3v2().readStream(streamOf(buffer));
+}
+
+function buildUnsyncedV23Tag(ext: Buffer, frames: Buffer, padding: number): Buffer {
+	const size = ext.length + frames.length + padding;
+	const head = Buffer.concat([
+		Buffer.from('ID3', 'ascii'),
+		Buffer.from([3, 0, 0xC0]), // v2.3, unsynchronisation + extended header
+		synchsafe(size)
+	]);
+	return Buffer.concat([head, ext, frames, Buffer.alloc(padding)]);
+}
+
+function unsyncedV23WriteTag(extended: IID3V2.TagHeaderExtendedVer3, unsynchronisation: boolean): IID3V2.ID3v2Tag {
+	return {
+		head: {
+			ver: 3,
+			rev: 0,
+			size: 0,
+			valid: true,
+			v3: { flags: { unsynchronisation, extendedheader: true }, extended }
+		},
+		frames: [{ id: 'TIT2', value: { text: 'hello' } }]
+	} as any;
+}
 
 describe('ID3v2.3 extended header', () => {
 	it('parses a valid 6-byte extended header', async () => {
@@ -225,29 +249,6 @@ describe('ID3v2.4 extended header', () => {
 	});
 });
 
-function buildUnsyncedV23Tag(ext: Buffer, frames: Buffer, padding: number): Buffer {
-	const size = ext.length + frames.length + padding;
-	const head = Buffer.concat([
-		Buffer.from('ID3', 'ascii'),
-		Buffer.from([3, 0, 0xC0]), // v2.3, unsynchronisation + extended header
-		synchsafe(size)
-	]);
-	return Buffer.concat([head, ext, frames, Buffer.alloc(padding)]);
-}
-
-function unsyncedV23WriteTag(extended: IID3V2.TagHeaderExtendedVer3, unsynchronisation: boolean): IID3V2.ID3v2Tag {
-	return {
-		head: {
-			ver: 3,
-			rev: 0,
-			size: 0,
-			valid: true,
-			v3: { flags: { unsynchronisation, extendedheader: true }, extended }
-		},
-		frames: [{ id: 'TIT2', value: { text: 'hello' } }]
-	} as any;
-}
-
 describe('ID3v2.3 extended header with tag-level unsynchronisation', () => {
 	const dir = 'local/test-extheader-unsync';
 
@@ -311,5 +312,60 @@ describe('ID3v2.3 extended header with tag-level unsynchronisation', () => {
 		const tag = await new ID3v2().read(file);
 		expect(tag?.head?.v3?.extended?.size).toBe(10);
 		expect(tag?.head?.v3?.extended?.crcData).toBe(0x12_34_56_78);
+	});
+});
+
+describe('ID3v2 tag size written as a plain uint32', () => {
+	it('reads a v2.2 tag whose plain size has no high bit set', async () => {
+		const body = padTo(v22TitleFrame('x'.repeat(200)), 256);
+		const tag = await readTag(2, body, plain(256));
+		expect(tag?.head?.size).toBe(256);
+		expect(tag?.frames.map(f => f.id)).toEqual(['TT2']);
+		expect((tag?.frames[0].value as any).text).toBe('x'.repeat(200));
+	});
+
+	it('reads a v2.3 tag whose plain size has no high bit set', async () => {
+		const body = padTo(v23TitleFrame('y'.repeat(240)), 300);
+		const tag = await readTag(3, body, plain(300));
+		expect(tag?.head?.size).toBe(300);
+		expect(tag?.frames.map(f => f.id)).toEqual(['TIT2']);
+		expect((tag?.frames[0].value as any).text).toBe('y'.repeat(240));
+	});
+
+	it('reads a v2.3 tag whose plain size has a high bit set', async () => {
+		const body = padTo(v23TitleFrame('z'.repeat(240)), 0x80_00);
+		const tag = await readTag(3, body, plain(0x80_00));
+		expect(tag?.head?.size).toBe(0x80_00);
+		expect(tag?.frames.map(f => f.id)).toEqual(['TIT2']);
+	});
+
+	it('reads a v2.4 tag whose plain size has a high bit set', async () => {
+		const body = padTo(v23TitleFrame('z'.repeat(240)), 0x80_00);
+		const tag = await readTag(4, body, plain(0x80_00));
+		expect(tag?.head?.size).toBe(0x80_00);
+	});
+
+	it('leaves a correct synchsafe v2.3 tag alone', async () => {
+		const body = padTo(v23TitleFrame('a'.repeat(100)), 300);
+		const tag = await readTag(3, body, synchsafe(300));
+		expect(tag?.head?.size).toBe(300);
+		expect(tag?.frames.map(f => f.id)).toEqual(['TIT2']);
+		expect((tag?.frames[0].value as any).text).toBe('a'.repeat(100));
+	});
+
+	it('leaves a correct synchsafe v2.2 tag alone', async () => {
+		const body = padTo(v22TitleFrame('b'.repeat(100)), 256);
+		const tag = await readTag(2, body, synchsafe(256));
+		expect(tag?.head?.size).toBe(256);
+		expect(tag?.frames.map(f => f.id)).toEqual(['TT2']);
+		expect((tag?.frames[0].value as any).text).toBe('b'.repeat(100));
+	});
+
+	it('keeps the synchsafe reading when the first frame fits it', async () => {
+		// size field 0x00 0x00 0x01 0x00: synchsafe 128, plain 256; the frame fits in 128,
+		// so there is no evidence of the plain format and the spec reading wins
+		const body = padTo(v23TitleFrame('c'.repeat(100)), 256);
+		const tag = await readTag(3, body, plain(256));
+		expect(tag?.head?.size).toBe(128);
 	});
 });
